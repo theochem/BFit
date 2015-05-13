@@ -121,7 +121,7 @@ def getOrbitalBasis(input):
     for line in input.split("\n"):
         for subshell in ["S", "P", "D", "F"]:
             if re.match(r'^\d' + subshell, line.lstrip()):
-                print(line)
+                #print(line)
                 dict[subshell].append(line.split()[0])
     return {key:value for key,value in dict.items() if len(value) != 0}
 
@@ -134,7 +134,7 @@ def getOrbitalExponents(input):
 def getOrbitalCoefficient(input):
     dict = {}
     for orbital in getOrbitals(input)[1]:
-        print(orbital)
+        #print(orbital)
         dict[orbital] = getCoefficients(input, orbital)
     return dict
 
