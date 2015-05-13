@@ -1,6 +1,6 @@
 import numpy as np
 import re
-elementFile = "/Users/Alireza/Desktop/neutral/be"
+elementFile = "/Users/Alireza/Desktop/neutral/ag"
 
 def getExponents(input, subshell):
     """
@@ -79,13 +79,16 @@ def getQuantumNumber(elementFile, subshell):
 
     return np.trim_zeros(quantNumArray)
 
-def getEnergy(input):
+def getEnergy(input): # Need To Fix This
     input = input.split("\n")
 
     energy = []
+    print('hey', input[2].split())
+    a = input[2].split()
+    print([x.replace('=', '') for x in a])
     energy.append(float(input[1].split()[2]))
-    energy.append(float(input[2].split()[2]))
-    energy.append(float(input[2].split()[5]))
+    energy.append( float([x.replace('=', "") for x in a][2])    )
+    energy.append(float( [x.replace("=", '') for x in a][4]))
     return energy
 
 def getOrbitals(input):
