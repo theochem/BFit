@@ -12,7 +12,7 @@ a = sb.load_slater_basis(elementFile)
 def getSlatorTypeOrbital(exponent, quantumNum, r : 'distance'):
     return ((2 * exponent)**quantumNum)   *    np.sqrt(((2 * exponent) / scipy.misc.factorial(2 * quantumNum)))    *      (r ** (quantumNum - 1)) * (np.exp(-exponent * r))
 
-print(getSlatorTypeOrbital(a['orbitals_exp']['S'], sb.getQuantumNumber(elementFile, 'S'), [2,2]))
+b = (getSlatorTypeOrbital(a['orbitals_exp']['S'], sb.getQuantumNumber(elementFile, 'S'), [2,2]))
 
 def getLCAO(slatorFunction, coeffMatrix):
     """
@@ -23,6 +23,8 @@ def getLCAO(slatorFunction, coeffMatrix):
     :return: a new matrix
     """
     return np.dot(np.transpose(slatorFunction) , coeffMatrix)
+
+c = (getLCAO(b, np.concatenate((a['orbitals_coeff']['1S'], a['orbitals_coeff']['2S']), axis = 1)))
 
 def getOccupationNumber(elementFile):
     """
