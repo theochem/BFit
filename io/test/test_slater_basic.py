@@ -22,6 +22,7 @@ def testParsingBeryllium(file):
     assert values['orbitals'] == ['1S', '2S']
     assert values["orbitals_cusp"]['S'] == [1.0001235 ,     0.9998774]
     assert values['orbitals_energy']['S'] == [-4.7326699     ,-0.3092695]
+    assert values['orbitals_electron_number'] == {'1S': 2, '2S' : 2}
 
 testParsingBeryllium("/Users/Alireza/Desktop/neutral/be")
 
@@ -36,17 +37,20 @@ def testParsingSilver(file):
     assert values['orbitals_energy']['P'] == [-125.1815809,    -21.9454343,     -2.6768201]
     assert values['energy'] == [-5197.698467674,5197.698468984 , -10395.396936658]
     assert np.array_equal(   values['orbitals_exp']['D'] ,  np.array([ [53.296212], [40.214567 ], [21.872645], [17.024065], [10.708021], [7.859216], [5.770205], [3.610289], [ 2.243262], [1.397570], [0.663294]]))
-    assert np.array_equal( np.concatenate((values['orbitals_coeff']['3D'], values['orbitals_coeff']['4D']), axis = 1),  np.array([[ 0.0006646,     -0.0002936],
-                                                                                                                                   [0.0037211 ,    -0.0016839],
-                                                                                                                                   [-0.0072310,      0.0092799],
-                                                                                                                                   [0.1799224 ,    -0.0743431],
-                                                                                                                                   [0.5205360 ,    -0.1179494],
-                                                                                                                                   [0.3265622 ,    -0.2809146],
-                                                                                                                                   [0.0373867 ,     0.1653040],
-                                                                                                                                   [0.0007434 ,     0.4851980],
-                                                                                                                                   [0.0001743 ,     0.4317110],
-                                                                                                                                   [-0.0000474,      0.1737644],
-                                                                                                                                   [0.0000083,     0.0013751]]))
+    assert np.array_equal( np.concatenate((values['orbitals_coeff']['3D'], values['orbitals_coeff']['4D']), axis = 1),
+                           np.array([[ 0.0006646,     -0.0002936],
+                                     [0.0037211 ,    -0.0016839],
+                                     [-0.0072310,      0.0092799],
+                                     [0.1799224 ,    -0.0743431],
+                                     [0.5205360 ,    -0.1179494],
+                                     [0.3265622 ,    -0.2809146],
+                                     [0.0373867 ,     0.1653040],
+                                     [0.0007434 ,     0.4851980],
+                                     [0.0001743 ,     0.4317110],
+                                     [-0.0000474,      0.1737644],
+                                     [0.0000083,     0.0013751]]))
+    assert values['orbitals_electron_number'] == {'1S' : 2, '2S' : 2, '3S':2, '4S':2, '5S': 1, '2P': 6, '3P' : 6, '4P':6, '3D' : 10, '4D': 10}
+
 testParsingSilver("/Users/Alireza/Desktop/neutral/ag")
 
 def testParsingNeon(file): #put large array
@@ -57,5 +61,7 @@ def testParsingNeon(file): #put large array
     assert values['orbitals_basis']['P'] == ['3P', '2P', '3P', '2P', '2P', '2P', '2P']
     assert values['configuration'] == "1S(2)2S(2)2P(6)"
     assert values['orbitals'] == ['1S', '2S', '2P']
+    assert np.array_equal( values['orbitals_exp']['P'], np.array([ [25.731219], [ 10.674843], [ 8.124569], [ 4.295590], [2.648660], [ 1.710436 ], [ 1.304155 ]]) )
+    assert np.array_equal( values['orbitals_coeff']['2P'], np.array( [[ 0.0000409], [ 0.0203038], [0.0340866], [0.2801866], [0.3958489], [0.3203928], [ 0.0510413]]))
 
 testParsingNeon("/Users/Alireza/Desktop/neutral/ne")
