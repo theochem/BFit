@@ -4,7 +4,8 @@ import slater_basic as sb
 import numpy as np
 
 def testParsingBeryllium(file):
-    values = dict(sb.load_slater_basis(file))
+    be = sb.Element_Data(file)
+    values = be.slater_basis
 
     assert values['configuration'] == "1S(2)2S(2)"
     assert values['energy'] == [-14.573023167 ,   14.573023130, -29.146046297 ]
@@ -27,7 +28,8 @@ def testParsingBeryllium(file):
 testParsingBeryllium("/Users/Alireza/Desktop/neutral/be")
 
 def testParsingSilver(file):
-    values = sb.load_slater_basis(file)
+    ag = sb.Element_Data(file)
+    values = ag.slater_basis
 
     assert values['orbitals'] == ['1S', '2S', '3S', '4S', '5S', '2P', '3P', '4P', '3D', '4D']
     assert values['configuration'] == 'K(2)L(8)M(18)4S(2)4P(6)5S(1)4D(10)'
@@ -54,7 +56,9 @@ def testParsingSilver(file):
 testParsingSilver("/Users/Alireza/Desktop/neutral/ag")
 
 def testParsingNeon(file): #put large array
-    values = sb.load_slater_basis(file)
+    ne = sb.Element_Data(file)
+    values = ne.slater_basis
+
     assert values['energy'] == [-128.547098079,  128.547098140 ,  -257.094196219]
     assert values['orbitals_energy']['P'] == [-0.8504095]
     assert values['orbitals_cusp']['P'] == [1.0000509]

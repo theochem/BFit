@@ -1,8 +1,8 @@
 import numpy as np
 import re
-elementFile = "/Users/Alireza/Desktop/neutral/ne"
+elementFile = "/Users/Alireza/Desktop/neutral/be"
 
-class data_element():
+class Element_Data():
 
     def __init__(self, file):
         f = open(file, 'r')
@@ -65,7 +65,7 @@ class data_element():
 
         return np.trim_zeros(coeffArray) #a[:, np.apply_along_axis(np.count_nonzero, 0, a) >= 0.0001]
 
-    def getQuantumNumber(self, subshell):
+    def getQuantumNumber(self):
         """
         get the quantum numbers for a specific subshell
 
@@ -73,12 +73,12 @@ class data_element():
         :param subshell:
         :return:
         """
-        assert subshell == "S" or subshell == "P" or subshell == "D" or subshell == "F"
+        dict = {'S' : 0 , 'P' : 0, 'D': 0, 'F':0}
 
         quantNumArray = np.zeros(shape = (20, 1))
         i = 0
         for line in self.input.split("\n"):
-            if re.match(r'^\d' + subshell, line.lstrip()):
+            if re.match(r'^\d', line.lstrip()):
                 quantNumArray[i] = int(line.split()[0][0])
                 i += 1
 
@@ -152,6 +152,7 @@ class data_element():
                 if re.match(r'^\d' + subshell, line.lstrip()):
                     #print(line)
                     dict[subshell].append(line.split()[0])
+
         return {key:value for key,value in dict.items() if len(value) != 0}
 
     def getOrbitalExponents(self):
@@ -207,6 +208,17 @@ class data_element():
 
         return {key:value for key,value in myDic.items() if value != 0}
 
+    def getQuantumNumbers(self):
+        dict = {'S': [], 'P': [], 'D': [], 'F': []}
+
+        for line in self.input.split("\n"):
+            for subshell in ["S", "P", "D", "F"]:
+                if re.match(r'^\d' + subshell, line.lstrip()):
+                    #print(line)
+                    dict[subshell].append(line.split()[0][0])
+
+        return {key:np.asarray([[int(x)] for x in value]) for key,value in dict.items() if len(value) != 0}
+
     def load_slater_basis(self):
 
         return {'configuration': self.input.split("\n")[0].split()[1].replace(",", "") ,
@@ -218,9 +230,7 @@ class data_element():
                 'orbitals_exp': self.getOrbitalExponents(),
                 'orbitals_coeff': self.getOrbitalCoefficient(),
                 'orbitals_electron_number' : self.getNumberOfElectronsPerOrbital(),
-                'quantum_numbers' : self.getQuantumNumber('S')}
+                'quantum_numbers' : self.getQuantumNumbers()}
 
-#print(load_slater_basis(elementFile))
-
-be = data_element(elementFile)
-ag = data_element('/Users/Alireza/Desktop/neutral/ag')
+#be = Element_Data(elementFile)
+#print(be.slater_basis['quantum_numbers'])
