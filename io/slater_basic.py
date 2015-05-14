@@ -1,6 +1,6 @@
 import numpy as np
 import re
-elementFile = "/Users/Alireza/Desktop/neutral/ag"
+elementFile = "/Users/Alireza/Desktop/neutral/ne"
 
 def getExponents(input, subshell):
     """
@@ -83,13 +83,11 @@ def getEnergy(input): # Need To Fix This
     input = input.split("\n")
 
     energy = []
-    print('hey', input[2].split())
-    a = input[2].split()
-    print([x.replace('=', '') for x in a])
-    energy.append(float(input[1].split()[2]))
-    energy.append( float([x.replace('=', "") for x in a][2])    )
-    energy.append(float( [x.replace("=", '') for x in a][4]))
-    return energy
+    firstLine = input[1]
+    secondLine = input[2]
+
+    energy = (re.findall("[= -]\d+.\d+", firstLine + secondLine))
+    return [float(x) for x in energy[:-1]]
 
 def getOrbitals(input):
     """
@@ -111,12 +109,35 @@ def getOrbitals(input):
 
 def getCusp(input):
     cusp = []
-    input = input.split("\n")
-    return [float(x) for x in input[6].split()[1:]]
+    a = input.split("\n")
+    dict = {'S' : 0 , 'P' : 0, 'D': 0, 'F':0}
+    for line in a:
+        if len(re.findall('CUSP', line)) != 0:
+            if dict['S'] == 0:
+                dict['S'] = [float(x) for x in line.split()[1:]]
+            elif dict['P'] == 0:
+                dict['P'] = [float(x) for x in line.split()[1:]]
+            elif dict['D'] == 0:
+                dict['D'] = [float(x) for x in line.split()[1:]]
+            elif dict['F'] == 0:
+                dict['F'] = [float(x) for x in line.split()[1:]]
+
+    return {key:value for key,value in dict.items() if value != 0}
 
 def getOrbitalEnergy(input):
-    input = input.split("\n")
-    return [float(x) for x in input[5].split()[1:]]
+    dict = {'S' : 0 , 'P' : 0, 'D': 0, 'F':0}
+    for line in input.split("\n"):
+        if (re.match('BASIS/ORB.ENERGY', line.lstrip())):
+            if dict['S'] == 0:
+                dict['S'] = [float(x) for x in line.split()[1:]]
+            elif dict['P'] == 0:
+                dict['P'] = [float(x) for x in line.split()[1:]]
+            elif dict['D'] == 0:
+                dict['D'] = [float(x) for x in line.split()[1:]]
+            elif dict['F'] == 0:
+                dict['F'] = [float(x) for x in line.split()[1:]]
+
+    return {key:value for key,value in dict.items() if value != 0}
 
 def getOrbitalBasis(input):
     dict = {'S': [], 'P': [], 'D': [], 'F': []}
@@ -153,4 +174,4 @@ def load_slater_basis(file):
             'orbitals_basis': getOrbitalBasis(input),
             'orbitals_exp': getOrbitalExponents(input),
             'orbitals_coeff': getOrbitalCoefficient(input)}
-print(load_slater_basis(elementFile))
+#print(load_slater_basis(elementFile))
