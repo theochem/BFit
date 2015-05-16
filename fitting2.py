@@ -190,16 +190,16 @@ def rho(dict :"Occupation Numbers", LCAO : "Matrix rows = points, column =  phi"
             LCAO[:,column] = np.absolute(LCAO[:,column] * LCAO[:,column]) * dict[orbital]
             column += 1
     return LCAO
-#rho1 = (rho(getOccupationNumber(elementFile), LCAO)); print(rho)
+rho1 = (rho(getOccupationNumber(elementFile), LCAO)); print(rho)
 
 def divideByr(rho, r, w):
     row, col = np.shape(rho)
 
     for x in range(col):
-        rho[:,x] = rho[:,x] * w #/ np.exp(-p)
+        rho[:,x] = (rho[:,x] * w * 4 * np.pi * r**2)/ np.exp(-r)
     return rho
 
-print(np.sum(divideByr(rho(getOccupationNumber(elementFile), LCAO), p , w)) )
+print(np.sum(divideByr(rho(getOccupationNumber(elementFile), LCAO), 1 , w)) )
 
 
 

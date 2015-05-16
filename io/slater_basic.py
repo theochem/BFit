@@ -227,10 +227,10 @@ class Element_Data():
                 'orbitals_energy': self.getOrbitalEnergy() ,
                 'orbitals_cusp': self.getCusp(),
                 'orbitals_basis': self.getOrbitalBasis(),
-                'orbitals_exp': self.getOrbitalExponents(),
-                'orbitals_coeff': self.getOrbitalCoefficient(),
+                #'orbitals_exp': self.getOrbitalExponents(),
+                #'orbitals_coeff': self.getOrbitalCoefficient(),
                 'orbitals_electron_number' : self.getNumberOfElectronsPerOrbital(),
                 'quantum_numbers' : self.getQuantumNumbers()}
 
-#be = Element_Data(elementFile)
-#print(be.slater_basis['quantum_numbers'])
+be = Element_Data(elementFile)
+print(be.slater_basis)

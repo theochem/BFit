@@ -1,5 +1,5 @@
-from Fitting_Project import *
-
+from fitting2 import *
+import numpy as np
 
 
 
@@ -25,17 +25,19 @@ def testBeryllium(beFile):
     assert getSlatorTypeOrbital(0.821620, 2, 2) == (2 * 0.821620) **2 * math.sqrt((2 * 0.821620)/ math.factorial(2 * 2)) * 2**1 * math.exp(-0.821620 * 2)
 
     r = np.array([[1]])
-    LCAO1S = getSlatorTypeOrbital(12.683501, 1, r) * -0.0024917 + getSlatorTypeOrbital(18.105927, 1, r) * 0.0314015 + getSlatorTypeOrbital(5.152556, 1, r) * 0.0849694 + \
+    LCAO1S = getSlatorTypeOrbital(12.683501, 1, r) * -0.0024917 + getSlatorTypeOrbital(8.105927, 1, r) * 0.0314015 + getSlatorTypeOrbital(5.152556, 1, r) * 0.0849694 + \
              getSlatorTypeOrbital(3.472467, 1, r) * 0.8685562 + getSlatorTypeOrbital(2.349757, 1, r) * 0.0315855 + getSlatorTypeOrbital(1.406429, 1, r) * -0.0035284 + \
              getSlatorTypeOrbital(0.821620, 2, r) * -0.0004149 + getSlatorTypeOrbital(0.786473, 1, r) * 0.0012299
-    LCAO2S = getSlatorTypeOrbital(12.683501, 1, r) * 0.0004442 + getSlatorTypeOrbital(18.105927, 1, r) * -0.0030990 + getSlatorTypeOrbital(5.152556, 1, r) * -0.0367056 + \
+
+    LCAO2S = getSlatorTypeOrbital(12.683501, 1, r) * 0.0004442 + getSlatorTypeOrbital(8.105927, 1, r) * -0.0030990 + getSlatorTypeOrbital(5.152556, 1, r) * -0.0367056 + \
              getSlatorTypeOrbital(3.472467, 1, r) * 0.0138910 + getSlatorTypeOrbital(2.349757, 1, r) * -0.3598016 + getSlatorTypeOrbital(1.406429, 1, r) * -0.2563459 + \
              getSlatorTypeOrbital(0.821620, 2, r) * 0.2434108 + getSlatorTypeOrbital(0.786473, 1, r) * 1.1150995
     LCAOFunc = getLCAO((getSlatorTypeOrbital(getExponents(beFile, 'S'), getQuantumNumber(beFile, 'S'), r )) ,getCoefficients(beFile, "S"))
-    assert np.absolute(LCAO1S - LCAOFunc[0,0]) < 0.001 and np.absolute(LCAO2S - LCAOFunc[0,1]) < 0.0001 #different error values, ask Farnaz
 
-    assert np.absolute( rho(getOccupationNumber(beFile), LCAO1S)  - LCAOFunc[0,0] * 2) < 0.001
-    assert np.absolute( rho(getOccupationNumber(beFile), LCAO2S) - LCAOFunc[0, 1] * 2) < 0.001
+    assert np.absolute(LCAO1S - LCAOFunc[0,0]) < 0.000000000001 and np.absolute(LCAO2S - LCAOFunc[0,1]) < 0.00000000001 #different error values, ask Farnaz
+
+    #assert np.absolute( rho(getOccupationNumber(beFile), LCAO1S)  - LCAOFunc[0,0] * 2) < 0.001
+    #assert np.absolute( rho(getOccupationNumber(beFile), LCAO2S) - LCAOFunc[0, 1] * 2) < 0.001
 
 
 testBeryllium("/Users/Alireza/Desktop/neutral/be")
