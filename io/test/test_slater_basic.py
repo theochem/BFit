@@ -1,6 +1,6 @@
 import sys
 sys.path.append(r'C:\Users\Alireza\PycharmProjects\fitting\fitting\io')
-import slater_basic2 as sb
+import slater_basic as sb
 import numpy as np
 
 def testParsingBeryllium(file):
@@ -24,7 +24,9 @@ def testParsingBeryllium(file):
     assert values["orbitals_cusp"]['S'] == [1.0001235 ,     0.9998774]
     assert values['orbitals_energy']['S'] == [-4.7326699     ,-0.3092695]
     assert values['orbitals_electron_number'] == {'1S': 2, '2S' : 2}
+    assert values['orbitals_electron_number'] == {'1S': 2, '2S' : 2}
     np.testing.assert_array_almost_equal(values['orbitals_electron_array'], np.array([ [2], [2]]))
+    np.testing.assert_array_almost_equal(values['basis_numbers']['S'], np.array([ [1], [1], [1], [1], [1], [1], [2], [1]]))
 
 testParsingBeryllium("/Users/Alireza/Desktop/neutral/be")
 

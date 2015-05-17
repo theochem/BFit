@@ -1,6 +1,6 @@
 import sys
 sys.path.append(r'C:\Users\Alireza\PycharmProjects\fitting\fitting\io')
-import slater_basic2 as sb
+import slater_basic as sb
 import numpy as np
 import scipy.misc
 import scipy
@@ -97,7 +97,6 @@ class Electron_Structure():
                     a += 1
                 else:
                     array = np.concatenate((array, self.phi_LCAO(orbital)), axis = 1)
-        print(array)
         return array
 
     def atomic_density(self):
@@ -109,8 +108,8 @@ class Electron_Structure():
         :return: the electron density where row = number of points
                 and column = 1
         """
-        listofAllOrbitals = [str(x) + "S" for x in range(1,6)] + [str(x) + "P" for x in range(2,6)] + [str(x) + "D" for x in range(3,6)] + [str(x) + "F" for x in range(4,6)]
-        return np.dot(np.absolute(self.phi_matrix()**1), self.values['orbitals_electron_array'] )
+
+        return np.dot(np.absolute(self.phi_matrix())**2, self.values['orbitals_electron_array'] )
 
 
 
@@ -118,12 +117,13 @@ class Electron_Structure():
 
 
 p, w = np.polynomial.laguerre.laggauss(100)
-#print(p)
+
 be = Electron_Structure(elementFile, p)
 
 electron_density = be.atomic_density()
 print('electron_density', electron_density)
 #assert np.shape(electron_density) == (100, 1)
+
 
 plt.plot(electron_density)
 plt.show()
@@ -139,11 +139,11 @@ plt.show()
 
 w = np.asarray(w).reshape((100, 1))
 ED_times_weight = ED_divide_by_enegativer * w
-plt.plot(ED_times_weight)
+plt.plot(ED_times_weight * 2 / np.amax(ED_times_weight) )
 plt.show()
 
 print("The Sum Is: ", np.sum(ED_times_weight))
-print("The Sum Is: " , np.sum(ED_times_weight)/ 430)
+print("The Sum Is: " , np.sum(ED_times_weight) * 2/ np.amax(ED_times_weight))
 
 
 

@@ -112,18 +112,18 @@ def load_slater_basis(file):
                     line = f.readline()
 
 
-        return {'configuration': configuration ,
-                    'energy': energy,
-                    'orbitals': orbitals ,
-                    'orbitals_energy': orbitals_energy ,
+        return {'configuration': configuration , #'1S(2)2S(2)'
+                    'energy': energy, # [-14.573023167, 14.573023130, -29.146046297]
+                    'orbitals': orbitals , # ['1S', '2S'],
+                    'orbitals_energy': orbitals_energy , # [-4.7326699, -0.3092695],
                     'orbitals_cusp': orbitals_cusp,  #dict
                     'orbitals_basis': orbitals_basis, #dict
                     'orbitals_exp': {key:np.asarray(value).reshape(len(value), 1) for key,value in orbitals_exp.items() if value != []}, #dict
                     'orbitals_coeff':  {key:np.asarray(value).reshape(len(value), 1) for key,value in orbitals_coeff.items() if value != []},
-                    'orbitals_electron_number' :getNumberOfElectronsPerOrbital(configuration),
-                    'orbitals_electron_array': getArrayOfElectrons(getNumberOfElectronsPerOrbital(configuration)),
-                    'basis_numbers' : {key:np.asarray([[int(x[0])] for x in value]) for key,value in orbitals_basis.items() if len(value) != 0}}
+                    'orbitals_electron_number' :getNumberOfElectronsPerOrbital(configuration), # dictionary of how many electrons per orbital
+                    'orbitals_electron_array': getArrayOfElectrons(getNumberOfElectronsPerOrbital(configuration)), #takes number of electrons per orbital and turns it into array [[2],[2]]
+                    'basis_numbers' : {key:np.asarray([[int(x[0])] for x in value]) for key,value in orbitals_basis.items() if len(value) != 0}} #dict grabs basis number
 
 #print(load_slater_basis(elementFile))
-#print(load_slater_basis(elementFile)['orbitals_exp']['S'])
+#print(load_slater_basis(elementFile)['orbitals_electron_number'])
 #print(load_slater_basis(elementFile)['quantum_numbers']['S'])
