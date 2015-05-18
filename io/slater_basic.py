@@ -1,182 +1,17 @@
-import numpy as np
 import re
+import numpy as np
 elementFile = "/Users/Alireza/Desktop/neutral/be"
 
-class Element_Data():
+def load_slater_basis(file):
 
-    def __init__(self, file):
-        f = open(file, 'r')
-        self.input = f.read()
-        self.slater_basis = self.load_slater_basis()
-        f.close()
-
-    def getExponents(self, subshell):
-        """
-        Obtains all exponents of the subshells from
-        the file in the form of an array
-        :param elementFile: the path to element
-        :param subshells:
-        :return:An array of the exponents of size (n, 1) where n is an integer
-        """
-        assert subshell == "S" or subshell == "P" or subshell == "D" or subshell == "F"
-
-        #print(input)
-
-        exponentArray = np.zeros(shape = (30, 1)) #create function to check shape
-
-        i = 0
-        for line in self.input.split("\n"):
-            if re.match(r'^\d' + subshell[0], line.lstrip()):
-                rowList = line.split()
-                exponentArray[i] = float(rowList[1])
-                i += 1
-
-        return np.trim_zeros(exponentArray)
-
-    def getColumn(self, Torbital):
-        """
-        The Columns get screwed over sine s orbitals start with one while p orbitals start at energy 2
-        Therefore this corrects the error in order to retrieve correct column
-        :param Torbital: orbital i.e. "1S" or "2P" or "3D"
-        :return:
-        """
-        if Torbital[1] == "S":
-            return int(Torbital[0]) + 1
-        elif Torbital[1] == "P":
-            return int(Torbital[0])
-        elif Torbital[1] == "D":
-            return int(Torbital[0]) - 1
-
-    def getCoefficients(self, orbital):
-        """
-        Obtains the coefficients of a specific subshell
-        from the file
-        :param elementFile:
-        :param subshell:
-        :return: array of coefficients
-        """
-
-        coeffArray = np.zeros(shape = (20, 1))
-        row = 0
-        col = 0
-        for line in self.input.split("\n"):
-            if re.match(r'^\d' + orbital[1], line.lstrip()):
-                coeffArray[row, 0] = line.split()[self.getColumn(orbital)]
-                row += 1
-
-        return np.trim_zeros(coeffArray) #a[:, np.apply_along_axis(np.count_nonzero, 0, a) >= 0.0001]
-
-    def getQuantumNumber(self):
-        """
-        get the quantum numbers for a specific subshell
-
-        :param elementFile:
-        :param subshell:
-        :return:
-        """
-        dict = {'S' : 0 , 'P' : 0, 'D': 0, 'F':0}
-
-        quantNumArray = np.zeros(shape = (20, 1))
-        i = 0
-        for line in self.input.split("\n"):
-            if re.match(r'^\d', line.lstrip()):
-                quantNumArray[i] = int(line.split()[0][0])
-                i += 1
-
-        return np.trim_zeros(quantNumArray)
-
-    def getEnergy(self): # Need To Fix This
-        input = self.input.split("\n")
-
-        energy = []
-        firstLine = input[1]
-        secondLine = input[2]
-
-        energy = (re.findall("[= -]\d+.\d+", firstLine + secondLine))
-        return [float(x) for x in energy[:-1]]
-
-    def getOrbitals(self):
-        """
-        Finds the number of atomic orbitals
-        :param path: path to the file containing element's data
-        :return: number of atomic orbitals and list of all atomic orbitals of an element
-        """
-        counter = 0;
-        listOfOrbitals = []
-
-
-        typeOfOrbitals = ["  S  ", "  P  ", "  D  ", "  F  "]
-        for line in self.input.split("\n"):   #This splits input into seperate lines
-            for x in typeOfOrbitals:
-                if x in line:
-                    listOfOrbitals += line.split()[1:]
-                    counter += len(line.split()) - 1
-        return counter, listOfOrbitals
-
-    def getCusp(self):
-        cusp = []
-        a = self.input.split("\n")
-        dict = {'S' : 0 , 'P' : 0, 'D': 0, 'F':0}
-        for line in a:
-            if len(re.findall('CUSP', line)) != 0:
-                if dict['S'] == 0:
-                    dict['S'] = [float(x) for x in line.split()[1:]]
-                elif dict['P'] == 0:
-                    dict['P'] = [float(x) for x in line.split()[1:]]
-                elif dict['D'] == 0:
-                    dict['D'] = [float(x) for x in line.split()[1:]]
-                elif dict['F'] == 0:
-                    dict['F'] = [float(x) for x in line.split()[1:]]
-
-        return {key:value for key,value in dict.items() if value != 0}
-
-    def getOrbitalEnergy(self):
-        dict = {'S' : 0 , 'P' : 0, 'D': 0, 'F':0}
-        for line in self.input.split("\n"):
-            if (re.match('BASIS/ORB.ENERGY', line.lstrip())):
-                if dict['S'] == 0:
-                    dict['S'] = [float(x) for x in line.split()[1:]]
-                elif dict['P'] == 0:
-                    dict['P'] = [float(x) for x in line.split()[1:]]
-                elif dict['D'] == 0:
-                    dict['D'] = [float(x) for x in line.split()[1:]]
-                elif dict['F'] == 0:
-                    dict['F'] = [float(x) for x in line.split()[1:]]
-
-        return {key:value for key,value in dict.items() if value != 0}
-
-    def getOrbitalBasis(self):
-        dict = {'S': [], 'P': [], 'D': [], 'F': []}
-
-        for line in self.input.split("\n"):
-            for subshell in ["S", "P", "D", "F"]:
-                if re.match(r'^\d' + subshell, line.lstrip()):
-                    #print(line)
-                    dict[subshell].append(line.split()[0])
-
-        return {key:value for key,value in dict.items() if len(value) != 0}
-
-    def getOrbitalExponents(self):
-        dict = {'S':0, 'P':0, 'D':0, 'F':0}
-        for key in dict:
-            dict[key] = self.getExponents(key)
-        return {key:value for key,value in dict.items() if len(value) != 0}
-
-    def getOrbitalCoefficient(self):
-        dict = {}
-        for orbital in self.getOrbitals()[1]:
-            #print(orbital)
-            dict[orbital] = self.getCoefficients(orbital)
-        return dict
-
-    def getNumberOfElectronsPerOrbital(self):
+    def getNumberOfElectronsPerOrbital(string_configuration):
         """
         Gets the Occupation Number for all orbitals
-        of an element
+        of an element returing an dictionary
         :param elementFile:
         :return: a dict containing the number and orbital
         """
-        electronConfigList = self.input.split("\n")[0].split()[1]
+        electronConfigList = string_configuration
 
         shells = ["K", "L", "M", "N"]
 
@@ -209,29 +44,86 @@ class Element_Data():
 
         return {key:value for key,value in myDic.items() if value != 0}
 
-    def getQuantumNumbers(self):
-        dict = {'S': [], 'P': [], 'D': [], 'F': []}
+    def getColumn(Torbital):
+        """
+        The Columns get screwed over sine s orbitals start with one while p orbitals start at energy 2
+        Therefore this corrects the error in order to retrieve correct column
+        :param Torbital: orbital i.e. "1S" or "2P" or "3D"
+        :return:
+        """
+        if Torbital[1] == "S":
+            return int(Torbital[0]) + 1
+        elif Torbital[1] == "P":
+            return int(Torbital[0])
+        elif Torbital[1] == "D":
+            return int(Torbital[0]) - 1
 
-        for line in self.input.split("\n"):
-            for subshell in ["S", "P", "D", "F"]:
-                if re.match(r'^\d' + subshell, line.lstrip()):
-                    #print(line)
-                    dict[subshell].append(line.split()[0][0])
+    def getArrayOfElectrons(dict):
+        """
+        Computes The Number Of Electrons in Each Orbital As An Array
+        i.e. be = [[2], [2]] 2 electrons in 1S and 2S
+        :param dict:
+        :return: column vector of number of electrons in each orbital
+        """
+        array = np.empty((len(dict.keys()), 1))
+        row = 0
+        for orbital in orbitals:
+            array[row, 0] = dict[orbital]
+            row += 1
+        return array
 
-        return {key:np.asarray([[int(x)] for x in value]) for key,value in dict.items() if len(value) != 0}
+    with open(file) as f:
+        configuration = f.readline().split()[1].replace(",", "")
+        energy = [float(f.readline().split()[2])] + [float(x) for x in (re.findall("[= -]\d+.\d+", f.readline()))[:-1]]
+        assert re.search(r'ORBITAL ENERGIES AND EXPANSION COEFFICIENTS', f.readline())
 
-    def load_slater_basis(self):
+        orbitals = []
+        orbitals_basis = {'S':[], 'P':[], 'D':[], "F":[]}
+        orbitals_cusp = {'S':0, 'P':0, 'D':0, "F":0}
+        orbitals_energy = {'S':[], 'P':[], 'D':[], "F":[]}
+        orbitals_exp = {'S':[], 'P':[], 'D':[], "F":[]}
+        orbitals_coeff = {}
 
-        return {'configuration': self.input.split("\n")[0].split()[1].replace(",", "") ,
-                'energy':self.getEnergy() ,
-                'orbitals':self.getOrbitals()[1] ,
-                'orbitals_energy': self.getOrbitalEnergy() ,
-                'orbitals_cusp': self.getCusp(),
-                'orbitals_basis': self.getOrbitalBasis(),
-                'orbitals_exp': self.getOrbitalExponents(),
-                'orbitals_coeff': self.getOrbitalCoefficient(),
-                'orbitals_electron_number' : self.getNumberOfElectronsPerOrbital(),
-                'quantum_numbers' : self.getQuantumNumbers()}
+        line = f.readline()
+        while line.strip() != "":
 
-be = Element_Data(elementFile)
-print(be.slater_basis)
+            if re.search(r'  [S|P|D|F]  ', line): #if line has ___S___ or P or D .
+                subshell = line.split()[0]
+                list = line.split()[1:]
+                orbitals += list
+                for x in list:
+                    orbitals_coeff[x] = []
+                line = f.readline()
+                orbitals_energy[subshell] = [float(x) for x in line.split()[1:]]
+                line = f.readline()
+                orbitals_cusp[subshell] = [float(x) for x in line.split()[1:]]
+                line = f.readline()
+
+
+
+                while re.match(r'\A^\d' + subshell, line.lstrip()):
+                    #print(line.strip())
+                    list_words = line.split()
+                    orbitals_exp[subshell] += [float(list_words[1])]
+                    orbitals_basis[subshell] += [list_words[0]]
+                    #orbitals_coeff[]
+                    for x in list:
+                        orbitals_coeff[x] += [float(list_words[getColumn(x)])]
+                    line = f.readline()
+
+
+        return {'configuration': configuration , #'1S(2)2S(2)'
+                    'energy': energy, # [-14.573023167, 14.573023130, -29.146046297]
+                    'orbitals': orbitals , # ['1S', '2S'],
+                    'orbitals_energy': orbitals_energy , # [-4.7326699, -0.3092695],
+                    'orbitals_cusp': orbitals_cusp,  #dict
+                    'orbitals_basis': orbitals_basis, #dict
+                    'orbitals_exp': {key:np.asarray(value).reshape(len(value), 1) for key,value in orbitals_exp.items() if value != []}, #dict
+                    'orbitals_coeff':  {key:np.asarray(value).reshape(len(value), 1) for key,value in orbitals_coeff.items() if value != []},
+                    'orbitals_electron_number' :getNumberOfElectronsPerOrbital(configuration), # dictionary of how many electrons per orbital
+                    'orbitals_electron_array': getArrayOfElectrons(getNumberOfElectronsPerOrbital(configuration)), #takes number of electrons per orbital and turns it into array [[2],[2]]
+                    'basis_numbers' : {key:np.asarray([[int(x[0])] for x in value]) for key,value in orbitals_basis.items() if len(value) != 0}} #dict grabs basis number
+
+#print(load_slater_basis(elementFile))
+#print(load_slater_basis(elementFile)['orbitals_electron_number'])
+#print(load_slater_basis(elementFile)['quantum_numbers']['S'])

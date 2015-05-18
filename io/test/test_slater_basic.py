@@ -1,11 +1,11 @@
 import sys
-sys.path.append(r'C:\Users\Alireza\PycharmProjects\fitting\io')
+sys.path.append(r'C:\Users\Alireza\PycharmProjects\fitting\fitting\io')
 import slater_basic as sb
 import numpy as np
 
 def testParsingBeryllium(file):
-    be = sb.Element_Data(file)
-    values = be.slater_basis
+    be = sb.load_slater_basis(file)
+    values = be
 
     assert values['configuration'] == "1S(2)2S(2)"
     assert values['energy'] == [-14.573023167 ,   14.573023130, -29.146046297 ]
@@ -24,12 +24,15 @@ def testParsingBeryllium(file):
     assert values["orbitals_cusp"]['S'] == [1.0001235 ,     0.9998774]
     assert values['orbitals_energy']['S'] == [-4.7326699     ,-0.3092695]
     assert values['orbitals_electron_number'] == {'1S': 2, '2S' : 2}
+    assert values['orbitals_electron_number'] == {'1S': 2, '2S' : 2}
+    np.testing.assert_array_almost_equal(values['orbitals_electron_array'], np.array([ [2], [2]]))
+    np.testing.assert_array_almost_equal(values['basis_numbers']['S'], np.array([ [1], [1], [1], [1], [1], [1], [2], [1]]))
 
 testParsingBeryllium("/Users/Alireza/Desktop/neutral/be")
 
 def testParsingSilver(file):
-    ag = sb.Element_Data(file)
-    values = ag.slater_basis
+    ag = sb.load_slater_basis(file)
+    values = ag
 
     assert values['orbitals'] == ['1S', '2S', '3S', '4S', '5S', '2P', '3P', '4P', '3D', '4D']
     assert values['configuration'] == 'K(2)L(8)M(18)4S(2)4P(6)5S(1)4D(10)'
@@ -52,13 +55,13 @@ def testParsingSilver(file):
                                      [-0.0000474,      0.1737644],
                                      [0.0000083,     0.0013751]]))
     assert values['orbitals_electron_number'] == {'1S' : 2, '2S' : 2, '3S':2, '4S':2, '5S': 1, '2P': 6, '3P' : 6, '4P':6, '3D' : 10, '4D': 10}
+    np.testing.assert_array_almost_equal(values['orbitals_electron_array'], np.array([ [2], [2], [2], [2], [1], [6], [6], [6], [10], [10]]))
 
 testParsingSilver("/Users/Alireza/Desktop/neutral/ag")
 
 def testParsingNeon(file): #put large array
-    ne = sb.Element_Data(file)
-    values = ne.slater_basis
-
+    ne = sb.load_slater_basis(file)
+    values = ne
     assert values['energy'] == [-128.547098079,  128.547098140 ,  -257.094196219]
     assert values['orbitals_energy']['P'] == [-0.8504095]
     assert values['orbitals_cusp']['P'] == [1.0000509]
