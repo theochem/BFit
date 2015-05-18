@@ -75,7 +75,7 @@ def load_slater_basis(file):
     with open(file) as f:
         configuration = f.readline().split()[1].replace(",", "")
         energy = [float(f.readline().split()[2])] + [float(x) for x in (re.findall("[= -]\d+.\d+", f.readline()))[:-1]]
-        assert re.search(r'ORBITAL ENERGIES AND EXPANSION COEFFICIENTS', f.readline()) is not None
+        assert re.search(r'ORBITAL ENERGIES AND EXPANSION COEFFICIENTS', f.readline())
 
         orbitals = []
         orbitals_basis = {'S':[], 'P':[], 'D':[], "F":[]}

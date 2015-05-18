@@ -118,14 +118,18 @@ be = Electron_Structure("/Users/Alireza/Desktop/neutral/be", p)
 
 phi = np.dot( be.all_slator_orbitals['S'], be.all_coeff_matrix('S'))
 print(phi)
-plt.plot(phi)
+plt.plot(phi )
 plt.show()
 r = np.asarray(p).reshape((100, 1)); w = np.asarray(w).reshape((100, 1))
 
 electronDensity = np.dot(          np.absolute(phi**2) , be.values['orbitals_electron_array'])
-plt.plot((electronDensity * 4 * np.pi * (r**2)  * w)/ np.exp(-r))
+print(np.sum(electronDensity * w * 4 * np.pi * r**2))
+
+plt.plot(electronDensity *  w  *4 * np.pi * r**2, 'r', label = 'electron density mutlipled by weight*4*pi*r^2')
+plt.plot((electronDensity * 4 * np.pi * (r**2)  * w)/ np.exp(-r), 'g', label = 'electron density mutlipled by weight * 4*pi*r^2/(e^-r)')
+plt.legend()
 plt.show()
-print(np.sum((electronDensity * 4 * np.pi * (p**2)  * w)/ np.exp(-p)))
+print(np.sum((electronDensity * 4 * np.pi * (r**2)  * w)/ np.exp(-r)))
 
 np.testing.assert_array_almost_equal(electronDensity, be.atomic_density())
 
