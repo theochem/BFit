@@ -8,6 +8,7 @@ class Element_Data():
         f = open(file, 'r')
         self.input = f.read()
         self.slater_basis = self.load_slater_basis()
+        f.close()
 
     def getExponents(self, subshell):
         """
@@ -232,5 +233,5 @@ class Element_Data():
                 'orbitals_electron_number' : self.getNumberOfElectronsPerOrbital(),
                 'quantum_numbers' : self.getQuantumNumbers()}
 
-#be = Element_Data(elementFile)
-#print(be.slater_basis['quantum_numbers'])
+be = Element_Data(elementFile)
+print(be.slater_basis)

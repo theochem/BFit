@@ -9,7 +9,7 @@ import scipy
 elementFile = "/Users/Alireza/Desktop/neutral/ne"
 
 
-class Electron_Structure():
+class Electron_Structure(): #atomic density
     def __init__(self, file, grid):
         self.element = sb.Element_Data(file)
         self.values = self.element.slater_basis
@@ -22,11 +22,9 @@ class Electron_Structure():
     def slator_dict(self):
         dict = {x[1]:0 for x in self.values['orbitals'] }
         for subshell in dict:
-            dict = np.transpose(self.slator_type_orbital(self.values['orbitals_exp'][subshell], self.values['quantum_numbers'][subshell], self.grid ))
+            dict[subshell] = np.transpose(self.slator_type_orbital(self.values['orbitals_exp'][subshell], self.values['quantum_numbers'][subshell], self.grid ))
         return dict
 
-    def all_coeff_matrix(self, subshell):
-        pass
 
     def phi_LCAO(self):
         """
@@ -36,8 +34,13 @@ class Electron_Structure():
         :param coeffMatrix:
         :return: a new matrix
         """
-        slator_matrix = slator_type_orbital(values['orbital_exp'])
-        return np.dot(self.all_slator_orbitals , coeffMatrix)
+        dict = {x:0 for x in self.values['orbitals']}
+        print(dict)
+        a = np.matrix([[]])
+        for orbital in self.values['orbitals']:
+            print(np.shape(self.values['orbitals_coeff'][orbital]))
+            print(np.shape(np.dot(self.all_slator_orbitals[orbital[1]] , self.values['orbitals_coeff'][orbital])))
+        return a
 
     def atomic_density(dict :"Occupation Numbers", LCAO : "Matrix rows = points, column =  phi"):
         """
@@ -62,5 +65,5 @@ class Electron_Structure():
 p, w = np.polynomial.laguerre.laggauss(100)
 be = Electron_Structure(elementFile, p)
 
-print(be.all_coeff_matrix('S'))
+print(be.phi_LCAO())
 
