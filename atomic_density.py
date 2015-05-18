@@ -6,7 +6,7 @@ import scipy.misc
 import scipy
 import scipy.integrate
 import matplotlib.pyplot as plt
-
+import sympy as sp
 
 elementFile = "/Users/Alireza/Desktop/neutral/be"
 
@@ -113,11 +113,26 @@ class Electron_Structure():
 
 
 
+p, w = np.polynomial.laguerre.laggauss(100)
+be = Electron_Structure("/Users/Alireza/Desktop/neutral/be", p)
+
+phi = np.dot( be.all_slator_orbitals['S'], be.all_coeff_matrix('S'))
+print(phi)
+plt.plot(phi)
+plt.show()
+r = np.asarray(p).reshape((100, 1)); w = np.asarray(w).reshape((100, 1))
+
+electronDensity = np.dot(          np.absolute(phi**2) , be.values['orbitals_electron_array'])
+plt.plot((electronDensity * 4 * np.pi * (r**2)  * w)/ np.exp(-r))
+plt.show()
+print(np.sum((electronDensity * 4 * np.pi * (p**2)  * w)/ np.exp(-p)))
+
+np.testing.assert_array_almost_equal(electronDensity, be.atomic_density())
 
 
+"""
 
 p, w = np.polynomial.laguerre.laggauss(100)
-
 be = Electron_Structure(elementFile, p)
 
 electron_density = be.atomic_density()
@@ -126,24 +141,32 @@ print('electron_density', electron_density)
 
 
 plt.plot(electron_density)
+plt.title("The Electron Density")
 plt.show()
+
+p = np.asarray(p).reshape((100, 1))
+a = electron_density * w
+
 
 p = np.asarray(p).reshape((100, 1))
 ED_times_4pir_squared = np.absolute(electron_density ** 2) * 4 * np.pi * p * p
 plt.plot(ED_times_4pir_squared)
+plt.title("Multiply Electron Density by 4 pi r^2")
 plt.show()
-
+print("Multiply by rpi r", np.sum(ED_times_4pir_squared))
 ED_divide_by_enegativer = ED_times_4pir_squared / np.exp(-(p))
 plt.plot(ED_divide_by_enegativer)
+plt.title("Divide The Electron Density(with 4 pi r^2) by e ^-r" )
 plt.show()
 
 w = np.asarray(w).reshape((100, 1))
 ED_times_weight = ED_divide_by_enegativer * w
 plt.plot(ED_times_weight * 2 / np.amax(ED_times_weight) )
+plt.title("Multipled by the weight")
 plt.show()
 
 print("The Sum Is: ", np.sum(ED_times_weight))
-print("The Sum Is: " , np.sum(ED_times_weight) * 2/ np.amax(ED_times_weight))
+print("The Sum Is: " , np.sum(ED_times_weight) * 2/ np.amax(ED_times_weight))"""
 
 
 

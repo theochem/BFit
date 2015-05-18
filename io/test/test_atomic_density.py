@@ -24,7 +24,7 @@ def testBeryllium(file):
         grid2 = np.array([ [1], [2]])
         grid = [1, 2]
         # rows are the slator_Type orbital, where each column represents each point in the grid
-        np.testing.assert_array_almost_equal(be.slator_type_orbital(Exp_Array, Quantum_Array, grid) ,
+        np.testing.assert_array_almost_equal(  be.slator_type_orbital(Exp_Array, Quantum_Array, grid) ,
                 np.array([ [(2 * 12.683501)**1 * math.sqrt((2 * 12.683501)/ math.factorial(2 * 1)) * 1**0 * math.exp(-12.683501 * 1), (2 * 12.683501)**1 * math.sqrt((2 * 12.683501)/ math.factorial(2 * 1)) * 2**0 * math.exp(-12.683501 * 2) ],
                            [(2 * 0.821620) **2 * math.sqrt((2 * 0.821620)/ math.factorial(2 * 2)) * 1**1 * math.exp(-0.821620 * 1) , (2 * 0.821620) **2 * math.sqrt((2 * 0.821620)/ math.factorial(2 * 2)) * 2**1 * math.exp(-0.821620 * 2)]]))
 
