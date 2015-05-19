@@ -1,5 +1,5 @@
 import sys
-sys.path.append(r'C:\Users\Alireza\PycharmProjects\fitting\fitting\io')
+sys.path.append(r'C:\Users\Alireza\PycharmProjects\fitting\io')
 from atomic_density import *
 import slater_basic as sb
 import numpy as np
@@ -7,17 +7,14 @@ import math
 
 
 def testBeryllium(file):
-    be = Electron_Structure(file, np.array([[1]]))
-
+    be = Atomic_Density(file, np.array([[1]]))
 
     def testSlatorBeryllium():
-
-
-        # Test If Values Are The Same From Manual
+        # Test Values Of The Slator Type Orbital Equation
         assert be.slator_type_orbital(12.683501, 1, 1) == (2 * 12.683501)**1 * math.sqrt((2 * 12.683501)/ math.factorial(2 * 1)) * 1**0 * math.exp(-12.683501 * 1)
-        assert be.slator_type_orbital(0.821620, 2, 2) == (2 * 0.821620) **2 * math.sqrt((2 * 0.821620)/ math.factorial(2 * 2)) * 2**1 * math.exp(-0.821620 * 2)
+        assert be.slator_type_orbital(0.821620, 2, 2) == (2 * 0.821620)**2 * math.sqrt((2 * 0.821620)/ math.factorial(2 * 2)) * 2**1 * math.exp(-0.821620 * 2)
 
-        # Test If Values are in the form of an array
+        # Test Values In the form of an array of the Slator Type Orbital Equation.
         Exp_Array = np.array([[12.683501], [0.821620]])
         Quantum_Array = np.array([ [1], [2]])
         #the grid cannot be in vertical form
@@ -35,12 +32,12 @@ def testBeryllium(file):
 
         #Test One Value
         r = np.array([[1]])
-        LCAO1S = be.slator_type_orbital(12.683501, 1, r) * -0.0024917 + be.slator_type_orbital(8.105927, 1, r) * 0.0314015 + be.slator_type_orbital(5.152556, 1, r) * 0.0849694 + \
-                 be.slator_type_orbital(3.472467, 1, r) * 0.8685562 + be.slator_type_orbital(2.349757, 1, r) * 0.0315855 + be.slator_type_orbital(1.406429, 1, r) * -0.0035284 + \
-                 be.slator_type_orbital(0.821620, 2, r) * -0.0004149 + be.slator_type_orbital(0.786473, 1, r) * 0.0012299
-        LCAO2S = be.slator_type_orbital(12.683501, 1, r) * 0.0004442 + be.slator_type_orbital(8.105927, 1, r) * -0.0030990 + be.slator_type_orbital(5.152556, 1, r) * -0.0367056 + \
-                 be.slator_type_orbital(3.472467, 1, r) * 0.0138910 + be.slator_type_orbital(2.349757, 1, r) * -0.3598016 + be.slator_type_orbital(1.406429, 1, r) * -0.2563459 + \
-                 be.slator_type_orbital(0.821620, 2, r) * 0.2434108 + be.slator_type_orbital(0.786473, 1, r) * 1.1150995
+        LCAO1S = be.slator_type_orbital(12.683501, 1, r)*-0.0024917 + be.slator_type_orbital(8.105927, 1, r)*0.0314015 + be.slator_type_orbital(5.152556, 1, r)*0.0849694 + \
+                 be.slator_type_orbital(3.472467, 1, r)*0.8685562 + be.slator_type_orbital(2.349757, 1, r)*0.0315855 + be.slator_type_orbital(1.406429, 1, r)*-0.0035284 + \
+                 be.slator_type_orbital(0.821620, 2, r)*-0.0004149 + be.slator_type_orbital(0.786473, 1, r)*0.0012299
+        LCAO2S = be.slator_type_orbital(12.683501, 1, r)*0.0004442 + be.slator_type_orbital(8.105927, 1, r)*-0.0030990 + be.slator_type_orbital(5.152556, 1, r)*-0.0367056 + \
+                 be.slator_type_orbital(3.472467, 1, r)*0.0138910 + be.slator_type_orbital(2.349757, 1, r)*-0.3598016 + be.slator_type_orbital(1.406429, 1, r)*-0.2563459 + \
+                 be.slator_type_orbital(0.821620, 2, r)*0.2434108 + be.slator_type_orbital(0.786473, 1, r)*1.1150995
         LCAOFunc = be.phi_LCAO('S')
 
         assert math.fabs(LCAO1S[0, 0] - LCAOFunc[0, 0]) < 0.000000000000001
@@ -57,7 +54,8 @@ def testBeryllium(file):
                                                                                      [0.0315855,     -0.3598016],
                                                                                      [-0.0035284,     -0.2563459],
                                                                                      [-0.0004149,      0.2434108],
-                                                                                     [0.0012299,      1.1150995]]))
+                                                                                     [0.0012299,      1.1150995]]
+                                                                                   ))
 
     test_all_coeff_matrix()
 
@@ -75,7 +73,6 @@ def testBeryllium(file):
                  be.slator_type_orbital(0.821620, 2, r) * 0.2434108 + be.slator_type_orbital(0.786473, 1, r) * 1.1150995
 
         np.testing.assert_array_almost_equal(phi_matrix, np.concatenate((phi1S, phi2S), axis = 1), decimal = 14)
-
 
     test_phi_matrix()
 

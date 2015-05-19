@@ -87,12 +87,15 @@ def load_slater_basis(file):
         line = f.readline()
         while line.strip() != "":
 
-            if re.search(r'  [S|P|D|F]  ', line): #if line has ___S___ or P or D .
+            if re.search(r'  [S|P|D|F]  ', line): #if line has ___S___ or P or D where _ = " ".
+                #Get All The Orbitals
                 subshell = line.split()[0]
-                list = line.split()[1:]
-                orbitals += list
-                for x in list:
-                    orbitals_coeff[x] = []
+                list_of_orbitals = line.split()[1:]
+                orbitals += list_of_orbitals
+                for x in list_of_orbitals:
+                    orbitals_coeff[x] = []   #initilize orbitals inside coefficient dictionary
+
+                #Get Energy, Cusp Levels
                 line = f.readline()
                 orbitals_energy[subshell] = [float(x) for x in line.split()[1:]]
                 line = f.readline()
@@ -100,14 +103,14 @@ def load_slater_basis(file):
                 line = f.readline()
 
 
-
+                #Get Exponents, Coefficients, Orbital Basis
                 while re.match(r'\A^\d' + subshell, line.lstrip()):
-                    #print(line.strip())
+
                     list_words = line.split()
                     orbitals_exp[subshell] += [float(list_words[1])]
                     orbitals_basis[subshell] += [list_words[0]]
-                    #orbitals_coeff[]
-                    for x in list:
+
+                    for x in list_of_orbitals:
                         orbitals_coeff[x] += [float(list_words[getColumn(x)])]
                     line = f.readline()
 
@@ -124,6 +127,6 @@ def load_slater_basis(file):
                     'orbitals_electron_array': getArrayOfElectrons(getNumberOfElectronsPerOrbital(configuration)), #takes number of electrons per orbital and turns it into array [[2],[2]]
                     'basis_numbers' : {key:np.asarray([[int(x[0])] for x in value]) for key,value in orbitals_basis.items() if len(value) != 0}} #dict grabs basis number
 
-#print(load_slater_basis(elementFile))
+print(load_slater_basis(elementFile))
 #print(load_slater_basis(elementFile)['orbitals_electron_number'])
 #print(load_slater_basis(elementFile)['quantum_numbers']['S'])
