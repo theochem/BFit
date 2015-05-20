@@ -1,5 +1,6 @@
 import re
 import numpy as np
+
 elementFile = "/Users/Alireza/Desktop/neutral/be"
 
 def load_slater_basis(file):

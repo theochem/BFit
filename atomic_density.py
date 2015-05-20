@@ -1,5 +1,5 @@
 import sys
-sys.path.append(r'C:\Users\Alireza\PycharmProjects\fitting\fitting\io')
+sys.path.append(r'C:\Users\Alireza\PycharmProjects\fitting\io')
 import slater_basic as sb
 import numpy as np
 import scipy.misc
@@ -8,7 +8,7 @@ import scipy.integrate
 import matplotlib.pyplot as plt
 import sympy as sp
 
-elementFile = "/Users/Alireza/Desktop/neutral/be"
+elementFile = "/examples/be"
 
 
 class Electron_Structure():

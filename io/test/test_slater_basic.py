@@ -1,9 +1,16 @@
 import sys
-sys.path.append(r'C:\Users\Alireza\PycharmProjects\fitting\fitting\io')
+sys.path.append(r'C:\Users\Alireza\PycharmProjects\fitting\io')
+print(sys.path)
+import os
+script_dir = os.path.dirname(__file__) #<-- absolute dir the script is in
+rel_path = r"examples/be.txt"
+abs_file_path = os.path.join(script_dir, rel_path)
 import slater_basic as sb
 import numpy as np
 
+
 def testParsingBeryllium(file):
+
     be = sb.load_slater_basis(file)
     values = be
 
@@ -28,7 +35,8 @@ def testParsingBeryllium(file):
     np.testing.assert_array_almost_equal(values['orbitals_electron_array'], np.array([ [2], [2]]))
     np.testing.assert_array_almost_equal(values['basis_numbers']['S'], np.array([ [1], [1], [1], [1], [1], [1], [2], [1]]))
 
-testParsingBeryllium("/Users/Alireza/Desktop/neutral/be")
+
+testParsingBeryllium(abs_file_path)
 
 def testParsingSilver(file):
     ag = sb.load_slater_basis(file)
@@ -57,7 +65,7 @@ def testParsingSilver(file):
     assert values['orbitals_electron_number'] == {'1S' : 2, '2S' : 2, '3S':2, '4S':2, '5S': 1, '2P': 6, '3P' : 6, '4P':6, '3D' : 10, '4D': 10}
     np.testing.assert_array_almost_equal(values['orbitals_electron_array'], np.array([ [2], [2], [2], [2], [1], [6], [6], [6], [10], [10]]))
 
-testParsingSilver("/Users/Alireza/Desktop/neutral/ag")
+testParsingSilver(r"\Users\Alireza\PycharmProjects\fitting\examples\ag")
 
 def testParsingNeon(file): #put large array
     ne = sb.load_slater_basis(file)
@@ -71,4 +79,4 @@ def testParsingNeon(file): #put large array
     assert np.array_equal( values['orbitals_exp']['P'], np.array([ [25.731219], [ 10.674843], [ 8.124569], [ 4.295590], [2.648660], [ 1.710436 ], [ 1.304155 ]]) )
     assert np.array_equal( values['orbitals_coeff']['2P'], np.array( [[ 0.0000409], [ 0.0203038], [0.0340866], [0.2801866], [0.3958489], [0.3203928], [ 0.0510413]]))
 
-testParsingNeon("/Users/Alireza/Desktop/neutral/ne")
+testParsingNeon(r"\Users\Alireza\PycharmProjects\fitting\examples\ne")

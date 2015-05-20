@@ -1,5 +1,5 @@
 import sys
-sys.path.append(r'C:\Users\Alireza\PycharmProjects\fitting\fitting\io')
+sys.path.append(r'C:\Users\Alireza\PycharmProjects\fitting\io')
 from atomic_density import *
 import slater_basic as sb
 import numpy as np
