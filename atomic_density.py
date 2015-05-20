@@ -1,5 +1,5 @@
 import sys
-sys.path.append(r'C:\Users\Alireza\PycharmProjects\fitting\fitting\io')
+sys.path.append(r'C:\Users\Alireza\PycharmProjects\fitting\io')
 import slater_basic as sb
 import numpy as np
 import scipy.misc
@@ -8,7 +8,7 @@ import scipy.integrate
 import matplotlib.pyplot as plt
 import sympy as sp
 
-elementFile = "/Users/Alireza/Desktop/neutral/be"
+elementFile = "/Users/Alireza/Desktop/neutral/b"
 
 
 class Atomic_Density():
@@ -126,5 +126,23 @@ class Atomic_Density():
 
 
 
+p, w = np.polynomial.laguerre.laggauss(100)
+
+#print(p)
+be = Atomic_Density(elementFile, p)
+
+rho = be.atomic_density()
+"""
+print(rho)
+print(np.shape(rho))
+r = np.asarray(p).reshape((100, 1))
+w = np.asarray(w).reshape((100, 1))
+
+plt.plot(rho * 4 * np.pi * r**2 * w  )
+plt.show()
 
 
+
+pirho = (rho* 4 * np.pi* r**2 * w )#/ np.exp(-r)
+print(np.shape(pirho))
+print(np.sum(pirho))"""

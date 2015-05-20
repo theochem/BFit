@@ -83,7 +83,12 @@ def testBeryllium(file):
 
     test_atomic_density()
 
-
 testBeryllium("/Users/Alireza/Desktop/neutral/be")
 
+def test_silver(file):
+    ag = Atomic_Density(file, np.array([[1]]))
 
+    def test_slator_silver():
+        ag.slator_type_orbital()
+
+test_silver("/Users/Alireza/Desktop/neutral/ag")
