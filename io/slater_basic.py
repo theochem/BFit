@@ -1,6 +1,6 @@
 import re
 import numpy as np
-elementFile = "/Users/Alireza/Desktop/neutral/be"
+#elementFile = "/Users/Alireza/Desktop/neutral/be"
 
 def load_slater_basis(file):
 
@@ -127,6 +127,6 @@ def load_slater_basis(file):
                     'orbitals_electron_array': getArrayOfElectrons(getNumberOfElectronsPerOrbital(configuration)), #takes number of electrons per orbital and turns it into array [[2],[2]]
                     'basis_numbers' : {key:np.asarray([[int(x[0])] for x in value]) for key,value in orbitals_basis.items() if len(value) != 0}} #dict grabs basis number
 
-print(load_slater_basis(elementFile))
+#print(load_slater_basis(elementFile))
 #print(load_slater_basis(elementFile)['orbitals_electron_number'])
 #print(load_slater_basis(elementFile)['quantum_numbers']['S'])

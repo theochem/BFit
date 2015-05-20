@@ -1,6 +1,7 @@
+
 import sys
-sys.path.append(r'C:\Users\Alireza\PycharmProjects\fitting\fitting\io')
-import slater_basic as sb
+#sys.path.append(r'C:\Users\Alireza\PycharmProjects\fitting\fitting\io')
+#import slater_basic as sb
 import numpy as np
 import scipy.misc
 import scipy
@@ -8,7 +9,9 @@ import scipy.integrate
 import matplotlib.pyplot as plt
 import sympy as sp
 
-elementFile = "/Users/Alireza/Desktop/neutral/be"
+import fitting.io.slater_basic as sb
+
+#elementFile = "/Users/Alireza/Desktop/neutral/be"
 
 
 class Atomic_Density():
@@ -122,9 +125,3 @@ class Atomic_Density():
         """
 
         return np.dot(np.absolute(self.phi_matrix())**2, self.VALUES['orbitals_electron_array'] )
-
-
-
-
-
-

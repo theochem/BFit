@@ -1,13 +1,17 @@
 import sys
-sys.path.append(r'C:\Users\Alireza\PycharmProjects\fitting\io')
-from atomic_density import *
-import slater_basic as sb
+#sys.path.append(r'C:\Users\Alireza\PycharmProjects\fitting\io')
+#from atomic_density import *
+#import slater_basic as sb
+
+import fitting.io.slater_basic as sb
+from fitting.atomic_density import *
 import numpy as np
 import math
 
 
-def testBeryllium(file):
-    be = Atomic_Density(file, np.array([[1]]))
+def testBeryllium():
+    file_name = '/Users/Farnaz/code/fitting/fitting/examples/be.txt'
+    be = Atomic_Density(file_name, np.array([[1]]))
 
     def testSlatorBeryllium():
         # Test Values Of The Slator Type Orbital Equation
@@ -84,6 +88,4 @@ def testBeryllium(file):
     test_atomic_density()
 
 
-testBeryllium("/Users/Alireza/Desktop/neutral/be")
-
-
+#testBeryllium("/Users/Alireza/Desktop/neutral/be")
