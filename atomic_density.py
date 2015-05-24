@@ -8,22 +8,26 @@ import scipy.integrate
 import matplotlib.pyplot as plt
 import sympy as sp
 
-elementFile = "/examples/be"
+elementFile = "/Users/Alireza/Desktop/neutral/b"
 
 
-class Electron_Structure():
+class Atomic_Density():
+    """
+    Insert Documentations
+    """
     def __init__(self, file, grid):
-        self.values = sb.load_slater_basis(file)
-        self.grid = grid
-        self.all_slator_orbitals = self.slator_dict()
+        self.VALUES = sb.load_slater_basis(file)
+        self.GRID = grid
+        self.ALL_SLATOR_ORBITALS = self.slator_dict()
 
     def slator_type_orbital(self, exponent, quantumNum, r):
         """
-        Computes the Slator Type Orbital
+        Computes the Slator Type Orbital equation.
+
         :param exponent: alpha
         :param quantumNum: principal quantum number
         :param r: distance form the nuclei
-        :return: an number or array depending on input
+        :return: returns a number or an array depending on input values
         """
         return ((2 * exponent)**quantumNum)   *    np.sqrt(((2 * exponent) / scipy.misc.factorial(2 * quantumNum)))    *      (r ** (quantumNum - 1)) * (np.exp(-exponent * r))
 
@@ -34,31 +38,39 @@ class Electron_Structure():
         for that subshell. Hence each subshell will have their own slator matrix
         and their own coefficient matrix, dot product between them will obtain
         the phi equations(MO) for that subshell.
+
         :return: row = number of points, column = number of slater equations
         """
-        dict = {x[1]:0 for x in self.values['orbitals'] }
+        dict = {x[1]:0 for x in self.VALUES['orbitals'] }
+
         for subshell in dict:
-            dict[subshell] = np.transpose(self.slator_type_orbital(self.values['orbitals_exp'][subshell], self.values['basis_numbers'][subshell], self.grid ))
+            dict[subshell] = np.transpose(self.slator_type_orbital(self.VALUES['orbitals_exp'][subshell], self.VALUES['basis_numbers'][subshell], self.GRID ))
 
         return dict
 
     def all_coeff_matrix(self, subshell):
         """
         This Groups all of the coefficients based on the subshell.
-        This is used to multiply by the specific slator array from the
-        slator_dict function. In order to obtain a phi array
+        This is then used to multiply by the specific slator array from the
+        slator_dict function, in order to obtain a phi array.
+
         :param subshell: this is either S or P or D Or F
-        :return: an array wherre rows = number of slater/basis and columns = number of orbitals or phi
+        :return: an array where row = number of coefficients per orbital and column = number of orbitals of
+                    specified subshell.
         """
-        subshell_coeffs = {key:values for key, values in self.values['orbitals_coeff'].items() if subshell == key[1]}
-        a = 0;
-        array_coeffs = 0
-        for key in [x for x in self.values['orbitals'] if x[1] == subshell]:
-            if a== 0:
-                array_coeffs = self.values['orbitals_coeff'][key]
-                a += 1;
+
+        #This obtains the coefficients of the specified subshell in the form of an dictionary where values = np.array
+        subshell_coeffs = {key:VALUES for key, VALUES in self.VALUES['orbitals_coeff'].items() if subshell == key[1]}
+
+        counter = 0;
+        array_coeffs = None
+
+        for key in [x for x in self.VALUES['orbitals'] if x[1] == subshell]:
+            if counter == 0:    #initilize the array
+                array_coeffs = self.VALUES['orbitals_coeff'][key]
+                counter += 1;
             else:
-                array_coeffs = np.concatenate((array_coeffs, self.values['orbitals_coeff'][key]), axis = 1)
+                array_coeffs = np.concatenate((array_coeffs, self.VALUES['orbitals_coeff'][key]), axis = 1)
 
         return array_coeffs
 
@@ -69,111 +81,68 @@ class Electron_Structure():
         and coeff array (from all_coeff_matrix(subshell)) for
         a specific subshell. Hence, to obtain all of the
         phi equations for the specific element it must be
-        repeated for each subshell.
-        :param slatorFunctio n:
-        :param coeffMatrix:
+        repeated for each subshell (S & P & D & F).
+
         :return: array where row = number of points and column = number of phi/orbitals.
-        For example, beryllium will have row = # of points and column = 2 (1S and 2S)
+                For example, beryllium will have row = # of points and column = 2 (1S and 2S)
         """
-        return np.dot(self.all_slator_orbitals[subshell] , self.all_coeff_matrix(subshell))
+
+        return np.dot(self.ALL_SLATOR_ORBITALS[subshell], self.all_coeff_matrix(subshell))
 
     def phi_matrix(self): #connect all phis together
         """
-        Connects phi equations into an array, horizontally
-        For Example, for beryllium [phi(1S), phi(2S)] is the array
-        E.G. Carbon [phi(1S), phi(2S), phi(2P)]
+        Connects phi equations into an array, horizontally.
+        For Example, for beryllium [phi(1S), phi(2S)] is the array.
+        E.G. Carbon [phi(1S), phi(2S), phi(2P)].
         :return: array where all of the phi equations
-        for each orbital is connected together, horizontally.
-        row = number of points and col = each phi equation for each orbital
+                 for each orbital is connected together, horizontally.
+                 row = number of points and col = each phi equation for each orbital
         """
         list_orbitals = ['S', 'P', 'D', 'F']
 
-        a = 0
-        array = 0
+        counter = 0
+        phi_matrix = 0
         for orbital in list_orbitals:
-            if orbital in self.values['orbitals_exp']:
-                if a == 0:
-                    array = self.phi_LCAO(orbital)
-                    a += 1
+            if orbital in self.VALUES['orbitals_exp']:
+                if counter == 0:        #initilize array
+                    phi_matrix = self.phi_LCAO(orbital)
+                    counter += 1
                 else:
-                    array = np.concatenate((array, self.phi_LCAO(orbital)), axis = 1)
-        return array
+                    array = np.concatenate((phi_matrix, self.phi_LCAO(orbital)), axis = 1)
+        return phi_matrix
 
     def atomic_density(self):
         """
         By Taking the occupation numbers and multiplying it
-        to the corresponding phi to obtain rho
-        :param dict:
-        :param LCAO:
-        :return: the electron density where row = number of points
-                and column = 1
+        by the corresponding absolute, squared phi to obtain
+        electron density(rho).
+
+        :return: the electron density where row = number of point
+                 and column = 1
         """
 
-        return np.dot(np.absolute(self.phi_matrix())**2, self.values['orbitals_electron_array'] )
+        return np.dot(np.absolute(self.phi_matrix())**2, self.VALUES['orbitals_electron_array'] )
+
 
 
 
 p, w = np.polynomial.laguerre.laggauss(100)
-be = Electron_Structure("/Users/Alireza/Desktop/neutral/be", p)
 
-phi = np.dot( be.all_slator_orbitals['S'], be.all_coeff_matrix('S'))
-print(phi)
-plt.plot(phi )
-plt.show()
-r = np.asarray(p).reshape((100, 1)); w = np.asarray(w).reshape((100, 1))
+#print(p)
+be = Atomic_Density(elementFile, p)
 
-electronDensity = np.dot(          np.absolute(phi**2) , be.values['orbitals_electron_array'])
-print(np.sum(electronDensity * w * 4 * np.pi * r**2))
-
-plt.plot(electronDensity *  w  *4 * np.pi * r**2, 'r', label = 'electron density mutlipled by weight*4*pi*r^2')
-plt.plot((electronDensity * 4 * np.pi * (r**2)  * w)/ np.exp(-r), 'g', label = 'electron density mutlipled by weight * 4*pi*r^2/(e^-r)')
-plt.legend()
-plt.show()
-print(np.sum((electronDensity * 4 * np.pi * (r**2)  * w)/ np.exp(-r)))
-
-np.testing.assert_array_almost_equal(electronDensity, be.atomic_density())
-
-
+rho = be.atomic_density()
 """
-
-p, w = np.polynomial.laguerre.laggauss(100)
-be = Electron_Structure(elementFile, p)
-
-electron_density = be.atomic_density()
-print('electron_density', electron_density)
-#assert np.shape(electron_density) == (100, 1)
-
-
-plt.plot(electron_density)
-plt.title("The Electron Density")
-plt.show()
-
-p = np.asarray(p).reshape((100, 1))
-a = electron_density * w
-
-
-p = np.asarray(p).reshape((100, 1))
-ED_times_4pir_squared = np.absolute(electron_density ** 2) * 4 * np.pi * p * p
-plt.plot(ED_times_4pir_squared)
-plt.title("Multiply Electron Density by 4 pi r^2")
-plt.show()
-print("Multiply by rpi r", np.sum(ED_times_4pir_squared))
-ED_divide_by_enegativer = ED_times_4pir_squared / np.exp(-(p))
-plt.plot(ED_divide_by_enegativer)
-plt.title("Divide The Electron Density(with 4 pi r^2) by e ^-r" )
-plt.show()
-
+print(rho)
+print(np.shape(rho))
+r = np.asarray(p).reshape((100, 1))
 w = np.asarray(w).reshape((100, 1))
-ED_times_weight = ED_divide_by_enegativer * w
-plt.plot(ED_times_weight * 2 / np.amax(ED_times_weight) )
-plt.title("Multipled by the weight")
+
+plt.plot(rho * 4 * np.pi * r**2 * w  )
 plt.show()
 
-print("The Sum Is: ", np.sum(ED_times_weight))
-print("The Sum Is: " , np.sum(ED_times_weight) * 2/ np.amax(ED_times_weight))"""
 
 
-
-
-
-
+pirho = (rho* 4 * np.pi* r**2 * w )#/ np.exp(-r)
+print(np.shape(pirho))
+print(np.sum(pirho))"""
