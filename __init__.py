@@ -1,3 +1,4 @@
 
 from fitting.io import *
-from fitting.atomic_density import *
+from fitting.density import *
+from fitting.gbasis import *

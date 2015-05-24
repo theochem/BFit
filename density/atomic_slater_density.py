@@ -1,7 +1,5 @@
 
 import sys
-#sys.path.append(r'C:\Users\Alireza\PycharmProjects\fitting\fitting\io')
-#import slater_basic as sb
 import numpy as np
 import scipy.misc
 import scipy
@@ -9,7 +7,7 @@ import scipy.integrate
 import matplotlib.pyplot as plt
 import sympy as sp
 
-import fitting.io.slater_basic as sb
+from fitting.io.slater_wfn import *
 
 
 class Atomic_Density():
@@ -17,7 +15,7 @@ class Atomic_Density():
     Insert Documentations
     """
     def __init__(self, file_name, grid):
-        self.VALUES = sb.load_slater_basis(file_name)
+        self.VALUES = load_slater_wfn(file_name)
         self.GRID = grid
         self.ALL_SLATOR_ORBITALS = self.slator_dict()
 

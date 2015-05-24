@@ -1,2 +1,2 @@
 
-from fitting.io.slater_basic import *
+from fitting.io.slater_wfn import *

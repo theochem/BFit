@@ -2,13 +2,14 @@
 import os
 import sys
 import numpy as np
-import fitting.io.slater_basic as sb
+
+from fitting.io.slater_wfn import *
 
 
 def test_parsing_slater_density_Be():
     #load the Be file
-    file_path =  os.path.dirname(__file__).rsplit('/', 2)[0] + '/examples/be.txt'
-    be = sb.load_slater_basis(file_path)
+    file_path =  os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/examples/be.slater'
+    be = load_slater_wfn(file_path)
 
     assert be['configuration'] == '1S(2)2S(2)'
     assert be['energy'] == [-14.573023167, 14.573023130, -29.146046297 ]
@@ -44,8 +45,8 @@ def test_parsing_slater_density_Be():
 
 def test_parsing_slater_density_Ag():
     #load the Ag file
-    file_path =  os.path.dirname(__file__).rsplit('/', 2)[0] + '/examples/ag.txt'
-    ag = sb.load_slater_basis(file_path)
+    file_path =  os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/examples/ag.slater'
+    ag = load_slater_wfn(file_path)
 
     #check configuration and energy
     assert ag['configuration'] == 'K(2)L(8)M(18)4S(2)4P(6)5S(1)4D(10)'
@@ -90,8 +91,8 @@ def test_parsing_slater_density_Ag():
 
 def test_parsing_slater_density_Ne():
     #load the Ne file
-    file_path =  os.path.dirname(__file__).rsplit('/', 2)[0] + '/examples/ne.txt'
-    ne = sb.load_slater_basis(file_path)
+    file_path =  os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/examples/ne.slater'
+    ne = load_slater_wfn(file_path)
 
     assert ne['configuration'] == "1S(2)2S(2)2P(6)"
     assert ne['energy'] == [-128.547098079, 128.547098140, -257.094196219]

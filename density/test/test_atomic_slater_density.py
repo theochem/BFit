@@ -3,8 +3,7 @@ import sys
 import os
 import math
 import numpy as np
-import fitting.io.slater_basic as sb
-from fitting.atomic_density import *
+from fitting.density.atomic_slater_density import *
 
 
 def slater_function(exponent, n, r):
@@ -26,7 +25,7 @@ def slater_function(exponent, n, r):
 
 def test_slater_type_orbital_Be():
     # load the Be file
-    file_path =  os.path.dirname(__file__).rsplit('/', 1)[0] + '/examples/be.txt'
+    file_path =  os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/examples/be.slater'
     # using one grid point at 1.0
     be = Atomic_Density(file_path, np.array([[1]]))
     calculated =  be.slator_type_orbital(np.array([[12.683501]]), np.array([[1]]), np.array([[1]]))
@@ -51,7 +50,7 @@ def test_slater_type_orbital_Be():
 
 def test_slater_dict_Be():
     # load the Be file
-    file_path =  os.path.dirname(__file__).rsplit('/', 1)[0] + '/examples/be.txt'
+    file_path =  os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/examples/be.slater'
     # using one grid point at 1.0
     be = Atomic_Density(file_path, np.array([[1]]))
     be_orbitals = be.slator_dict()
@@ -63,7 +62,7 @@ def test_slater_dict_Be():
 
 def test_slater_dict_Be_2():
     # load the Be file
-    file_path =  os.path.dirname(__file__).rsplit('/', 1)[0] + '/examples/be.txt'
+    file_path =  os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/examples/be.slater'
     # using two grid points at 1.0 and 2.0
     be = Atomic_Density(file_path, np.array([[1], [2]]))
     be_orbitals = be.slator_dict()
@@ -77,7 +76,7 @@ def test_slater_dict_Be_2():
 
 def test_all_coeff_matrix_Be():
     # load the Be file
-    file_path =  os.path.dirname(__file__).rsplit('/', 1)[0] + '/examples/be.txt'
+    file_path =  os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/examples/be.slater'
     # using one grid point at 1.0
     be = Atomic_Density(file_path, np.array([[1]]))
     coeff_s = be.all_coeff_matrix('S')
@@ -90,7 +89,7 @@ def test_all_coeff_matrix_Be():
 
 def test_phi_LCAO_Be():
     # load the Be file
-    file_path =  os.path.dirname(__file__).rsplit('/', 1)[0] + '/examples/be.txt'
+    file_path =  os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/examples/be.slater'
     # using one grid point at 1.0
     be = Atomic_Density(file_path, np.array([[1]]))
     phi = be.phi_LCAO('S')
@@ -118,7 +117,7 @@ def test_phi_LCAO_Be():
 
 def test_phi_LCAO_Be_2():
     # load the Be file
-    file_path =  os.path.dirname(__file__).rsplit('/', 1)[0] + '/examples/be.txt'
+    file_path =  os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/examples/be.slater'
     # using three grid points at 1.0, 2.0, and 3.0
     be = Atomic_Density(file_path, np.array([[1], [2], [3]]))
     phi = be.phi_LCAO('S')
@@ -129,7 +128,7 @@ def test_phi_LCAO_Be_2():
 
 def test_phi_matrix_Be():
     # load the Be file
-    file_path =  os.path.dirname(__file__).rsplit('/', 1)[0] + '/examples/be.txt'
+    file_path =  os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/examples/be.slater'
     # using one grid point at 1.0
     be = Atomic_Density(file_path, np.array([[1]]))
     # check the values of the phi_matrix
@@ -158,7 +157,7 @@ def test_phi_matrix_Be():
 
 def test_phi_LCAO_Be_integrate():
     # load the Be file
-    file_path =  os.path.dirname(__file__).rsplit('/', 1)[0] + '/examples/be.txt'
+    file_path =  os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/examples/be.slater'
     # placing 100,000 equally distant points from 0.0 to 10.0 for accurate integration
     grid = np.arange(0.0, 10.0, 0.0001)
     be = Atomic_Density(file_path, grid.reshape(len(grid), 1))
@@ -183,7 +182,7 @@ def test_phi_LCAO_Be_integrate():
 
 def test_phi_LCAO_Ne_integrate():
     # load the Ne file
-    file_path =  os.path.dirname(__file__).rsplit('/', 1)[0] + '/examples/ne.txt'
+    file_path =  os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/examples/ne.slater'
     # placing 100,000 eqully distant points from 0.0 to 10.0 for accurate integration
     grid = np.arange(0.0, 10.0, 0.0001)
     ne = Atomic_Density(file_path, grid.reshape(len(grid), 1))
@@ -205,7 +204,7 @@ def test_phi_LCAO_Ne_integrate():
 
 def test_phi_LCAO_C_integrate():
     # load the C file
-    file_path =  os.path.dirname(__file__).rsplit('/', 1)[0] + '/examples/c.txt'
+    file_path =  os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/examples/c.slater'
     # placing 100,000 eqully distant points from 0.0 to 10.0 for accurate integration
     grid = np.arange(0.0, 10.0, 0.0001)
     c = Atomic_Density(file_path, grid.reshape(len(grid), 1))
@@ -227,7 +226,7 @@ def test_phi_LCAO_C_integrate():
 
 def test_atomic_density_Be():
     # load the Be file
-    file_path =  os.path.dirname(__file__).rsplit('/', 1)[0] + '/examples/be.txt'
+    file_path =  os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/examples/be.slater'
     # placing 100,000 eqully distant points from 0.0 to 10.0 for accurate integration
     grid = np.arange(0.0, 10.0, 0.0001)
     be = Atomic_Density(file_path, grid.reshape(len(grid), 1))
@@ -241,7 +240,7 @@ def test_atomic_density_Be():
 
 def test_atomic_density_Ne():
     # load the Ne file
-    file_path =  os.path.dirname(__file__).rsplit('/', 1)[0] + '/examples/ne.txt'
+    file_path =  os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/examples/ne.slater'
     # placing 100,000 eqully distant points from 0.0 to 10.0 for accurate integration
     grid = np.arange(0.0, 10.0, 0.0001)
     ne = Atomic_Density(file_path, grid.reshape(len(grid), 1))
@@ -255,7 +254,7 @@ def test_atomic_density_Ne():
 
 def test_atomic_density_C():
     # load the C file
-    file_path =  os.path.dirname(__file__).rsplit('/', 1)[0] + '/examples/c.txt'
+    file_path =  os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/examples/c.slater'
     # placing 100,000 eqully distant points from 0.0 to 10.0 for accurate integration
     grid = np.arange(0.0, 10.0, 0.0001)
     c = Atomic_Density(file_path, grid.reshape(len(grid), 1))

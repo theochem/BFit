@@ -1,8 +1,8 @@
 import re
 import numpy as np
 
-def load_slater_basis(file_name):
-    '''Return the data recorded in the Slater atomic density file as a dictionary.
+def load_slater_wfn(file_name):
+    '''Return the data recorded in the atomic Slater wave-function file as a dictionary.
 
        ** Arguments **
 
