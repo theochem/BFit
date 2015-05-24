@@ -1,10 +1,15 @@
 import re
 import numpy as np
 
-elementFile = "/Users/Alireza/Desktop/neutral/f"
 
-def load_slater_basis(file):
+def load_slater_basis(file_name):
+    '''Return the data recorded in the Slater atomic density file as a dictionary.
 
+       ** Arguments **
+
+       file_name
+           The path to the Slater atomic density file.
+    '''
     def getNumberOfElectronsPerOrbital(string_configuration):
         """
         Gets the Occupation Number for all orbitals
@@ -73,7 +78,7 @@ def load_slater_basis(file):
             row += 1
         return array
 
-    with open(file) as f:
+    with open(file_name) as f:
         configuration = f.readline().split()[1].replace(",", "")
 
         counter = 0;
@@ -127,19 +132,20 @@ def load_slater_basis(file):
                         orbitals_coeff[x] += [float(list_words[getColumn(x)])]
                     line = f.readline()
 
+    data = {'configuration': configuration ,
+            'energy': energy,
+            'orbitals': orbitals ,
+            'orbitals_energy': orbitals_energy ,
+            'orbitals_cusp': orbitals_cusp,
+            'orbitals_basis': orbitals_basis,
+            'orbitals_exp':
+            {key:np.asarray(value).reshape(len(value), 1) for key,value in orbitals_exp.items() if value != []},
+            'orbitals_coeff':
+            {key:np.asarray(value).reshape(len(value), 1) for key,value in orbitals_coeff.items() if value != []},
+            'orbitals_occupation': getNumberOfElectronsPerOrbital(configuration),
+            'orbitals_electron_array': getArrayOfElectrons(getNumberOfElectronsPerOrbital(configuration)),
+            'basis_numbers' :
+            {key:np.asarray([[int(x[0])] for x in value]) for key,value in orbitals_basis.items() if len(value) != 0}
+            }
 
-        return {'configuration': configuration , #'1S(2)2S(2)'
-                    'energy': energy, # [-14.573023167, 14.573023130, -29.146046297]
-                    'orbitals': orbitals , # ['1S', '2S'],
-                    'orbitals_energy': orbitals_energy , # [-4.7326699, -0.3092695],
-                    'orbitals_cusp': orbitals_cusp,  #dict
-                    'orbitals_basis': orbitals_basis, #dict
-                    'orbitals_exp': {key:np.asarray(value).reshape(len(value), 1) for key,value in orbitals_exp.items() if value != []}, #dict
-                    'orbitals_coeff':  {key:np.asarray(value).reshape(len(value), 1) for key,value in orbitals_coeff.items() if value != []},
-                    'orbitals_electron_number' :getNumberOfElectronsPerOrbital(configuration), # dictionary of how many electrons per orbital
-                    'orbitals_electron_array': getArrayOfElectrons(getNumberOfElectronsPerOrbital(configuration)), #takes number of electrons per orbital and turns it into array [[2],[2]]
-                    'basis_numbers' : {key:np.asarray([[int(x[0])] for x in value]) for key,value in orbitals_basis.items() if len(value) != 0}} #dict grabs basis number
-
-#print(load_slater_basis(elementFile))
-#print(load_slater_basis(elementFile)['orbitals_electron_number'])
-#print(load_slater_basis(elementFile)['quantum_numbers']['S'])
+    return data

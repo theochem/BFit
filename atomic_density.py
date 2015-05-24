@@ -1,6 +1,7 @@
+
 import sys
-sys.path.append(r'C:\Users\Alireza\PycharmProjects\fitting\io')
-import slater_basic as sb
+#sys.path.append(r'C:\Users\Alireza\PycharmProjects\fitting\fitting\io')
+#import slater_basic as sb
 import numpy as np
 import scipy.misc
 import scipy
@@ -8,15 +9,15 @@ import scipy.integrate
 import matplotlib.pyplot as plt
 import os
 
-elementFile = "/Users/Alireza/Desktop/neutral/y"
+import fitting.io.slater_basic as sb
 
 
 class Atomic_Density():
     """
     Insert Documentations
     """
-    def __init__(self, file, grid):
-        self.VALUES = sb.load_slater_basis(file)
+    def __init__(self, file_name, grid):
+        self.VALUES = sb.load_slater_basis(file_name)
         self.GRID = grid
         self.ALL_SLATOR_ORBITALS = self.slator_dict()
 
@@ -29,7 +30,17 @@ class Atomic_Density():
         :param r: distance form the nuclei
         :return: returns a number or an array depending on input values
         """
-        return ((2 * exponent)**quantumNum)   *    np.sqrt(((2 * exponent) / scipy.misc.factorial(2 * quantumNum)))    *      (r ** (quantumNum - 1)) * (np.exp(-exponent * r))
+        assert exponent.shape == quantumNum.shape
+        assert exponent.shape[1] == 1
+        assert quantumNum.shape[1] == 1
+        assert r.shape[1] == 1
+
+        normalization = ((2 * exponent)**quantumNum) * np.sqrt(((2 * exponent) / scipy.misc.factorial(2 * quantumNum)))
+        assert normalization.shape == exponent.shape
+        pre_factor = np.transpose(r ** (np.ravel(quantumNum) - 1))
+        slater =  pre_factor * (np.exp(-exponent * np.transpose(r)))
+        slater *= normalization
+        return slater
 
     def slator_dict(self):
         """
@@ -41,11 +52,14 @@ class Atomic_Density():
 
         :return: row = number of points, column = number of slater equations
         """
-        dict = {x[1]:0 for x in self.VALUES['orbitals'] }
 
-        for subshell in dict:
-            dict[subshell] = np.transpose(self.slator_type_orbital(self.VALUES['orbitals_exp'][subshell], self.VALUES['basis_numbers'][subshell], self.GRID ))
-        return dict
+        dict_orbital = {x[1]:0 for x in self.VALUES['orbitals'] }
+        for subshell in dict_orbital.keys():
+            exponents = self.VALUES['orbitals_exp'][subshell]
+            basis_numbers = self.VALUES['basis_numbers'][subshell]
+            slater = self.slator_type_orbital(exponents, basis_numbers, self.GRID)
+            dict_orbital[subshell] = np.transpose(slater)
+        return dict_orbital
 
     def all_coeff_matrix(self, subshell):
         """
@@ -85,7 +99,6 @@ class Atomic_Density():
         :return: array where row = number of points and column = number of phi/orbitals.
                 For example, beryllium will have row = # of points and column = 2 (1S and 2S)
         """
-
         return np.dot(self.ALL_SLATOR_ORBITALS[subshell], self.all_coeff_matrix(subshell))
 
     def phi_matrix(self): #connect all phis together
@@ -103,7 +116,7 @@ class Atomic_Density():
         phi_matrix = 0
 
         for orbital in list_orbitals:
-            if orbital in self.VALUES['orbitals_exp']:
+            if orbital in self.VALUES['orbitals_exp'].keys():
                 if counter == 0:        #initilize array
                     phi_matrix = self.phi_LCAO(orbital)
                     counter += 1
@@ -121,36 +134,5 @@ class Atomic_Density():
         :return: the electron density where row = number of point
                  and column = 1
         """
-
         return np.dot(np.absolute(self.phi_matrix())**2, self.VALUES['orbitals_electron_array'] )
 
-
-
-
-p, w = np.polynomial.laguerre.laggauss(175)
-
-#print(p)
-be = Atomic_Density(elementFile, p)
-
-rho = be.atomic_density()
-r = np.asarray(p).reshape((175, 1))
-w = np.asarray(w).reshape((175, 1))
-print(rho)
-print(np.shape(rho))
-
-
-plt.plot(rho * r**2 * w  )
-plt.show()
-
-
-
-pirho = (rho* r**2 * w )/ np.exp(-r)
-print(np.shape(pirho))
-print(np.nansum(pirho))
-"""
-
-electron_number = 2
-for fn in os.listdir('/Users/Alireza/Desktop/neutral/'):
-    print(fn)
-    ele = Atomic_Density('/Users/Alireza/Desktop/neutral/' + fn, p)
-    print(np.sum(ele.atomic_density()* 4 * np.pi* r**2 * w ))"""
