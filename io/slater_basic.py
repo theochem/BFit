@@ -1,7 +1,7 @@
 import re
 import numpy as np
 
-elementFile = "/Users/Alireza/Desktop/neutral/be"
+elementFile = "/Users/Alireza/Desktop/neutral/f"
 
 def load_slater_basis(file):
 
@@ -34,7 +34,7 @@ def load_slater_basis(file):
 
         for x in listOrbitals:
             if x in electronConfigList :
-                index = electronConfigList .index(x)
+                index = electronConfigList.index(x)
                 orbital = (electronConfigList [index: index + 2])
 
                 if orbital[1] == "D" or orbital[1] == "F":
@@ -75,9 +75,21 @@ def load_slater_basis(file):
 
     with open(file) as f:
         configuration = f.readline().split()[1].replace(",", "")
-        energy = [float(f.readline().split()[2])] + [float(x) for x in (re.findall("[= -]\d+.\d+", f.readline()))[:-1]]
-        assert re.search(r'ORBITAL ENERGIES AND EXPANSION COEFFICIENTS', f.readline())
 
+        counter = 0;
+        counter2 = 0;
+        line = f.readline()
+        while counter != 1:
+            if line.strip() == "":
+                line = f.readline()
+                print(line)
+                counter2 += 1
+            else:
+                energy = [float(line.split()[2])] + [float(x) for x in (re.findall("[= -]\d+.\d+", f.readline()))[:-1]]
+                if counter2 != 0:
+                    f.readline()
+                assert re.search(r'ORBITAL ENERGIES AND EXPANSION COEFFICIENTS', f.readline())
+                counter += 1
         orbitals = []
         orbitals_basis = {'S':[], 'P':[], 'D':[], "F":[]}
         orbitals_cusp = {'S':0, 'P':0, 'D':0, "F":0}

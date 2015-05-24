@@ -6,9 +6,9 @@ import scipy.misc
 import scipy
 import scipy.integrate
 import matplotlib.pyplot as plt
-import sympy as sp
+import os
 
-elementFile = "/Users/Alireza/Desktop/neutral/b"
+elementFile = "/Users/Alireza/Desktop/neutral/y"
 
 
 class Atomic_Density():
@@ -45,7 +45,6 @@ class Atomic_Density():
 
         for subshell in dict:
             dict[subshell] = np.transpose(self.slator_type_orbital(self.VALUES['orbitals_exp'][subshell], self.VALUES['basis_numbers'][subshell], self.GRID ))
-
         return dict
 
     def all_coeff_matrix(self, subshell):
@@ -102,13 +101,15 @@ class Atomic_Density():
 
         counter = 0
         phi_matrix = 0
+
         for orbital in list_orbitals:
             if orbital in self.VALUES['orbitals_exp']:
                 if counter == 0:        #initilize array
                     phi_matrix = self.phi_LCAO(orbital)
                     counter += 1
                 else:
-                    array = np.concatenate((phi_matrix, self.phi_LCAO(orbital)), axis = 1)
+                    phi_matrix = np.concatenate((phi_matrix, self.phi_LCAO(orbital)), axis = 1)
+
         return phi_matrix
 
     def atomic_density(self):
@@ -126,23 +127,30 @@ class Atomic_Density():
 
 
 
-p, w = np.polynomial.laguerre.laggauss(100)
+p, w = np.polynomial.laguerre.laggauss(175)
 
 #print(p)
 be = Atomic_Density(elementFile, p)
 
 rho = be.atomic_density()
-"""
+r = np.asarray(p).reshape((175, 1))
+w = np.asarray(w).reshape((175, 1))
 print(rho)
 print(np.shape(rho))
-r = np.asarray(p).reshape((100, 1))
-w = np.asarray(w).reshape((100, 1))
 
-plt.plot(rho * 4 * np.pi * r**2 * w  )
+
+plt.plot(rho * r**2 * w  )
 plt.show()
 
 
 
-pirho = (rho* 4 * np.pi* r**2 * w )#/ np.exp(-r)
+pirho = (rho* r**2 * w )/ np.exp(-r)
 print(np.shape(pirho))
-print(np.sum(pirho))"""
+print(np.nansum(pirho))
+"""
+
+electron_number = 2
+for fn in os.listdir('/Users/Alireza/Desktop/neutral/'):
+    print(fn)
+    ele = Atomic_Density('/Users/Alireza/Desktop/neutral/' + fn, p)
+    print(np.sum(ele.atomic_density()* 4 * np.pi* r**2 * w ))"""

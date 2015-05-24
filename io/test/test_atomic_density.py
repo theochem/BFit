@@ -83,12 +83,64 @@ def testBeryllium(file):
 
     test_atomic_density()
 
-testBeryllium("/Users/Alireza/Desktop/neutral/be")
+#testBeryllium("/Users/Alireza/Desktop/neutral/be")
 
 def test_silver(file):
     ag = Atomic_Density(file, np.array([[1]]))
 
     def test_slator_silver():
-        ag.slator_type_orbital()
+        assert ag.slator_type_orbital(58.031368, 2, 1) == (2 * 58.031368)**2 * math.sqrt((2 * 58.031368) / math.factorial(2 * 2)) * 1**(2 - 1) * math.exp(58.031368*-1*1)
+        assert ag.slator_type_orbital(51.182468, 3, 1) == (2 * 51.182468)**3 * math.sqrt((2 * 51.182468)/math.factorial(2 * 3)) * 1**(3-1) * math.exp(51.182468*-1)
 
+    test_slator_silver()
+
+    def test_LCAO_silver():
+        LCAO3D = ag.slator_type_orbital(53.296212, 3, 1) * 0.0006646 + ag.slator_type_orbital(40.214567, 4, 1) * 0.0037211 + ag.slator_type_orbital(21.872645, 3, 1) \
+                 * -0.0072310 + ag.slator_type_orbital(17.024065, 3, 1)  *  0.1799224 + ag.slator_type_orbital(10.708021, 3, 1) * 0.5205360 + ag.slator_type_orbital(7.859216 , 3, 1) \
+                 * 0.3265622 + ag.slator_type_orbital(5.770205, 3, 1) * 0.0373867 + ag.slator_type_orbital(3.610289, 3, 1) * 0.0007434 + ag.slator_type_orbital(2.243262 , 3, 1) \
+                 *  0.0001743 + ag.slator_type_orbital(1.397570 , 3, 1) * -0.0000474 + ag.slator_type_orbital(0.663294, 3, 1) * 0.0000083
+
+        LCAO4D =  ag.slator_type_orbital(53.296212, 3, 1) * -0.0002936 + ag.slator_type_orbital(40.214567, 4, 1) * -0.0016839 + ag.slator_type_orbital(21.872645, 3, 1) \
+                 * 0.0092799 + ag.slator_type_orbital(17.024065, 3, 1)  *  -0.0743431 + ag.slator_type_orbital(10.708021, 3, 1) * -0.1179494 + ag.slator_type_orbital(7.859216 , 3, 1) \
+                 * -0.2809146 + ag.slator_type_orbital(5.770205, 3, 1) *0.1653040 + ag.slator_type_orbital(3.610289, 3, 1) *  0.4851980 + ag.slator_type_orbital(2.243262 , 3, 1) \
+                 *  0.4317110 + ag.slator_type_orbital(1.397570 , 3, 1) * 0.1737644 + ag.slator_type_orbital(0.663294, 3, 1) * 0.0013751
+
+        LCAOFunc = ag.phi_LCAO('D')
+
+        np.testing.assert_almost_equal(LCAO3D , LCAOFunc[0, 0], decimal=16)
+        np.testing.assert_almost_equal(LCAO4D, LCAOFunc[0, 1], decimal = 15)
+    test_LCAO_silver()
+
+    def test_all_coeff_matrix():
+                                                                                    #3D          4D
+        np.testing.assert_array_almost_equal(ag.all_coeff_matrix('D'), np.array([ [0.0006646, -0.0002936],
+                                                                                  [0.0037211,  -0.0016839],
+                                                                                  [-0.0072310, 0.0092799],
+                                                                                  [0.1799224, -0.0743431],
+                                                                                  [0.5205360, -0.1179494],
+                                                                                  [0.3265622, -0.2809146],
+                                                                                  [0.0373867, 0.1653040],
+                                                                                  [0.0007434, 0.4851980],
+                                                                                  [0.0001743, 0.4317110],
+                                                                                  [-0.0000474, 0.1737644],
+                                                                                  [0.0000083, 0.0013751]]
+                                                                                ))
+    test_all_coeff_matrix()
+
+    def test_phi_matrix():
+        print(ag.phi_matrix())
+        phi3D = ag.slator_type_orbital(53.296212, 3, 1) * 0.0006646 + ag.slator_type_orbital(40.214567, 4, 1) * 0.0037211 + ag.slator_type_orbital(21.872645, 3, 1) \
+                 * -0.0072310 + ag.slator_type_orbital(17.024065, 3, 1)  *  0.1799224 + ag.slator_type_orbital(10.708021, 3, 1) * 0.5205360 + ag.slator_type_orbital(7.859216 , 3, 1) \
+                 * 0.3265622 + ag.slator_type_orbital(5.770205, 3, 1) * 0.0373867 + ag.slator_type_orbital(3.610289, 3, 1) * 0.0007434 + ag.slator_type_orbital(2.243262 , 3, 1) \
+                 *  0.0001743 + ag.slator_type_orbital(1.397570 , 3, 1) * -0.0000474 + ag.slator_type_orbital(0.663294, 3, 1) * 0.0000083
+
+        phi4D = ag.slator_type_orbital(53.296212, 3, 1) * -0.0002936 + ag.slator_type_orbital(40.214567, 4, 1) * -0.0016839 + ag.slator_type_orbital(21.872645, 3, 1) \
+                 * 0.0092799 + ag.slator_type_orbital(17.024065, 3, 1)  *  -0.0743431 + ag.slator_type_orbital(10.708021, 3, 1) * -0.1179494 + ag.slator_type_orbital(7.859216 , 3, 1) \
+                 * -0.2809146 + ag.slator_type_orbital(5.770205, 3, 1) *0.1653040 + ag.slator_type_orbital(3.610289, 3, 1) *  0.4851980 + ag.slator_type_orbital(2.243262 , 3, 1) \
+                 *  0.4317110 + ag.slator_type_orbital(1.397570 , 3, 1) * 0.1737644 + ag.slator_type_orbital(0.663294, 3, 1) * 0.0013751
+
+
+        np.testing.assert_array_almost_equal(ag.phi_matrix()[0][8:], [phi3D] + [phi4D], decimal = 16)
+
+    test_phi_matrix()
 test_silver("/Users/Alireza/Desktop/neutral/ag")
