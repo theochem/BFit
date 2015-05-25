@@ -7,7 +7,7 @@ import scipy.integrate
 import matplotlib.pyplot as plt
 import sympy as sp
 
-from fitting.io.slater_wfn import *
+from fitting.density.atomic_slater_wfn import *
 
 
 class Atomic_Density():

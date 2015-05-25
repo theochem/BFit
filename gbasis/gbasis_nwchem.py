@@ -1,6 +1,6 @@
-'''Input/Output routines for gaussian basis sets'''
 
 import numpy as np
+
 
 def fortran_float(s):
     '''Convert a string to a float. Works also with D before the mantissa'''

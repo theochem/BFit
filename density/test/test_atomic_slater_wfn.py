@@ -3,7 +3,7 @@ import os
 import sys
 import numpy as np
 
-from fitting.io.slater_wfn import *
+from fitting.density.atomic_slater_wfn import *
 
 
 def test_parsing_slater_density_Be():
