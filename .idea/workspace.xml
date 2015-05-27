@@ -1,12 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="e4cb2102-854f-4cea-8c3c-d64f02ff50dd" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Another_Approach.py" afterPath="$PROJECT_DIR$/Another_Approach.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/atomic_density.py" afterPath="$PROJECT_DIR$/atomic_density.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/io/slater_basic.py" afterPath="$PROJECT_DIR$/io/slater_basic.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/io/test/test_atomic_density.py" afterPath="$PROJECT_DIR$/io/test/test_atomic_density.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/io/test/test_slater_basic.py" afterPath="$PROJECT_DIR$/io/test/test_slater_basic.py" />
+    <list default="true" id="4035ad68-97f7-4e18-bb55-e563859a9cc8" name="Default" comment="- added fit">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/fitting/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/fitting/least_squares.py" />
+      <change type="DELETED" beforePath="C:\Users\Alireza\PycharmProjects\fitting\Another_Approach.py" afterPath="" />
+      <change type="DELETED" beforePath="C:\Users\Alireza\PycharmProjects\fitting\atomic_density.py" afterPath="" />
+      <change type="DELETED" beforePath="C:\Users\Alireza\PycharmProjects\fitting\examples\ag" afterPath="" />
+      <change type="DELETED" beforePath="C:\Users\Alireza\PycharmProjects\fitting\examples\be" afterPath="" />
+      <change type="DELETED" beforePath="C:\Users\Alireza\PycharmProjects\fitting\examples\ne" afterPath="" />
+      <change type="DELETED" beforePath="C:\Users\Alireza\PycharmProjects\fitting\grid.py" afterPath="" />
+      <change type="DELETED" beforePath="C:\Users\Alireza\PycharmProjects\fitting\io\slater_basic.py" afterPath="" />
+      <change type="DELETED" beforePath="C:\Users\Alireza\PycharmProjects\fitting\io\test\test_atomic_density.py" afterPath="" />
+      <change type="DELETED" beforePath="C:\Users\Alireza\PycharmProjects\fitting\io\test\test_slater_basic.py" afterPath="" />
+      <change type="MOVED" beforePath="C:\Users\Alireza\PycharmProjects\fitting\fitting\.idea\scopes\scope_settings.xml" afterPath="$PROJECT_DIR$/fitting/fitting/.idea/scopes/scope_settings.xml" />
+      <change type="MOVED" beforePath="C:\Users\Alireza\PycharmProjects\fitting\fitting\.idea\workspace.xml" afterPath="$PROJECT_DIR$/fitting/fitting/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/fitting.iml" afterPath="$PROJECT_DIR$/.idea/fitting.iml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="fitting.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -20,18 +30,19 @@
   </component>
   <component name="ChangesViewManager" flattened_view="true" show_ignored="false" />
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/fitting$test1.coverage" NAME="test1 Coverage Results" MODIFIED="1431663161825" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/fitting$Unittest_testBeryllium.coverage" NAME="Unittest testBeryllium Coverage Results" MODIFIED="1431837094349" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/io/test" />
-    <SUITE FILE_PATH="coverage/fitting$fitting2.coverage" NAME="fitting2 Coverage Results" MODIFIED="1431816370738" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/fitting$test_slater_basic.coverage" NAME="test_slater_basic Coverage Results" MODIFIED="1432004996545" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/io/test" />
-    <SUITE FILE_PATH="coverage/fitting$Unittest_testParsingSilver.coverage" NAME="Unittest testParsingSilver Coverage Results" MODIFIED="1431708957491" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/io/test" />
-    <SUITE FILE_PATH="coverage/fitting$test.coverage" NAME="test Coverage Results" MODIFIED="1431816393223" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/io/test" />
-    <SUITE FILE_PATH="coverage/fitting$Unittest_testParsingBeryllium.coverage" NAME="Unittest testParsingBeryllium Coverage Results" MODIFIED="1431817532515" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/io/test" />
-    <SUITE FILE_PATH="coverage/fitting$slater_basic.coverage" NAME="slater_basic Coverage Results" MODIFIED="1432138624196" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/io" />
-    <SUITE FILE_PATH="coverage/fitting$Another_Approach.coverage" NAME="Another_Approach Coverage Results" MODIFIED="1431898885883" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/fitting$slater_basic2.coverage" NAME="slater_basic2 Coverage Results" MODIFIED="1431795376001" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/io" />
-    <SUITE FILE_PATH="coverage/fitting$atomic_density.coverage" NAME="atomic_density Coverage Results" MODIFIED="1432319543124" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/fitting$test_atomic_density.coverage" NAME="test_atomic_density Coverage Results" MODIFIED="1432137014134" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/io/test" />
+    <SUITE FILE_PATH="coverage/fitting$atomic_slater_density.coverage" NAME="atomic_slater_density Coverage Results" MODIFIED="1432651625928" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/density" />
+    <SUITE FILE_PATH="coverage/fitting$test_slater_basic.coverage" NAME="test_slater_basic Coverage Results" MODIFIED="1432043948439" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/io/test" />
+    <SUITE FILE_PATH="coverage/fitting$__init____2_.coverage" NAME="__init__ (2) Coverage Results" MODIFIED="1432654091353" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting" />
+    <SUITE FILE_PATH="coverage/fitting$test_atomic_slater_density.coverage" NAME="test_atomic_slater_density Coverage Results" MODIFIED="1432651791605" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/density/test" />
+    <SUITE FILE_PATH="coverage/fitting$__init____1_.coverage" NAME="__init__ (1) Coverage Results" MODIFIED="1432653868148" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/gbasis" />
+    <SUITE FILE_PATH="coverage/fitting$test_atomic_slater_density__1_.coverage" NAME="test_atomic_slater_density (1) Coverage Results" MODIFIED="1432654102312" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/density/test" />
+    <SUITE FILE_PATH="coverage/fitting$slater_basic.coverage" NAME="slater_basic Coverage Results" MODIFIED="1432043425209" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/io" />
+    <SUITE FILE_PATH="coverage/fitting$least_squares.coverage" NAME="least_squares Coverage Results" MODIFIED="1432667822897" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting" />
+    <SUITE FILE_PATH="coverage/fitting$Another_Approach.coverage" NAME="Another_Approach Coverage Results" MODIFIED="1432095798351" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/fitting$__init__.coverage" NAME="__init__ Coverage Results" MODIFIED="1432653848910" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/fitting$atomic_density.coverage" NAME="atomic_density Coverage Results" MODIFIED="1432650818338" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/fitting$test_atomic_density.coverage" NAME="test_atomic_density Coverage Results" MODIFIED="1432042625534" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/io/test" />
+    <SUITE FILE_PATH="coverage/fitting$least_squares__1_.coverage" NAME="least_squares (1) Coverage Results" MODIFIED="1432695398434" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/fitting" />
   </component>
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
@@ -45,75 +56,66 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="slater_basic.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/io/slater_basic.py">
+      <file leaf-file-name="least_squares.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/fitting/fitting/least_squares.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="663" max-vertical-offset="2142">
-              <caret line="39" column="10" selection-start-line="39" selection-start-column="10" selection-end-line="39" selection-end-column="10" />
+            <state vertical-scroll-proportion="0.37760416" vertical-offset="416" max-vertical-offset="867">
+              <caret line="33" column="29" selection-start-line="33" selection-start-column="29" selection-end-line="33" selection-end-column="29" />
               <folding>
-                <element signature="e#0#9#0" expanded="true" />
-                <element signature="e#1832#2317#0" expanded="false" />
-                <element signature="e#2362#2772#0" expanded="false" />
+                <element signature="e#0#19#0" expanded="true" />
+                <element signature="e#1233#1343#1" expanded="false" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="test_slater_basic.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/io/test/test_slater_basic.py">
+      <file leaf-file-name="__init__.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/fitting/__init__.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="85" max-vertical-offset="374">
-              <caret line="5" column="0" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="153">
+              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
               <folding>
-                <element signature="e#186#2777#0" expanded="false" />
-                <element signature="e#2871#5928#0" expanded="false" />
-                <element signature="e#6017#6780#0" expanded="false" />
+                <element signature="e#1#29#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="atomic_density.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/atomic_density.py">
+      <file leaf-file-name="radial_grid.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/fitting/density/radial_grid.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.5398089" vertical-offset="358" max-vertical-offset="1122">
-              <caret line="136" column="30" selection-start-line="136" selection-start-column="30" selection-end-line="136" selection-end-column="30" />
-              <folding>
-                <element signature="e#378#497#0" expanded="false" />
-                <element signature="e#567#1008#0" expanded="false" />
-                <element signature="e#1045#1783#0" expanded="false" />
-                <element signature="e#1835#2930#0" expanded="false" />
-                <element signature="e#2974#3617#0" expanded="false" />
-                <element signature="e#3680#4556#0" expanded="false" />
-                <element signature="e#4596#4961#0" expanded="false" />
-              </folding>
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="221">
+              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+              <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="test_atomic_density.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/io/test/test_atomic_density.py">
+      <file leaf-file-name="atomic_slater_density.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/fitting/density/atomic_slater_density.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="592" max-vertical-offset="1275">
-              <caret line="141" column="0" selection-start-line="141" selection-start-column="0" selection-end-line="141" selection-end-column="0" />
-              <folding>
-                <element signature="e#275#1619#0" expanded="false" />
-                <element signature="e#1687#2851#0" expanded="false" />
-                <element signature="e#2997#3990#0" expanded="false" />
-                <element signature="e#4057#5190#0" expanded="false" />
-                <element signature="e#5638#5963#0" expanded="false" />
-                <element signature="e#6027#7550#0" expanded="false" />
-                <element signature="e#7692#8964#0" expanded="false" />
-              </folding>
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2210">
+              <caret line="16" column="32" selection-start-line="16" selection-start-column="24" selection-end-line="16" selection-end-column="32" />
+              <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ag" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/examples/ag">
+      <file leaf-file-name="gbasis.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/fitting/gbasis/gbasis.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="816" max-vertical-offset="952">
-              <caret line="48" column="50" selection-start-line="48" selection-start-column="41" selection-end-line="48" selection-end-column="50" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="1024" max-vertical-offset="1768">
+              <caret line="66" column="68" selection-start-line="66" selection-start-column="68" selection-end-line="66" selection-end-column="68" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="gbasis_nwchem.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/fitting/gbasis/gbasis_nwchem.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1156">
+              <caret line="12" column="0" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -123,21 +125,33 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/test1.py" />
-        <option value="$PROJECT_DIR$/io/slater_basic2.py" />
-        <option value="$PROJECT_DIR$/fitting2.py" />
-        <option value="$PROJECT_DIR$/io/test/test.py" />
-        <option value="$PROJECT_DIR$/Another_Approach.py" />
-        <option value="$PROJECT_DIR$/phi.txt" />
+        <option value="$PROJECT_DIR$/grid.py" />
         <option value="$PROJECT_DIR$/io/test/test_slater_basic.py" />
-        <option value="$PROJECT_DIR$/examples/ag" />
-        <option value="$PROJECT_DIR$/io/test/test_atomic_density.py" />
+        <option value="$PROJECT_DIR$/test/__init__.py" />
         <option value="$PROJECT_DIR$/io/slater_basic.py" />
+        <option value="$PROJECT_DIR$/Another_Approach.py" />
         <option value="$PROJECT_DIR$/atomic_density.py" />
+        <option value="$PROJECT_DIR$/io/test/test_atomic_density.py" />
+        <option value="$PROJECT_DIR$/density/atomic_slater_density.py" />
+        <option value="$PROJECT_DIR$/density/__init__.py" />
+        <option value="$PROJECT_DIR$/density/test/test_atomic_slater_density.py" />
+        <option value="$PROJECT_DIR$/gbasis/__init__.py" />
+        <option value="$PROJECT_DIR$/__init__.py" />
+        <option value="$PROJECT_DIR$/package/__init__.py" />
+        <option value="$PROJECT_DIR$/fitting/__init__.py" />
+        <option value="$PROJECT_DIR$/fitting/least_squares.py" />
+        <option value="$PROJECT_DIR$/test1/fitting/least_squares.py" />
+        <option value="$PROJECT_DIR$/fitting/gbasis/gbasis.py" />
+        <option value="$PROJECT_DIR$/fitting/fitting/least_squares.py" />
       </list>
     </option>
   </component>
@@ -147,8 +161,27 @@
   <component name="ProjectFrameBounds">
     <option name="x" value="-8" />
     <option name="y" value="-8" />
-    <option name="width" value="1936" />
-    <option name="height" value="1056" />
+    <option name="width" value="1382" />
+    <option name="height" value="744" />
+  </component>
+  <component name="ProjectInspectionProfilesVisibleTreeState">
+    <entry key="Project Default">
+      <profile-state>
+        <expanded-state>
+          <State>
+            <id />
+          </State>
+          <State>
+            <id>Python</id>
+          </State>
+        </expanded-state>
+        <selected-state>
+          <State>
+            <id>PyPep8Inspection</id>
+          </State>
+        </selected-state>
+      </profile-state>
+    </entry>
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -190,36 +223,8 @@
               <option name="myItemId" value="fitting" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
-          </PATH>
-          <PATH>
             <PATH_ELEMENT>
               <option name="myItemId" value="fitting" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="fitting" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="io" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="fitting" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="fitting" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="io" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="test" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -233,7 +238,11 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="examples" />
+              <option name="myItemId" value="fitting" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fitting" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -244,113 +253,118 @@
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="FullScreen" value="false" />
     <property name="recentsLimit" value="5" />
-    <property name="options.lastSelected" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="options.lastSelected" value="com.jetbrains.python.configuration.PythonContentEntriesConfigurable" />
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="options.splitter.details.proportions" value="0.2" />
+    <property name="FullScreen" value="false" />
   </component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
       <console-settings />
     </option>
   </component>
-  <component name="RunManager" selected="Python.atomic_density">
-    <configuration default="false" name="atomic_density" type="PythonConfigurationType" factoryName="Python" temporary="true">
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Alireza\PycharmProjects\fitting\test1" />
+      <recent name="C:\Users\Alireza\PycharmProjects\fitting\package" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.least_squares (1)">
+    <configuration default="false" name="__init__ (1)" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/gbasis" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="fitting" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/atomic_density.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/gbasis/__init__.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <RunnerSettings RunnerId="PythonRunner" />
       <ConfigurationWrapper RunnerId="PythonRunner" />
       <method />
     </configuration>
-    <configuration default="false" name="test_atomic_density" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration default="false" name="__init__ (2)" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/io/test" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/fitting" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="fitting" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/io/test/test_atomic_density.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/fitting/__init__.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <RunnerSettings RunnerId="PythonRunner" />
       <ConfigurationWrapper RunnerId="PythonRunner" />
       <method />
     </configuration>
-    <configuration default="false" name="Another_Approach" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration default="false" name="test_atomic_slater_density (1)" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/fitting/density/test" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="fitting" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Another_Approach.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/fitting/density/test/test_atomic_slater_density.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <RunnerSettings RunnerId="PythonRunner" />
       <ConfigurationWrapper RunnerId="PythonRunner" />
       <method />
     </configuration>
-    <configuration default="false" name="slater_basic" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration default="false" name="least_squares" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/io" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/fitting" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="fitting" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/io/slater_basic.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/fitting/least_squares.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <RunnerSettings RunnerId="PythonRunner" />
       <ConfigurationWrapper RunnerId="PythonRunner" />
       <method />
     </configuration>
-    <configuration default="false" name="test_slater_basic" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration default="false" name="least_squares (1)" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/io/test" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/fitting/fitting" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="fitting" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/io/test/test_slater_basic.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/fitting/fitting/least_squares.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <RunnerSettings RunnerId="PythonRunner" />
@@ -545,20 +559,39 @@
       <envs />
       <method />
     </configuration>
-    <list size="5">
-      <item index="0" class="java.lang.String" itemvalue="Python.atomic_density" />
-      <item index="1" class="java.lang.String" itemvalue="Python.test_atomic_density" />
-      <item index="2" class="java.lang.String" itemvalue="Python.Another_Approach" />
-      <item index="3" class="java.lang.String" itemvalue="Python.slater_basic" />
-      <item index="4" class="java.lang.String" itemvalue="Python.test_slater_basic" />
+    <configuration default="false" name="fitting2" type="PythonConfigurationType" factoryName="Python">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="fitting" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/fitting2.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <method />
+    </configuration>
+    <list size="6">
+      <item index="0" class="java.lang.String" itemvalue="Python.fitting2" />
+      <item index="1" class="java.lang.String" itemvalue="Python.__init__ (1)" />
+      <item index="2" class="java.lang.String" itemvalue="Python.__init__ (2)" />
+      <item index="3" class="java.lang.String" itemvalue="Python.test_atomic_slater_density (1)" />
+      <item index="4" class="java.lang.String" itemvalue="Python.least_squares" />
+      <item index="5" class="java.lang.String" itemvalue="Python.least_squares (1)" />
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Python.atomic_density" />
-        <item index="1" class="java.lang.String" itemvalue="Python.slater_basic" />
-        <item index="2" class="java.lang.String" itemvalue="Python.test_atomic_density" />
-        <item index="3" class="java.lang.String" itemvalue="Python.test_slater_basic" />
-        <item index="4" class="java.lang.String" itemvalue="Python.Another_Approach" />
+        <item index="0" class="java.lang.String" itemvalue="Python.least_squares (1)" />
+        <item index="1" class="java.lang.String" itemvalue="Python.least_squares" />
+        <item index="2" class="java.lang.String" itemvalue="Python.test_atomic_slater_density (1)" />
+        <item index="3" class="java.lang.String" itemvalue="Python.__init__ (2)" />
+        <item index="4" class="java.lang.String" itemvalue="Python.__init__ (1)" />
       </list>
     </recent_temporary>
   </component>
@@ -568,99 +601,118 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="e4cb2102-854f-4cea-8c3c-d64f02ff50dd" name="Default" comment="" />
-      <created>1431572578618</created>
+      <changelist id="4035ad68-97f7-4e18-bb55-e563859a9cc8" name="Default" comment="" />
+      <created>1431544397465</created>
       <option name="number" value="Default" />
-      <updated>1431572578618</updated>
+      <updated>1431544397465</updated>
     </task>
-    <task id="LOCAL-00001" summary="- Going To Delete Files">
-      <created>1431816529148</created>
+    <task id="LOCAL-00001" summary="-Finished Slater_Basic, only tested it with be">
+      <created>1431549781863</created>
       <option name="number" value="00001" />
       <option name="project" value="LOCAL" />
-      <updated>1431816529148</updated>
+      <updated>1431549781863</updated>
     </task>
-    <task id="LOCAL-00002" summary="- Finish, Deleted unnecessary files">
-      <created>1431816620461</created>
+    <task id="LOCAL-00002" summary="-Finished Slater_Basic, only tested it with be">
+      <created>1431553286667</created>
       <option name="number" value="00002" />
       <option name="project" value="LOCAL" />
-      <updated>1431816620461</updated>
+      <updated>1431553286667</updated>
     </task>
-    <task id="LOCAL-00003" summary="- Finished, However The Validty of results sill remains a question">
-      <created>1431837185504</created>
+    <task id="LOCAL-00003" summary="-Finished Slater_Basic, only tested it with be">
+      <created>1431555027800</created>
       <option name="number" value="00003" />
       <option name="project" value="LOCAL" />
-      <updated>1431837185505</updated>
+      <updated>1431555027800</updated>
     </task>
-    <task id="LOCAL-00004" summary="- Finished, However The Validty of results sill remains a question">
-      <created>1431910989324</created>
+    <task id="LOCAL-00004" summary="-Finished Slater_Basic, only tested it with be">
+      <created>1431559883024</created>
       <option name="number" value="00004" />
       <option name="project" value="LOCAL" />
-      <updated>1431910989324</updated>
+      <updated>1431559883025</updated>
     </task>
-    <task id="LOCAL-00005" summary="- Finished, However The Validty of results sill remains a question">
-      <created>1431915699619</created>
+    <task id="LOCAL-00005" summary="-Started Atomic_density Folder&#10;- Almost done test_slater_basic">
+      <created>1431563749156</created>
       <option name="number" value="00005" />
       <option name="project" value="LOCAL" />
-      <updated>1431915699619</updated>
+      <updated>1431563749156</updated>
     </task>
-    <task id="LOCAL-00006" summary="-ignore">
-      <created>1432133408472</created>
+    <task id="LOCAL-00006" summary="-Started Atomic_density Folder&#10;- Almost done test_slater_basic">
+      <created>1431616227857</created>
       <option name="number" value="00006" />
       <option name="project" value="LOCAL" />
-      <updated>1432133408472</updated>
+      <updated>1431616227858</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="- Going to Experiment with classes&#10;- Added tests for atomic_density">
+      <created>1431619123583</created>
+      <option name="number" value="00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1431619123583</updated>
+    </task>
+    <task id="LOCAL-00008" summary="- Added Classes for slater_basic file">
+      <created>1431621419586</created>
+      <option name="number" value="00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1431621419586</updated>
+    </task>
+    <task id="LOCAL-00009" summary="- Started atomic_density with calsses">
+      <created>1431637198700</created>
+      <option name="number" value="00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1431637198700</updated>
+    </task>
+    <task id="LOCAL-00010" summary="-IDK">
+      <created>1431968629063</created>
+      <option name="number" value="00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1431968629063</updated>
+    </task>
+    <task id="LOCAL-00011" summary="- Fixed Typos">
+      <created>1431990329379</created>
+      <option name="number" value="00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1431990329379</updated>
+    </task>
+    <task id="LOCAL-00012" summary="- Added Documentations">
+      <created>1432067451650</created>
+      <option name="number" value="00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1432067451650</updated>
+    </task>
+    <task id="LOCAL-00013" summary="- Fixed quadrature">
+      <created>1432098521232</created>
+      <option name="number" value="00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1432098521232</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="1" />
-    <editor active="true" />
+    <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
+    <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.43717" sideWeight="0.5" order="12" side_tool="true" content_ui="tabs" />
-      <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32946146" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.30728617" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.184375" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32843137" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3267974" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21785174" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24962178" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32946146" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
-    <layout-to-restore>
-      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.43717" sideWeight="0.5" order="13" side_tool="true" content_ui="tabs" />
-      <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.43717" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.184375" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32946146" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-    </layout-to-restore>
   </component>
   <component name="Vcs.Log.UiProperties">
     <option name="RECENTLY_FILTERED_USER_GROUPS">
@@ -677,645 +729,101 @@
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
-    <MESSAGE value="- Going To Delete Files" />
-    <MESSAGE value="- Finish, Deleted unnecessary files" />
-    <MESSAGE value="- Finished, However The Validty of results sill remains a question" />
-    <MESSAGE value="-ignore" />
-    <option name="LAST_COMMIT_MESSAGE" value="-ignore" />
+    <MESSAGE value="-Finished Slater_Basic, only tested it with be" />
+    <MESSAGE value="-Started Atomic_density Folder&#10;- Almost done test_slater_basic" />
+    <MESSAGE value="- Going to Experiment with classes&#10;- Added tests for atomic_density" />
+    <MESSAGE value="- Added Classes for slater_basic file" />
+    <MESSAGE value="- Started atomic_density with calsses" />
+    <MESSAGE value="-IDK" />
+    <MESSAGE value="- Fixed Typos" />
+    <MESSAGE value="- Added Documentations" />
+    <MESSAGE value="- Fixed quadrature" />
+    <option name="LAST_COMMIT_MESSAGE" value="- Fixed quadrature" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="15" />
+      <option name="time" value="12" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/io/slater_basic.py">
+    <entry file="file://$USER_HOME$/Desktop/neutral/mg">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="663" max-vertical-offset="2142">
-          <caret line="39" column="10" selection-start-line="39" selection-start-column="10" selection-end-line="39" selection-end-column="10" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-            <element signature="e#1832#2317#0" expanded="false" />
-            <element signature="e#2362#2772#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/io/test/test_slater_basic.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="85" max-vertical-offset="374">
-          <caret line="5" column="0" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
-          <folding>
-            <element signature="e#186#2777#0" expanded="false" />
-            <element signature="e#2871#5928#0" expanded="false" />
-            <element signature="e#6017#6780#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/atomic_density.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1122">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="561">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#378#497#0" expanded="false" />
-            <element signature="e#567#1008#0" expanded="false" />
-            <element signature="e#1045#1783#0" expanded="false" />
-            <element signature="e#1835#2930#0" expanded="false" />
-            <element signature="e#2974#3617#0" expanded="false" />
-            <element signature="e#3680#4556#0" expanded="false" />
-            <element signature="e#4596#4961#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/io/test/test_atomic_density.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="592" max-vertical-offset="1275">
-          <caret line="141" column="0" selection-start-line="141" selection-start-column="0" selection-end-line="141" selection-end-column="0" />
-          <folding>
-            <element signature="e#275#1619#0" expanded="false" />
-            <element signature="e#1687#2851#0" expanded="false" />
-            <element signature="e#2997#3990#0" expanded="false" />
-            <element signature="e#4057#5190#0" expanded="false" />
-            <element signature="e#5638#5963#0" expanded="false" />
-            <element signature="e#6027#7550#0" expanded="false" />
-            <element signature="e#7692#8964#0" expanded="false" />
-          </folding>
+    <entry file="uml://Python/#C:/Users/Alireza/PycharmProjects/fitting">
+      <provider selected="true" editor-type-id="UmlEditorProvider">
+        <state>
+          <ID>Python</ID>
+          <OriginalElement>#C:/Users/Alireza/PycharmProjects/fitting</OriginalElement>
+          <nodes>
+            <node x="" y="">density.radial_grid.grid</node>
+            <node x="" y="">gbasis.gbasis.UGBSBasis</node>
+            <node x="" y="">gbasis.gbasis.ContractedGaussianBasis</node>
+            <node x="" y="">_collections_abc.Hashable</node>
+            <node x="" y="">density.atomic_slater_density.Atomic_Density</node>
+            <node x="" y="">object</node>
+          </nodes>
+          <notes />
+          <edges />
+          <settings layout="Hierarchic Group" zoom="1.0" x="443.5" y="95.0" />
+          <SelectedNodes />
+          <Categories />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/examples/ag">
+    <entry file="file://$PROJECT_DIR$/fitting/gbasis/gbasis_nwchem.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="816" max-vertical-offset="952">
-          <caret line="48" column="50" selection-start-line="48" selection-start-column="41" selection-end-line="48" selection-end-column="50" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="19" max-vertical-offset="1156">
+          <caret line="12" column="0" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/io/slater_basic.py">
+    <entry file="file://$PROJECT_DIR$/fitting/gbasis/gbasis.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="663" max-vertical-offset="2142">
-          <caret line="39" column="10" selection-start-line="39" selection-start-column="10" selection-end-line="39" selection-end-column="10" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-            <element signature="e#1832#2317#0" expanded="false" />
-            <element signature="e#2362#2772#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/io/test/test_slater_basic.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="85" max-vertical-offset="374">
-          <caret line="5" column="0" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
-          <folding>
-            <element signature="e#186#2777#0" expanded="false" />
-            <element signature="e#2871#5928#0" expanded="false" />
-            <element signature="e#6017#6780#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/atomic_density.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1122">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#378#497#0" expanded="false" />
-            <element signature="e#567#1008#0" expanded="false" />
-            <element signature="e#1045#1783#0" expanded="false" />
-            <element signature="e#1835#2930#0" expanded="false" />
-            <element signature="e#2974#3617#0" expanded="false" />
-            <element signature="e#3680#4556#0" expanded="false" />
-            <element signature="e#4596#4961#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/io/test/test_atomic_density.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="592" max-vertical-offset="1275">
-          <caret line="141" column="0" selection-start-line="141" selection-start-column="0" selection-end-line="141" selection-end-column="0" />
-          <folding>
-            <element signature="e#275#1619#0" expanded="false" />
-            <element signature="e#1687#2851#0" expanded="false" />
-            <element signature="e#2997#3990#0" expanded="false" />
-            <element signature="e#4057#5190#0" expanded="false" />
-            <element signature="e#5638#5963#0" expanded="false" />
-            <element signature="e#6027#7550#0" expanded="false" />
-            <element signature="e#7692#8964#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/examples/ag">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="816" max-vertical-offset="952">
-          <caret line="48" column="50" selection-start-line="48" selection-start-column="41" selection-end-line="48" selection-end-column="50" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="1024" max-vertical-offset="1768">
+          <caret line="66" column="68" selection-start-line="66" selection-start-column="68" selection-end-line="66" selection-end-column="68" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/io/slater_basic.py">
+    <entry file="file://$PROJECT_DIR$/fitting/density/radial_grid.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="34" max-vertical-offset="1241">
-          <caret line="2" column="0" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-            <element signature="e#1832#2317#0" expanded="false" />
-            <element signature="e#2362#2772#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/io/test/test_slater_basic.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="884">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="384">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#186#2777#0" expanded="false" />
-            <element signature="e#2871#5928#0" expanded="false" />
-            <element signature="e#6017#6780#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/atomic_density.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="17" max-vertical-offset="2108">
-          <caret line="1" column="50" selection-start-line="1" selection-start-column="50" selection-end-line="1" selection-end-column="50" />
-          <folding>
-            <element signature="e#378#497#0" expanded="false" />
-            <element signature="e#567#1008#0" expanded="false" />
-            <element signature="e#1045#1783#0" expanded="false" />
-            <element signature="e#1835#2930#0" expanded="false" />
-            <element signature="e#2974#3617#0" expanded="false" />
-            <element signature="e#3680#4556#0" expanded="false" />
-            <element signature="e#4596#4961#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/io/test/test_atomic_density.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="17" max-vertical-offset="833">
-          <caret line="1" column="50" selection-start-line="1" selection-start-column="50" selection-end-line="1" selection-end-column="50" />
-          <folding>
-            <element signature="e#275#1619#0" expanded="false" />
-            <element signature="e#1687#2851#0" expanded="false" />
-            <element signature="e#2997#3990#0" expanded="false" />
-            <element signature="e#4057#5190#0" expanded="false" />
-            <element signature="e#5638#5963#0" expanded="false" />
-            <element signature="e#6027#7550#0" expanded="false" />
-            <element signature="e#7692#8964#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/io/slater_basic.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="272" max-vertical-offset="1224">
-          <caret line="78" column="0" selection-start-line="78" selection-start-column="0" selection-end-line="78" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-            <element signature="e#1832#2317#0" expanded="false" />
-            <element signature="e#2362#2772#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/io/test/test_slater_basic.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="748">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#186#2777#0" expanded="false" />
-            <element signature="e#2871#5928#0" expanded="false" />
-            <element signature="e#6017#6780#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/atomic_density.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="765" max-vertical-offset="2108">
-          <caret line="10" column="27" selection-start-line="10" selection-start-column="15" selection-end-line="10" selection-end-column="27" />
-          <folding>
-            <element signature="e#378#497#0" expanded="false" />
-            <element signature="e#567#1008#0" expanded="false" />
-            <element signature="e#1045#1783#0" expanded="false" />
-            <element signature="e#1835#2930#0" expanded="false" />
-            <element signature="e#2974#3617#0" expanded="false" />
-            <element signature="e#3680#4556#0" expanded="false" />
-            <element signature="e#4596#4961#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/io/test/test_atomic_density.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="192" max-vertical-offset="833">
-          <caret line="32" column="0" selection-start-line="32" selection-start-column="0" selection-end-line="32" selection-end-column="0" />
-          <folding>
-            <element signature="e#275#1619#0" expanded="false" />
-            <element signature="e#1687#2851#0" expanded="false" />
-            <element signature="e#2997#3990#0" expanded="false" />
-            <element signature="e#4057#5190#0" expanded="false" />
-            <element signature="e#5638#5963#0" expanded="false" />
-            <element signature="e#6027#7550#0" expanded="false" />
-            <element signature="e#7692#8964#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/io/slater_basic.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="612" max-vertical-offset="1224">
-          <caret line="124" column="35" selection-start-line="124" selection-start-column="20" selection-end-line="124" selection-end-column="35" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-            <element signature="e#1832#2317#0" expanded="false" />
-            <element signature="e#2362#2772#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/io/test/test_slater_basic.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="102" max-vertical-offset="357">
-          <caret line="29" column="0" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
-          <folding>
-            <element signature="e#186#2777#0" expanded="false" />
-            <element signature="e#2871#5928#0" expanded="false" />
-            <element signature="e#6017#6780#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/atomic_density.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1530">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#378#497#0" expanded="false" />
-            <element signature="e#567#1008#0" expanded="false" />
-            <element signature="e#1045#1783#0" expanded="false" />
-            <element signature="e#1835#2930#0" expanded="false" />
-            <element signature="e#2974#3617#0" expanded="false" />
-            <element signature="e#3680#4556#0" expanded="false" />
-            <element signature="e#4596#4961#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/io/test/test_atomic_density.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="311" max-vertical-offset="833">
-          <caret line="88" column="0" selection-start-line="88" selection-start-column="0" selection-end-line="88" selection-end-column="0" />
-          <folding>
-            <element signature="e#275#1619#0" expanded="false" />
-            <element signature="e#1687#2851#0" expanded="false" />
-            <element signature="e#2997#3990#0" expanded="false" />
-            <element signature="e#4057#5190#0" expanded="false" />
-            <element signature="e#5638#5963#0" expanded="false" />
-            <element signature="e#6027#7550#0" expanded="false" />
-            <element signature="e#7692#8964#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/io/slater_basic.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="612" max-vertical-offset="1224">
-          <caret line="124" column="35" selection-start-line="124" selection-start-column="20" selection-end-line="124" selection-end-column="35" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-            <element signature="e#1832#2317#0" expanded="false" />
-            <element signature="e#2362#2772#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/io/test/test_slater_basic.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="102" max-vertical-offset="357">
-          <caret line="29" column="0" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
-          <folding>
-            <element signature="e#186#2777#0" expanded="false" />
-            <element signature="e#2871#5928#0" expanded="false" />
-            <element signature="e#6017#6780#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/atomic_density.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1955">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#378#497#0" expanded="false" />
-            <element signature="e#567#1008#0" expanded="false" />
-            <element signature="e#1045#1783#0" expanded="false" />
-            <element signature="e#1835#2930#0" expanded="false" />
-            <element signature="e#2974#3617#0" expanded="false" />
-            <element signature="e#3680#4556#0" expanded="false" />
-            <element signature="e#4596#4961#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/io/test/test_atomic_density.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="53" max-vertical-offset="1003">
-          <caret line="70" column="16" selection-start-line="70" selection-start-column="16" selection-end-line="70" selection-end-column="16" />
-          <folding>
-            <element signature="e#275#1619#0" expanded="false" />
-            <element signature="e#1687#2851#0" expanded="false" />
-            <element signature="e#2997#3990#0" expanded="false" />
-            <element signature="e#4057#5190#0" expanded="false" />
-            <element signature="e#5638#5963#0" expanded="false" />
-            <element signature="e#6027#7550#0" expanded="false" />
-            <element signature="e#7692#8964#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/io/slater_basic.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="612" max-vertical-offset="1224">
-          <caret line="124" column="35" selection-start-line="124" selection-start-column="20" selection-end-line="124" selection-end-column="35" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-            <element signature="e#1832#2317#0" expanded="false" />
-            <element signature="e#2362#2772#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/io/test/test_slater_basic.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="102" max-vertical-offset="357">
-          <caret line="29" column="0" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
-          <folding>
-            <element signature="e#186#2777#0" expanded="false" />
-            <element signature="e#2871#5928#0" expanded="false" />
-            <element signature="e#6017#6780#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/atomic_density.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="1717" max-vertical-offset="1938">
-          <caret line="143" column="52" selection-start-line="143" selection-start-column="52" selection-end-line="143" selection-end-column="52" />
-          <folding>
-            <element signature="e#378#497#0" expanded="false" />
-            <element signature="e#567#1008#0" expanded="false" />
-            <element signature="e#1045#1783#0" expanded="false" />
-            <element signature="e#1835#2930#0" expanded="false" />
-            <element signature="e#2974#3617#0" expanded="false" />
-            <element signature="e#3680#4556#0" expanded="false" />
-            <element signature="e#4596#4961#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/io/test/test_atomic_density.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="799">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#275#1619#0" expanded="false" />
-            <element signature="e#1687#2851#0" expanded="false" />
-            <element signature="e#2997#3990#0" expanded="false" />
-            <element signature="e#4057#5190#0" expanded="false" />
-            <element signature="e#5638#5963#0" expanded="false" />
-            <element signature="e#6027#7550#0" expanded="false" />
-            <element signature="e#7692#8964#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/io/slater_basic.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="68" max-vertical-offset="238">
-          <caret line="4" column="0" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-            <element signature="e#1832#2317#0" expanded="false" />
-            <element signature="e#2362#2772#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/io/test/test_slater_basic.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="357">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#186#2777#0" expanded="false" />
-            <element signature="e#2871#5928#0" expanded="false" />
-            <element signature="e#6017#6780#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/atomic_density.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="867" max-vertical-offset="1088">
-          <caret line="105" column="74" selection-start-line="105" selection-start-column="74" selection-end-line="105" selection-end-column="74" />
-          <folding>
-            <element signature="e#378#497#0" expanded="false" />
-            <element signature="e#567#1008#0" expanded="false" />
-            <element signature="e#1045#1783#0" expanded="false" />
-            <element signature="e#1835#2930#0" expanded="false" />
-            <element signature="e#2974#3617#0" expanded="false" />
-            <element signature="e#3680#4556#0" expanded="false" />
-            <element signature="e#4596#4961#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/io/test/test_atomic_density.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="357" max-vertical-offset="782">
-          <caret line="50" column="0" selection-start-line="50" selection-start-column="0" selection-end-line="50" selection-end-column="0" />
-          <folding>
-            <element signature="e#275#1619#0" expanded="false" />
-            <element signature="e#1687#2851#0" expanded="false" />
-            <element signature="e#2997#3990#0" expanded="false" />
-            <element signature="e#4057#5190#0" expanded="false" />
-            <element signature="e#5638#5963#0" expanded="false" />
-            <element signature="e#6027#7550#0" expanded="false" />
-            <element signature="e#7692#8964#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/io/slater_basic.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="294" max-vertical-offset="1309">
-          <caret line="76" column="8" selection-start-line="76" selection-start-column="8" selection-end-line="76" selection-end-column="23" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-            <element signature="e#1832#2317#0" expanded="false" />
-            <element signature="e#2362#2772#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/atomic_density.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1496">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#378#497#0" expanded="false" />
-            <element signature="e#567#1008#0" expanded="false" />
-            <element signature="e#1045#1783#0" expanded="false" />
-            <element signature="e#1835#2930#0" expanded="false" />
-            <element signature="e#2974#3617#0" expanded="false" />
-            <element signature="e#3680#4556#0" expanded="false" />
-            <element signature="e#4596#4961#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/io/slater_basic.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="3" max-vertical-offset="1156">
-          <caret line="69" column="48" selection-start-line="69" selection-start-column="48" selection-end-line="69" selection-end-column="48" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-            <element signature="e#1832#2317#0" expanded="false" />
-            <element signature="e#2362#2772#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/atomic_density.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1207">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#378#497#0" expanded="false" />
-            <element signature="e#567#1008#0" expanded="false" />
-            <element signature="e#1045#1783#0" expanded="false" />
-            <element signature="e#1835#2930#0" expanded="false" />
-            <element signature="e#2974#3617#0" expanded="false" />
-            <element signature="e#3680#4556#0" expanded="false" />
-            <element signature="e#4596#4961#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/atomic_density.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="119" max-vertical-offset="1224">
-          <caret line="7" column="0" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
-          <folding>
-            <element signature="e#378#497#0" expanded="false" />
-            <element signature="e#567#1008#0" expanded="false" />
-            <element signature="e#1045#1783#0" expanded="false" />
-            <element signature="e#1835#2930#0" expanded="false" />
-            <element signature="e#2974#3617#0" expanded="false" />
-            <element signature="e#3680#4556#0" expanded="false" />
-            <element signature="e#4596#4961#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/io/test/test_atomic_density.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="476" max-vertical-offset="578">
-          <caret line="28" column="54" selection-start-line="28" selection-start-column="54" selection-end-line="28" selection-end-column="54" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/atomic_density.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="442">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#378#497#0" expanded="false" />
-            <element signature="e#567#1008#0" expanded="false" />
-            <element signature="e#1045#1783#0" expanded="false" />
-            <element signature="e#1835#2930#0" expanded="false" />
-            <element signature="e#2974#3617#0" expanded="false" />
-            <element signature="e#3680#4556#0" expanded="false" />
-            <element signature="e#4596#4961#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/AppData/Roaming/Python/Python34/site-packages/sympy/core/sympify.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33267328" vertical-offset="4422" max-vertical-offset="7548">
-          <caret line="276" column="0" selection-start-line="276" selection-start-column="0" selection-end-line="276" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/io/slater_basic.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2142">
-          <caret line="39" column="10" selection-start-line="39" selection-start-column="10" selection-end-line="39" selection-end-column="10" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-            <element signature="e#1832#2317#0" expanded="false" />
-            <element signature="e#2362#2772#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/io/test/test_slater_basic.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="408" max-vertical-offset="1819">
-          <caret line="5" column="0" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
-          <folding>
-            <element signature="e#186#2777#0" expanded="false" />
-            <element signature="e#2871#5928#0" expanded="false" />
-            <element signature="e#6017#6780#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/examples/ag">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="306" max-vertical-offset="952">
-          <caret line="48" column="50" selection-start-line="48" selection-start-column="41" selection-end-line="48" selection-end-column="50" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/io/test/test_atomic_density.py">
+    <entry file="file://$PROJECT_DIR$/fitting/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="592" max-vertical-offset="1275">
-          <caret line="141" column="0" selection-start-line="141" selection-start-column="0" selection-end-line="141" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="384">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#275#1619#0" expanded="false" />
-            <element signature="e#1687#2851#0" expanded="false" />
-            <element signature="e#2997#3990#0" expanded="false" />
-            <element signature="e#4057#5190#0" expanded="false" />
-            <element signature="e#5638#5963#0" expanded="false" />
-            <element signature="e#6027#7550#0" expanded="false" />
-            <element signature="e#7692#8964#0" expanded="false" />
+            <element signature="e#1#29#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/atomic_density.py">
+    <entry file="file://$PROJECT_DIR$/fitting/density/atomic_slater_density.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.5398089" vertical-offset="358" max-vertical-offset="1122">
-          <caret line="136" column="30" selection-start-line="136" selection-start-column="30" selection-end-line="136" selection-end-column="30" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2210">
+          <caret line="16" column="32" selection-start-line="16" selection-start-column="24" selection-end-line="16" selection-end-column="32" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fitting/fitting/least_squares.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.37760416" vertical-offset="416" max-vertical-offset="867">
+          <caret line="33" column="29" selection-start-line="33" selection-start-column="29" selection-end-line="33" selection-end-column="29" />
           <folding>
-            <element signature="e#378#497#0" expanded="false" />
-            <element signature="e#567#1008#0" expanded="false" />
-            <element signature="e#1045#1783#0" expanded="false" />
-            <element signature="e#1835#2930#0" expanded="false" />
-            <element signature="e#2974#3617#0" expanded="false" />
-            <element signature="e#3680#4556#0" expanded="false" />
-            <element signature="e#4596#4961#0" expanded="false" />
+            <element signature="e#0#19#0" expanded="true" />
+            <element signature="e#1233#1343#1" expanded="false" />
           </folding>
         </state>
       </provider>
