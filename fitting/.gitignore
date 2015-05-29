@@ -1,0 +1,3 @@
+
+# Ignore (in-place) build results
+*.pyc

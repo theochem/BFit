@@ -1,9 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="4035ad68-97f7-4e18-bb55-e563859a9cc8" name="Default" comment="- added fit">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/fitting.iml" afterPath="$PROJECT_DIR$/.idea/fitting.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fitting/fitting/least_squares.py" afterPath="$PROJECT_DIR$/fitting/fitting/least_squares.py" />
+    <list default="true" id="4035ad68-97f7-4e18-bb55-e563859a9cc8" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/.gitignore" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/density/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/density/test/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/gbasis/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/gbasis/test/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/test/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/data/examples/ag.slater" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/examples/ag" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/density/atomic_slater_density.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/density/atomic_slater_wfn.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/data/examples/be.slater" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/examples/be" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/data/examples/c.slater" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/gbasis/gbasis.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/gbasis/gbasis_nwchem.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/data/examples/ne.slater" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/examples/ne" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/density/radial_grid.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/density/test/test_atomic_slater_density.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/density/test/test_atomic_slater_wfn.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/gbasis/test/test_gbasis.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/gbasis/test/test_gbasis_nwchem.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/data/basis/ugbs.nwchem" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="fitting.iws" />
@@ -47,7 +69,7 @@
       <file leaf-file-name="least_squares.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/fitting/fitting/least_squares.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.12144703" vertical-offset="531" max-vertical-offset="918">
+            <state vertical-scroll-proportion="0.12176166" vertical-offset="531" max-vertical-offset="918">
               <caret line="34" column="25" selection-start-line="34" selection-start-column="25" selection-end-line="34" selection-end-column="25" />
               <folding>
                 <element signature="e#0#19#0" expanded="true" />
@@ -244,24 +266,6 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="fitting" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="fitting" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="fitting" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="fitting" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="density" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -708,28 +712,34 @@
       <option name="project" value="LOCAL" />
       <updated>1432701764606</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="- Checking The Results">
+      <created>1432904796507</created>
+      <option name="number" value="00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1432904796507</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32843137" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32300162" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32352942" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22390318" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22390318" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24962178" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -763,7 +773,8 @@
     <MESSAGE value="- Added Documentations" />
     <MESSAGE value="- Fixed quadrature" />
     <MESSAGE value="- added least squares&#10;- changed directory for gbasis" />
-    <option name="LAST_COMMIT_MESSAGE" value="- added least squares&#10;- changed directory for gbasis" />
+    <MESSAGE value="- Checking The Results" />
+    <option name="LAST_COMMIT_MESSAGE" value="- Checking The Results" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -971,7 +982,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/fitting/fitting/least_squares.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.12144703" vertical-offset="531" max-vertical-offset="918">
+        <state vertical-scroll-proportion="0.12176166" vertical-offset="531" max-vertical-offset="918">
           <caret line="34" column="25" selection-start-line="34" selection-start-column="25" selection-end-line="34" selection-end-column="25" />
           <folding>
             <element signature="e#0#19#0" expanded="true" />
