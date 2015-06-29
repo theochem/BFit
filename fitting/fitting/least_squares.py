@@ -71,3 +71,5 @@ print(np.trapz(grid**2 * density_approx, grid) )       #number of electrons by i
 be = Atomic_Density(file_path, grid.reshape(len(grid), 1))
 density = np.ravel(be.atomic_density())
 print(np.trapz(np.power(grid, 2) * density, grid)  )                  #number of electrons by integrating the true density
+import sys
+print(sys.version)
