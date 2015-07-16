@@ -44,19 +44,17 @@ be_rho = be.atomic_density()
 ########################################## FMIN_L_BFGS_B ####################################################################
 #############################################################################################################################
 be_UGBS = np.concatenate(( [0.02*1.95819475**25, 0.02*1.95819475**26, 0.02*1.95819475**27, 0.02*1.95819475**28, 0.02*1.95819475**29,
-                0.02*1.95819475**30, 0.02*1.95819475**31, 0.02*1.95819475**32, 0.02*1.95819475**33, 0.02*1.95819475**34, 0.02*1.95819475**35
-                ,0.02*1.95819475**36, 0.02*1.95819475**37, 0.02*1.95819475**38, 0.02*1.95819475**39, 0.02*1.95819475**40, 0.02*1.95819475**41
-                , 0.02*1.95819475**42, 0.02*1.95819475**43, 0.02*1.95819475**44, 0.02*1.95819475**45, 0.02*1.95819475**46, 0.02*1.95819475**47,
-                0.02*1.95819475**48, 0.02*1.95819475**49, 0.02*1.95819475**50, 0.02*1.95819475**51, 0.02*1.95819475**52, 0.02*1.95819475**53,
-                0.02*1.95819475**54, 0.02*1.95819475**55, 0.02*1.95819475**56, 0.02*1.95819475**57, 0.02*1.95819475**58, 0.02*1.95819475**59
-                ,0.02*1.95819475**60, 0.02*1.95819475**61, 0.02*1.95819475**62], be_UGBS))
+                0.02*1.95819475**30, 0.02*1.95819475**31], be_UGBS))
 length_UGBS = np.shape(be_UGBS)[0]
-
+""", 0.02*1.95819475**32, 0.02*1.95819475**33, 0.02*1.95819475**34, 0.02*1.95819475**35
+                ,0.02*1.95819475**36, 0.02*1.95819475**37,0.02*1.95819475**38, 0.02*1.95819475**39, 0.02*1.95819475**40, 0.02*1.95819475**41
+                , 0.02*1.95819475**42, 0.02*1.95819475**43, 0.02*1.95819475**44, 0.02*1.95819475**45, 0.02*1.95819475**46, 0.02*1.95819475**47,
+                0.02*1.95819475**48, 0.02*1.95819475**49, 0.02*1.95819475**50"""
 def total_density_cost_function(x, *args):
     """
     """
     UGBS, grid, rho = args[0], args[1], args[2]
-    gaussian = x * np.exp(-1.990 * UGBS * grid**2) # 503 x 25
+    gaussian = x * np.exp(np.longdouble(-1.9999999999 * UGBS * grid**2)) # 503 x 25
     sum_gaussians = np.sum(gaussian, axis=1)
     sum_gaussians = np.reshape(sum_gaussians, (len(sum_gaussians), 1))
     residual = rho - sum_gaussians
@@ -110,6 +108,7 @@ def plot_function(coefficients, UGBS, grid):
 
 NNLS_density_approx = plot_function(NNLS_coeff, NNLS_coeff, np.reshape(Be_grid, (len(Be_grid), 1)))
 print("Shape", np.shape(NNLS_density_approx))
+density_approx = np.reshape(density_approx, (len(density_approx), 1)) # this is for the plot
 
 #Plotting
 log_grid = np.log(np.ravel(Be_grid))
@@ -135,7 +134,6 @@ print("Integration of Beryllium for NNLS Using Clenshaw Grid is ", np.trapz(np.r
 print("Integration Of Beryllium for f_Min_LGBS Using Clenshaw Grid is ", np.trapz(np.ravel(Be_grid**2 * density_resized), np.ravel(Be_grid)) )       #number of electrons by integrating the approximate model
 
 #Taking The Difference Between the Techniques
-density_approx = np.reshape(density_approx, (len(density_approx), 1))
 print("The Difference between True and F_Min_BFGS_B ", np.absolute(np.sum(be_rho - density_approx)))
 NNLS_density_approx = np.reshape(NNLS_density_approx, (len(NNLS_density_approx), 1))
 print("The Difference between True and NNLS ", np.absolute(np.sum(be_rho - NNLS_density_approx)))
