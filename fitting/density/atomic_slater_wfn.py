@@ -123,7 +123,8 @@ def load_slater_wfn(file_name):
     data = {'configuration': configuration ,
             'energy': energy,
             'orbitals': orbitals ,
-            'orbitals_energy': orbitals_energy ,
+            'orbitals_energy':
+            {key:np.asarray(value) for key,value in orbitals_energy.items() if value != []} ,
             'orbitals_cusp': orbitals_cusp,
             'orbitals_basis': orbitals_basis,
             'orbitals_exp':
