@@ -31,7 +31,7 @@ class Atomic_Density():
         assert exponent.shape == quantumNum.shape
         assert exponent.shape[1] == 1
         assert quantumNum.shape[1] == 1
-        assert r.shape[1] == 1
+        #assert r.shape[1] == 1
 
         normalization = ((2 * exponent)**quantumNum) * np.sqrt(((2 * exponent) / scipy.misc.factorial(2 * quantumNum)))
         assert normalization.shape == exponent.shape
@@ -130,3 +130,72 @@ class Atomic_Density():
                  and column = 1
         """
         return np.dot(np.absolute(self.phi_matrix())**2, self.VALUES['orbitals_electron_array'] )
+
+    def atomic_density_core(self):
+        """
+        Calculates Atomic Density for
+        core and valence electrons.
+        :return:
+        """
+
+        def energy_homo():
+            """
+            A helper function that finds the HOMO energy of
+            the element
+            :return: Energy Of Homo
+            """
+            #initilize the energy from first value from the list
+            energy_homo = self.VALUES['orbitals_energy']['S'][0]
+
+            for orbital,list_energy in self.VALUES['orbitals_energy'].items():
+                max_of_list = np.max(list_energy)
+                if max_of_list > energy_homo:
+                    energy_homo = max_of_list
+            return(energy_homo)
+
+        energy_homo = energy_homo()
+        print(energy_homo)
+        print(self.VALUES['orbitals_energy'])
+
+        def join_energy():
+            """
+            A helper function to join all of the energy
+            levels into one array
+            :return:
+            """
+            joined_array = np.array([])
+            for orbital in ['S', 'P', 'D', 'F']:
+                if orbital in self.VALUES['orbitals_energy']:
+                    orbital_energy = self.VALUES['orbitals_energy'][orbital]
+                    joined_array = np.hstack([joined_array, orbital_energy])
+            return joined_array
+
+
+        phi_matrix = self.phi_matrix()
+        energy_difference = join_energy() - energy_homo
+
+        absolute_squared = 1 -   np.exp((-1) * np.absolute((energy_difference)**2))
+        core = absolute_squared * np.absolute(phi_matrix)**2
+
+        absolute_squared_val = np.exp((-1) * np.absolute((energy_difference)**2))
+        valence = absolute_squared_val * np.absolute(phi_matrix)**2
+
+
+        return(np.dot(core, self.VALUES['orbitals_electron_array'] ),\
+               np.dot(valence, self.VALUES['orbitals_electron_array']))
+
+r"""
+p, w = np.polynomial.laguerre.laggauss(185)
+p = np.reshape(p, (len(p), 1))
+w = np.reshape(w, (len(w), 1))
+be = Atomic_Density(r'C:\Users\Alireza\PycharmProjects\fitting\fitting\data\examples\be.slater', p)
+
+hey = be.atomic_density_core()
+
+a = hey[0] * p**2 * w/ np.exp(-p)
+b = hey[1] * p**2 * w/np.exp(-p)
+
+print(np.sum(a), np.sum(b))
+"""
+
+
