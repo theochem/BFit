@@ -184,6 +184,9 @@ class Atomic_Density():
         return(np.dot(core, self.VALUES['orbitals_electron_array'] ),\
                np.dot(valence, self.VALUES['orbitals_electron_array']))
 
+
+
+
 r"""
 p, w = np.polynomial.laguerre.laggauss(185)
 p = np.reshape(p, (len(p), 1))

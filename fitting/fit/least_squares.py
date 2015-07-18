@@ -1,44 +1,129 @@
-from fitting.density import *
-from fitting.gbasis import *
-from fitting.density import *
+from fitting.density.atomic_slater_density import *
+from fitting.gbasis.gbasis import UGBSBasis
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.optimize
 
+#Ask Farnaz - The Atomic_slater_density uses an column vector, so should Density Model be column vector as well?
+class DensityModel():
+    def __init__(self, element_name, file_path, grid, coefficients=[], change_exponents=False, new_exponents=[]):
+        self.grid = grid
+        self.coefficients = coefficients
+        self.file_path = file_path
+        self.electron_density = Atomic_Density(file_path, self.grid).atomic_density()
 
-def clenshaw_curtis(atomic_number, gridpoints1, gridpoints2):
-    """
-    does not include zero
-    """
-    points = np.arange(0, gridpoints1)
-    points2 = np.arange(1, gridpoints2)
+        if change_exponents:
+            self.exponents= new_exponents
+        else:
+            gbasis =  UGBSBasis(element_name)
+            self.exponents = 2.0 * gbasis.exponents()
 
-    quadrature =  1/ (2 * atomic_number) * (1 - np.cos( np.pi * points / (gridpoints1 * 2)))
-    quadrature2 = 25 * (1 - np.cos(np.pi * points2 / (gridpoints2 * 2)))
 
-    quadrature = np.concatenate((quadrature, quadrature2, [50, 75, 100]), axis=1)
-    return np.sort(quadrature)
+    def change_exponents(self, exponents):
+        self.exponents = exponents
 
-# Create A Clenshaw Grid Based on Beryllium that has 502 points,
-Be_grid = clenshaw_curtis(4, 200, 300)
-#Be_grid = np.arange(0, 10.0, 0.1)
-Be_grid = Be_grid.reshape((len(Be_grid), 1)) # 502, 1
+    def model(self, coefficients, exponents=[] ,change_exponents=False):
+        if change_exponents:
+            exponential = np.exp(-2 * exponents * np.power(self.grid, 2.0))
+        else:
+            exponential = np.exp(-self.exponents * np.power(self.grid, 2.0))
+        gaussian_density = np.dot(exponential, coefficients) # is gaussian the right word?
+        return(gaussian_density)
 
-#Obtain UGBS for Beryllium
-a = gbasis.UGBSBasis("be")
-be_UGBS = (a.exponents("s")); print(be_UGBS)
+    def cofactor_matrix(self, exponents=[], greedy_algo=False):
+        if greedy_algo:
+            exponential = np.exp(-2 * exponents * np.power(self.grid, 2.0))
+        else:
+            exponential = np.exp(-self.exponents * np.power(self.grid, 2.0))
+        assert np.ndim(exponential) == 2
+        return(exponential)
 
-#Obtain Electron Density for Beryllium from the clenshaw grid
-file_path = r"\Users\Alireza\PycharmProjects\fitting\fitting\data\examples\be.slater"
-be = atomic_slater_density.Atomic_Density(r"\Users\Alireza\PycharmProjects\fitting\fitting\data\examples\be.slater", Be_grid)
-be_rho = be.atomic_density()
+    def cost_function(self, coefficient):
+        cofactor_matrix = self.cofactor_matrix()
+        gaussian_model = coefficient * cofactor_matrix
+        gaussian_model = np.sum(gaussian_model, axis=1)
+        print(np.shape(gaussian_model), np.shape(self.electron_density))
+        residual = np.ravel(self.electron_density) - gaussian_model
+        assert residual.ndim == 1
+        residual_squared = np.power(residual, 2.0)
 
-#Optional
-#Plot the Electron Density for beryllium from the clenshaw grid
-#plt.plot(np.ravel(Be_grid), np.ravel(be_rho), 'r--')
-#plt.show()
+        return residual_squared
 
+    def derivitive_cost_function(self):
+        pass
+
+    def f_min_slsqp_coefficients(self, list_initial_guess, ):
+        bounds1=[(0, None) for x in range(0, len(self.exponents))]
+        derivitive = self.derivitive_cost_function()
+
+        #f_min_slsqp = scipy.optimize.fmin_slsqp(self.cost_function, list_initial_guess, bounds=bounds, fprime_eqcons=self.derivitive_cost_function())
+        SLSQP = scipy.optimize.minimize(self.cost_function, x0=list_initial_guess, method='SLSQP', jac=True, bounds=bounds1)
+        print(SLSQP)
+
+    def nnls_coefficients(self, cofactor_matrix):
+        b_vector = self.electron_density
+
+        #b vector has to be one dimensional
+        b_vector = np.ravel(b_vector)
+        assert np.ndim(b_vector) == 1
+        row_nnls_coefficients = scipy.optimize.nnls(cofactor_matrix, b_vector)
+
+        return(row_nnls_coefficients)
+
+    def integration(self, coefficients, exponents=[], change_exponents=False):
+        # Integrate Based On Model or
+        # Integrate Based on COefficients
+        # Integration of NNLS is stuck at 4.14811924642
+        if change_exponents:
+            electron_density = self.model(coefficients, exponents, change_exponents=True)
+        else:
+            electron_density = self.model(coefficients)
+        integrate = np.trapz(np.ravel(self.grid**2) * np.ravel(electron_density), np.ravel(self.grid))
+        return integrate
+
+
+    def true_value(self, points):
+        p, w = np.polynomial.laguerre.laggauss(points)
+        p = np.reshape(p, (len(p), 1))
+        w = np.reshape(w, (len(w), 1))
+        be = Atomic_Density(r'C:\Users\Alireza\PycharmProjects\fitting\fitting\data\examples\be.slater', p)
+
+        a = be.atomic_density() * p**2 * w/ np.exp(-p)
+        return(np.sum(a))
+
+    def greedy_algorithm(self, step_size, NNLS=False, SLSQP=False):
+        # Start WIth Middle UGBS
+        STARTING_VALUE = self.exponents[int(len(self.exponents)/2)]
+        exponents_array = np.array([[STARTING_VALUE]])
+        coefficients_array = None
+        true_value = be.true_value(190)
+
+        if NNLS:
+            cofactor_matrix = self.cofactor_matrix(exponents_array, greedy_algo=True)
+            NNLS_coeff = self.nnls_coefficients(cofactor_matrix)
+
+            #Integrate
+            print(self.integration(NNLS_coeff, exponents_array, change_exponents=True) )
+
+
+
+
+file_path = r"C:\Users\Alireza\PycharmProjects\fitting\fitting\data\examples\be.slater"
+from fitting.density.radial_grid import *
+radial_grid = Radial_Grid(4)
+row_grid_points = radial_grid.grid_points(200, 300, [50, 75, 100])
+column_grid_points = np.reshape(row_grid_points, (len(row_grid_points), 1))
+be = DensityModel('be', file_path, column_grid_points)
+
+x0 = np.linspace(0, 1, num = len(be.exponents))
+
+be.greedy_algorithm(0, NNLS=True)
+
+
+
+
+r"""
 
 #############################################################################################################################
 ########################################## FMIN_L_BFGS_B ####################################################################
@@ -46,13 +131,8 @@ be_rho = be.atomic_density()
 be_UGBS = np.concatenate(( [0.02*1.95819475**25, 0.02*1.95819475**26, 0.02*1.95819475**27, 0.02*1.95819475**28, 0.02*1.95819475**29,
                 0.02*1.95819475**30, 0.02*1.95819475**31], be_UGBS))
 length_UGBS = np.shape(be_UGBS)[0]
-""", 0.02*1.95819475**32, 0.02*1.95819475**33, 0.02*1.95819475**34, 0.02*1.95819475**35
-                ,0.02*1.95819475**36, 0.02*1.95819475**37,0.02*1.95819475**38, 0.02*1.95819475**39, 0.02*1.95819475**40, 0.02*1.95819475**41
-                , 0.02*1.95819475**42, 0.02*1.95819475**43, 0.02*1.95819475**44, 0.02*1.95819475**45, 0.02*1.95819475**46, 0.02*1.95819475**47,
-                0.02*1.95819475**48, 0.02*1.95819475**49, 0.02*1.95819475**50"""
+
 def total_density_cost_function(x, *args):
-    """
-    """
     UGBS, grid, rho = args[0], args[1], args[2]
     gaussian = x * np.exp(np.longdouble(-1.9999999999 * UGBS * grid**2)) # 503 x 25
     sum_gaussians = np.sum(gaussian, axis=1)
@@ -85,9 +165,7 @@ print(np.shape(Be_grid), np.shape(density_resized))
 #############################################################################################################################
 ########################################## NON-NEGATIVE LEAST SQUARES #######################################################
 #############################################################################################################################
-"""
-Performing non-negative least squares solver
-where b is the electron density and A is the """
+
 def cofactor_matrix(UGBS, grid):
     inner = UGBS * grid**2 # 503 x 25
     gaussian = np.exp(-2 * inner) # 503 x 25
@@ -97,6 +175,7 @@ def cofactor_matrix(UGBS, grid):
 cofactor_mat = cofactor_matrix(be_UGBS, Be_grid)
 print("The Shape of A/Cofactor Matrix is ", np.shape(cofactor_mat))
 NNLS_coeff = scipy.optimize.nnls(cofactor_mat, be_rho)[0]
+print("The shape of cofactor and b", cofactor_mat.ndim, be_rho.ndim)
 print("These Are The Coefficients Obtained From f_min_BFGS\n", coeff, "\n")
 print("These are the Coefficients Obtained from NNLS\n", NNLS_coeff, "\n")
 print( np.shape(NNLS_coeff), np.shape(Be_grid))
@@ -138,3 +217,4 @@ print("The Difference between True and F_Min_BFGS_B ", np.absolute(np.sum(be_rho
 NNLS_density_approx = np.reshape(NNLS_density_approx, (len(NNLS_density_approx), 1))
 print("The Difference between True and NNLS ", np.absolute(np.sum(be_rho - NNLS_density_approx)))
 print("The Difference between F_Min_BFGS_B and NNLS ", np.sum(density_approx - NNLS_density_approx))
+"""
