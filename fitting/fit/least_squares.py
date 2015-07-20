@@ -7,32 +7,43 @@ import scipy.optimize
 
 #Ask Farnaz - The Atomic_slater_density uses an column vector, so should Density Model be column vector as well?
 class DensityModel():
-    def __init__(self, element_name, file_path, grid, coefficients=[], change_exponents=False, new_exponents=[]):
+    def __init__(self, element_name, file_path, grid, change_exponents=False):
         self.grid = grid
-        self.coefficients = coefficients
         self.file_path = file_path
         self.electron_density = Atomic_Density(file_path, self.grid).atomic_density()
 
         if change_exponents:
-            self.exponents= new_exponents
+            pass
         else:
             gbasis =  UGBSBasis(element_name)
             self.exponents = 2.0 * gbasis.exponents()
 
 
-    def change_exponents(self, exponents):
-        self.exponents = exponents
+    def model(self, coefficients, exponents):
+        """
+        Used this to computer the exponents and coefficients
+        Exponents should be 1ndim list
 
-    def model(self, coefficients, exponents=[] ,change_exponents=False):
-        if change_exponents:
-            exponential = np.exp(-2 * exponents * np.power(self.grid, 2.0))
-        else:
-            exponential = np.exp(-self.exponents * np.power(self.grid, 2.0))
+        Shape (Number of Grid Points) Row Vector
+        :param coefficients:
+        :param exponents:
+        :return:
+        """
+        assert exponents.ndim == 1
+        exponential = np.exp(-exponents * np.power(self.grid, 2.0))
+
         gaussian_density = np.dot(exponential, coefficients) # is gaussian the right word?
         return(gaussian_density)
 
-    def cofactor_matrix(self, exponents=[], greedy_algo=False):
-        if greedy_algo:
+    def cofactor_matrix(self, exponents=[], change_exponents=False):
+        """
+        Params
+        exponents is 1 dimensional array
+
+        Returns e^(exponents * radius**2) Matrix
+        Shape is (Number of Grids, Number of Exponents)
+        """
+        if change_exponents:
             exponential = np.exp(-2 * exponents * np.power(self.grid, 2.0))
         else:
             exponential = np.exp(-self.exponents * np.power(self.grid, 2.0))
@@ -41,9 +52,10 @@ class DensityModel():
 
     def cost_function(self, coefficient):
         cofactor_matrix = self.cofactor_matrix()
+
         gaussian_model = coefficient * cofactor_matrix
         gaussian_model = np.sum(gaussian_model, axis=1)
-        print(np.shape(gaussian_model), np.shape(self.electron_density))
+
         residual = np.ravel(self.electron_density) - gaussian_model
         assert residual.ndim == 1
         residual_squared = np.power(residual, 2.0)
@@ -69,16 +81,17 @@ class DensityModel():
         assert np.ndim(b_vector) == 1
         row_nnls_coefficients = scipy.optimize.nnls(cofactor_matrix, b_vector)
 
-        return(row_nnls_coefficients)
+        return(row_nnls_coefficients[0])
 
-    def integration(self, coefficients, exponents=[], change_exponents=False):
+    def integration(self, coefficients, exponents):
         # Integrate Based On Model or
         # Integrate Based on COefficients
         # Integration of NNLS is stuck at 4.14811924642
-        if change_exponents:
-            electron_density = self.model(coefficients, exponents, change_exponents=True)
-        else:
-            electron_density = self.model(coefficients)
+
+
+        assert coefficients.ndim == 1
+        assert exponents.ndim == 1
+        electron_density = self.model(coefficients, exponents) #row vector
         integrate = np.trapz(np.ravel(self.grid**2) * np.ravel(electron_density), np.ravel(self.grid))
         return integrate
 
@@ -92,19 +105,73 @@ class DensityModel():
         a = be.atomic_density() * p**2 * w/ np.exp(-p)
         return(np.sum(a))
 
-    def greedy_algorithm(self, step_size, NNLS=False, SLSQP=False):
+    def greedy_algorithm(self, step_size, step_size_factor, initial_guess, maximum_exponents=50, use_nnls=False, use_slsqp=False):
+        assert isinstance(maximum_exponents, int)
         # Start WIth Middle UGBS
-        STARTING_VALUE = self.exponents[int(len(self.exponents)/2)]
-        exponents_array = np.array([[STARTING_VALUE]])
-        coefficients_array = None
-        true_value = be.true_value(190)
 
-        if NNLS:
-            cofactor_matrix = self.cofactor_matrix(exponents_array, greedy_algo=True)
-            NNLS_coeff = self.nnls_coefficients(cofactor_matrix)
+        #print("Starting Value", STARTING_VALUE)
+        exponents_array = np.asarray(initial_guess)
+        exponents_array_2 = np.asarray(initial_guess)
 
-            #Integrate
-            print(self.integration(NNLS_coeff, exponents_array, change_exponents=True) )
+        true_value = be.true_value(180)
+
+        if use_nnls:
+            mat_cofactor_matrix = self.cofactor_matrix(exponents_array, change_exponents=True)
+            assert mat_cofactor_matrix.ndim == 2
+
+            row_nnls_coefficients = self.nnls_coefficients(mat_cofactor_matrix)
+            assert row_nnls_coefficients.ndim == 1
+
+            integration = self.integration(row_nnls_coefficients,  exponents_array)
+
+            pos_error = None
+            neg_error = None
+            while np.absolute(true_value - integration) > 1e-7:
+                #Split Exponents
+                for index in range(0, len(exponents_array) ):
+                    exponents_array = np.sort(np.insert(exponents_array, index + 1, exponents_array[index] + step_size))
+                    exponents_array_2 = np.sort(np.insert(exponents_array_2, index + 1, exponents_array_2[index] - step_size))
+                    step_size = step_size * step_size_factor
+
+                #Calculator Cofactor matrix, A
+                pos_mat_cofactor_matrix = self.cofactor_matrix(exponents_array, change_exponents=True)
+                neg_mat_cofactor_matrix = self.cofactor_matrix(exponents_array_2, change_exponents=True)
+
+                #Calculate Coefficients Using NNLS
+                try:
+                    pos_row_nnls_coeffcients = self.nnls_coefficients(pos_mat_cofactor_matrix)
+                    neg_row_nnls_coeffcients = self.nnls_coefficients(neg_mat_cofactor_matrix)
+                except:
+                    print("Got Infinity Error")
+                    break;
+
+                #Integrate
+                pos_integration = self.integration(pos_row_nnls_coeffcients, exponents_array)
+                neg_integration = self.integration(neg_row_nnls_coeffcients, exponents_array_2)
+
+                #Use Error
+                pos_error = np.absolute(true_value - pos_integration)
+                neg_error = np.absolute(true_value - neg_integration)
+
+                #Compare Error
+                if neg_error > pos_error:
+                    integration = neg_integration
+                    exponents_array_2 = np.copy(exponents_array)
+                    #print("pos error", pos_error, "pos integrate", pos_integration, "true_value", true_value,"size", np.shape(exponents_array))
+                else:
+                    integration = pos_integration
+                    exponents_array = np.copy(exponents_array_2)
+                    #print("neg error", neg_error, "neg integrate", neg_integration, "true_value", true_value, "size", np.shape(exponents_array))
+
+                #Maximum list For Condition
+                if np.shape(exponents_array)[0] > maximum_exponents:
+                    #print("Final", neg_mat_cofactor_matrix)
+                    #print("Final", exponents_array)
+                    print("neg error:", neg_error, "neg integrate:", neg_integration, "true_value:", true_value, "size:", np.shape(exponents_array))
+                    print("pos error:", pos_error, "pos integrate:", pos_integration, "true_value:", true_value,"size:", np.shape(exponents_array))
+                    return(exponents_array, neg_error, pos_error)
+                    break
+            return(exponents_array, neg_error, pos_error)
 
 
 
@@ -113,12 +180,71 @@ file_path = r"C:\Users\Alireza\PycharmProjects\fitting\fitting\data\examples\be.
 from fitting.density.radial_grid import *
 radial_grid = Radial_Grid(4)
 row_grid_points = radial_grid.grid_points(200, 300, [50, 75, 100])
+
 column_grid_points = np.reshape(row_grid_points, (len(row_grid_points), 1))
 be = DensityModel('be', file_path, column_grid_points)
 
 x0 = np.linspace(0, 1, num = len(be.exponents))
+coeffs = be.nnls_coefficients( be.cofactor_matrix())
+print(be.greedy_algorithm(step_size=0.5, step_size_factor=127.0, initial_guess=[11.560606715525854, 15], maximum_exponents=50, use_nnls=True))
 
-be.greedy_algorithm(0, NNLS=True)
+
+big = 10000
+Error = 0.1
+array2 = None
+counter = 0;
+stored_results = []
+stored_errors = []
+while Error > 1e-6:
+    Initial_GUess = big * np.random.random()
+    for x in range(0, 8000):
+        try:
+            c = be.greedy_algorithm(step_size=Initial_GUess*np.random.random(), step_size_factor=0.98, initial_guess=[11.560606715525854, Initial_GUess], use_nnls=True)
+            array, negE, posE = c[0], c[1], c[2]
+            #Initial_GUess = array[int(np.shape(array)[0]/2)]
+
+            #print("THESE ARE THE ERRORS", negE, posE)
+            if negE > posE and posE < Error:
+                array2= np.copy(array)
+                Error = posE
+                if posE < 0.001 and len(stored_results) != 30:
+                    stored_results.append(array)
+                    stored_errors.append(Error)
+            elif negE < posE and negE < Error:
+                array2= np.copy(array)
+                Error = negE
+
+                #store
+                if negE < 0.001 and len(stored_results) != 30:
+                    stored_results.append(array)
+                    stored_errors.append(Error)
+
+        except:
+            Initial_GUess = Initial_GUess*np.random.random()
+            pass
+    #print("Final Array2", array2)
+    if Error == 0.1:
+        #print('The Error got 0.1 so it failed')
+        counter +=1
+    else:
+        print("Final Error", Error)
+
+    if counter == 500:
+        big = big * np.random.random()
+print("Final Array", array2)
+print("Stored_Erros", stored_errors)
+print("STored_ Results", stored_results)
+print("Final Error", Error)
+
+import sys
+sys.exit()
+
+
+
+
+
+
+
 
 
 
