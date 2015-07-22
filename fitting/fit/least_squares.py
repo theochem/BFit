@@ -95,12 +95,11 @@ class DensityModel():
         integrate = np.trapz(np.ravel(self.grid**2) * np.ravel(electron_density), np.ravel(self.grid))
         return integrate
 
-
     def true_value(self, points):
         p, w = np.polynomial.laguerre.laggauss(points)
         p = np.reshape(p, (len(p), 1))
         w = np.reshape(w, (len(w), 1))
-        be = Atomic_Density(r'C:\Users\Alireza\PycharmProjects\fitting\fitting\data\examples\be.slater', p)
+        be = Atomic_Density(self.file_path, p)
 
         a = be.atomic_density() * p**2 * w/ np.exp(-p)
         return(np.sum(a))
@@ -113,14 +112,34 @@ class DensityModel():
         exponents_array = np.asarray(initial_guess)
         exponents_array_2 = np.asarray(initial_guess)
 
-        true_value = be.true_value(180)
+        true_value = self.true_value(180)
 
 
-        def helper_splitting_array(array1, array2, step_size, step_size_factor):
-            for index in range(0, len(array1) ):
-                    pos_array = np.sort(np.insert(array1, index + 1, array1[index] + step_size))
-                    neg_array = np.sort(np.insert(array2, index + 1, array2[index] - step_size))
-                    step_size = step_size * step_size_factor
+        def helper_splitting_array(pos_array, neg_array, step_size, step_size_factor):
+            """
+            E.g.
+                Input : np.array([0.5, 1.0, 2.0, 3]) step size = 0.5, step size factor = 0.98
+                Result: (array([ 0.5,  1. ,  1.5,  2. ,  2.5,  3. ,  3.5]), array([ 0.5,  1. ,  1.5,  2. ,  2.5,  3. ]), 0.49)
+            """
+            # Point of this is because the pos_Array is changing
+            # Need a copy to add the numbers properly
+            pos_copy = np.copy(pos_array)
+            neg_copy = np.copy(neg_array)
+
+            for index in range(0, len(pos_array)):
+                next_number = pos_copy[index] + step_size
+                if next_number > 0 and next_number not in pos_array:
+                    pos_array = np.sort(np.insert(pos_array, index + 1, next_number))
+
+            #Point of second loop is in case it goes towards negatives
+            # Farnaz, Redundancy of same numbers
+            for index in range(0, len(neg_array)):
+                next_number = neg_copy[index] - step_size
+
+                if next_number > 0 and next_number not in neg_array:
+                    neg_array = np.sort(np.insert(neg_array, index + 1, next_number))
+
+            step_size = step_size * step_size_factor
             return(pos_array, neg_array, step_size)
 
         if use_nnls:
@@ -135,33 +154,30 @@ class DensityModel():
             pos_error, diff_pos_error = None, None
             neg_error, diff_neg_error = None, None
 
+            def optimized_then_integrate(exponents_array):
+                cofactor_matrix = self.cofactor_matrix(exponents_array, change_exponents=True)
+                try:
+                    row_nnls_coefficients = self.nnls_coefficients(cofactor_matrix)
+                except:
+                    pass
+                integration = self.integration(row_nnls_coefficients, exponents_array)
+
+                return(cofactor_matrix, row_nnls_coefficients, integration)
+
             while np.absolute(true_value - integration) > 1e-7:
                 #Split Exponents
                 exponents_array, exponents_array_2, step_size = helper_splitting_array(exponents_array, exponents_array_2, step_size, step_size_factor)
 
-                #Calculator Cofactor matrix, A
-                pos_mat_cofactor_matrix = self.cofactor_matrix(exponents_array, change_exponents=True)
-                neg_mat_cofactor_matrix = self.cofactor_matrix(exponents_array_2, change_exponents=True)
-
-                #Calculate Coefficients Using NNLS
-                try:
-                    pos_row_nnls_coeffcients = self.nnls_coefficients(pos_mat_cofactor_matrix)
-                    neg_row_nnls_coeffcients = self.nnls_coefficients(neg_mat_cofactor_matrix)
-                except:
-                    print("Got Infinity Error")
-                    break;
-
-                #Integrate
-                pos_integration = self.integration(pos_row_nnls_coeffcients, exponents_array)
-                neg_integration = self.integration(neg_row_nnls_coeffcients, exponents_array_2)
+                pos_cofactor_matrix, pos_row_nnls_coefficients, pos_integration = optimized_then_integrate(exponents_array)
+                neg_cofactor_matrix, neg_row_nnls_coefficients, neg_integration = optimized_then_integrate(exponents_array_2)
 
                 #Calc Integration Error
                 pos_error = np.absolute(true_value - pos_integration)
                 neg_error = np.absolute(true_value - neg_integration)
 
                 #Calc Difference Error
-                diff_pos_error = np.sum(np.absolute(np.ravel(self.electron_density) - self.model(pos_row_nnls_coeffcients, exponents_array)))
-                diff_neg_error = np.sum(np.absolute(np.ravel(self.electron_density) - self.model(neg_row_nnls_coeffcients, exponents_array_2)))
+                diff_pos_error = np.sum(np.absolute(np.ravel(self.electron_density) - self.model(pos_row_nnls_coefficients, exponents_array)))
+                diff_neg_error = np.sum(np.absolute(np.ravel(self.electron_density) - self.model(neg_row_nnls_coefficients, exponents_array_2)))
 
                 #Compare Error
                 if neg_error > pos_error:
@@ -176,13 +192,45 @@ class DensityModel():
                 #Maximum list For Condition
                 if np.shape(exponents_array)[0] == maximum_exponents:
                     print("\n Maximum Shape is Reached Return Results")
-                    print("neg error:", neg_error,", diff neg error:", diff_neg_error, "neg integrate:",  neg_integration, "true_value:", true_value, "size:", np.shape(exponents_array), "Initial_Guess", Initial_GUess)
-                    print("pos error:", pos_error,", diff pos error:", diff_pos_error, "pos integrate:", pos_integration, "true_value:", true_value,"size:", np.shape(exponents_array), "Step Size is ", step_size)
+                    print("neg error:", neg_error,", diff neg error:", diff_neg_error, "neg integrate:",  neg_integration,
+                          "true_value:", true_value, "size:", np.shape(exponents_array), "Initial_Guess", initial_guess)
+                    print("pos error:", pos_error,", diff pos error:", diff_pos_error, "pos integrate:", pos_integration,
+                          "true_value:", true_value,"size:", np.shape(exponents_array), "Step Size is ", step_size)
                     return(exponents_array, neg_error, pos_error, diff_neg_error, diff_pos_error)
 
             return(exponents_array, neg_error, pos_error, diff_neg_error, diff_pos_error)
 
+    def evolutionary_algorithm(self, initial_guess, step_size_factor, accuracy):
+        assert type(initial_guess) is float
+        integration_error = 0.1
+        difference_error = 0.1
+        best_exponents_array = None
 
+        while(integration_error > accuracy and difference_error > accuracy):
+            print(1)
+            step_size = initial_guess * np.random.random()
+            try:
+                greedy_algo =  self.greedy_algorithm(step_size, step_size_factor, initial_guess, maximum_exponents=50, use_nnls=True)
+            except Exception as ex:
+                print(ex, 2)
+                initial_guess *= np.random.random()
+                pass
+            exponents_array, int_neg_error, int_pos_error, diff_neg_error, diff_pos_error = greedy_algo
+
+            if int_neg_error < int_pos_error and int_neg_error < integration_error:
+                integration_error = int_neg_error
+                best_exponents_array = exponents_array
+                initial_guess = exponents_array[ np.shape(exponents_array)[0] / 2]
+
+            elif int_pos_error < int_neg_error and int_pos_error < integration_error:
+                integration_error = int_pos_error
+                best_exponents_array = exponents_array
+                initial_guess = exponents_array[ np.shape(exponents_array)[0] / 2]
+
+            else:
+                initial_guess *= np.random.random()
+
+        return(integration_error, difference_error, best_exponents_array)
 
 
 file_path = r"C:\Users\Alireza\PycharmProjects\fitting\fitting\data\examples\be.slater"
@@ -196,73 +244,8 @@ be = DensityModel('be', file_path, column_grid_points)
 x0 = np.linspace(0, 1, num = len(be.exponents))
 coeffs = be.nnls_coefficients( be.cofactor_matrix())
 
+be.evolutionary_algorithm(1000.0 , 0.58, 0.01)
 
-big = 1e5 #10000
-int_Error = 0.1
-dif_Error = 0.1
-array2 = None
-counter = 0;
-stored_results = []
-stored_errors = []
-while int_Error > 1e-6 and dif_Error > 1e-6:
-    #Initial_Guess starts with a bound of 10,000
-    Initial_GUess = big * np.random.random()
-    for x in range(0, 20):
-        #Do THis 8000 Times But WIth A Different Step_Size (note step size is dependent on initial guess,
-        #and different Initial Guess
-        #For a given  Initial Guess For Exponents,
-        try:
-            c = be.greedy_algorithm(step_size=Initial_GUess*np.random.random(), step_size_factor=0.98, initial_guess=[11.560606715525854, Initial_GUess],maximum_exponents=75, use_nnls=True)
-            array, negE, posE, neg_diff_error, pos_dif_error = c[0], c[1], c[2], c[3], c[4]
-
-            #Make the Initial Guess the middle point of the array for next iteration
-            #If THis is removed,only the step sizes changes with respect to x
-            #If U change hte initial guess to the first element the error becomes really small, however the diff neg error doesnt change at all
-            Initial_GUess = [11.560606715525854, array[-1]]
-
-            # If For Some Initial Guess the array would
-            # give a more accurate error save it
-            if negE > posE and posE < int_Error and neg_diff_error > pos_dif_error:
-                array2= np.copy(array)
-                int_Error = posE
-                dif_Error = pos_dif_error
-
-                #Store Results for some given accuracy to see any patterns
-                if posE < 0.001 and len(stored_results) != 30:
-                    stored_results.append(array)
-                    stored_errors.append(int_Error)
-
-            #Same as above but for negative numbers
-            elif negE < posE and negE < int_Error and neg_diff_error < pos_dif_error:
-                array2= np.copy(array)
-                int_Error = negE
-                dif_Error = neg_diff_error
-
-                #Store Results for some accuracy to see any patterns
-                if negE < 0.001 and len(stored_results) != 30:
-                    stored_results.append(array)
-                    stored_errors.append(int_Error)
-
-        #If greedy algo gives off an infinity erorr,
-        # change the initial guess
-        except:
-            print("\n Failed,Accepted Inf Error, Change Initial Guess", Initial_GUess)
-            Initial_GUess = [11.560606715525854, Initial_GUess[1]*np.random.random()]
-            pass
-    print("Maximum Iterations with DIfferent Step_Sizes and Exponent Array is Used, Change Big Initial GUess")
-    #print("Final Array2", array2)
-    if int_Error == 0.1:
-        #print('The Error got 0.1 so it failed')
-        counter +=1
-    else:
-        print("Final Integration Error", int_Error)
-
-    if counter == 500:
-        big = big * np.random.random()
-print("Final Array", array2)
-print("Stored_Erros", stored_errors)
-print("STored_ Results", stored_results)
-print("Final Integration/Diff Error", int_Error, dif_Error)
 
 import sys
 sys.exit()
