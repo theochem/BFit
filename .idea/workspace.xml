@@ -2,8 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4035ad68-97f7-4e18-bb55-e563859a9cc8" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/fit/test/__init__.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/fit/test/test_least_squares.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fitting/fit/least_squares.py" afterPath="$PROJECT_DIR$/fitting/fit/least_squares.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
@@ -29,7 +27,7 @@
     <SUITE FILE_PATH="coverage/fitting$radial_grid.coverage" NAME="radial_grid Coverage Results" MODIFIED="1437102002840" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/density" />
     <SUITE FILE_PATH="coverage/fitting$slater_basic.coverage" NAME="slater_basic Coverage Results" MODIFIED="1432043425209" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/io" />
     <SUITE FILE_PATH="coverage/fitting$Unittests_in_fitting.coverage" NAME="Unittests in fitting Coverage Results" MODIFIED="1437059238192" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/fitting$least_squares.coverage" NAME="least_squares Coverage Results" MODIFIED="1438117579843" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/fit" />
+    <SUITE FILE_PATH="coverage/fitting$least_squares.coverage" NAME="least_squares Coverage Results" MODIFIED="1438118586328" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/fit" />
     <SUITE FILE_PATH="coverage/fitting$test_file.coverage" NAME="test_file Coverage Results" MODIFIED="1437531350052" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/fit" />
     <SUITE FILE_PATH="coverage/fitting$test_least_squares.coverage" NAME="test_least_squares Coverage Results" MODIFIED="1437865669079" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/fit/test" />
     <SUITE FILE_PATH="coverage/fitting$Another_Approach.coverage" NAME="Another_Approach Coverage Results" MODIFIED="1432095798351" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
@@ -59,8 +57,8 @@
       <file leaf-file-name="least_squares.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/fitting/fit/least_squares.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="2.0303514" vertical-offset="684" max-vertical-offset="4403">
-              <caret line="314" column="119" selection-start-line="314" selection-start-column="119" selection-end-line="314" selection-end-column="119" />
+            <state vertical-scroll-proportion="0.53833866" vertical-offset="921" max-vertical-offset="3893">
+              <caret line="330" column="49" selection-start-line="330" selection-start-column="49" selection-end-line="330" selection-end-column="49" />
               <folding>
                 <element signature="e#0#51#0" expanded="true" />
                 <element signature="e#887#1733#0" expanded="false" />
@@ -74,6 +72,7 @@
                 <element signature="e#4374#9777#0" expanded="false" />
                 <element signature="e#4946#6164#0" expanded="false" />
                 <element signature="e#6233#6605#0" expanded="false" />
+                <element signature="e#9893#13773#0" expanded="false" />
                 <element signature="e#12076#13492#0" expanded="false" />
                 <element signature="e#12139#12535#0" expanded="false" />
               </folding>
@@ -912,20 +911,27 @@
       <option name="project" value="LOCAL" />
       <updated>1437594075414</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="- Added Some Tests&#10;- Added Exponent Reducer&#10;- Need to Add List">
+      <created>1438117634171</created>
+      <option name="number" value="00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1438117634171</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="1" y="1" width="1918" height="1038" extended-state="0" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32843137" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32843137" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32629356" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.28202367" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.28202367" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32843137" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20504732" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32980332" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -933,7 +939,6 @@
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39967373" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -995,7 +1000,8 @@
     <MESSAGE value="- Added NNLS" />
     <MESSAGE value="- Trying to do Greedy Algorithm" />
     <MESSAGE value="- Finished" />
-    <option name="LAST_COMMIT_MESSAGE" value="- Finished" />
+    <MESSAGE value="- Added Some Tests&#10;- Added Exponent Reducer&#10;- Need to Add List" />
+    <option name="LAST_COMMIT_MESSAGE" value="- Added Some Tests&#10;- Added Exponent Reducer&#10;- Need to Add List" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1028,6 +1034,7 @@
             <element signature="e#4374#9777#0" expanded="false" />
             <element signature="e#4946#6164#0" expanded="false" />
             <element signature="e#6233#6605#0" expanded="false" />
+            <element signature="e#9893#13773#0" expanded="false" />
             <element signature="e#12076#13492#0" expanded="false" />
             <element signature="e#12139#12535#0" expanded="false" />
           </folding>
@@ -1100,6 +1107,7 @@
             <element signature="e#4374#9777#0" expanded="false" />
             <element signature="e#4946#6164#0" expanded="false" />
             <element signature="e#6233#6605#0" expanded="false" />
+            <element signature="e#9893#13773#0" expanded="false" />
             <element signature="e#12076#13492#0" expanded="false" />
             <element signature="e#12139#12535#0" expanded="false" />
           </folding>
@@ -1172,6 +1180,7 @@
             <element signature="e#4374#9777#0" expanded="false" />
             <element signature="e#4946#6164#0" expanded="false" />
             <element signature="e#6233#6605#0" expanded="false" />
+            <element signature="e#9893#13773#0" expanded="false" />
             <element signature="e#12076#13492#0" expanded="false" />
             <element signature="e#12139#12535#0" expanded="false" />
           </folding>
@@ -1244,6 +1253,7 @@
             <element signature="e#4374#9777#0" expanded="false" />
             <element signature="e#4946#6164#0" expanded="false" />
             <element signature="e#6233#6605#0" expanded="false" />
+            <element signature="e#9893#13773#0" expanded="false" />
             <element signature="e#12076#13492#0" expanded="false" />
             <element signature="e#12139#12535#0" expanded="false" />
           </folding>
@@ -1481,8 +1491,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/fitting/fit/least_squares.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="2.0303514" vertical-offset="684" max-vertical-offset="4403">
-          <caret line="314" column="119" selection-start-line="314" selection-start-column="119" selection-end-line="314" selection-end-column="119" />
+        <state vertical-scroll-proportion="0.53833866" vertical-offset="921" max-vertical-offset="3893">
+          <caret line="330" column="49" selection-start-line="330" selection-start-column="49" selection-end-line="330" selection-end-column="49" />
           <folding>
             <element signature="e#0#51#0" expanded="true" />
             <element signature="e#887#1733#0" expanded="false" />
@@ -1496,6 +1506,7 @@
             <element signature="e#4374#9777#0" expanded="false" />
             <element signature="e#4946#6164#0" expanded="false" />
             <element signature="e#6233#6605#0" expanded="false" />
+            <element signature="e#9893#13773#0" expanded="false" />
             <element signature="e#12076#13492#0" expanded="false" />
             <element signature="e#12139#12535#0" expanded="false" />
           </folding>

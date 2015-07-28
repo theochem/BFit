@@ -300,7 +300,7 @@ class DensityModel():
 
 
 
-file_path = r"C:\Users\Alireza\PycharmProjects\fitting\fitting\data\examples\c.slater"
+file_path = r"C:\Users\Alireza\PycharmProjects\fitting\fitting\data\examples\be.slater"
 from fitting.density.radial_grid import *
 radial_grid = Radial_Grid(4)
 row_grid_points = radial_grid.grid_points(200, 300, [50, 75, 100])
@@ -312,7 +312,7 @@ be = DensityModel('be', file_path, column_grid_points)
 x0 = np.linspace(0, 1, num = len(be.exponents))
 coeffs = be.nnls_coefficients( be.cofactor_matrix())
 
-integration_error, difference_error, best_exponents_array = be.evolutionary_algorithm(initial_guess=[19.90173298, 100.0] , step_size_factor=0.98, accuracy=1e-13, exponents_reducer=False)
+integration_error, difference_error, best_exponents_array = be.evolutionary_algorithm(initial_guess=[19.90173298, 100.0] , step_size_factor=0.98, accuracy=1e-10, exponents_reducer=True)
 
 cofactor = be.cofactor_matrix(best_exponents_array, change_exponents=True)
 coef = be.nnls_coefficients(cofactor)
@@ -323,7 +323,34 @@ model = be.model(coef, best_exponents_array)
 print("Best Exponent Array:", best_exponents_array)
 print("Integration_Error:", integration_error)
 print("Final Integration:", be.integration(coef, best_exponents_array))
+#print(np.concatenate((np.reshape(model, (len(model), 1)), be.electron_density), axis=1))
+#plt.plot(be.grid, (model), 'r')
+#plt.plot(be.grid, np.sort(be.electron_density), 'g')
+#plt.show()
 
+density_list = {np.reshape(model, (len(model), 1)):"Model", be.electron_density:"Electron Density"}
+def plot_atomic_desnity(radial_grid, density_list, title, figure_name):
+    import matplotlib.pyplot as plt
+    colors = ["#FF00FF", "#FF0000", "#FFAA00", "#00AA00", "#00AAFF", "#0000FF", "#777777", "#00AA00", "#00AAFF"]
+    ls_list = ['-', ':', ':', '-.', '-.', '--', '--', ':', ':']
+    assert isinstance(density_list, list)
+    radial_grid *= 0.5291772082999999   #convert a.u. to angstrom
+    for i, item in enumerate(density_list):
+        dens, label = item
+        # plot with log scaling on the y axis
+        plt.semilogy(radial_grid, dens, lw=3, label=label, color=colors[i], ls=ls_list[i])
+
+    #plt.xlim(0, 25.0*0.5291772082999999)
+    plt.xlim(0, 7.5)
+    plt.ylim(ymin=1e-8)
+    plt.xlabel('Distance from the nucleus [A]')
+    plt.ylabel('Log(density [Bohr**-3])')
+    plt.title(title)
+    plt.legend(loc=0)
+    plt.savefig(figure_name)
+    plt.close()
+
+plot_atomic_desnity(be.grid, density_list, "Hey", "Yo")
 import sys
 sys.exit()
 
