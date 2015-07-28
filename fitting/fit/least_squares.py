@@ -190,6 +190,7 @@ class DensityModel():
                 reshape = np.reshape(new, (np.shape(new)[0], 1))
                 np.set_printoptions(threshold=np.nan)
 
+
                 #Compare Error
                 if neg_error > pos_error:
                     integration = neg_integration
@@ -212,7 +213,7 @@ class DensityModel():
 
             return(exponents_array, neg_error, pos_error, diff_neg_error, diff_pos_error)
 
-    def evolutionary_algorithm(self, initial_guess, step_size_factor, accuracy, exponents_reducer=False):
+    def evolutionary_algorithm(self, initial_guess, step_size_factor, accuracy, maximum_exponents=50, exponents_reducer=False):
         #assert type(initial_guess) is float
         integration_error = 0.1
 
@@ -222,11 +223,13 @@ class DensityModel():
         counter = 0;
         step_size = 5.0 #Based the step_size on the atomic number
         change_step_size = accuracy /accuracy
+        plt.ion()
+        plt.show()
         while(integration_error > accuracy and difference_error > accuracy):
 
             #step_size = initial_guess[0] * np.random.random()
             try:
-                greedy_algo =  self.greedy_algorithm(step_size, step_size_factor, initial_guess, accuracy, maximum_exponents=50, use_nnls=True)
+                greedy_algo =  self.greedy_algorithm(step_size, step_size_factor, initial_guess, accuracy, maximum_exponents=maximum_exponents, use_nnls=True)
 
                 exponents_array, int_neg_error, int_pos_error, diff_neg_error, diff_pos_error = greedy_algo
 
@@ -254,7 +257,14 @@ class DensityModel():
     #                if counter == 100:
     #                    initial_guess = best_exponents_array[int(np.random.randint(0, np.shape(best_exponents_array)[0]))]
     #                    counter = 0
-
+                r"""
+                cofactor = self.cofactor_matrix(exponents_array, change_exponents=True)
+                coeff = self.nnls_coefficients(cofactor)
+                model = self.model(coeff, exponents_array)
+                #plt.clf()
+                plt.semilogy(self.grid, model)
+                plt.semilogy(self.grid, self.electron_density, 'r')
+                plt.draw()"""
             except Exception as ex:
                 import traceback
                 traceback.print_exc()
@@ -312,7 +322,7 @@ be = DensityModel('be', file_path, column_grid_points)
 x0 = np.linspace(0, 1, num = len(be.exponents))
 coeffs = be.nnls_coefficients( be.cofactor_matrix())
 
-integration_error, difference_error, best_exponents_array = be.evolutionary_algorithm(initial_guess=[19.90173298, 100.0] , step_size_factor=0.98, accuracy=1e-10, exponents_reducer=True)
+integration_error, difference_error, best_exponents_array = be.evolutionary_algorithm(initial_guess=[0.05] , step_size_factor=0.98, accuracy=1e-10, exponents_reducer=True)
 
 cofactor = be.cofactor_matrix(best_exponents_array, change_exponents=True)
 coef = be.nnls_coefficients(cofactor)
@@ -328,7 +338,7 @@ print("Final Integration:", be.integration(coef, best_exponents_array))
 #plt.plot(be.grid, np.sort(be.electron_density), 'g')
 #plt.show()
 
-density_list = {np.reshape(model, (len(model), 1)):"Model", be.electron_density:"Electron Density"}
+density_list = [[np.reshape(model, (len(model), 1)),"Model"], [be.electron_density,"Electron Density"]]
 def plot_atomic_desnity(radial_grid, density_list, title, figure_name):
     import matplotlib.pyplot as plt
     colors = ["#FF00FF", "#FF0000", "#FFAA00", "#00AA00", "#00AAFF", "#0000FF", "#777777", "#00AA00", "#00AAFF"]
