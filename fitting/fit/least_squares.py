@@ -257,14 +257,14 @@ class DensityModel():
     #                if counter == 100:
     #                    initial_guess = best_exponents_array[int(np.random.randint(0, np.shape(best_exponents_array)[0]))]
     #                    counter = 0
-                r"""
+
                 cofactor = self.cofactor_matrix(exponents_array, change_exponents=True)
                 coeff = self.nnls_coefficients(cofactor)
                 model = self.model(coeff, exponents_array)
                 #plt.clf()
                 plt.semilogy(self.grid, model)
                 plt.semilogy(self.grid, self.electron_density, 'r')
-                plt.draw()"""
+                plt.draw()
             except Exception as ex:
                 import traceback
                 traceback.print_exc()
