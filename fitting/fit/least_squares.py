@@ -8,6 +8,9 @@ import scipy.optimize
 #Ask Farnaz - The Atomic_slater_density uses an column vector, so should Density Model be column vector as well?
 class DensityModel():
     def __init__(self, element_name, file_path, grid, change_exponents=False):
+        assert isinstance(file_path, str)
+        assert grid.ndim == 2 and np.shape(grid)[1] == 1
+
         self.grid = grid
         self.file_path = file_path
         self.electron_density = Atomic_Density(file_path, self.grid).atomic_density()
@@ -31,8 +34,15 @@ class DensityModel():
         """
         assert exponents.ndim == 1
         exponential = np.exp(-exponents * np.power(self.grid, 2.0))
+        assert np.shape(exponential)[0] == np.shape(self.grid)[0]
+        assert np.shape(exponential)[1] == np.shape(exponents)[0]
+        assert exponential.ndim == 2
 
+        assert coefficients.ndim == 1
+        assert len(coefficients) == np.shape(exponential)[1]
         gaussian_density = np.dot(exponential, coefficients) # is gaussian the right word?
+        assert gaussian_density.ndim == 1
+        assert np.shape(gaussian_density)[0] == np.shape(self.grid)[0]
         return(gaussian_density)
 
     def cofactor_matrix(self, exponents=[], change_exponents=False):
@@ -86,7 +96,7 @@ class DensityModel():
     def integration(self, coefficients, exponents):
         # Integrate Based On Model or
         # Integrate Based on COefficients
-        # Integration of NNLS is stuck at 4.14811924642
+
 
         assert coefficients.ndim == 1
         assert exponents.ndim == 1
@@ -111,7 +121,7 @@ class DensityModel():
         exponents_array = np.asarray(initial_guess) if isinstance(initial_guess, list) else np.asarray([initial_guess])
         exponents_array_2 = np.asarray(initial_guess) if isinstance(initial_guess, list) else np.asarray([initial_guess])
 
-        true_value = self.true_value(180)
+        true_value = self.true_value(186)
 
         def helper_splitting_array(pos_array, neg_array, step_size, step_size_factor):
             """
@@ -202,7 +212,7 @@ class DensityModel():
 
             return(exponents_array, neg_error, pos_error, diff_neg_error, diff_pos_error)
 
-    def evolutionary_algorithm(self, initial_guess, step_size_factor, accuracy):
+    def evolutionary_algorithm(self, initial_guess, step_size_factor, accuracy, exponents_reducer=False):
         #assert type(initial_guess) is float
         integration_error = 0.1
 
@@ -210,8 +220,8 @@ class DensityModel():
         difference_error = 0.1
         best_exponents_array = None
         counter = 0;
-        step_size = 0.05 #Based the step_size on the atomic number
-        change_step_size = accuracy * 1000000
+        step_size = 5.0 #Based the step_size on the atomic number
+        change_step_size = accuracy /accuracy
         while(integration_error > accuracy and difference_error > accuracy):
 
             #step_size = initial_guess[0] * np.random.random()
@@ -254,11 +264,43 @@ class DensityModel():
             counter += 1
             print(counter ,": Number of Ilterations")
         def exponent_reducer(best_exponents_array):
-            pass
+            def optimized_then_integrate(exponents_array):
+                cofactor_matrix = self.cofactor_matrix(exponents_array, change_exponents=True)
+                try:
+                    row_nnls_coefficients = self.nnls_coefficients(cofactor_matrix)
+                except:
+                    pass
+                integration = self.integration(row_nnls_coefficients, exponents_array)
+
+                return(cofactor_matrix, row_nnls_coefficients, integration)
+
+            true_value = be.true_value(186)
+            integration = None
+            while len(best_exponents_array) != 1:
+                mid_point = len(best_exponents_array)/2
+                first_half = best_exponents_array[0:mid_point]
+                second_half = best_exponents_array[mid_point:]
+                cofactor_first, first_coeff, first_inte = optimized_then_integrate(first_half)
+                cofactor_sec, sec_coeff, sec_inte = optimized_then_integrate(second_half)
+                first_diff = np.absolute(first_inte - true_value)
+                sec_diff = np.absolute(sec_inte - true_value)
+                if first_diff < sec_diff:
+                    best_exponents_array = first_half
+                    integration = first_inte
+                elif sec_diff < first_diff:
+                    best_exponents_array= second_half
+                    integration = sec_inte
+            return(best_exponents_array, integration)
+
+        if exponents_reducer == True:
+            best_exponents_array, integration = exponent_reducer(best_exponents_array)
+            integration_error = np.absolute(self.true_value(186) - integration)
+
         return(integration_error, difference_error, best_exponents_array)
 
 
-file_path = r"C:\Users\Alireza\PycharmProjects\fitting\fitting\data\examples\be.slater"
+
+file_path = r"C:\Users\Alireza\PycharmProjects\fitting\fitting\data\examples\c.slater"
 from fitting.density.radial_grid import *
 radial_grid = Radial_Grid(4)
 row_grid_points = radial_grid.grid_points(200, 300, [50, 75, 100])
@@ -270,14 +312,17 @@ be = DensityModel('be', file_path, column_grid_points)
 x0 = np.linspace(0, 1, num = len(be.exponents))
 coeffs = be.nnls_coefficients( be.cofactor_matrix())
 
-integration_error, difference_error, best_exponents_array = be.evolutionary_algorithm([11.0] , 0.98, 1e-10)
+integration_error, difference_error, best_exponents_array = be.evolutionary_algorithm(initial_guess=[19.90173298, 100.0] , step_size_factor=0.98, accuracy=1e-13, exponents_reducer=False)
 
 cofactor = be.cofactor_matrix(best_exponents_array, change_exponents=True)
 coef = be.nnls_coefficients(cofactor)
 
+np.set_printoptions(threshold=np.nan)
+
 model = be.model(coef, best_exponents_array)
-print("Best Exponent Array", best_exponents_array)
-print("Final Integration",be.integration(coef, best_exponents_array))
+print("Best Exponent Array:", best_exponents_array)
+print("Integration_Error:", integration_error)
+print("Final Integration:", be.integration(coef, best_exponents_array))
 
 import sys
 sys.exit()

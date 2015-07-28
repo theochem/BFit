@@ -2,6 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4035ad68-97f7-4e18-bb55-e563859a9cc8" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/fit/test/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/fit/test/test_least_squares.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fitting/fit/least_squares.py" afterPath="$PROJECT_DIR$/fitting/fit/least_squares.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
@@ -27,8 +29,9 @@
     <SUITE FILE_PATH="coverage/fitting$radial_grid.coverage" NAME="radial_grid Coverage Results" MODIFIED="1437102002840" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/density" />
     <SUITE FILE_PATH="coverage/fitting$slater_basic.coverage" NAME="slater_basic Coverage Results" MODIFIED="1432043425209" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/io" />
     <SUITE FILE_PATH="coverage/fitting$Unittests_in_fitting.coverage" NAME="Unittests in fitting Coverage Results" MODIFIED="1437059238192" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/fitting$least_squares.coverage" NAME="least_squares Coverage Results" MODIFIED="1437579923302" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/fit" />
+    <SUITE FILE_PATH="coverage/fitting$least_squares.coverage" NAME="least_squares Coverage Results" MODIFIED="1438117579843" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/fit" />
     <SUITE FILE_PATH="coverage/fitting$test_file.coverage" NAME="test_file Coverage Results" MODIFIED="1437531350052" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/fit" />
+    <SUITE FILE_PATH="coverage/fitting$test_least_squares.coverage" NAME="test_least_squares Coverage Results" MODIFIED="1437865669079" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/fit/test" />
     <SUITE FILE_PATH="coverage/fitting$Another_Approach.coverage" NAME="Another_Approach Coverage Results" MODIFIED="1432095798351" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/fitting$__init__.coverage" NAME="__init__ Coverage Results" MODIFIED="1437102983190" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/fitting" />
     <SUITE FILE_PATH="coverage/fitting$atomic_density.coverage" NAME="atomic_density Coverage Results" MODIFIED="1432650818338" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
@@ -56,23 +59,59 @@
       <file leaf-file-name="least_squares.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/fitting/fit/least_squares.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="1.0061824" vertical-offset="3344" max-vertical-offset="6205">
-              <caret line="283" column="0" selection-start-line="283" selection-start-column="0" selection-end-line="283" selection-end-column="0" />
+            <state vertical-scroll-proportion="2.0303514" vertical-offset="684" max-vertical-offset="4403">
+              <caret line="314" column="119" selection-start-line="314" selection-start-column="119" selection-end-line="314" selection-end-column="119" />
               <folding>
                 <element signature="e#0#51#0" expanded="true" />
-                <element signature="e#2290#2699#0" expanded="false" />
-                <element signature="e#2759#3033#0" expanded="false" />
-                <element signature="e#4520#5738#0" expanded="false" />
-                <element signature="e#5807#6179#0" expanded="false" />
+                <element signature="e#887#1733#0" expanded="false" />
+                <element signature="e#1812#2254#0" expanded="false" />
+                <element signature="e#2306#2645#0" expanded="false" />
+                <element signature="e#2695#2699#0" expanded="false" />
+                <element signature="e#2771#3180#0" expanded="false" />
+                <element signature="e#3240#3514#0" expanded="false" />
+                <element signature="e#3576#3925#0" expanded="false" />
+                <element signature="e#3969#4222#0" expanded="false" />
+                <element signature="e#4374#9777#0" expanded="false" />
+                <element signature="e#4946#6164#0" expanded="false" />
+                <element signature="e#6233#6605#0" expanded="false" />
+                <element signature="e#12076#13492#0" expanded="false" />
+                <element signature="e#12139#12535#0" expanded="false" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="foo.png" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/fitting/fit/foo.png">
-          <provider selected="true" editor-type-id="images">
-            <state />
+      <file leaf-file-name="test_least_squares.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/fitting/fit/test/test_least_squares.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="194" max-vertical-offset="833">
+              <caret line="41" column="0" selection-start-line="41" selection-start-column="0" selection-end-line="41" selection-end-column="0" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="test_atomic_slater_density.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/fitting/density/test/test_atomic_slater_density.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="867" max-vertical-offset="4573">
+              <caret line="24" column="89" selection-start-line="24" selection-start-column="4" selection-end-line="24" selection-end-column="89" />
+              <folding>
+                <element signature="e#0#9#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="__init__.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/fitting/fit/test/__init__.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="17" max-vertical-offset="119">
+              <caret line="1" column="35" selection-start-line="1" selection-start-column="35" selection-end-line="1" selection-end-column="35" />
+              <folding />
+            </state>
           </provider>
         </entry>
       </file>
@@ -101,22 +140,9 @@
       <file leaf-file-name="nnls.py" pinned="false" current-in-tab="false">
         <entry file="file://C:/Python34/Lib/site-packages/scipy/optimize/nnls.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="456" max-vertical-offset="1071">
+            <state vertical-scroll-proportion="0.0" vertical-offset="414" max-vertical-offset="1071">
               <caret line="40" column="0" selection-start-line="40" selection-start-column="0" selection-end-line="40" selection-end-column="0" />
               <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="atomic_slater_density.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/fitting/density/atomic_slater_density.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="528" max-vertical-offset="3026">
-              <caret line="88" column="60" selection-start-line="88" selection-start-column="60" selection-end-line="88" selection-end-column="60" />
-              <folding>
-                <element signature="e#5569#6092#0" expanded="false" />
-                <element signature="e#6243#6710#0" expanded="false" />
-              </folding>
             </state>
           </provider>
         </entry>
@@ -134,8 +160,8 @@
       <file leaf-file-name="ugbs.nwchem" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/fitting/data/basis/ugbs.nwchem">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="2244" max-vertical-offset="156468">
-              <caret line="132" column="46" selection-start-line="132" selection-start-column="46" selection-end-line="132" selection-end-column="46" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="5457" max-vertical-offset="156468">
+              <caret line="321" column="29" selection-start-line="321" selection-start-column="6" selection-end-line="321" selection-end-column="29" />
               <folding />
             </state>
           </provider>
@@ -180,6 +206,9 @@
         <option value="C:/Python34/Lib/site-packages/scipy/optimize/nnls.py" />
         <option value="$PROJECT_DIR$/fitting/density/atomic_slater_density.py" />
         <option value="$PROJECT_DIR$/fitting/fit/test_file.py" />
+        <option value="$PROJECT_DIR$/fitting/fit/test/__init__.py" />
+        <option value="$PROJECT_DIR$/fitting/density/test/test_atomic_slater_density.py" />
+        <option value="$PROJECT_DIR$/fitting/fit/test/test_least_squares.py" />
         <option value="$PROJECT_DIR$/fitting/fit/least_squares.py" />
       </list>
     </option>
@@ -188,10 +217,10 @@
     <detection-done>true</detection-done>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="-8" />
-    <option name="y" value="-8" />
-    <option name="width" value="1936" />
-    <option name="height" value="1056" />
+    <option name="x" value="1" />
+    <option name="y" value="1" />
+    <option name="width" value="1918" />
+    <option name="height" value="1038" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -235,7 +264,6 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -308,7 +336,51 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
+              <option name="myItemId" value="fit" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="test" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fitting" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fitting" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fitting" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
               <option name="myItemId" value="density" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fitting" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fitting" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fitting" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="density" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="test" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -330,8 +402,31 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fitting" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fitting" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fitting" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="data" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="basis" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -373,26 +468,6 @@
       <RunnerSettings RunnerId="PyDebugRunner" />
       <RunnerSettings RunnerId="PythonRunner" />
       <ConfigurationWrapper RunnerId="PyDebugRunner" />
-      <ConfigurationWrapper RunnerId="PythonRunner" />
-      <method />
-    </configuration>
-    <configuration default="false" name="__init__" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/fitting/fitting" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="fitting" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/fitting/fitting/__init__.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <RunnerSettings RunnerId="PythonRunner" />
       <ConfigurationWrapper RunnerId="PythonRunner" />
       <method />
     </configuration>
@@ -450,6 +525,26 @@
       <module name="fitting" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/fitting/fit/test_file.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <RunnerSettings RunnerId="PythonRunner" />
+      <ConfigurationWrapper RunnerId="PythonRunner" />
+      <method />
+    </configuration>
+    <configuration default="false" name="test_least_squares" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/fitting/fit/test" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="fitting" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/fitting/fit/test/test_least_squares.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <RunnerSettings RunnerId="PythonRunner" />
@@ -665,18 +760,18 @@
     <list size="6">
       <item index="0" class="java.lang.String" itemvalue="Python.fitting2" />
       <item index="1" class="java.lang.String" itemvalue="Python.least_squares (1)" />
-      <item index="2" class="java.lang.String" itemvalue="Python.__init__" />
-      <item index="3" class="java.lang.String" itemvalue="Python.least_squares" />
-      <item index="4" class="java.lang.String" itemvalue="Python.atomic_slater_density" />
-      <item index="5" class="java.lang.String" itemvalue="Python.test_file" />
+      <item index="2" class="java.lang.String" itemvalue="Python.least_squares" />
+      <item index="3" class="java.lang.String" itemvalue="Python.atomic_slater_density" />
+      <item index="4" class="java.lang.String" itemvalue="Python.test_file" />
+      <item index="5" class="java.lang.String" itemvalue="Python.test_least_squares" />
     </list>
     <recent_temporary>
       <list size="5">
         <item index="0" class="java.lang.String" itemvalue="Python.least_squares" />
-        <item index="1" class="java.lang.String" itemvalue="Python.test_file" />
-        <item index="2" class="java.lang.String" itemvalue="Python.atomic_slater_density" />
-        <item index="3" class="java.lang.String" itemvalue="Python.least_squares (1)" />
-        <item index="4" class="java.lang.String" itemvalue="Python.__init__" />
+        <item index="1" class="java.lang.String" itemvalue="Python.test_least_squares" />
+        <item index="2" class="java.lang.String" itemvalue="Python.test_file" />
+        <item index="3" class="java.lang.String" itemvalue="Python.atomic_slater_density" />
+        <item index="4" class="java.lang.String" itemvalue="Python.least_squares (1)" />
       </list>
     </recent_temporary>
   </component>
@@ -811,11 +906,17 @@
       <option name="project" value="LOCAL" />
       <updated>1437441321624</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="- Finished">
+      <created>1437594075414</created>
+      <option name="number" value="00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1437594075414</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <frame x="1" y="1" width="1918" height="1038" extended-state="0" />
     <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32843137" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -823,10 +924,10 @@
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3267974" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.27349526" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32629356" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.28202367" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32843137" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.203125" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20504732" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32980332" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24962178" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -893,11 +994,12 @@
     <MESSAGE value="- Blank" />
     <MESSAGE value="- Added NNLS" />
     <MESSAGE value="- Trying to do Greedy Algorithm" />
-    <option name="LAST_COMMIT_MESSAGE" value="- Trying to do Greedy Algorithm" />
+    <MESSAGE value="- Finished" />
+    <option name="LAST_COMMIT_MESSAGE" value="- Finished" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="16" />
+      <option name="time" value="19" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -915,10 +1017,19 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#51#0" expanded="true" />
-            <element signature="e#2290#2699#0" expanded="false" />
-            <element signature="e#2759#3033#0" expanded="false" />
-            <element signature="e#4520#5738#0" expanded="false" />
-            <element signature="e#5807#6179#0" expanded="false" />
+            <element signature="e#887#1733#0" expanded="false" />
+            <element signature="e#1812#2254#0" expanded="false" />
+            <element signature="e#2306#2645#0" expanded="false" />
+            <element signature="e#2695#2699#0" expanded="false" />
+            <element signature="e#2771#3180#0" expanded="false" />
+            <element signature="e#3240#3514#0" expanded="false" />
+            <element signature="e#3576#3925#0" expanded="false" />
+            <element signature="e#3969#4222#0" expanded="false" />
+            <element signature="e#4374#9777#0" expanded="false" />
+            <element signature="e#4946#6164#0" expanded="false" />
+            <element signature="e#6233#6605#0" expanded="false" />
+            <element signature="e#12076#13492#0" expanded="false" />
+            <element signature="e#12139#12535#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -978,10 +1089,19 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#51#0" expanded="true" />
-            <element signature="e#2290#2699#0" expanded="false" />
-            <element signature="e#2759#3033#0" expanded="false" />
-            <element signature="e#4520#5738#0" expanded="false" />
-            <element signature="e#5807#6179#0" expanded="false" />
+            <element signature="e#887#1733#0" expanded="false" />
+            <element signature="e#1812#2254#0" expanded="false" />
+            <element signature="e#2306#2645#0" expanded="false" />
+            <element signature="e#2695#2699#0" expanded="false" />
+            <element signature="e#2771#3180#0" expanded="false" />
+            <element signature="e#3240#3514#0" expanded="false" />
+            <element signature="e#3576#3925#0" expanded="false" />
+            <element signature="e#3969#4222#0" expanded="false" />
+            <element signature="e#4374#9777#0" expanded="false" />
+            <element signature="e#4946#6164#0" expanded="false" />
+            <element signature="e#6233#6605#0" expanded="false" />
+            <element signature="e#12076#13492#0" expanded="false" />
+            <element signature="e#12139#12535#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1041,10 +1161,19 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#51#0" expanded="true" />
-            <element signature="e#2290#2699#0" expanded="false" />
-            <element signature="e#2759#3033#0" expanded="false" />
-            <element signature="e#4520#5738#0" expanded="false" />
-            <element signature="e#5807#6179#0" expanded="false" />
+            <element signature="e#887#1733#0" expanded="false" />
+            <element signature="e#1812#2254#0" expanded="false" />
+            <element signature="e#2306#2645#0" expanded="false" />
+            <element signature="e#2695#2699#0" expanded="false" />
+            <element signature="e#2771#3180#0" expanded="false" />
+            <element signature="e#3240#3514#0" expanded="false" />
+            <element signature="e#3576#3925#0" expanded="false" />
+            <element signature="e#3969#4222#0" expanded="false" />
+            <element signature="e#4374#9777#0" expanded="false" />
+            <element signature="e#4946#6164#0" expanded="false" />
+            <element signature="e#6233#6605#0" expanded="false" />
+            <element signature="e#12076#13492#0" expanded="false" />
+            <element signature="e#12139#12535#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1104,10 +1233,19 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#51#0" expanded="true" />
-            <element signature="e#2290#2699#0" expanded="false" />
-            <element signature="e#2759#3033#0" expanded="false" />
-            <element signature="e#4520#5738#0" expanded="false" />
-            <element signature="e#5807#6179#0" expanded="false" />
+            <element signature="e#887#1733#0" expanded="false" />
+            <element signature="e#1812#2254#0" expanded="false" />
+            <element signature="e#2306#2645#0" expanded="false" />
+            <element signature="e#2695#2699#0" expanded="false" />
+            <element signature="e#2771#3180#0" expanded="false" />
+            <element signature="e#3240#3514#0" expanded="false" />
+            <element signature="e#3576#3925#0" expanded="false" />
+            <element signature="e#3969#4222#0" expanded="false" />
+            <element signature="e#4374#9777#0" expanded="false" />
+            <element signature="e#4946#6164#0" expanded="false" />
+            <element signature="e#6233#6605#0" expanded="false" />
+            <element signature="e#12076#13492#0" expanded="false" />
+            <element signature="e#12139#12535#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1190,13 +1328,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/fitting/density/test/test_atomic_slater_density.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="4522">
-          <caret line="20" column="0" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/fitting/data/examples/ag.slater">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="952">
@@ -1208,14 +1339,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-0.15136476" vertical-offset="435" max-vertical-offset="1156">
           <caret line="22" column="0" selection-start-line="22" selection-start-column="0" selection-end-line="22" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/fitting/data/basis/ugbs.nwchem">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="2227" max-vertical-offset="156468">
-          <caret line="132" column="46" selection-start-line="132" selection-start-column="46" selection-end-line="132" selection-end-column="46" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1247,25 +1370,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://C:/Python34/Lib/site-packages/scipy/optimize/nnls.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="456" max-vertical-offset="1071">
-          <caret line="40" column="0" selection-start-line="40" selection-start-column="0" selection-end-line="40" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/fitting/density/atomic_slater_wfn.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-5.319149" vertical-offset="2000" max-vertical-offset="2465">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/fitting/density/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.09042553" vertical-offset="0" max-vertical-offset="376">
-          <caret line="2" column="41" selection-start-line="2" selection-start-column="41" selection-end-line="2" selection-end-column="41" />
         </state>
       </provider>
     </entry>
@@ -1280,17 +1388,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-0.06648936" vertical-offset="1130" max-vertical-offset="1768">
           <caret line="66" column="68" selection-start-line="66" selection-start-column="68" selection-end-line="66" selection-end-column="68" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/fitting/density/atomic_slater_density.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="528" max-vertical-offset="3026">
-          <caret line="88" column="60" selection-start-line="88" selection-start-column="60" selection-end-line="88" selection-end-column="60" />
-          <folding>
-            <element signature="e#5569#6092#0" expanded="false" />
-            <element signature="e#6243#6710#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1320,26 +1417,87 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/fitting/fit/yo.png">
-      <provider selected="true" editor-type-id="images">
-        <state />
+    <entry file="file://$PROJECT_DIR$/fitting/data/basis/ugbs.nwchem">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="4899" max-vertical-offset="156468">
+          <caret line="321" column="29" selection-start-line="321" selection-start-column="6" selection-end-line="321" selection-end-column="29" />
+          <folding />
+        </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/fitting/fit/foo.png">
-      <provider selected="true" editor-type-id="images">
-        <state />
+    <entry file="file://$PROJECT_DIR$/fitting/density/atomic_slater_density.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="2.0700152" vertical-offset="0" max-vertical-offset="3026">
+          <caret line="88" column="60" selection-start-line="88" selection-start-column="60" selection-end-line="88" selection-end-column="60" />
+          <folding>
+            <element signature="e#5569#6092#0" expanded="false" />
+            <element signature="e#6243#6710#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Python34/Lib/site-packages/scipy/optimize/nnls.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="456" max-vertical-offset="1071">
+          <caret line="40" column="0" selection-start-line="40" selection-start-column="0" selection-end-line="40" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fitting/density/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.05175038" vertical-offset="0" max-vertical-offset="657">
+          <caret line="2" column="41" selection-start-line="2" selection-start-column="41" selection-end-line="2" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fitting/fit/test/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="119">
+          <caret line="1" column="35" selection-start-line="1" selection-start-column="35" selection-end-line="1" selection-end-column="35" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fitting/density/test/test_atomic_slater_density.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="153" max-vertical-offset="4573">
+          <caret line="24" column="89" selection-start-line="24" selection-start-column="4" selection-end-line="24" selection-end-column="89" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fitting/fit/test/test_least_squares.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="194" max-vertical-offset="833">
+          <caret line="41" column="0" selection-start-line="41" selection-start-column="0" selection-end-line="41" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/fitting/fit/least_squares.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.0061824" vertical-offset="3344" max-vertical-offset="6205">
-          <caret line="283" column="0" selection-start-line="283" selection-start-column="0" selection-end-line="283" selection-end-column="0" />
+        <state vertical-scroll-proportion="2.0303514" vertical-offset="684" max-vertical-offset="4403">
+          <caret line="314" column="119" selection-start-line="314" selection-start-column="119" selection-end-line="314" selection-end-column="119" />
           <folding>
             <element signature="e#0#51#0" expanded="true" />
-            <element signature="e#2290#2699#0" expanded="false" />
-            <element signature="e#2759#3033#0" expanded="false" />
-            <element signature="e#4520#5738#0" expanded="false" />
-            <element signature="e#5807#6179#0" expanded="false" />
+            <element signature="e#887#1733#0" expanded="false" />
+            <element signature="e#1812#2254#0" expanded="false" />
+            <element signature="e#2306#2645#0" expanded="false" />
+            <element signature="e#2695#2699#0" expanded="false" />
+            <element signature="e#2771#3180#0" expanded="false" />
+            <element signature="e#3240#3514#0" expanded="false" />
+            <element signature="e#3576#3925#0" expanded="false" />
+            <element signature="e#3969#4222#0" expanded="false" />
+            <element signature="e#4374#9777#0" expanded="false" />
+            <element signature="e#4946#6164#0" expanded="false" />
+            <element signature="e#6233#6605#0" expanded="false" />
+            <element signature="e#12076#13492#0" expanded="false" />
+            <element signature="e#12139#12535#0" expanded="false" />
           </folding>
         </state>
       </provider>
