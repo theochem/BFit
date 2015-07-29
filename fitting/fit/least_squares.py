@@ -167,6 +167,7 @@ class DensityModel():
 
             row_nnls_coefficients = self.nnls_coefficients(mat_cofactor_matrix)
             assert row_nnls_coefficients.ndim == 1
+
             integration = self.integration(row_nnls_coefficients,  exponents_array)
 
             pos_error, diff_pos_error = None, None
@@ -213,7 +214,7 @@ class DensityModel():
 
             return(exponents_array, neg_error, pos_error, diff_neg_error, diff_pos_error)
 
-    def evolutionary_algorithm(self, initial_guess, step_size_factor, accuracy, maximum_exponents=50, exponents_reducer=False):
+    def evolutionary_algorithm_one_exp(self, initial_guess, step_size_factor, accuracy, maximum_exponents=50, exponents_reducer=False):
         #assert type(initial_guess) is float
         integration_error = 0.1
 
@@ -308,7 +309,131 @@ class DensityModel():
 
         return(integration_error, difference_error, best_exponents_array)
 
+    def evolutionary_algorithm_list(self, initial_guess, step_size_factor, accuracy, maximum_exponents=50, exponents_reducer=False):
+        #assert type(initial_guess) is float
+        integration_error = 0.1
 
+        size_initial_guess = len(initial_guess)
+        difference_error = 10000.0
+        best_exponents_array = None
+        iterations_counter = 0;
+        step_size = 11.0 #Based the step_size on the atomic number
+        change_step_size = accuracy /accuracy
+        plt.ion()
+        plt.show()
+        no_change_counter = 0;
+
+        def exponent_reducer(best_exponents_array):
+            def optimized_then_integrate(exponents_array):
+                cofactor_matrix = self.cofactor_matrix(exponents_array, change_exponents=True)
+                try:
+                    row_nnls_coefficients = self.nnls_coefficients(cofactor_matrix)
+                    model = self.model(row_nnls_coefficients, exponents_array)
+
+                except Exception as ex:
+                    import traceback
+                    traceback.print_exc()
+                return(cofactor_matrix, row_nnls_coefficients, model)
+
+            difference = None
+            while len(best_exponents_array) > size_initial_guess:
+                mid_point = len(best_exponents_array)/2
+
+                first_half = best_exponents_array[0:mid_point]
+                second_half = best_exponents_array[mid_point:]
+
+                cofactor_first, first_coeff, first_model = optimized_then_integrate(first_half)
+                cofactor_sec, sec_coeff, sec_model = optimized_then_integrate(second_half)
+
+                first_diff = np.sum(np.absolute(first_model - np.ravel(be.electron_density)))
+                sec_diff = np.sum(np.absolute(sec_model - np.ravel(be.electron_density)))
+
+                if first_diff < sec_diff:
+                    best_exponents_array = first_half
+                    difference = first_model
+                elif sec_diff < first_diff:
+                    best_exponents_array= second_half
+                    difference = sec_model
+            return(best_exponents_array, difference)
+
+        while(integration_error > accuracy and difference_error > accuracy):
+
+            #step_size = initial_guess[0] * np.random.random()
+            try:
+                greedy_algo =  self.greedy_algorithm(step_size, step_size_factor, initial_guess, accuracy, maximum_exponents=maximum_exponents, use_nnls=True)
+
+                exponents_array, int_neg_error, int_pos_error, diff_neg_error, diff_pos_error = greedy_algo
+
+                if diff_neg_error < diff_pos_error and diff_neg_error < difference_error:
+
+                    difference_error = diff_neg_error
+                    best_exponents_array = exponents_array
+                    print('neg won')
+                    no_change_counter = 0
+                    best_exponents_array, int = exponent_reducer(exponents_array)
+                    initial_guess = np.squeeze(np.random.choice(np.ravel(best_exponents_array), size_initial_guess ))
+                    initial_guess = initial_guess.tolist()
+                    #print(best_exponents_array)
+
+
+                elif diff_pos_error < diff_neg_error and diff_pos_error < difference_error:
+                    difference_error = diff_pos_error
+                    best_exponents_array = exponents_array
+                    print('pos won')
+                    no_change_counter = 0
+                    best_exponents_array, int = exponent_reducer(exponents_array)
+                    initial_guess = np.squeeze(np.random.choice(np.ravel(best_exponents_array), size_initial_guess ))
+                    initial_guess = initial_guess.tolist()
+                    #print(best_exponents_array)
+
+                else:
+                    print('neither', np.absolute(int_neg_error - integration_error))
+
+
+                    no_change_counter += 1
+                    if no_change_counter >= 40 or step_size < 1e-12:
+                        print("Resteat")
+                        size_initial_guess += 1
+                        step_size == 500.0
+                        best_exponents_array = exponent_reducer(exponents_array)
+                        print(best_exponents_array)
+                        initial_guess = np.squeeze(np.random.choice(np.ravel(best_exponents_array), size_initial_guess ))
+                        initial_guess = initial_guess.tolist()
+                        initial_guess = [np.random.random() * 10] + initial_guess
+                        no_change_counter = 0
+                    else:
+                        initial_guess = np.squeeze(np.random.choice(np.ravel(best_exponents_array), size_initial_guess ))
+                        initial_guess = initial_guess.tolist()
+
+                    if no_change_counter >= 10:
+                        step_size/=10
+
+
+
+
+
+
+
+
+
+                cofactor = self.cofactor_matrix(exponents_array, change_exponents=True)
+                coeff = self.nnls_coefficients(cofactor)
+                model = self.model(coeff, exponents_array)
+                plt.clf()
+                plt.semilogx(self.grid, np.ravel(self.grid**2) * np.ravel(model))
+                plt.semilogx(self.grid, np.ravel(self.grid**2) * np.ravel(self.electron_density), 'r')
+                plt.draw()
+            except Exception as ex:
+                import traceback
+                traceback.print_exc()
+                #print(repr(ex), 2)
+                pass
+
+            iterations_counter += 1
+            print(iterations_counter ,": Number of Ilterations")
+
+
+        return(integration_error, difference_error, best_exponents_array)
 
 file_path = r"C:\Users\Alireza\PycharmProjects\fitting\fitting\data\examples\be.slater"
 from fitting.density.radial_grid import *
@@ -322,7 +447,7 @@ be = DensityModel('be', file_path, column_grid_points)
 x0 = np.linspace(0, 1, num = len(be.exponents))
 coeffs = be.nnls_coefficients( be.cofactor_matrix())
 
-integration_error, difference_error, best_exponents_array = be.evolutionary_algorithm(initial_guess=[0.05] , step_size_factor=0.98, accuracy=1e-10, exponents_reducer=True)
+integration_error, difference_error, best_exponents_array = be.evolutionary_algorithm_one_exp(initial_guess=[5.0, 200.0, 500.0, 300.0, 200.0, 100.0, 300.0] , step_size_factor=0.98, accuracy=1e-10, exponents_reducer=True)
 
 cofactor = be.cofactor_matrix(best_exponents_array, change_exponents=True)
 coef = be.nnls_coefficients(cofactor)

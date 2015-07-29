@@ -27,7 +27,7 @@
     <SUITE FILE_PATH="coverage/fitting$radial_grid.coverage" NAME="radial_grid Coverage Results" MODIFIED="1437102002840" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/density" />
     <SUITE FILE_PATH="coverage/fitting$slater_basic.coverage" NAME="slater_basic Coverage Results" MODIFIED="1432043425209" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/io" />
     <SUITE FILE_PATH="coverage/fitting$Unittests_in_fitting.coverage" NAME="Unittests in fitting Coverage Results" MODIFIED="1437059238192" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/fitting$least_squares.coverage" NAME="least_squares Coverage Results" MODIFIED="1438124228339" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/fit" />
+    <SUITE FILE_PATH="coverage/fitting$least_squares.coverage" NAME="least_squares Coverage Results" MODIFIED="1438144901068" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/fit" />
     <SUITE FILE_PATH="coverage/fitting$test_file.coverage" NAME="test_file Coverage Results" MODIFIED="1437531350052" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/fit" />
     <SUITE FILE_PATH="coverage/fitting$test_least_squares.coverage" NAME="test_least_squares Coverage Results" MODIFIED="1437865669079" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/fit/test" />
     <SUITE FILE_PATH="coverage/fitting$Another_Approach.coverage" NAME="Another_Approach Coverage Results" MODIFIED="1432095798351" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
@@ -57,29 +57,15 @@
       <file leaf-file-name="least_squares.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/fitting/fit/least_squares.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.1754386" vertical-offset="2480" max-vertical-offset="6562">
-              <caret line="259" column="0" selection-start-line="259" selection-start-column="0" selection-end-line="259" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.5933014" vertical-offset="5578" max-vertical-offset="8857">
+              <caret line="449" column="94" selection-start-line="449" selection-start-column="94" selection-end-line="449" selection-end-column="94" />
               <folding>
                 <element signature="e#0#51#0" expanded="true" />
-                <element signature="e#887#1733#0" expanded="false" />
-                <element signature="e#1812#2254#0" expanded="false" />
-                <element signature="e#2306#2645#0" expanded="false" />
-                <element signature="e#2695#2699#0" expanded="false" />
-                <element signature="e#2771#3180#0" expanded="false" />
-                <element signature="e#3240#3514#0" expanded="false" />
-                <element signature="e#3576#3925#0" expanded="false" />
-                <element signature="e#3969#4222#0" expanded="false" />
+                <element signature="e#4374#9779#0" expanded="false" />
                 <element signature="e#4946#6164#0" expanded="false" />
                 <element signature="e#6233#6605#0" expanded="false" />
               </folding>
             </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Yo.png" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/fitting/fit/Yo.png">
-          <provider selected="true" editor-type-id="images">
-            <state />
           </provider>
         </entry>
       </file>
@@ -219,10 +205,10 @@
     <detection-done>true</detection-done>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="-8" />
-    <option name="y" value="-8" />
-    <option name="width" value="1382" />
-    <option name="height" value="744" />
+    <option name="x" value="1" />
+    <option name="y" value="1" />
+    <option name="width" value="1918" />
+    <option name="height" value="1038" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -266,6 +252,7 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -348,7 +335,6 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -850,8 +836,8 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
-    <editor active="false" />
+    <frame x="1" y="1" width="1918" height="1038" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32843137" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32843137" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -860,9 +846,9 @@
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32629356" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.28104576" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.28094727" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32843137" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20801815" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20767613" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32980332" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24962178" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -935,7 +921,7 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="19" />
+      <option name="time" value="21" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -946,14 +932,7 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#51#0" expanded="true" />
-            <element signature="e#887#1733#0" expanded="false" />
-            <element signature="e#1812#2254#0" expanded="false" />
-            <element signature="e#2306#2645#0" expanded="false" />
-            <element signature="e#2695#2699#0" expanded="false" />
-            <element signature="e#2771#3180#0" expanded="false" />
-            <element signature="e#3240#3514#0" expanded="false" />
-            <element signature="e#3576#3925#0" expanded="false" />
-            <element signature="e#3969#4222#0" expanded="false" />
+            <element signature="e#4374#9779#0" expanded="false" />
             <element signature="e#4946#6164#0" expanded="false" />
             <element signature="e#6233#6605#0" expanded="false" />
           </folding>
@@ -1015,14 +994,7 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#51#0" expanded="true" />
-            <element signature="e#887#1733#0" expanded="false" />
-            <element signature="e#1812#2254#0" expanded="false" />
-            <element signature="e#2306#2645#0" expanded="false" />
-            <element signature="e#2695#2699#0" expanded="false" />
-            <element signature="e#2771#3180#0" expanded="false" />
-            <element signature="e#3240#3514#0" expanded="false" />
-            <element signature="e#3576#3925#0" expanded="false" />
-            <element signature="e#3969#4222#0" expanded="false" />
+            <element signature="e#4374#9779#0" expanded="false" />
             <element signature="e#4946#6164#0" expanded="false" />
             <element signature="e#6233#6605#0" expanded="false" />
           </folding>
@@ -1084,14 +1056,7 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#51#0" expanded="true" />
-            <element signature="e#887#1733#0" expanded="false" />
-            <element signature="e#1812#2254#0" expanded="false" />
-            <element signature="e#2306#2645#0" expanded="false" />
-            <element signature="e#2695#2699#0" expanded="false" />
-            <element signature="e#2771#3180#0" expanded="false" />
-            <element signature="e#3240#3514#0" expanded="false" />
-            <element signature="e#3576#3925#0" expanded="false" />
-            <element signature="e#3969#4222#0" expanded="false" />
+            <element signature="e#4374#9779#0" expanded="false" />
             <element signature="e#4946#6164#0" expanded="false" />
             <element signature="e#6233#6605#0" expanded="false" />
           </folding>
@@ -1153,14 +1118,7 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#51#0" expanded="true" />
-            <element signature="e#887#1733#0" expanded="false" />
-            <element signature="e#1812#2254#0" expanded="false" />
-            <element signature="e#2306#2645#0" expanded="false" />
-            <element signature="e#2695#2699#0" expanded="false" />
-            <element signature="e#2771#3180#0" expanded="false" />
-            <element signature="e#3240#3514#0" expanded="false" />
-            <element signature="e#3576#3925#0" expanded="false" />
-            <element signature="e#3969#4222#0" expanded="false" />
+            <element signature="e#4374#9779#0" expanded="false" />
             <element signature="e#4946#6164#0" expanded="false" />
             <element signature="e#6233#6605#0" expanded="false" />
           </folding>
@@ -1403,18 +1361,11 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/fitting/fit/least_squares.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.1754386" vertical-offset="2480" max-vertical-offset="6562">
-          <caret line="259" column="0" selection-start-line="259" selection-start-column="0" selection-end-line="259" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.5933014" vertical-offset="5578" max-vertical-offset="8857">
+          <caret line="449" column="94" selection-start-line="449" selection-start-column="94" selection-end-line="449" selection-end-column="94" />
           <folding>
             <element signature="e#0#51#0" expanded="true" />
-            <element signature="e#887#1733#0" expanded="false" />
-            <element signature="e#1812#2254#0" expanded="false" />
-            <element signature="e#2306#2645#0" expanded="false" />
-            <element signature="e#2695#2699#0" expanded="false" />
-            <element signature="e#2771#3180#0" expanded="false" />
-            <element signature="e#3240#3514#0" expanded="false" />
-            <element signature="e#3576#3925#0" expanded="false" />
-            <element signature="e#3969#4222#0" expanded="false" />
+            <element signature="e#4374#9779#0" expanded="false" />
             <element signature="e#4946#6164#0" expanded="false" />
             <element signature="e#6233#6605#0" expanded="false" />
           </folding>
