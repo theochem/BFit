@@ -18,7 +18,6 @@ def test_model():
     assert model[1] == secon_value_calc
     assert model[2] == third_value_calc
 
-
 def test_cofactor_matrix():
     file_path =  os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/examples/be.slater'
 
@@ -39,6 +38,63 @@ def test_cofactor_matrix():
 def test_integration():
     pass
 
+def test_cost_function():
+    file_path =  os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/examples/be.slater'
+
+    #Test Float Numbers
+    coeff = np.array([2.0])
+    be = DensityModel(element_name="be", file_path=file_path, grid=np.array([[1.0]]), exponents=np.array([2.0]), change_exponents=True)
+    value = be.cost_function(coeff)
+    density = be.electron_density
+    calc_value = np.array([[2.0 * np.exp(-1.0 * 2.0 * 1.0**2)]])
+    assert value == np.sum((density - calc_value)**2)
+
+
+    #Test Array Numbers
+    coeff = np.array([1.0, 2.0])
+    be = DensityModel(element_name='be', file_path=file_path, grid=np.array([[1.0], [2.0]]), exponents=np.array([3.0, 4.0]), change_exponents=True)
+    value = be.cost_function(coeff)
+    density = be.electron_density
+    calc_value = np.array([ [1.0 * np.exp(-1.0 * 3.0 * 1.0**2) + 2.0 * np.exp(-1.0 * 4.0 * 1.0 **2) ], [1.0 * np.exp(-1.0 * 3.0 * 2.0**2) + 2.0 * np.exp(-1.0 * 4.0 * 2.0**2)]])
+    assert value == np.sum((density - calc_value)**2)
+
+def test_derivative_cost_function():
+    file_path =  os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/examples/be.slater'
+
+
+    #Test Float Value
+    coeff = np.array([2.0])
+    be = DensityModel(element_name="be", file_path=file_path, grid=np.array([[1.0]]), exponents=np.array([2.0]), change_exponents=True)
+    value = be.derivative_cost_function(coeff)
+    density = be.electron_density
+
+    exponential = np.exp(-1.0 * 2.0 * 1.0**2)
+    calc_value = -2.0 * np.array([[exponential]]) * (density -  2.0 * exponential)
+    assert value == calc_value
+
+    #Test List
+    coeff = np.array([1.0, 2.0])
+    be = DensityModel(element_name='be', file_path=file_path, grid=np.array([[1.0], [2.0]]), exponents=np.array([3.0, 4.0]), change_exponents=True)
+    value = be.derivative_cost_function(coeff)
+    density = be.electron_density
+
+    calc_value = -2.0 * (density - np.array([ [1.0 * np.exp(-1.0 * 3.0 * 1.0**2) + 2.0 * np.exp(-1.0 * 4.0 * 1.0 **2) ], [1.0 * np.exp(-1.0 * 3.0 * 2.0**2) + 2.0 * np.exp(-1.0 * 4.0 * 2.0**2)]]))
+    derivative_first_coeff = calc_value * np.array([ [np.exp(-1.0 * 3.0 * 1.0**2)], [np.exp(-1.0 * 3.0 * 2.0**2)]])
+    derivative_sec_coeff = calc_value * np.array([ [np.exp(-1.0 * 4.0 * 1.0**2)], [np.exp(-1.0 * 4.0 * 2.0**2)]])
+    assert value[0] == np.ravel(derivative_first_coeff)[0] + np.ravel(derivative_first_coeff)[1]
+    assert value[1] == np.ravel(derivative_sec_coeff)[0] + np.ravel(derivative_sec_coeff)[1]
+
+    # Test Derivative with scipy approximation function
+    be = DensityModel(element_name="be", file_path=file_path, grid=np.array([[1.0]]), exponents=np.array([float(x) for x in range(0,5)]), change_exponents=True)
+    coeff = np.array([float(x) for x in [  5.0,   0.0,   0.0, 2.44, 5.6]])
+
+    proximation = scipy.optimize.approx_fprime(coeff, be.cost_function, epsilon=1e-5)
+    derivative = be.derivative_cost_function(coeff)
+    assert np.absolute(proximation[0] - derivative[0]) < 1e-5
+    assert np.absolute(proximation[1] - derivative[1]) < 1e-5
+    assert np.absolute(proximation[-1] - derivative[-1]) < 1e-5
 
 test_model()
 test_cofactor_matrix()
+test_cost_function()
+test_derivative_cost_function()

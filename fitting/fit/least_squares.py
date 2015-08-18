@@ -7,7 +7,7 @@ import scipy.optimize
 
 #Ask Farnaz - The Atomic_slater_density uses an column vector, so should Density Model be column vector as well?
 class DensityModel():
-    def __init__(self, element_name, file_path, grid, change_exponents=False):
+    def __init__(self, element_name, file_path, grid, exponents=[], change_exponents=False):
         assert isinstance(file_path, str)
         assert grid.ndim == 2 and np.shape(grid)[1] == 1
 
@@ -16,15 +16,15 @@ class DensityModel():
         self.electron_density = Atomic_Density(file_path, self.grid).atomic_density()
 
         if change_exponents:
-            pass
+            assert type(exponents).__module__ == np.__name__
+            self.exponents = exponents
         else:
             gbasis =  UGBSBasis(element_name)
             self.exponents = 2.0 * gbasis.exponents()
 
-
     def model(self, coefficients, exponents):
         """
-        Used this to computer the exponents and coefficients
+        Used this to compute the exponents and coefficients
         Exponents should be 1ndim list
 
         Shape (Number of Grid Points) Row Vector
@@ -60,28 +60,55 @@ class DensityModel():
         assert np.ndim(exponential) == 2
         return(exponential)
 
-    def cost_function(self, coefficient):
-        cofactor_matrix = self.cofactor_matrix()
-
-        gaussian_model = coefficient * cofactor_matrix
-        gaussian_model = np.sum(gaussian_model, axis=1)
+    def cost_function(self, coefficient, exponents=[], change_exponents=False):
+        if not change_exponents:
+            exponents = self.exponents
+        assert type(coefficient).__module__ == np.__name__
+        exponential = np.exp(-exponents * np.power(self.grid, 2.0))
+        assert exponential.ndim == 2
+        assert (coefficient.shape)[0] == exponential.shape[1]
+        coefficient = (np.reshape(np.array(coefficient), (len(coefficient), 1)))
+        gaussian_model = np.dot(exponential, coefficient)
+        gaussian_model = np.ravel(gaussian_model)
 
         residual = np.ravel(self.electron_density) - gaussian_model
-        assert residual.ndim == 1
         residual_squared = np.power(residual, 2.0)
 
-        return residual_squared
+        return(np.sum(residual_squared))
 
-    def derivitive_cost_function(self):
-        pass
+    def derivative_cost_function(self, coefficient, exponents=[], change_exponents=False):
+        if not change_exponents:
+            exponents = self.exponents
 
-    def f_min_slsqp_coefficients(self, list_initial_guess, ):
-        bounds1=[(0, None) for x in range(0, len(self.exponents))]
-        derivitive = self.derivitive_cost_function()
+        exponential = np.exp(-exponents * np.power(self.grid, 2.0))
+        coefficient = np.reshape(np.array(coefficient), (len(coefficient), 1))
+        gaussian_model = np.dot(exponential, coefficient)
+        gaussian_model = np.ravel(gaussian_model)
+        residual = np.ravel(self.electron_density) - gaussian_model
 
-        #f_min_slsqp = scipy.optimize.fmin_slsqp(self.cost_function, list_initial_guess, bounds=bounds, fprime_eqcons=self.derivitive_cost_function())
-        SLSQP = scipy.optimize.minimize(self.cost_function, x0=list_initial_guess, method='SLSQP', jac=True, bounds=bounds1)
-        print(SLSQP)
+        f_function = 2.0 * residual
+
+        exp_derivitive = []
+        for exp in exponents:
+            g_function = -1.0 * np.exp(-1.0 * exp * self.grid**2)
+            derivative = f_function * np.ravel(g_function)
+            exp_derivitive.append(np.ravel(derivative))
+
+        assert exp_derivitive[0].ndim == 1
+        assert np.shape(exp_derivitive[0])[0] == np.shape(self.grid)[0]
+        return(np.sum(np.asarray(exp_derivitive), axis=1))
+
+    def f_min_slsqp_coefficients(self, coeff_guess, exponents=[], change_exponents=False):
+        if not change_exponents:
+            exponents = self.exponents
+        bounds = [(0, None) for x in range(0, len(coeff_guess))]
+
+        f_min_slsqp = scipy.optimize.fmin_l_bfgs_b(self.cost_function, x0=coeff_guess, bounds=bounds, fprime=self.derivative_cost_function, args=(exponents, change_exponents), factr=10.0)
+        coeff = f_min_slsqp[0]
+
+        return(coeff)
+        #grad = scipy.optimize.approx_fprime(list_initial_guess, self.cost_function, epsilon=1e-5)
+        #print(f_min_slsqp, grad, self.derivative_cost_function(list_initial_guess))
 
     def nnls_coefficients(self, cofactor_matrix):
         b_vector = self.electron_density
@@ -90,7 +117,7 @@ class DensityModel():
         b_vector = np.ravel(b_vector)
         assert np.ndim(b_vector) == 1
         row_nnls_coefficients = scipy.optimize.nnls(cofactor_matrix, b_vector)
-
+        print(row_nnls_coefficients)
         return(row_nnls_coefficients[0])
 
     def integration(self, coefficients, exponents):
@@ -112,6 +139,108 @@ class DensityModel():
 
         a = be.atomic_density() * p**2 * w/ np.exp(-p)
         return(np.sum(a))
+
+    def pauls_GA(self, factor, factor_factor, initial_guess, accuracy, maximum_exponents=50, use_slsqp=True, use_nnls=False):
+        assert isinstance(maximum_exponents, int)
+        assert isinstance(factor, float)
+        assert isinstance(initial_guess, float) or all(isinstance(x, float) for x in initial_guess)
+
+        def measure_error_helper(coeff, exponents):
+            model = self.model(coeff, exponents)
+            diff = np.absolute(np.ravel(self.electron_density) - model)
+            grid = np.ravel(self.grid)
+            integration = np.trapz(y=diff, x=grid)
+            #integration = np.trapz(y=model, x=grid)
+            #integration2 = np.trapz(y=np.ravel(self.electron_density), x=grid)
+            return(integration)
+
+        def best_UGBS_helper():
+            counter = 0
+            lowest_error = None
+            best_UGBS = None
+            for exponent in self.exponents:
+                exponent = np.array([exponent])
+                coefficients = self.f_min_slsqp_coefficients([initial_guess], exponents=exponent, change_exponents=True)
+                error = measure_error_helper(coeff=coefficients, exponents=exponent)
+
+                if counter == 0:
+                    lowest_error = error
+                    best_UGBS = exponent
+                    counter += 1
+                if error < lowest_error:
+                    lowest_error = error
+                    best_UGBS = exponent
+
+            return(lowest_error, best_UGBS, coefficients)
+
+        def splitting_array_helper(exp_array, factor):
+            mult_copy = np.copy(exp_array)
+            div_copy = np.copy(exp_array)
+            next_position = 0
+            for index in range(0, len(exp_array)):
+                next_position += 1
+                next_mult_number = exp_array[index] * factor
+                next_div_number = exp_array[index] / factor
+
+                mult_copy = np.insert(mult_copy, next_position, next_mult_number)
+                div_copy = np.insert(div_copy, next_position, next_div_number)
+                next_position += 1
+            return(np.sort(mult_copy), np.sort(div_copy))
+
+        def remove_zero(coeff_array, exp_array):
+            new_coeff = np.copy(coeff)
+            new_exp = np.copy(exp_array)
+            for index, x in np.ndenumerate(coeff_array):
+                if x == 0:
+                    new_exp = np.delete(exp_array, index)
+                    new_coeff = np.delete(coeff_array, index)
+            return(new_coeff, new_exp)
+
+        lowest_error, best_UGBS, coeff = best_UGBS_helper()
+        #Ask Farnaz Regarding the x
+        print("The Best UGBS Exponent is ", [x for x in best_UGBS], " that gave an error of ", lowest_error)
+        if use_slsqp:
+            while(lowest_error > accuracy):
+                mult_exp, div_exp  = splitting_array_helper(best_UGBS, factor)
+                factor *= factor_factor
+
+                initial_guess = np.append(coeff, [coeff[len(coeff) - 1]* np.random.random() for x in range(0, len(coeff)) ])
+
+                mult_coeff = self.f_min_slsqp_coefficients(initial_guess, exponents=mult_exp, change_exponents=True)
+                div_coeff = self.f_min_slsqp_coefficients(initial_guess, exponents=div_exp, change_exponents=True)
+
+                mult_error = measure_error_helper(mult_coeff, mult_exp)
+                div_error = measure_error_helper(div_coeff, div_exp)
+
+                if mult_error < div_error:
+                    coeff = mult_coeff
+                    best_UGBS = mult_exp
+                    #print('mult', best_UGBS)
+
+                else:
+                    coeff = div_coeff
+                    best_UGBS = div_exp
+                    #print('div', best_UGBS)
+
+                if mult_error < lowest_error:
+                    lowest_error = mult_error
+                    coeff = mult_coeff
+                    best_UGBS = mult_exp
+
+                elif div_error < lowest_error:
+                    lowest_error = div_error
+                    coeff = div_coeff
+                    best_UGBS = div_exp
+                #print(coeff)
+                #coeff, best_UGBS = remove_zero(coeff, best_UGBS)
+                print("factor: ", np.round(factor, 3), ", mult error:", np.round(mult_error, 3), ", div error:", np.round(div_error, 3), ", number of exp/coeff: ", len(best_UGBS) )
+                if len(best_UGBS) > maximum_exponents and len(coeff) > maximum_exponents:
+                    break;
+
+                #print(mult_coeff)
+
+
+        return(lowest_error, coeff, best_UGBS)
 
     def greedy_algorithm(self, step_size, step_size_factor, initial_guess, accuracy, maximum_exponents=50 , use_nnls=False, use_slsqp=False):
         assert isinstance(maximum_exponents, int)
@@ -442,28 +571,21 @@ row_grid_points = radial_grid.grid_points(200, 300, [50, 75, 100])
 
 column_grid_points = np.reshape(row_grid_points, (len(row_grid_points), 1))
 be = DensityModel('be', file_path, column_grid_points)
+#print("Lowest Error", be.pauls_GA(8.0, 0.95, initial_guess=1.0, accuracy=1e-5 ,maximum_exponents=50)[0])
+
+lowest_error, coeff, exponents = be.pauls_GA(4.0, 0.75, initial_guess=1.0, accuracy=1e-5 ,maximum_exponents=25)
+
+print("lowest error", lowest_error, "\n coeff", coeff)
+
+if lowest_error < 0.5:
+    model = be.model(coeff, exponents)
+    plt.plot(be.grid, model)
+    plt.plot(be.grid, np.ravel(be.electron_density))
+    plt.show()
+    print("Integration: ", np.trapz(y=model, x=np.ravel(be.grid)))
 
 
-x0 = np.linspace(0, 1, num = len(be.exponents))
-coeffs = be.nnls_coefficients( be.cofactor_matrix())
 
-integration_error, difference_error, best_exponents_array = be.evolutionary_algorithm_one_exp(initial_guess=[5.0, 200.0, 500.0, 300.0, 200.0, 100.0, 300.0] , step_size_factor=0.98, accuracy=1e-10, exponents_reducer=True)
-
-cofactor = be.cofactor_matrix(best_exponents_array, change_exponents=True)
-coef = be.nnls_coefficients(cofactor)
-
-np.set_printoptions(threshold=np.nan)
-
-model = be.model(coef, best_exponents_array)
-print("Best Exponent Array:", best_exponents_array)
-print("Integration_Error:", integration_error)
-print("Final Integration:", be.integration(coef, best_exponents_array))
-#print(np.concatenate((np.reshape(model, (len(model), 1)), be.electron_density), axis=1))
-#plt.plot(be.grid, (model), 'r')
-#plt.plot(be.grid, np.sort(be.electron_density), 'g')
-#plt.show()
-
-density_list = [[np.reshape(model, (len(model), 1)),"Model"], [be.electron_density,"Electron Density"]]
 def plot_atomic_desnity(radial_grid, density_list, title, figure_name):
     import matplotlib.pyplot as plt
     colors = ["#FF00FF", "#FF0000", "#FFAA00", "#00AA00", "#00AAFF", "#0000FF", "#777777", "#00AA00", "#00AAFF"]
@@ -485,130 +607,5 @@ def plot_atomic_desnity(radial_grid, density_list, title, figure_name):
     plt.savefig(figure_name)
     plt.close()
 
-plot_atomic_desnity(be.grid, density_list, "Hey", "Yo")
 import sys
 sys.exit()
-
-r"""
-c =exp = np.array([  0.04690497 ,  0.08862487 , 11.52134028  ,11.52438861,  11.52786841,
-  11.53160574 , 11.53543023 , 11.53918749 , 11.54274849 , 11.54601524,
-  11.54892286 , 11.5514382  , 11.55355592 , 11.55529294 , 11.55668213,
-  11.55776611 , 11.55859181 , 11.55920608 , 11.55965256 , 11.55996971,
-  11.56018995 , 11.5603395  , 11.56043881 , 11.56050332 , 11.56054432,
-  11.56056982 , 11.56058533 , 11.56059457 , 11.56059995 , 11.56060303,
-  11.56060474 , 11.56060568 , 11.56060672 , 11.56060698,  11.56060711,
-  11.56060725])
-
-cofactor= be.cofactor_matrix(c, change_exponents=True)
-nnls_coeff = be.nnls_coefficients(cofactor)
-
-model = be.model(nnls_coeff, exp)
-print(np.shape(be.electron_density), np.shape(model))
-print(np.sum(np.absolute(np.ravel(be.electron_density) - model)))
-plt.plot(be.electron_density, be.grid)
-plt.plot(model, be.grid)
-plt.show()"""
-
-
-
-
-
-
-
-
-
-r"""
-
-#############################################################################################################################
-########################################## FMIN_L_BFGS_B ####################################################################
-#############################################################################################################################
-be_UGBS = np.concatenate(( [0.02*1.95819475**25, 0.02*1.95819475**26, 0.02*1.95819475**27, 0.02*1.95819475**28, 0.02*1.95819475**29,
-                0.02*1.95819475**30, 0.02*1.95819475**31], be_UGBS))
-length_UGBS = np.shape(be_UGBS)[0]
-
-def total_density_cost_function(x, *args):
-    UGBS, grid, rho = args[0], args[1], args[2]
-    gaussian = x * np.exp(np.longdouble(-1.9999999999 * UGBS * grid**2)) # 503 x 25
-    sum_gaussians = np.sum(gaussian, axis=1)
-    sum_gaussians = np.reshape(sum_gaussians, (len(sum_gaussians), 1))
-    residual = rho - sum_gaussians
-    sum_squared_residuals = np.sum(residual**2)
-    return sum_squared_residuals
-print(total_density_cost_function(0, be_UGBS, Be_grid, be_rho) == np.sum(be_rho**2 ))
-
-# Initial Guess
-x0 = np.linspace(0, 1, num = length_UGBS)
-#This Is The Optimization that is Used
-optimized = scipy.optimize.fmin_l_bfgs_b(total_density_cost_function, x0, args=(be_UGBS, Be_grid, be_rho),  bounds=[(0, None) for x in range(0, length_UGBS)], approx_grad=True )
-coeff = optimized[0]
-
-# Another Grid that takes small increments towards 10
-grid = np.arange(0.0, 10.0, 0.0001)
-def f(opt_coeffs, grid):
-    grid = np.reshape(grid, (len(grid), 1))  #100000 x 1
-    print(np.shape(coeff * np.exp(be_UGBS * -2 * grid**2)))    #(100000 x 25)
-    return np.sum(coeff * np.exp(be_UGBS * -2 * grid**2), axis = 1)
-
-density_approx = f(coeff, Be_grid)   #opt_coeffs refers to the optimized coefficients
-# turn the density approximate into 1D array, if yours is 2D array (i.e. column array)
-density_approx = np.ravel(density_approx)
-density_resized = np.reshape(density_approx, (len(density_approx), 1))
-print(np.shape(Be_grid), np.shape(density_resized))
-
-
-#############################################################################################################################
-########################################## NON-NEGATIVE LEAST SQUARES #######################################################
-#############################################################################################################################
-
-def cofactor_matrix(UGBS, grid):
-    inner = UGBS * grid**2 # 503 x 25
-    gaussian = np.exp(-2 * inner) # 503 x 25
-    return gaussian
-
-# This uses clenshaw grid and electron density
-cofactor_mat = cofactor_matrix(be_UGBS, Be_grid)
-print("The Shape of A/Cofactor Matrix is ", np.shape(cofactor_mat))
-NNLS_coeff = scipy.optimize.nnls(cofactor_mat, be_rho)[0]
-print("The shape of cofactor and b", cofactor_mat.ndim, be_rho.ndim)
-print("These Are The Coefficients Obtained From f_min_BFGS\n", coeff, "\n")
-print("These are the Coefficients Obtained from NNLS\n", NNLS_coeff, "\n")
-print( np.shape(NNLS_coeff), np.shape(Be_grid))
-
-def plot_function(coefficients, UGBS, grid):
-    inner = UGBS * grid**2
-    gaussian = np.dot(np.exp(-2 * inner), NNLS_coeff)
-    return gaussian
-
-NNLS_density_approx = plot_function(NNLS_coeff, NNLS_coeff, np.reshape(Be_grid, (len(Be_grid), 1)))
-print("Shape", np.shape(NNLS_density_approx))
-density_approx = np.reshape(density_approx, (len(density_approx), 1)) # this is for the plot
-
-#Plotting
-log_grid = np.log(np.ravel(Be_grid))
-grid = np.ravel(Be_grid)
-fig = plt.figure()
-ax = fig.add_axes([0.1, 0.1, 0.6, 0.75])
-ax.plot(grid, (density_approx), "b", label="F_MIN_BFGS_B")
-ax.plot(grid, (NNLS_density_approx), "r--", label="NNLS")
-ax.plot(grid, (be_rho), "g", label="True Density ")
-ax.legend(bbox_to_anchor=(1.00, 1), loc=2, borderaxespad=0.)
-props = dict(boxstyle='round', facecolor='white', alpha=0.5)
-ax.text(1.2, (0.1 + 0.75)/2, "T - F_Min_BFGS_B " + str(np.round(np.asscalar(np.absolute(np.sum(be_rho - density_approx))), decimals=2))
-                            + "\n T - NNLS " + str(np.round(np.asscalar(np.absolute(np.sum(be_rho - NNLS_density_approx))), decimals=2))
-                            + "\n F_Min - NNLS " + str(np.round(np.asscalar(np.absolute(np.sum(density_approx - NNLS_density_approx))), decimals=2)),
-        transform=ax.transAxes, fontsize=14,
-        verticalalignment='center', horizontalalignment='center', bbox=props)
-
-plt.show()
-
-#Integration
-print("Integration of Beryllium for NNLS Using Clenshaw Grid is ", np.trapz(np.ravel(Be_grid**2) * np.ravel(NNLS_density_approx),
-                                                                            np.ravel(Be_grid)))
-print("Integration Of Beryllium for f_Min_LGBS Using Clenshaw Grid is ", np.trapz(np.ravel(Be_grid**2 * density_resized), np.ravel(Be_grid)) )       #number of electrons by integrating the approximate model
-
-#Taking The Difference Between the Techniques
-print("The Difference between True and F_Min_BFGS_B ", np.absolute(np.sum(be_rho - density_approx)))
-NNLS_density_approx = np.reshape(NNLS_density_approx, (len(NNLS_density_approx), 1))
-print("The Difference between True and NNLS ", np.absolute(np.sum(be_rho - NNLS_density_approx)))
-print("The Difference between F_Min_BFGS_B and NNLS ", np.sum(density_approx - NNLS_density_approx))
-"""
