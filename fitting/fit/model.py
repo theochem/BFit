@@ -1,0 +1,637 @@
+import abc
+from fitting.density.atomic_slater_density import *
+from fitting.gbasis.gbasis import UGBSBasis
+
+class DensityModel():
+    __metaclass__ = abc.ABCMeta
+
+    def __init__(self, element, grid, file_path):
+        #TODO ADD
+        self.check_type(element, str)
+        self.check_type(file_path, str)
+        self.check_type(grid, "numpy array")
+        assert grid.ndim == 2
+
+        self.element = element.lower()
+        self.grid = np.copy(grid)
+        self.file_path = file_path
+
+        atomic_density_object = Atomic_Density(file_path, self.grid)
+        self.electron_density = np.copy(atomic_density_object.atomic_density())
+        self.integrated_total_electron_density = atomic_density_object.integrate_total_density_using_trapz()
+
+        self.electron_density_core, self.electron_density_valence = atomic_density_object.atomic_density_core_valence()
+        self.integrated_core_density = self.integrate_model_using_trapz(self.electron_density_core)
+        print(self.integrated_core_density)
+        self.integrated_valence_density = self.integrate_model_using_trapz(self.electron_density_valence)
+
+        gbasis =  UGBSBasis(element)
+        self.UGBS_s_exponents = 2.0 * gbasis.exponents('s')
+        self.UGBS_p_exponents = 2.0 * gbasis.exponents('p')
+        #if array is empty initialize it
+        if(self.UGBS_p_exponents.size == 0.0):
+            self.UGBS_p_exponents = np.copy(self.UGBS_s_exponents)
+        self.check_type(self.UGBS_s_exponents, "numpy array")
+
+    @abc.abstractmethod
+    def create_model(self):
+        """
+        TODO
+        Insert Documentation about the model
+        """
+        raise NotImplementedError("Please Implement Your Model")
+
+    @abc.abstractmethod
+    def cost_function(self):
+        """
+        TODO
+        """
+        raise NotImplementedError("Please Implement Your Cost Function")
+
+    @abc.abstractmethod
+    def derivative_of_cost_function(self):
+        """
+        TODO
+        """
+        raise NotImplementedError("Please Implement Your Derivative of Cost Function")
+
+    @abc.abstractmethod
+    def create_cofactor_matrix(self):
+        pass
+
+    def calculate_residual(self, *args):
+        residual = np.ravel(self.electron_density) - self.create_model(*args)
+        return(residual)
+
+    def calculate_residual_based_on_core(self, *args):
+        residual = np.ravel(self.electron_density_core) - self.create_model(*args)
+        return residual
+
+    def calculate_residual_based_on_valence(self):
+        residual = np.ravel(self.electron_density_valence) - self.create_model(*args)
+        return residual
+
+    def integrate_model_using_trapz(self, approximate_model):
+        integrate = np.trapz(y=np.ravel(self.grid**2) * np.ravel(approximate_model), x=np.ravel(self.grid))
+        return integrate
+
+    def measure_error_by_integration_of_difference(self, true_model, approximate_model):
+        error = np.trapz(y=np.ravel(self.grid**2) * np.absolute(np.ravel(true_model) - np.ravel(approximate_model)), x=np.ravel(self.grid))
+        return error
+
+    def measure_error_by_difference_of_integration(self, true_model, approximate_model):
+        integration_of_true_model = self.integrated_total_electron_density
+        integration_of_approx_model = self.integrate_model_using_trapz(approximate_model)
+
+        difference_of_models = integration_of_true_model - integration_of_approx_model
+
+        return np.absolute(difference_of_models)
+
+    def generation_of_UGBS_exponents(self, p):
+        max_number_of_UGBS = np.amax(self.UGBS_s_exponents)
+        min_number_of_UGBS = np.amin(self.UGBS_s_exponents)
+
+        def calculate_number_of_Gaussian_functions(p, max, min):
+            num_of_basis_functions = np.log(2 * max / min) / np.log(p)
+            return num_of_basis_functions
+
+        num_of_basis_functions = calculate_number_of_Gaussian_functions(p, max_number_of_UGBS, min_number_of_UGBS)
+        num_of_basis_functions = num_of_basis_functions.astype(int)
+
+        new_Gaussian_exponents = np.array([min_number_of_UGBS])
+        for n in range(1, num_of_basis_functions + 1):
+            next_exponent = min_number_of_UGBS * np.power(p, n)
+            new_Gaussian_exponents = np.append(new_Gaussian_exponents, next_exponent)
+
+        return new_Gaussian_exponents
+
+    @staticmethod
+    def check_type(object, type_of_object):
+        if(type_of_object == "numpy array"):
+            assert type(object).__module__ == np.__name__
+        else:
+            assert isinstance(object, type_of_object)
+
+    @staticmethod
+    def check_dimensions(array, dimension):
+        assert isinstance(dimension, int)
+        assert array.ndim == dimension
+
+    @staticmethod
+    def plot_atomic_density(radial_grid, density_list, title, figure_name):
+        #Density List should be in the form
+        # [(electron density, legend reference),(model1, legend reference), ..]
+        import matplotlib.pyplot as plt
+        colors = ["#FF00FF", "#FF0000", "#FFAA00", "#00AA00", "#00AAFF", "#0000FF", "#777777", "#00AA00", "#00AAFF"]
+        ls_list = ['-', ':', ':', '-.', '-.', '--', '--', ':', ':']
+        assert isinstance(density_list, list)
+        radial_grid *= 0.5291772082999999   #convert a.u. to angstrom
+        for i, item in enumerate(density_list):
+            dens, label = item
+            # plot with log scaling on the y axis
+            plt.semilogy(radial_grid, dens, lw=3, label=label, color=colors[i], ls=ls_list[i])
+
+        #plt.xlim(0, 25.0*0.5291772082999999)
+        plt.xlim(0, 9)
+        plt.ylim(ymin=1e-9)
+        plt.xlabel('Distance from the nucleus [A]')
+        plt.ylabel('Log(density [Bohr**-3])')
+        plt.title(title)
+        plt.legend()
+        plt.savefig(figure_name)
+        plt.close()
+
+class Fitting():
+    #__metaclass__ = abc.ABCMeta
+    #TODO Ask farnaz, Should this class include cost function, derivative of cost funciton and cofactor matrix?
+
+    def __init__(self, model_object):
+        assert isinstance(model_object, DensityModel)
+        self.model_object = model_object
+
+    def optimize_using_nnls(self, cofactor_matrix):
+        b_vector = np.copy(self.model_object.electron_density)
+        b_vector = np.ravel(b_vector)
+        assert np.ndim(b_vector) == 1
+
+        row_nnls_coefficients = scipy.optimize.nnls(cofactor_matrix, b_vector)
+        return(row_nnls_coefficients[0])
+
+    def optimize_using_slsqp(self, initial_guess, *args):
+        bounds = np.array([(0.0, np.inf) for x in range(0, len(initial_guess))], dtype=np.float64)
+
+        f_min_slsqp = scipy.optimize.fmin_slsqp(self.model_object.cost_function, x0=initial_guess, bounds=bounds, fprime=self.model_object.derivative_of_cost_function,
+                                                acc =1e-06,iter=150000, args=(args), full_output=True, iprint=-1)
+        parameters = f_min_slsqp[0]
+        #print(f_min_slsqp[4])
+        return(parameters)
+
+    def optimize_using_l_bfgs(self, initial_guess, *args, iprint=False):
+        bounds = np.array([(0.0, 1.7976931348623157e+308) for x in range(0, len(initial_guess))], dtype=np.float64)
+
+        f_min_l_bfgs_b = scipy.optimize.fmin_l_bfgs_b(self.model_object.cost_function, x0=initial_guess, bounds=bounds, fprime=self.model_object.derivative_of_cost_function
+                                                  ,maxfun=1500000, maxiter=1500000, factr=1e10, args=args, pgtol=1e-5)
+        if iprint:
+            print(f_min_l_bfgs_b[2]['warnflag'], "            ", f_min_l_bfgs_b[2]['task'])
+
+        #if f_min_l_bfgs_b[2]['warnflag'] != 0:
+        #        print(f_min_l_bfgs_b[2]['task'])
+
+        parameters = f_min_l_bfgs_b[0]
+        return(parameters)
+
+    def fit_model_using_greedy_algo(self, factor, desired_accuracy, optimization_algo=optimize_using_l_bfgs, maximum_num_of_functions=25, *args):
+        assert type(factor) is float
+        assert type(desired_accuracy) is float
+        assert type(maximum_num_of_functions) is int
+
+        def split_coeff_exp(parameters, factor, coeff_guess, num):
+            assert parameters.ndim == 1
+            size = parameters.shape[0]
+            #assert num <= size/2
+            if parameters.shape[0] == 2:
+                coeff, exponent = parameters
+                mult_exponent = np.copy(np.array(exponent))
+                div_exponent = np.copy(np.array(exponent))
+
+                for x in range(1, num + 1):
+                    new_factor = factor ** x
+                    mult_exponent = ( np.append(mult_exponent, np.array([exponent * new_factor])) )
+                    div_exponent = ( np.sort(np.append(div_exponent, np.array([exponent / new_factor])) ))
+
+                mult_coeff = np.array([coeff] + [coeff_guess for x in range(0, num)])
+                div_coeff = np.array([coeff_guess for x in range(0, num)] + [coeff])
+
+                mult_params = np.append(mult_coeff, mult_exponent)
+                div_params = np.append(div_coeff, div_exponent)
+
+                return([mult_params, div_params])
+
+            elif num == 1:
+                all_parameters = []
+                exponent = parameters[size/2:]
+                coeff = parameters[0:size/2]
+                for index, exp in np.ndenumerate(exponent):
+                    if index[0] == 0:
+                        for x in range(1, num + 1):
+                            exponent_array = np.insert(exponent, index, exp / (factor * x))
+                            coefficient_array = np.insert(coeff, index, coeff_guess)
+
+                    elif index[0] <= size/2 - 1:
+                        exponent_array = np.insert(exponent, index, (exponent[index[0] - 1] + exponent[index[0]])/2)
+                        coefficient_array = np.insert(coeff, index, coeff_guess)
+                    all_parameters.append(np.append(coefficient_array, exponent_array))
+                    if index[0] == size/2 - 1:
+                        exponent_array = np.append(exponent, np.array([ exp * factor] ))
+                        coefficient_array = np.append(coeff, np.array([coeff_guess]))
+                        all_parameters.append(np.append(coefficient_array, exponent_array))
+                return(all_parameters)
+            else:
+                all_parameters = []
+                exponent = parameters[size/2:]
+                coeff = parameters[0:size/2]
+
+                for time in range(0, num + int(size/2)):
+                    exponent_original = np.copy(exponent)
+                    coeff_original = np.copy(coeff)
+                    #print(time)
+                    if time == 0:
+                        for x in range(0, num):
+                            new_factor = factor ** (x + 1)
+                            exponent_original = np.insert(exponent_original, time, exponent[0]/ new_factor)
+                            coeff_original = np.insert(coeff_original, time, coeff_guess)
+
+                        #print(coeff_original, exponent_original)
+                    elif time > 0:
+                        if time < num :
+                            for x in range(0, num - time):
+                                new_factor = factor ** (x + 1)
+                                exponent_original = np.insert(exponent_original, 0, exponent[0] / new_factor)
+                                coeff_original = np.insert(coeff_original, 0, coeff_guess)
+                            position_to_add = 1
+                            position_of_first = np.where(exponent_original==exponent[0])[0]
+                            position_to_avg = 1
+                            for x in range(num - time, num):
+                                exponent_original = np.insert(exponent_original, position_of_first + position_to_add, (exponent[position_to_avg ] + exponent[position_to_avg - 1])/2)
+                                coeff_original = np.insert(coeff_original, position_of_first + position_to_add, coeff_guess)
+                                position_to_add += 2
+                                position_to_avg += 1
+                            #print(coeff_original, exponent_original)
+                        elif time == num:
+                            num_of_avgs = int(size/2 - 1)
+                            position_to_add = 1
+                            position_of_first = np.where(exponent_original==exponent[0])[0]
+                            position_to_avg = 1
+                            if num == size/2:
+                                num2 = num - 1
+                            else:
+                                num2 = num
+                            for x in range(0, num2):
+                                exponent_original = np.insert(exponent_original, position_of_first + position_to_add, (exponent[position_to_avg] + exponent[position_to_avg - 1]) /2)
+                                coeff_original = np.insert(coeff_original, position_of_first + position_to_add, coeff_guess)
+                                position_to_add += 2
+                                position_to_avg += 1
+                            for x in range(0, num - num_of_avgs):
+                                new_factor = factor ** (x + 1)
+                                exponent_original = np.append(exponent_original, exponent[-1]*new_factor)
+                                coeff_original = np.append(coeff_original, coeff_guess)
+                            #print(coeff_original, exponent_original)
+
+                        elif time > num and time != num + int(size/2) - 1:
+                            exponent_original = np.flipud(exponent_original) #Reverses it
+                            coeff_original = np.flipud(exponent_original)
+                            for x in range(0, time - int(size/2) + 1):
+                                new_factor = factor ** (x + 1)
+                                exponent_original = np.insert(exponent_original, 0, exponent[-1] * new_factor)
+                                coeff_original = np.insert(coeff_original, 0, coeff_guess)
+                            position = -1
+                            for x in range(time - int(size/2) + 1, num):
+                                position_of_first = np.where(exponent_original==exponent[position])[0]
+                                exponent_original = np.insert(exponent_original, position_of_first + 1, (exponent[position] + exponent[position - 1])/2)
+                                coeff_original = np.insert(coeff_original, position_of_first + 1, coeff_guess)
+                                position -= 1
+                            exponent_original = (np.flipud(exponent_original))
+                            coeff_original = np.flipud(coeff_original)
+                            #print(coeff_original, exponent_original)
+                    if time == num + int(size/2) - 1:
+                        for x in range(0, num):
+                            new_factor = factor ** (x + 1)
+                            exponent_original = np.append(exponent_original, exponent[-1] * new_factor)
+                            coeff_original = np.append(coeff_original, coeff_guess)
+                        #print(coeff_original, exponent_original)
+                    assert coeff_original.shape[0] == exponent_original.shape[0]
+                    all_parameters.append(np.append(coeff_original , exponent_original))
+                return(all_parameters)
+
+        def is_error_big_and_num_of_functions_is_small(lowest_error_found, size_of_parameters):
+            return(lowest_error_found > desired_accuracy and size_of_parameters/2 <= maximum_num_of_functions)
+
+        def get_all_possible_choices(list_of_choices, initial_number_of_funcs, electron_density):
+            list_of_initial_two_function_choices = []
+            #TODO Ask Farnaz, If she wants to find best one function parameter then use that or do the entire list
+            leftover_density = None
+            for initial_guess in list_of_choices:
+                model = self.model_object.create_model(initial_guess, initial_number_of_funcs)
+                leftover_density = np.ravel(electron_density) - model
+
+                for weight in WEIGHTS:
+                    best_analytical_next_parameter = self.analytically_solve_objective_function(model, weight)
+                    parameter = np.concatenate((initial_guess[:initial_number_of_funcs], np.array([best_analytical_next_parameter[0]]), initial_guess[initial_number_of_funcs:], np.array([best_analytical_next_parameter[1]])))
+                    list_of_initial_two_function_choices.append(parameter)
+
+                list_of_initial_two_function_choices += split_coeff_exp(initial_guess, factor, 1.0, 1)
+                analytical_coefficient = self.analytically_find_coefficient(leftover_density, initial_guess[1])
+                list_of_initial_two_function_choices += split_coeff_exp(initial_guess, factor, analytical_coefficient ,1)
+            return(list_of_initial_two_function_choices)
+
+        def subtract_electron_density_by_model(electron_density, model):
+            return np.ravel(electron_density) - np.ravel(model)
+
+        #TODO remove the 1.0, put it back in
+        WEIGHTS = [1.0, np.ravel(self.model_object.electron_density), np.ravel(np.power(self.model_object.electron_density, 2.0))]
+
+        best_generated_UGBS_parameter_with_analytical_coefficient = self.find_best_parameter_from_analytical_coeff_and_generated_exponents(1)
+        list_of_initial_one_function_choices = [best_generated_UGBS_parameter_with_analytical_coefficient]
+        for weight in WEIGHTS:
+            best_analytical_parameters = self.analytically_solve_objective_function(self.model_object.electron_density, weight)
+            list_of_initial_one_function_choices.append(best_analytical_parameters)
+
+        best_one_function_parameter, one_function_error = self.find_best_parameter_from_list(list_of_initial_one_function_choices, 1)
+        print(best_one_function_parameter, one_function_error)
+
+        list_of_initial_two_function_choices = get_all_possible_choices([best_one_function_parameter], 1, self.model_object.electron_density)
+        best_two_function_parameter, two_function_error = self.find_best_parameter_from_list(list_of_initial_two_function_choices, 2)
+        model = self.model_object.create_model(best_two_function_parameter, 2.0)
+
+        local_parameter = np.copy(best_two_function_parameter)
+        lowest_error_found_overall = 1.0e5
+        best_parameter_found = None
+        size_of_parameters = best_two_function_parameter.shape[0]; num_of_functions = size_of_parameters //2
+        counter = 0
+        electron_density = subtract_electron_density_by_model(self.model_object.electron_density, model)
+
+        while(is_error_big_and_num_of_functions_is_small(lowest_error_found_overall, size_of_parameters)):
+            list_of_choices = get_all_possible_choices([local_parameter], num_of_functions, electron_density)
+            size_of_parameters = list_of_choices[0].shape[0]
+            num_of_functions = size_of_parameters // 2
+
+            best_parameter_from_list_of_choices = None
+            lowest_error_from_list_of_choices = 1e5
+            for parameter in list_of_choices:
+                optimized_parameter = optimization_algo(self, parameter, num_of_functions)
+                new_model = self.model_object.create_model(optimized_parameter, num_of_functions)
+                error_of_parameter = self.model_object.measure_error_by_integration_of_difference(self.model_object.electron_density, new_model)
+
+                if error_of_parameter < lowest_error_from_list_of_choices:
+                    lowest_error_from_list_of_choices = error_of_parameter
+                    best_parameter_from_list_of_choices = np.copy(optimized_parameter)
+
+            if lowest_error_from_list_of_choices < lowest_error_found_overall:
+                lowest_error_found_overall = lowest_error_from_list_of_choices
+                best_parameter_found = np.copy(best_parameter_from_list_of_choices)
+                local_parameter = np.copy(best_parameter_from_list_of_choices)
+            else:
+                print(size_of_parameters, num_of_functions)
+                print("#############################")
+                print("it got worse")
+                print("#############################")
+                #break
+            
+            print(local_parameter[0:num_of_functions])
+            model = self.model_object.create_model(local_parameter, num_of_functions)
+            integrate_new_model = self.model_object.integrate_model_using_trapz(model)
+            electron_density -= model
+
+            counter += 1
+            print("Iteration", counter, "  lowest error of iteration",lowest_error_from_list_of_choices, "  size of exp", num_of_functions, " lowest error found overall", lowest_error_found_overall)
+            print("Integration of best Coeff ", integrate_new_model, "True Value: ", self.model_object.integrated_total_electron_density,
+                  "   Abs Difference: ", np.absolute(integrate_new_model - self.model_object.integrated_total_electron_density),  "\n")
+        return(best_parameter_found, lowest_error_found_overall)
+
+    def find_best_parameter_from_analytical_coeff_and_generated_exponents(self, *args, p=1.5, optimization_algo=optimize_using_l_bfgs):
+        generated_UGBS_exponents = self.model_object.generation_of_UGBS_exponents(p)
+
+        list_of_parameters = []
+        for exponent in generated_UGBS_exponents:
+            coefficient = self.analytically_find_coefficient(self.model_object.electron_density, exponent)
+            parameters = np.array([coefficient, exponent])
+            parameters = optimization_algo(self, parameters, *args)
+            #print(exponent, parameters)
+            list_of_parameters.append(parameters)
+
+        best_parameters_found, error = self.find_best_parameter_from_list(list_of_parameters, *args)
+
+        return best_parameters_found
+
+    def analytically_find_coefficient(self, electron_density, exponent):
+        def one_exponent_model(factor, exponent):
+            exponential = np.exp(-factor * exponent * np.power(self.model_object.grid, 2.0))
+            return exponential
+
+        exponential = one_exponent_model(1.0, exponent)
+        exponential =  np.multiply(np.ravel(electron_density) ,np.ravel(exponential))
+        exponential2 = one_exponent_model(2.0, exponent)
+
+        coefficient = np.sum(exponential) / np.sum(exponential2)
+        if coefficient < 0.0:
+            print("anaytical coefficient is negative ")
+            coefficient = 0.0
+
+        return coefficient
+
+    def analytically_solve_objective_function(self, electron_density, weight):
+        if  type(weight).__module__ == np.__name__ : assert weight.ndim == 1
+
+        grid = np.copy(np.ravel(self.model_object.grid))
+        grid_squared = np.copy(np.power(grid, 2.0))
+        ln_of_electron_density = np.ma.log(np.ravel(electron_density))
+        #print(np.isinf(ln_of_electron_density))
+        if(np.isnan(ln_of_electron_density).any()):
+            print("ISNAN in the electron density")
+        a = 2.0 * np.sum(weight)
+        b = 2.0 * np.sum(weight * grid_squared)
+        c = 2.0 * weight * np.ravel(ln_of_electron_density)
+        #c.set_fill_value(0.0)
+        c = c.sum()
+        if(np.isnan(c)):
+            print("C IS THE ISNAN")
+        d = np.copy(b)
+        e = 2.0 * np.sum(weight * np.power(grid, 4.0))
+        f = 2.0 * weight * grid_squared * ln_of_electron_density
+        #f.set_fill_value( 0.0)
+        f = f.sum()
+        if(np.isinf(f)):
+            print("F IS THE ISNAN")
+
+        #print(a, b, c, d, e, f)
+        A = (b * f - c * e) / (b * d - a * e)
+        B = (a * f - c * d) / (a * e - b * d)
+        print(a, f, c, d, weight * grid_squared, "##ISNAN##")
+        coefficient = np.exp(A)
+        exponent = -B
+        if exponent < 0:
+            exponent = 0.0
+        if(np.isnan(exponent)):
+            print("ISNAN DETECTGED FROM OBJECTIVE FUNCTIOn")
+        return(np.array([coefficient, exponent]))
+
+    def find_best_parameter_from_list(self, list_of_choices, *args):
+        lowest_error_found = 1e10
+        best_parameter_found = None
+
+        for choice in list_of_choices:
+            model = self.model_object.create_model(choice, *args)
+            error_measured = self.model_object.measure_error_by_integration_of_difference(self.model_object.electron_density, model)
+            if(error_measured < lowest_error_found):
+                lowest_error_found = error_measured
+                best_parameter_found = np.copy(choice)
+
+        return best_parameter_found, lowest_error_found
+
+    def forward_greedy_algorithm(self, factor, desired_accuracy, chosen_electron_density, optimization_algo=optimize_using_l_bfgs, maximum_num_of_functions=100, *args):
+        assert type(factor) is float
+        assert type(desired_accuracy) is float
+        assert type(maximum_num_of_functions) is int
+
+        def next_list_of_exponents(exponents_array, factor, num=1):
+            assert exponents_array.ndim == 1
+            size = exponents_array.shape[0]
+            #assert num <= size/2
+            if exponents_array.shape[0] == 1:
+                mult_exponent = np.copy(np.array(exponents_array))
+                div_exponent = np.copy(np.array(exponents_array))
+
+                for x in range(1, num + 1):
+                    new_factor = factor ** x
+                    mult_exponent =  np.append(mult_exponent, np.array([exponents_array * new_factor]))
+                    div_exponent =  np.sort(np.append(div_exponent, np.array([exponents_array / new_factor])) )
+
+                return([mult_exponent, div_exponent])
+
+            elif num == 1:
+                all_choices_of_exponents = []
+
+                for index, exp in np.ndenumerate(exponents_array):
+                    if index[0] == 0:
+                        for x in range(1, num + 1):
+                            exponent_array = np.insert(exponents_array, index, exp / (factor * x))
+
+                    elif index[0] <= size/2 - 1:
+                        exponent_array = np.insert(exponents_array, index, (exponents_array[index[0] - 1] + exponents_array[index[0]])/2)
+                    all_choices_of_exponents.append(exponent_array)
+
+                    if index[0] == size/2 - 1:
+                        exponent_array = np.append(exponents_array, np.array([ exp * factor] ))
+                        all_choices_of_exponents.append(exponent_array)
+                return(all_choices_of_exponents)
+
+        def removeZeroFromParameters(parameters, num_of_functions):
+            coeff = parameters[:num_of_functions]
+            exponents = parameters[num_of_functions:]
+
+            indexes_where_zero_exists = np.nonzero(coeff < 1.0e-6)
+
+            coeff = np.delete(coeff, indexes_where_zero_exists)
+            exponents = np.delete(exponents, indexes_where_zero_exists)
+            parameters = np.concatenate((coeff, exponents))
+            return parameters
+
+        def optimization_routine(exponents, num_of_functions, iprint=False):
+            cofactor_matrix = self.model_object.create_cofactor_matrix(exponents)
+            optimized_coefficients = self.optimize_using_nnls(cofactor_matrix)
+
+            initial_guess_of_parameters = np.concatenate((optimized_coefficients, exponents))
+            optimized_parameters_slsqp = self.optimize_using_slsqp(initial_guess_of_parameters, num_of_functions)
+            optimized_parameters_bfgs = self.optimize_using_l_bfgs(initial_guess_of_parameters, num_of_functions)
+
+            cost_function_slsqp = self.model_object.cost_function(optimized_parameters_slsqp, num_of_functions)
+            cost_function_bfgs = self.model_object.cost_function(optimized_parameters_bfgs, num_of_functions)
+
+            cost_function_value = None
+            best_parameters_from_technique = None
+            if cost_function_slsqp < cost_function_bfgs:
+                cost_function_value = cost_function_slsqp
+                best_parameters_from_technique = optimized_parameters_slsqp
+            else:
+                cost_function_value = cost_function_bfgs
+                best_parameters_from_technique = optimized_parameters_bfgs
+
+            if iprint:
+                print(exponents)
+                print("Optimized Coeff(NNLS) with initial exponent, resp", optimized_coefficients, exponents)
+                print("Initial Guess of Parameters", initial_guess_of_parameters)
+                print("Optimized Parameters SLSQP/BFGS, resp", optimized_parameters_slsqp, optimized_parameters_bfgs)
+                print("Cost Function Value SLSQP/BFGS, resp", cost_function_slsqp, cost_function_bfgs, "\n")
+
+            return cost_function_value, best_parameters_from_technique
+
+        WEIGHTS = [np.ones(np.shape(self.model_object.grid)[0]),
+                   np.ravel(chosen_electron_density),
+                   np.ravel(np.power(chosen_electron_density, 2.0))]
+
+
+        # Selected Best Single Gaussian Function
+        best_generated_UGBS_parameter_with_analytical_coefficient = self.find_best_parameter_from_analytical_coeff_and_generated_exponents(1)
+        list_of_initial_one_function_choices = [best_generated_UGBS_parameter_with_analytical_coefficient]
+
+        for weight in WEIGHTS:
+            best_analytical_parameters = self.analytically_solve_objective_function(chosen_electron_density, weight)
+            list_of_initial_one_function_choices.append(best_analytical_parameters)
+            print(best_analytical_parameters)
+
+        best_cost_function = 1e20
+        best_parameters_found = None
+        for choice in list_of_initial_one_function_choices:
+            exponents = choice[1:]
+            cost_function_value, parameters = optimization_routine(exponents, 1, iprint=True)
+
+            if cost_function_value < best_cost_function:
+                best_cost_function = cost_function_value
+                best_parameters_found = np.copy(parameters)
+
+
+        # Iterate To Find the Next N+1 Gaussian Function
+        print(best_cost_function, best_parameters_found)
+        local_parameter = np.copy(best_parameters_found)
+        lowest_error_found_overall = 1.0e20
+        global_best_parameters = None
+        counter = 1
+        number_of_functions = 1
+        electron_density = np.ravel(chosen_electron_density) - self.model_object.create_model(local_parameter, 1)
+        print("\nStart While Loop")
+        while(lowest_error_found_overall > desired_accuracy and number_of_functions < maximum_num_of_functions):
+            next_list_of_choices_for_exponents = next_list_of_exponents(local_parameter[number_of_functions:], factor)
+
+            for weight in WEIGHTS:
+                best_analytical_parameters = self.analytically_solve_objective_function(electron_density, weight)
+                next_choice_of_exponent = np.append(local_parameter[number_of_functions:], best_analytical_parameters[1:])
+                if(np.isnan(next_choice_of_exponent).any()):
+                    print("ISNAN IS DEECTED IN GREEDY ALGO")
+                next_list_of_choices_for_exponents.append(next_choice_of_exponent)
+
+            number_of_functions += 1
+            local_best_cost_function_value = 1e20
+            local_best_parameters = None
+            for choice_of_exponents in next_list_of_choices_for_exponents:
+                cost_function_value, parameters = optimization_routine(choice_of_exponents, number_of_functions)
+
+                if cost_function_value < local_best_cost_function_value:
+                    local_best_cost_function_value = cost_function_value
+                    local_best_parameters = np.copy(parameters)
+
+            if True in (np.absolute(local_best_parameters) < 1.0e-6) and False:
+                print("ZERO IS LOCAAAAAATEDDDDDDDDDDD")
+                local_best_parameters = removeZeroFromParameters(local_best_parameters, number_of_functions)
+                number_of_functions = np.shape(local_best_parameters)[0]//2
+                continue
+
+            if local_best_cost_function_value < best_cost_function:
+                best_cost_function = local_best_cost_function_value
+                global_best_parameters = local_best_parameters
+
+            model = self.model_object.create_model(local_best_parameters, number_of_functions)
+            integrate_error = self.model_object.measure_error_by_integration_of_difference(chosen_electron_density, model)
+            integration = self.model_object.integrate_model_using_trapz(model)
+            local_parameter = np.copy(local_best_parameters)
+            electron_density -= model
+
+            #density_list_for_graph = [(self.model_object.electron_density, "True Density"),
+            #                                      (model, "Model Density,d=" + str(integrate_error))]
+            #title = str(counter) + "_" + self.model_object.element + " Density, " + "\n d=Integrate(|True - Approx| Densities) " \
+            #        ", Num Of Functions: " + str((number_of_functions))
+            #self.model_object.plot_atomic_density(np.copy(self.model_object.grid), density_list_for_graph, title, self.model_object.element + "_" + str(counter))
+
+            #if np.where(local_best_parameters == 0.0) == True:
+            #    local_best_parameters = removeZeroFromParameters(local_best_parameters, number_of_functions)
+            #    number_of_functions = np.shape(local_best_parameters)[0]
+
+            print("best found", best_cost_function, "integration", integration, "integrate error", integrate_error)
+            print("Counter", counter, "number of functions", number_of_functions, "\n")
+            counter += 1
+            #break
+        return global_best_parameters, best_cost_function
+
+#best found 41.9106958795 integration 6.02607624345 integrate error 0.0839516519762
+
+    def forward_greedy_algorithm_valence(self):
+        pass
