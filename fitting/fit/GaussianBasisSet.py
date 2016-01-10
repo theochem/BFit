@@ -162,7 +162,7 @@ class GaussianTotalBasisSet(DensityModel):
 
             # Different Gaussian Exponents - Optimize Coeff Using NNLS p = 1.25
             p = 1.25
-            new_gaussian_exponents_1_25 = self.generation_of_UGBS_exponents(p)
+            new_gaussian_exponents_1_25 = self.generation_of_UGBS_exponents(p, self.UGBS_s_exponents)
             print(np.shape(new_gaussian_exponents_1_25)[0])
             cofactor_matrix = self.create_cofactor_matrix(new_gaussian_exponents_1_25)
             optimized_coefficients_1_25 = fitting_object.optimize_using_nnls(cofactor_matrix)
@@ -190,7 +190,7 @@ class GaussianTotalBasisSet(DensityModel):
 
             # Different Gaussian Exponents - Optimize Coeff Using NNLS p = 1.5
             p = 1.5
-            new_gaussian_exponents_1_5 = self.generation_of_UGBS_exponents(p)
+            new_gaussian_exponents_1_5 = self.generation_of_UGBS_exponents(p, self.UGBS_s_exponents)
             cofactor_matrix = self.create_cofactor_matrix(new_gaussian_exponents_1_5)
             optimized_coefficients_1_5 = fitting_object.optimize_using_nnls(cofactor_matrix)
             length_of_gauss_exponents_1_5 = np.shape(optimized_coefficients_1_5)[0]
@@ -217,7 +217,7 @@ class GaussianTotalBasisSet(DensityModel):
 
             # Different Gaussian Exponents - Optimize Coeff Using NNLS p = 1.75
             p = 1.75
-            new_gaussian_exponents_1_75 = self.generation_of_UGBS_exponents(p)
+            new_gaussian_exponents_1_75 = self.generation_of_UGBS_exponents(p, self.UGBS_s_exponents)
             cofactor_matrix = self.create_cofactor_matrix(new_gaussian_exponents_1_75)
             optimized_coefficients_1_75 = fitting_object.optimize_using_nnls(cofactor_matrix)
             length_of_gauss_exponents_1_75 = np.shape(optimized_coefficients_1_75)[0]
@@ -636,7 +636,7 @@ class GaussianTotalBasisSet(DensityModel):
 
 
 # Grab Element and the file path
-element = "be"
+element = "c"
 file_path = r"C:\Users\Alireza\PycharmProjects\fitting\fitting\data\examples\\" + element + ".slater"
 
 #Create Grid for the modeling
@@ -657,7 +657,7 @@ directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/fitting/examples"
 """
 
 # Fit Model Using Greedy Algorithm
-#fitting_object.forward_greedy_algorithm(2.0, 0.01, np.copy(be.electron_density), maximum_num_of_functions=100)
+fitting_object.forward_greedy_algorithm(2.0, 0.01, np.copy(be.electron_density), maximum_num_of_functions=100)
 #fitting_object.find_best_UGBS_exponents(1, p=1.5)
 #fitting_object.analytically_solve_objective_function(be.electron_density, 1.0)
 #be.generation_of_UGBS_exponents(1.25)
@@ -780,7 +780,7 @@ class GaussianCoreBasisSet(DensityModel):
         return(exponential)
 
 # Create a core basis set object
-#be_core = GaussianCoreBasisSet("C", column_grid_points, file_path)
+be_core = GaussianCoreBasisSet(element, column_grid_points, file_path)
 
 #Create fitting object based on core and fit the model using the greedy algorithm
 #fitting_object_core = Fitting(be_core)
@@ -819,12 +819,12 @@ class GaussianValenceBasisSet(DensityModel):
             assert s_gaussian_model.ndim == 1
             assert np.shape(s_gaussian_model)[0] == np.shape(self.grid)[0]
 
-        check_type_and_dimensions()
 
         s_gaussian_model = np.dot(s_exponential, s_coefficients)
         p_gaussian_model = np.dot(p_exponential, p_coefficients)
         p_gaussian_model = np.ravel(p_gaussian_model)  * np.ravel(np.power(self.grid, 2.0))
 
+        check_type_and_dimensions()
         return(s_gaussian_model + p_gaussian_model)
 
     def cost_function(self, parameters, num_of_s_funcs, num_of_p_funcs, optimize_both=True, optimize_coeff=False, optimize_exp=False):
@@ -892,11 +892,57 @@ class GaussianValenceBasisSet(DensityModel):
 
         return(np.sum(derivative, axis=1))
 
-    def create_cofactor_matrix(self):
-        pass
+    def create_cofactor_matrix(self, s_exponents, p_exponents):
+        exponential_s = np.exp(-1.0 * s_exponents * np.power(self.grid, 2.0))
+        assert(exponential_s.shape[1] == len(np.ravel(s_exponents)))
+        assert(exponential_s.shape[0] == len(np.ravel(self.grid)))
+        assert np.ndim(exponential_s) == 2
+
+        exponential_p = np.power(self.grid, 2.0) * np.exp(-1.0 * p_exponents * np.power(self.grid, 2.0))
+        assert(exponential_p.shape[1] == len(np.ravel(p_exponents)))
+        assert(exponential_p.shape[0] == len(np.ravel(self.grid)))
+        assert np.ndim(exponential_p) == 2
+
+        exponential = np.concatenate((exponential_s, exponential_p), axis=1)
+        assert exponential_p.shape[1] + exponential_s.shape[1] == len(np.ravel(s_exponents)) + len(np.ravel(p_exponents))
+        assert(exponential_p.shape[0] == len(np.ravel(self.grid)))
+        assert np.ndim(exponential) == 2
+        return(exponential)
 
 # Create both a valence and fitting object for the element
-be_valence = GaussianValenceBasisSet(element, column_grid_points, file_path)
-fitting_object_valence = Fitting(be_valence)
-
+#be_valence = GaussianValenceBasisSet(element, column_grid_points, file_path)
+#fitting_object_valence = Fitting(be_valence)
+#fitting_object_valence.forward_greedy_algorithm_valence(2.0, 0.01)
 #fitting_object_valence.forward_greedy_algorithm(2.0, 0.01, np.copy(be_valence.electron_density_core), maximum_num_of_functions=100)
+
+
+"""
+c1 = [x for x in range(0, 100)]
+WEIGHTS = [np.ones(np.shape(fitting_object_valence.model_object.grid)[0]), np.ravel(elec_d), np.ravel(np.power(elec_d, 2.0))]
+d1 = [x for x in range(0, 100)]
+
+def func(c1, d1):
+    grid = np.copy(fitting_object_valence.model_object.grid)
+    electron_density = np.copy(fitting_object_valence.model_object.electron_density_valence)
+    weights = np.ravel(WEIGHTS[2])
+    UGBS_S = fitting_object_valence.model_object.UGBS_s_exponents
+    alpha_s = UGBS_S[np.random.randint(0, np.shape(UGBS_S)[0])]
+    UGBS_p = fitting_object_valence.model_object.UGBS_p_exponents
+    alpha_p = UGBS_p[np.random.randint(0, np.shape(UGBS_p)[0])]
+
+    hey = np.log(electron_density) - np.log(c1 * np.exp(-alpha_s*np.power(grid, 2.0)) + d1*np.power(grid, 2.0) * np.exp(-alpha_p*np.power(grid,2.0)))
+    weights = np.reshape(weights, (np.shape(weights)[0], 1))
+    weights = np.repeat(weights, 100, axis=1)
+    print(weights.shape)
+    as2 = weights * hey
+    as2 *= np.exp(-alpha_s*np.power(grid, 2.0)) / (c1 * np.exp(-alpha_s*np.power(grid, 2.0)) + d1*np.power(grid, 2.0) * np.exp(-alpha_p*np.power(grid,2.0)))
+
+    return np.nansum(as2,axis = 0)
+
+
+as2 = func(c1, d1)
+
+
+plt.plot(c1, as2, 'r--')
+plt.show()
+"""
