@@ -593,7 +593,7 @@ class Fitting():
                 print("ZERO IS LOCAAAAAATEDDDDDDDDDDD")
                 local_best_parameters = removeZeroFromParameters(local_best_parameters, number_of_functions)
                 number_of_functions = np.shape(local_best_parameters)[0]//2
-                continue
+
 
             if local_best_cost_function_value < best_cost_function:
                 best_cost_function = local_best_cost_function_value
@@ -675,7 +675,7 @@ class Fitting():
         c_1 = np.exp(A); d_1 = np.exp(C)
         return(c_1, B, d_1, D)
 
-    def forward_greedy_algorithm_valence(self, factor, desired_accuracy, optimizier=optimize_using_l_bfgs, maximum_num_of_functions=100, *args):
+    def forward_greedy_algorithm_valence(self, factor, desired_accuracy, optimizer=optimize_using_l_bfgs, maximum_num_of_functions=100, *args):
         UGBS_s = self.model_object.generation_of_UGBS_exponents(1.25, self.model_object.UGBS_s_exponents)
         UGBS_p = self.model_object.generation_of_UGBS_exponents(1.25, self.model_object.UGBS_p_exponents)
 
