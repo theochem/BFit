@@ -182,213 +182,7 @@ class Fitting():
 
 
 
-    def fit_model_using_greedy_algo(self, factor, desired_accuracy, optimization_algo=optimize_using_l_bfgs, maximum_num_of_functions=25, *args):
-        assert type(factor) is float
-        assert type(desired_accuracy) is float
-        assert type(maximum_num_of_functions) is int
 
-        def split_coeff_exp(parameters, factor, coeff_guess, num):
-            assert parameters.ndim == 1
-            size = parameters.shape[0]
-            #assert num <= size/2
-            if parameters.shape[0] == 2:
-                coeff, exponent = parameters
-                mult_exponent = np.copy(np.array(exponent))
-                div_exponent = np.copy(np.array(exponent))
-
-                for x in range(1, num + 1):
-                    new_factor = factor ** x
-                    mult_exponent = ( np.append(mult_exponent, np.array([exponent * new_factor])) )
-                    div_exponent = ( np.sort(np.append(div_exponent, np.array([exponent / new_factor])) ))
-
-                mult_coeff = np.array([coeff] + [coeff_guess for x in range(0, num)])
-                div_coeff = np.array([coeff_guess for x in range(0, num)] + [coeff])
-
-                mult_params = np.append(mult_coeff, mult_exponent)
-                div_params = np.append(div_coeff, div_exponent)
-
-                return([mult_params, div_params])
-
-            elif num == 1:
-                all_parameters = []
-                exponent = parameters[size/2:]
-                coeff = parameters[0:size/2]
-                for index, exp in np.ndenumerate(exponent):
-                    if index[0] == 0:
-                        for x in range(1, num + 1):
-                            exponent_array = np.insert(exponent, index, exp / (factor * x))
-                            coefficient_array = np.insert(coeff, index, coeff_guess)
-
-                    elif index[0] <= size/2 - 1:
-                        exponent_array = np.insert(exponent, index, (exponent[index[0] - 1] + exponent[index[0]])/2)
-                        coefficient_array = np.insert(coeff, index, coeff_guess)
-                    all_parameters.append(np.append(coefficient_array, exponent_array))
-                    if index[0] == size/2 - 1:
-                        exponent_array = np.append(exponent, np.array([ exp * factor] ))
-                        coefficient_array = np.append(coeff, np.array([coeff_guess]))
-                        all_parameters.append(np.append(coefficient_array, exponent_array))
-                return(all_parameters)
-            else:
-                all_parameters = []
-                exponent = parameters[size/2:]
-                coeff = parameters[0:size/2]
-
-                for time in range(0, num + int(size/2)):
-                    exponent_original = np.copy(exponent)
-                    coeff_original = np.copy(coeff)
-                    #print(time)
-                    if time == 0:
-                        for x in range(0, num):
-                            new_factor = factor ** (x + 1)
-                            exponent_original = np.insert(exponent_original, time, exponent[0]/ new_factor)
-                            coeff_original = np.insert(coeff_original, time, coeff_guess)
-
-                        #print(coeff_original, exponent_original)
-                    elif time > 0:
-                        if time < num :
-                            for x in range(0, num - time):
-                                new_factor = factor ** (x + 1)
-                                exponent_original = np.insert(exponent_original, 0, exponent[0] / new_factor)
-                                coeff_original = np.insert(coeff_original, 0, coeff_guess)
-                            position_to_add = 1
-                            position_of_first = np.where(exponent_original==exponent[0])[0]
-                            position_to_avg = 1
-                            for x in range(num - time, num):
-                                exponent_original = np.insert(exponent_original, position_of_first + position_to_add, (exponent[position_to_avg ] + exponent[position_to_avg - 1])/2)
-                                coeff_original = np.insert(coeff_original, position_of_first + position_to_add, coeff_guess)
-                                position_to_add += 2
-                                position_to_avg += 1
-                            #print(coeff_original, exponent_original)
-                        elif time == num:
-                            num_of_avgs = int(size/2 - 1)
-                            position_to_add = 1
-                            position_of_first = np.where(exponent_original==exponent[0])[0]
-                            position_to_avg = 1
-                            if num == size/2:
-                                num2 = num - 1
-                            else:
-                                num2 = num
-                            for x in range(0, num2):
-                                exponent_original = np.insert(exponent_original, position_of_first + position_to_add, (exponent[position_to_avg] + exponent[position_to_avg - 1]) /2)
-                                coeff_original = np.insert(coeff_original, position_of_first + position_to_add, coeff_guess)
-                                position_to_add += 2
-                                position_to_avg += 1
-                            for x in range(0, num - num_of_avgs):
-                                new_factor = factor ** (x + 1)
-                                exponent_original = np.append(exponent_original, exponent[-1]*new_factor)
-                                coeff_original = np.append(coeff_original, coeff_guess)
-                            #print(coeff_original, exponent_original)
-
-                        elif time > num and time != num + int(size/2) - 1:
-                            exponent_original = np.flipud(exponent_original) #Reverses it
-                            coeff_original = np.flipud(exponent_original)
-                            for x in range(0, time - int(size/2) + 1):
-                                new_factor = factor ** (x + 1)
-                                exponent_original = np.insert(exponent_original, 0, exponent[-1] * new_factor)
-                                coeff_original = np.insert(coeff_original, 0, coeff_guess)
-                            position = -1
-                            for x in range(time - int(size/2) + 1, num):
-                                position_of_first = np.where(exponent_original==exponent[position])[0]
-                                exponent_original = np.insert(exponent_original, position_of_first + 1, (exponent[position] + exponent[position - 1])/2)
-                                coeff_original = np.insert(coeff_original, position_of_first + 1, coeff_guess)
-                                position -= 1
-                            exponent_original = (np.flipud(exponent_original))
-                            coeff_original = np.flipud(coeff_original)
-                            #print(coeff_original, exponent_original)
-                    if time == num + int(size/2) - 1:
-                        for x in range(0, num):
-                            new_factor = factor ** (x + 1)
-                            exponent_original = np.append(exponent_original, exponent[-1] * new_factor)
-                            coeff_original = np.append(coeff_original, coeff_guess)
-                        #print(coeff_original, exponent_original)
-                    assert coeff_original.shape[0] == exponent_original.shape[0]
-                    all_parameters.append(np.append(coeff_original , exponent_original))
-                return(all_parameters)
-
-        def is_error_big_and_num_of_functions_is_small(lowest_error_found, size_of_parameters):
-            return(lowest_error_found > desired_accuracy and size_of_parameters/2 <= maximum_num_of_functions)
-
-        def get_all_possible_choices(list_of_choices, initial_number_of_funcs, electron_density):
-            list_of_initial_two_function_choices = []
-            #TODO Ask Farnaz, If she wants to find best one function parameter then use that or do the entire list
-            leftover_density = None
-            for initial_guess in list_of_choices:
-                model = self.model_object.create_model(initial_guess, initial_number_of_funcs)
-                leftover_density = np.ravel(electron_density) - model
-
-                for weight in WEIGHTS:
-                    best_analytical_next_parameter = self.analytically_solve_objective_function(model, weight)
-                    parameter = np.concatenate((initial_guess[:initial_number_of_funcs], np.array([best_analytical_next_parameter[0]]), initial_guess[initial_number_of_funcs:], np.array([best_analytical_next_parameter[1]])))
-                    list_of_initial_two_function_choices.append(parameter)
-
-                list_of_initial_two_function_choices += split_coeff_exp(initial_guess, factor, 1.0, 1)
-                analytical_coefficient = self.analytically_find_coefficient(leftover_density, initial_guess[1])
-                list_of_initial_two_function_choices += split_coeff_exp(initial_guess, factor, analytical_coefficient ,1)
-            return(list_of_initial_two_function_choices)
-
-        def subtract_electron_density_by_model(electron_density, model):
-            return np.ravel(electron_density) - np.ravel(model)
-
-        #TODO remove the 1.0, put it back in
-        WEIGHTS = [1.0, np.ravel(self.model_object.electron_density), np.ravel(np.power(self.model_object.electron_density, 2.0))]
-
-        best_generated_UGBS_parameter_with_analytical_coefficient = self.find_best_parameter_from_analytical_coeff_and_generated_exponents(1)
-        list_of_initial_one_function_choices = [best_generated_UGBS_parameter_with_analytical_coefficient]
-        for weight in WEIGHTS:
-            best_analytical_parameters = self.analytically_solve_objective_function(self.model_object.electron_density, weight)
-            list_of_initial_one_function_choices.append(best_analytical_parameters)
-
-        best_one_function_parameter, one_function_error = self.find_best_parameter_from_list(list_of_initial_one_function_choices, 1)
-        print(best_one_function_parameter, one_function_error)
-
-        list_of_initial_two_function_choices = get_all_possible_choices([best_one_function_parameter], 1, self.model_object.electron_density)
-        best_two_function_parameter, two_function_error = self.find_best_parameter_from_list(list_of_initial_two_function_choices, 2)
-        model = self.model_object.create_model(best_two_function_parameter, 2.0)
-
-        local_parameter = np.copy(best_two_function_parameter)
-        lowest_error_found_overall = 1.0e5
-        best_parameter_found = None
-        size_of_parameters = best_two_function_parameter.shape[0]; num_of_functions = size_of_parameters //2
-        counter = 0
-        electron_density = subtract_electron_density_by_model(self.model_object.electron_density, model)
-
-        while(is_error_big_and_num_of_functions_is_small(lowest_error_found_overall, size_of_parameters)):
-            list_of_choices = get_all_possible_choices([local_parameter], num_of_functions, electron_density)
-            size_of_parameters = list_of_choices[0].shape[0]
-            num_of_functions = size_of_parameters // 2
-
-            best_parameter_from_list_of_choices = None
-            lowest_error_from_list_of_choices = 1e5
-            for parameter in list_of_choices:
-                optimized_parameter = optimization_algo(self, parameter, num_of_functions)
-                new_model = self.model_object.create_model(optimized_parameter, num_of_functions)
-                error_of_parameter = self.model_object.measure_error_by_integration_of_difference(self.model_object.electron_density, new_model)
-
-                if error_of_parameter < lowest_error_from_list_of_choices:
-                    lowest_error_from_list_of_choices = error_of_parameter
-                    best_parameter_from_list_of_choices = np.copy(optimized_parameter)
-
-            if lowest_error_from_list_of_choices < lowest_error_found_overall:
-                lowest_error_found_overall = lowest_error_from_list_of_choices
-                best_parameter_found = np.copy(best_parameter_from_list_of_choices)
-                local_parameter = np.copy(best_parameter_from_list_of_choices)
-            else:
-                print(size_of_parameters, num_of_functions)
-                print("#############################")
-                print("it got worse")
-                print("#############################")
-                #break
-            
-            print(local_parameter[0:num_of_functions])
-            model = self.model_object.create_model(local_parameter, num_of_functions)
-            integrate_new_model = self.model_object.integrate_model_using_trapz(model)
-            electron_density -= model
-
-            counter += 1
-            print("Iteration", counter, "  lowest error of iteration",lowest_error_from_list_of_choices, "  size of exp", num_of_functions, " lowest error found overall", lowest_error_found_overall)
-            print("Integration of best Coeff ", integrate_new_model, "True Value: ", self.model_object.integrated_total_electron_density,
-                  "   Abs Difference: ", np.absolute(integrate_new_model - self.model_object.integrated_total_electron_density),  "\n")
-        return(best_parameter_found, lowest_error_found_overall)
 
 
 
@@ -563,7 +357,6 @@ class Fitting():
 
         # Iterate To Find the Next N+1 Gaussian Function
         local_parameter = np.copy(best_parameters_found)
-        lowest_error_found_overall = 1.0e20
         global_best_parameters = None
         counter = 1
         number_of_functions = 1
@@ -589,10 +382,10 @@ class Fitting():
                     local_best_cost_function_value = cost_function_value
                     local_best_parameters = np.copy(parameters)
 
-            if True in (np.absolute(local_best_parameters) < 1.0e-6) and False:
-                print("ZERO IS LOCAAAAAATEDDDDDDDDDDD")
-                local_best_parameters = removeZeroFromParameters(local_best_parameters, number_of_functions)
-                number_of_functions = np.shape(local_best_parameters)[0]//2
+            #if True in (np.absolute(local_best_parameters) < 1.0e-6) and False:
+            #    print("ZERO IS LOCAAAAAATEDDDDDDDDDDD")
+            #    local_best_parameters = removeZeroFromParameters(local_best_parameters, number_of_functions)
+            #    number_of_functions = np.shape(local_best_parameters)[0]//2
 
 
             if local_best_cost_function_value < best_cost_function:
