@@ -168,7 +168,7 @@ class Fitting():
 
     def optimize_using_l_bfgs(self, initial_guess, *args, iprint=False):
         bounds = np.array([(0.0, 1.7976931348623157e+308) for x in range(0, len(initial_guess))], dtype=np.float64)
-
+        #fprime=self.model_object.derivative_of_cost_function
         f_min_l_bfgs_b = scipy.optimize.fmin_l_bfgs_b(self.model_object.cost_function, x0=initial_guess, bounds=bounds, fprime=self.model_object.derivative_of_cost_function
                                                   ,maxfun=1500000, maxiter=1500000, factr=1e7, args=args, pgtol=1e-5)
         if iprint:
@@ -569,7 +569,7 @@ class Fitting():
         number_of_functions = 1
         electron_density = np.ravel(chosen_electron_density) - self.model_object.create_model(local_parameter, 1)
         print("\nStart While Loop")
-        while(lowest_error_found_overall > desired_accuracy and number_of_functions < maximum_num_of_functions):
+        while(best_cost_function > desired_accuracy and number_of_functions < maximum_num_of_functions):
             next_list_of_choices_for_exponents = next_list_of_exponents(local_parameter[number_of_functions:], factor)
 
             for weight in WEIGHTS:
@@ -798,3 +798,19 @@ class Fitting():
                 next_p_exponents[i] = np.concatenate((s_exponents, next_p_exponents[i]))
             next_exponents = next_s_exponents + next_p_exponents
             """
+
+
+
+    def optimize_KL_l_bfgs(self, initial_guess, *args, iprint=False):
+        bounds = np.array([(0.0, 1.7976931348623157e+308) for x in range(0, len(initial_guess))], dtype=np.float64)
+
+        f_min_l_bfgs_b = scipy.optimize.fmin_l_bfgs_b(self.model_object.cost_function, x0=initial_guess, bounds=bounds, approx_grad=True
+                                                  ,maxfun=1500000, maxiter=1500000, factr=1e7, args=args, pgtol=1e-5)
+        if iprint:
+            print(f_min_l_bfgs_b[2]['warnflag'], "            ", f_min_l_bfgs_b[2]['task'])
+
+        #if f_min_l_bfgs_b[2]['warnflag'] != 0:
+        #        print(f_min_l_bfgs_b[2]['task'])
+
+        parameters = f_min_l_bfgs_b[0]
+        return(parameters)

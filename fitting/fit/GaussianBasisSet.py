@@ -36,30 +36,6 @@ class GaussianTotalBasisSet(DensityModel):
         check_dimension_and_shape()
         return(gaussian_density)
 
-    def create_model_for_KL(self, parameters, exponents=[], optimize_coeff=True):
-        coefficients = np.copy(parameters)
-        exponents = exponents
-
-        exponential = np.exp(-exponents * np.power(self.grid, 2.0))
-        gaussian_density = np.dot(exponential, coefficients)
-
-        #Ignore dvision by zero
-        old_err_state = np.seterr(divide='raise')
-        ignored_states = np.seterr(**old_err_state)
-
-        electron_density = np.ravel(np.copy(self.electron_density))
-        gaussian_density_divided_by_electron_density = np.divide(gaussian_density , electron_density)
-        assert electron_density.shape[0] == gaussian_density.shape[0]
-        assert gaussian_density_divided_by_electron_density.shape[0] == electron_density.shape[0]
-
-        log_of_above = np.log(gaussian_density_divided_by_electron_density)
-        log_of_above = np.nan_to_num(log_of_above)
-        multiply_together = np.multiply(gaussian_density , log_of_above)
-        multiply_together = np.nan_to_num(multiply_together)
-        integrate_it = np.trapz(y=np.ravel(multiply_together), x=np.ravel(self.grid))
-        return integrate_it
-
-
     def cost_function(self, parameters, num_of_basis_funcs, exponents=[], coeff=[], optimize_both=True, optimize_coeff=False, optimize_exp=False):
         DensityModel.check_type(parameters, "numpy array")
         assert type(num_of_basis_funcs) is int
@@ -658,7 +634,55 @@ class GaussianTotalBasisSet(DensityModel):
             os.remove(file + ".txt")
             break;
 
+class GaussianTotalKL(DensityModel):
+    def __init__(self, element_name, grid, file_path):
+        DensityModel.__init__(self, element_name, grid, file_path)
 
+    def cost_function(self,parameters, exponents=[], optimize_coeff=True):
+        assert parameters.ndim == 1
+        coefficients = np.copy(parameters)
+        exponents = np.ravel(np.array(exponents))
+
+        exponential = np.exp(-exponents * np.power(self.grid, 2.0))
+        gaussian_density = np.dot(exponential, coefficients)
+
+        #Ignore dvision by zero
+        old_err_state = np.seterr(divide='raise')
+        ignored_states = np.seterr(**old_err_state)
+
+        electron_density = np.ravel(np.copy(self.electron_density))
+        gaussian_density_divided_by_electron_density = np.divide(gaussian_density , electron_density)
+        assert electron_density.shape[0] == gaussian_density.shape[0]
+        assert gaussian_density_divided_by_electron_density.shape[0] == electron_density.shape[0]
+
+        log_of_above = np.log(gaussian_density_divided_by_electron_density)
+        log_of_above = np.nan_to_num(log_of_above)
+        multiply_together = np.multiply(gaussian_density , log_of_above)
+        multiply_together = np.nan_to_num(multiply_together)
+        integrate_it = np.trapz(y=np.ravel(multiply_together), x=np.ravel(self.grid))
+        return integrate_it
+
+    def derivative_of_cost_function(self, parameters, exponents=[], optimize_coeff=True):
+        derivative_of_all_coefficients = np.empty(parameters.shape[0])
+
+        coefficients = np.copy(parameters)
+        exponents = exponents
+
+        exponential = np.exp(-exponents * np.power(self.grid, 2.0))
+        gaussian_density = np.dot(exponential, coefficients)
+        log_gaussian_density = np.log(gaussian_density)
+        log_gaussian_density = np.nan_to_num(log_gaussian_density)
+        log_electron_density = np.ravel(np.nan_to_num(np.log(self.electron_density)))
+        for i in range(0, parameters.shape[0]):
+            derivative = 0
+
+            exponent_alpha = np.exp(-exponents[i] * np.power(np.ravel(self.grid), 2.0))
+            derivative += np.trapz(y=np.multiply(exponent_alpha, log_gaussian_density), x=np.ravel(self.grid))
+            derivative += np.sqrt(np.pi) / exponents[i]
+            derivative -= np.trapz(y=np.ravel(np.multiply(log_electron_density, exponent_alpha)), x=np.ravel(self.grid))
+            derivative_of_all_coefficients[i] = derivative
+
+        return derivative_of_all_coefficients
 
 class GaussianCoreBasisSet(DensityModel):
     def __init__(self, element_symbol, grid, file_path):
@@ -903,8 +927,8 @@ class GaussianValenceBasisSet(DensityModel):
 
 if __name__ == "__main__":
     # Grab Element and the file path
-    ELEMENT = "c"
-    ATOMIC_NUMBER = 6
+    ELEMENT = "BE"
+    ATOMIC_NUMBER = 4
     file_path = r"C:\Users\Alireza\PycharmProjects\fitting\fitting\data\examples\\" + ELEMENT + ".slater"
 
     #Create Grid for the modeling
@@ -917,13 +941,32 @@ if __name__ == "__main__":
     # Create a total gaussian basis set
     be = GaussianTotalBasisSet(ELEMENT, column_grid_points, file_path)
     fitting_object = Fitting(be)
-    print(be.create_model_for_KL(np.array([3.0]), np.array([5.0]), True))
+
+    c = fitting_object.optimize_using_l_bfgs(np.array([np.random.random()*10 for x in range(0, be.UGBS_s_exponents.shape[0])]),be.UGBS_s_exponents.shape[0],np.array(be.UGBS_s_exponents),[], False, True, False)
+    param = np.concatenate((c, be.UGBS_s_exponents))
+
+    model = be.create_model(param, param.shape[0]/2)
+    print(be.measure_error_by_integration_of_difference(be.electron_density, model))
+    print(be.measure_error_by_integration_of_difference(be.electron_density, model))
+    print(be.integrate_model_using_trapz(model), be.integrate_model_using_trapz(be.electron_density))
     # Save Results
     """
     import os
     directory_to_save_results = os.path.dirname(__file__).rsplit('/', 2)[0] + "/fitting/examples"
     #be.graph_and_save_the_results(directory_to_save_results)
     """
+    #KL
+    beKL = GaussianTotalKL(ELEMENT, column_grid_points, file_path)
+    fitting_objectKL = Fitting(beKL)
+    print(c)
+    noise = np.random.normal(0, 1, c.shape[0])
+    coeff = fitting_objectKL.optimize_using_l_bfgs(noise, np.array(beKL.UGBS_s_exponents))
+    print(coeff)
+    param = np.concatenate((coeff, beKL.UGBS_s_exponents))
+    model = be.create_model(param, param.shape[0]/2)
+    print(be.measure_error_by_integration_of_difference(be.electron_density, model))
+    print(be.measure_error_by_integration_of_difference(be.electron_density, model))
+    print(be.integrate_model_using_trapz(model), be.integrate_model_using_trapz(be.electron_density))
 
     # Fit Model Using Greedy Algorithm
     #fitting_object.forward_greedy_algorithm(2.0, 0.01, np.copy(be.electron_density), maximum_num_of_functions=100)
