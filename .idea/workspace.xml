@@ -3,11 +3,25 @@
   <component name="BookmarkManager">
     <bookmark url="file://$PROJECT_DIR$/fitting/fit/test_file.py" line="32" />
     <bookmark url="file://$PROJECT_DIR$/fitting/fit/GaussianBasisSet.py" line="590" />
-    <bookmark url="file://$PROJECT_DIR$/fitting/fit/model.py" line="427" mnemonic="9" />
+    <bookmark url="file://$PROJECT_DIR$/fitting/fit/model.py" line="422" mnemonic="9" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4035ad68-97f7-4e18-bb55-e563859a9cc8" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/grid_generation/BST.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/grid_generation/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/grid_generation/tests/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/grid_transformation/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/grid_generation/grid_1D.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/grid_generation/grid_1D_difference.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/grid_generation/grid_1D_generator.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/grid_generation/multi_dimensional_grids.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/grid_generation/tests/test_grid_1D.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/grid_generation/tests/test_grid_1D_difference.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/grid_generation/tests/test_grid_1D_generator.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/fitting/grid_generation/tests/test_multi_dimensional_grids.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fitting/fit/junk_file.py" afterPath="$PROJECT_DIR$/fitting/fit/junk_file.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fitting/fit/model.py" afterPath="$PROJECT_DIR$/fitting/fit/model.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="fitting.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -25,7 +39,7 @@
     <SUITE FILE_PATH="coverage/fitting$__init____2_.coverage" NAME="__init__ (2) Coverage Results" MODIFIED="1432654091353" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting" />
     <SUITE FILE_PATH="coverage/fitting$test_atomic_slater_density.coverage" NAME="test_atomic_slater_density Coverage Results" MODIFIED="1432651791605" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/density/test" />
     <SUITE FILE_PATH="coverage/fitting$Integer_Mixed_Programming.coverage" NAME="Integer_Mixed_Programming Coverage Results" MODIFIED="1464582284233" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/fit" />
-    <SUITE FILE_PATH="coverage/fitting$junk_file.coverage" NAME="junk_file Coverage Results" MODIFIED="1464380300939" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/fit" />
+    <SUITE FILE_PATH="coverage/fitting$junk_file.coverage" NAME="junk_file Coverage Results" MODIFIED="1464882206158" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/fit" />
     <SUITE FILE_PATH="coverage/fitting$test_atomic_slater_density__1_.coverage" NAME="test_atomic_slater_density (1) Coverage Results" MODIFIED="1435616459097" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/density/test" />
     <SUITE FILE_PATH="coverage/fitting$GaussianBasisSet.coverage" NAME="GaussianBasisSet Coverage Results" MODIFIED="1464362652677" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/fit" />
     <SUITE FILE_PATH="coverage/fitting$test_GaussianTotalBasisSet.coverage" NAME="test_GaussianTotalBasisSet Coverage Results" MODIFIED="1446325111479" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/fit/test" />
@@ -42,6 +56,7 @@
     <SUITE FILE_PATH="coverage/fitting$model.coverage" NAME="model Coverage Results" MODIFIED="1464281593809" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/fit" />
     <SUITE FILE_PATH="coverage/fitting$radial_grid.coverage" NAME="radial_grid Coverage Results" MODIFIED="1437102002840" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/density" />
     <SUITE FILE_PATH="coverage/fitting$test_least_squares.coverage" NAME="test_least_squares Coverage Results" MODIFIED="1440207559532" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/fit/test" />
+    <SUITE FILE_PATH="coverage/fitting$1D_Grid.coverage" NAME="1D_Grid Coverage Results" MODIFIED="1464873371470" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/Grid Generation" />
     <SUITE FILE_PATH="coverage/fitting$__init__.coverage" NAME="__init__ Coverage Results" MODIFIED="1437102983190" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/fitting" />
     <SUITE FILE_PATH="coverage/fitting$KL_Divergence.coverage" NAME="KL-Divergence Coverage Results" MODIFIED="1464647167873" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fitting/fit" />
     <SUITE FILE_PATH="coverage/fitting$test_atomic_density.coverage" NAME="test_atomic_density Coverage Results" MODIFIED="1432042625534" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/io/test" />
@@ -65,23 +80,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="test_file.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/fitting/fit/test_file.py">
+      <file leaf-file-name="__init__.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/fitting/grid_generation/__init__.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="1644" max-vertical-offset="2550">
-              <caret line="96" column="33" selection-start-line="96" selection-start-column="33" selection-end-line="96" selection-end-column="33" />
-              <folding>
-                <element signature="e#190#980#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="junk_file.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/fitting/fit/junk_file.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="153">
-              <caret line="3" column="45" selection-start-line="3" selection-start-column="45" selection-end-line="3" selection-end-column="45" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="204">
+              <caret line="6" column="0" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
               <folding>
                 <element signature="e#0#41#0" expanded="true" />
               </folding>
@@ -89,111 +92,58 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="KL-Divergence.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/fitting/fit/KL-Divergence.py">
+      <file leaf-file-name="grid_1D.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/fitting/grid_generation/grid_1D.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-8.931034" vertical-offset="1390" max-vertical-offset="1819">
-              <caret line="97" column="51" selection-start-line="97" selection-start-column="51" selection-end-line="97" selection-end-column="51" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="46" max-vertical-offset="1292">
+              <caret line="16" column="29" selection-start-line="16" selection-start-column="29" selection-end-line="16" selection-end-column="29" />
               <folding>
-                <element signature="e#0#31#0" expanded="true" />
+                <element signature="e#0#18#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="GaussianBasisSet.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/fitting/fit/GaussianBasisSet.py">
+      <file leaf-file-name="BST.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/fitting/grid_generation/BST.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="10" max-vertical-offset="2465">
-              <caret line="33" column="0" selection-start-line="33" selection-start-column="0" selection-end-line="34" selection-end-column="60" />
-              <folding>
-                <element signature="e#0#31#0" expanded="true" />
-                <element signature="e#497#934#0" expanded="false" />
-                <element signature="e#1648#2703#0" expanded="false" />
-                <element signature="e#2874#5224#0" expanded="false" />
-                <element signature="e#2921#3286#0" expanded="false" />
-                <element signature="e#3344#3834#0" expanded="false" />
-                <element signature="e#5283#5547#0" expanded="false" />
-                <element signature="e#5647#45453#0" expanded="false" />
-                <element signature="e#45496#47931#0" expanded="false" />
-                <element signature="e#45555#45613#0" expanded="false" />
-                <element signature="e#45698#46798#0" expanded="false" />
-                <element signature="e#46898#47931#0" expanded="false" />
-                <element signature="e#47979#53465#0" expanded="false" />
-                <element signature="e#48040#48100#0" expanded="false" />
-                <element signature="e#48256#49331#0" expanded="false" />
-                <element signature="e#48337#48774#0" expanded="false" />
-                <element signature="e#49488#50582#0" expanded="false" />
-                <element signature="e#50753#53142#0" expanded="false" />
-                <element signature="e#50800#51165#0" expanded="false" />
-                <element signature="e#51223#51713#0" expanded="false" />
-                <element signature="e#53201#53465#0" expanded="false" />
-                <element signature="e#53517#59962#0" expanded="false" />
-                <element signature="e#53578#53638#0" expanded="false" />
-                <element signature="e#53782#55497#0" expanded="false" />
-                <element signature="e#54261#55184#0" expanded="false" />
-                <element signature="e#55642#56302#0" expanded="false" />
-                <element signature="e#56461#59019#0" expanded="false" />
-                <element signature="e#56988#57759#0" expanded="false" />
-                <element signature="e#57810#58686#0" expanded="false" />
-                <element signature="e#59093#59962#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="test_GaussianTotalBasisSet.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/fitting/fit/test/test_GaussianTotalBasisSet.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="1412" max-vertical-offset="1904">
-              <caret line="104" column="65" selection-start-line="104" selection-start-column="65" selection-end-line="104" selection-end-column="65" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="910" max-vertical-offset="1938">
+              <caret line="68" column="68" selection-start-line="68" selection-start-column="68" selection-end-line="68" selection-end-column="68" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="model.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/fitting/fit/model.py">
+      <file leaf-file-name="test_BST.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/fitting/grid_generation/tests/test_BST.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.6181818" vertical-offset="969" max-vertical-offset="1700">
-              <caret line="184" column="0" selection-start-line="184" selection-start-column="0" selection-end-line="184" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.24837662" vertical-offset="0" max-vertical-offset="616">
+              <caret line="9" column="8" selection-start-line="9" selection-start-column="8" selection-end-line="9" selection-end-column="8" />
               <folding>
-                <element signature="e#0#10#0" expanded="true" />
-                <element signature="e#221#1453#0" expanded="false" />
-                <element signature="e#1515#1653#0" expanded="false" />
-                <element signature="e#1515#1588#1" expanded="false" />
-                <element signature="e#1716#1817#0" expanded="false" />
-                <element signature="e#1716#1744#1" expanded="false" />
-                <element signature="e#1894#2009#0" expanded="false" />
-                <element signature="e#1894#1922#1" expanded="false" />
-                <element signature="e#2081#2085#0" expanded="false" />
-                <element signature="e#2136#2230#0" expanded="false" />
-                <element signature="e#2295#2393#0" expanded="false" />
-                <element signature="e#2461#2562#0" expanded="false" />
-                <element signature="e#3477#4246#0" expanded="false" />
-                <element signature="e#3653#3753#0" expanded="false" />
-                <element signature="e#4318#4480#0" expanded="false" />
-                <element signature="e#4552#4624#0" expanded="false" />
-                <element signature="e#4728#5703#0" expanded="false" />
-                <element signature="e#5915#6001#0" expanded="false" />
-                <element signature="e#6063#6314#0" expanded="false" />
-                <element signature="e#6382#6848#0" expanded="false" />
-                <element signature="e#6931#7668#0" expanded="false" />
-                <element signature="e#7820#8480#0" expanded="false" />
-                <element signature="e#8563#9138#0" expanded="false" />
-                <element signature="e#8617#8728#0" expanded="false" />
-                <element signature="e#9227#10575#0" expanded="false" />
-                <element signature="e#10654#11171#0" expanded="false" />
-                <element signature="e#11352#19364#0" expanded="false" />
-                <element signature="e#11555#12342#0" expanded="false" />
-                <element signature="e#12424#12810#0" expanded="false" />
-                <element signature="e#12901#14574#0" expanded="false" />
-                <element signature="e#19455#20418#0" expanded="false" />
-                <element signature="e#19488#19621#0" expanded="false" />
-                <element signature="e#20493#21851#0" expanded="false" />
-                <element signature="e#22005#29442#0" expanded="false" />
-                <element signature="e#29524#30164#0" expanded="false" />
+                <element signature="e#0#36#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="multi_dimensional_grids.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/fitting/grid_generation/multi_dimensional_grids.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1394">
+              <caret line="11" column="81" selection-start-line="11" selection-start-column="81" selection-end-line="11" selection-end-column="81" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="grid_1D_difference.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/fitting/grid_generation/grid_1D_difference.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1309">
+              <caret line="0" column="18" selection-start-line="0" selection-start-column="16" selection-end-line="0" selection-end-column="18" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -218,11 +168,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/grid.py" />
-        <option value="$PROJECT_DIR$/io/test/test_slater_basic.py" />
-        <option value="$PROJECT_DIR$/test/__init__.py" />
-        <option value="$PROJECT_DIR$/io/slater_basic.py" />
-        <option value="$PROJECT_DIR$/Another_Approach.py" />
         <option value="$PROJECT_DIR$/atomic_density.py" />
         <option value="$PROJECT_DIR$/io/test/test_atomic_density.py" />
         <option value="$PROJECT_DIR$/density/atomic_slater_density.py" />
@@ -253,10 +198,27 @@
         <option value="$PROJECT_DIR$/fitting/fit/test_file.py" />
         <option value="$PROJECT_DIR$/fitting/density/atomic_slater_density.py" />
         <option value="$PROJECT_DIR$/fitting/fit/GaussianBasisSet.py" />
-        <option value="$PROJECT_DIR$/fitting/fit/junk_file.py" />
         <option value="$PROJECT_DIR$/fitting/fit/Integer_Mixed_Programming.py" />
         <option value="$PROJECT_DIR$/fitting/fit/KL-Divergence.py" />
         <option value="$PROJECT_DIR$/fitting/fit/model.py" />
+        <option value="$PROJECT_DIR$/fitting/Grid Generation/__init__.py" />
+        <option value="$PROJECT_DIR$/fitting/Grid Generation/Grid BST.py" />
+        <option value="$PROJECT_DIR$/fitting/Grid Generation/BST.py" />
+        <option value="$PROJECT_DIR$/fitting/Grid Generation/1D_Grid.py" />
+        <option value="$PROJECT_DIR$/fitting/Grid Generation/Grid_1D_Generator.py" />
+        <option value="$PROJECT_DIR$/fitting/Grid_Generation/Grid_1D_Generator.py" />
+        <option value="$PROJECT_DIR$/fitting/fit/junk_file.py" />
+        <option value="$PROJECT_DIR$/fitting/grid_generation/BST.py" />
+        <option value="$PROJECT_DIR$/fitting/grid_generation/__init__.py" />
+        <option value="$PROJECT_DIR$/fitting/grid_generation/Grid_1D.py" />
+        <option value="$PROJECT_DIR$/fitting/grid_generation/Multi_Dimensional_Grids.py" />
+        <option value="$PROJECT_DIR$/fitting/grid_generation/Grid_1D_Difference.py" />
+        <option value="$PROJECT_DIR$/fitting/grid_generation/Grid_1D_Generator.py" />
+        <option value="$PROJECT_DIR$/fitting/grid_generation/tests/test_Grid_1D.py" />
+        <option value="$PROJECT_DIR$/fitting/grid_generation/tests/test_grid_1D_difference.py" />
+        <option value="$PROJECT_DIR$/fitting/grid_generation/tests/test_grid_1D_generator.py" />
+        <option value="$PROJECT_DIR$/fitting/grid_generation/tests/test_multi_dimensional_grids.py" />
+        <option value="$PROJECT_DIR$/fitting/grid_generation/tests/test_BST.py" />
       </list>
     </option>
   </component>
@@ -267,8 +229,8 @@
   <component name="ProjectFrameBounds">
     <option name="x" value="-8" />
     <option name="y" value="-8" />
-    <option name="width" value="1382" />
-    <option name="height" value="744" />
+    <option name="width" value="1296" />
+    <option name="height" value="776" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -358,7 +320,29 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="fit" />
+              <option name="myItemId" value="grid_generation" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fitting" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fitting" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="fitting" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="grid_generation" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tests" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -392,7 +376,7 @@
       <recent name="C:\Users\Alireza\PycharmProjects\fitting\package" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.KL-Divergence">
+  <component name="RunManager" selected="Python.junk_file">
     <configuration default="false" name="GaussianBasisSet" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -407,26 +391,6 @@
       <module name="fitting" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/fitting/fit/GaussianBasisSet.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <RunnerSettings RunnerId="PythonRunner" />
-      <ConfigurationWrapper RunnerId="PythonRunner" />
-      <method />
-    </configuration>
-    <configuration default="false" name="model" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/fitting/fit" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="fitting" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/fitting/fit/model.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <RunnerSettings RunnerId="PythonRunner" />
@@ -487,6 +451,26 @@
       <module name="fitting" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/fitting/fit/KL-Divergence.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <RunnerSettings RunnerId="PythonRunner" />
+      <ConfigurationWrapper RunnerId="PythonRunner" />
+      <method />
+    </configuration>
+    <configuration default="false" name="1D_Grid" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/fitting/Grid Generation" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="fitting" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="C:\Users\Alireza\PycharmProjects\fitting\fitting\Grid Generation\Grid_1D.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <RunnerSettings RunnerId="PythonRunner" />
@@ -702,18 +686,18 @@
     <list size="6">
       <item index="0" class="java.lang.String" itemvalue="Python.fitting2" />
       <item index="1" class="java.lang.String" itemvalue="Python.GaussianBasisSet" />
-      <item index="2" class="java.lang.String" itemvalue="Python.model" />
-      <item index="3" class="java.lang.String" itemvalue="Python.junk_file" />
-      <item index="4" class="java.lang.String" itemvalue="Python.Integer_Mixed_Programming" />
-      <item index="5" class="java.lang.String" itemvalue="Python.KL-Divergence" />
+      <item index="2" class="java.lang.String" itemvalue="Python.junk_file" />
+      <item index="3" class="java.lang.String" itemvalue="Python.Integer_Mixed_Programming" />
+      <item index="4" class="java.lang.String" itemvalue="Python.KL-Divergence" />
+      <item index="5" class="java.lang.String" itemvalue="Python.1D_Grid" />
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Python.KL-Divergence" />
-        <item index="1" class="java.lang.String" itemvalue="Python.Integer_Mixed_Programming" />
-        <item index="2" class="java.lang.String" itemvalue="Python.junk_file" />
-        <item index="3" class="java.lang.String" itemvalue="Python.GaussianBasisSet" />
-        <item index="4" class="java.lang.String" itemvalue="Python.model" />
+        <item index="0" class="java.lang.String" itemvalue="Python.junk_file" />
+        <item index="1" class="java.lang.String" itemvalue="Python.1D_Grid" />
+        <item index="2" class="java.lang.String" itemvalue="Python.KL-Divergence" />
+        <item index="3" class="java.lang.String" itemvalue="Python.Integer_Mixed_Programming" />
+        <item index="4" class="java.lang.String" itemvalue="Python.GaussianBasisSet" />
       </list>
     </recent_temporary>
   </component>
@@ -876,7 +860,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
+    <frame x="-8" y="-8" width="1296" height="776" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32843137" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -885,10 +869,11 @@
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32629356" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.39379084" sideWeight="0.49271846" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3726708" sideWeight="0.49271846" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32843137" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21785174" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32980332" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.23624596" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32928804" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32453415" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24962178" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39967373" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -898,7 +883,6 @@
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3254565" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
     <layout-to-restore>
@@ -965,237 +949,11 @@
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="79" />
+      <option name="time" value="81" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/fitting/fit/model.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-            <element signature="e#221#1453#0" expanded="false" />
-            <element signature="e#1515#1653#0" expanded="false" />
-            <element signature="e#1515#1588#1" expanded="false" />
-            <element signature="e#1716#1817#0" expanded="false" />
-            <element signature="e#1716#1744#1" expanded="false" />
-            <element signature="e#1894#2009#0" expanded="false" />
-            <element signature="e#1894#1922#1" expanded="false" />
-            <element signature="e#2081#2085#0" expanded="false" />
-            <element signature="e#2136#2230#0" expanded="false" />
-            <element signature="e#2295#2393#0" expanded="false" />
-            <element signature="e#2461#2562#0" expanded="false" />
-            <element signature="e#3477#4246#0" expanded="false" />
-            <element signature="e#3653#3753#0" expanded="false" />
-            <element signature="e#4318#4480#0" expanded="false" />
-            <element signature="e#4552#4624#0" expanded="false" />
-            <element signature="e#4728#5703#0" expanded="false" />
-            <element signature="e#5915#6001#0" expanded="false" />
-            <element signature="e#6063#6314#0" expanded="false" />
-            <element signature="e#6382#6848#0" expanded="false" />
-            <element signature="e#6931#7668#0" expanded="false" />
-            <element signature="e#7820#8480#0" expanded="false" />
-            <element signature="e#8563#9138#0" expanded="false" />
-            <element signature="e#8617#8728#0" expanded="false" />
-            <element signature="e#9227#10575#0" expanded="false" />
-            <element signature="e#10654#11171#0" expanded="false" />
-            <element signature="e#11352#19364#0" expanded="false" />
-            <element signature="e#11555#12342#0" expanded="false" />
-            <element signature="e#12424#12810#0" expanded="false" />
-            <element signature="e#12901#14574#0" expanded="false" />
-            <element signature="e#19455#20418#0" expanded="false" />
-            <element signature="e#19488#19621#0" expanded="false" />
-            <element signature="e#20493#21851#0" expanded="false" />
-            <element signature="e#22005#29442#0" expanded="false" />
-            <element signature="e#29524#30164#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/fitting/density/atomic_slater_density.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
-          <caret line="56" column="0" selection-start-line="56" selection-start-column="0" selection-end-line="56" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/fitting/fit/test_file.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
-          <caret line="98" column="0" selection-start-line="99" selection-start-column="0" selection-end-line="103" selection-end-column="88" />
-          <folding>
-            <element signature="e#190#980#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/fitting/fit/GaussianBasisSet.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-            <element signature="e#497#934#0" expanded="false" />
-            <element signature="e#1648#2703#0" expanded="false" />
-            <element signature="e#2874#5224#0" expanded="false" />
-            <element signature="e#2921#3286#0" expanded="false" />
-            <element signature="e#3344#3834#0" expanded="false" />
-            <element signature="e#5283#5547#0" expanded="false" />
-            <element signature="e#5647#45453#0" expanded="false" />
-            <element signature="e#45496#47931#0" expanded="false" />
-            <element signature="e#45555#45613#0" expanded="false" />
-            <element signature="e#45698#46798#0" expanded="false" />
-            <element signature="e#46898#47931#0" expanded="false" />
-            <element signature="e#47979#53465#0" expanded="false" />
-            <element signature="e#48040#48100#0" expanded="false" />
-            <element signature="e#48256#49331#0" expanded="false" />
-            <element signature="e#48337#48774#0" expanded="false" />
-            <element signature="e#49488#50582#0" expanded="false" />
-            <element signature="e#50753#53142#0" expanded="false" />
-            <element signature="e#50800#51165#0" expanded="false" />
-            <element signature="e#51223#51713#0" expanded="false" />
-            <element signature="e#53201#53465#0" expanded="false" />
-            <element signature="e#53517#59962#0" expanded="false" />
-            <element signature="e#53578#53638#0" expanded="false" />
-            <element signature="e#53782#55497#0" expanded="false" />
-            <element signature="e#54261#55184#0" expanded="false" />
-            <element signature="e#55642#56302#0" expanded="false" />
-            <element signature="e#56461#59019#0" expanded="false" />
-            <element signature="e#56988#57759#0" expanded="false" />
-            <element signature="e#57810#58686#0" expanded="false" />
-            <element signature="e#59093#59962#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/fitting/fit/least_squares.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
-          <caret line="757" column="34" selection-start-line="757" selection-start-column="34" selection-end-line="757" selection-end-column="34" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/fitting/fit/model.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
-          <caret line="104" column="0" selection-start-line="104" selection-start-column="0" selection-end-line="104" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-            <element signature="e#221#1453#0" expanded="false" />
-            <element signature="e#1515#1653#0" expanded="false" />
-            <element signature="e#1515#1588#1" expanded="false" />
-            <element signature="e#1716#1817#0" expanded="false" />
-            <element signature="e#1716#1744#1" expanded="false" />
-            <element signature="e#1894#2009#0" expanded="false" />
-            <element signature="e#1894#1922#1" expanded="false" />
-            <element signature="e#2081#2085#0" expanded="false" />
-            <element signature="e#2136#2230#0" expanded="false" />
-            <element signature="e#2295#2393#0" expanded="false" />
-            <element signature="e#2461#2562#0" expanded="false" />
-            <element signature="e#3477#4246#0" expanded="false" />
-            <element signature="e#3653#3753#0" expanded="false" />
-            <element signature="e#4318#4480#0" expanded="false" />
-            <element signature="e#4552#4624#0" expanded="false" />
-            <element signature="e#4728#5703#0" expanded="false" />
-            <element signature="e#5915#6001#0" expanded="false" />
-            <element signature="e#6063#6314#0" expanded="false" />
-            <element signature="e#6382#6848#0" expanded="false" />
-            <element signature="e#6931#7668#0" expanded="false" />
-            <element signature="e#7820#8480#0" expanded="false" />
-            <element signature="e#8563#9138#0" expanded="false" />
-            <element signature="e#8617#8728#0" expanded="false" />
-            <element signature="e#9227#10575#0" expanded="false" />
-            <element signature="e#10654#11171#0" expanded="false" />
-            <element signature="e#11352#19364#0" expanded="false" />
-            <element signature="e#11555#12342#0" expanded="false" />
-            <element signature="e#12424#12810#0" expanded="false" />
-            <element signature="e#12901#14574#0" expanded="false" />
-            <element signature="e#19455#20418#0" expanded="false" />
-            <element signature="e#19488#19621#0" expanded="false" />
-            <element signature="e#20493#21851#0" expanded="false" />
-            <element signature="e#22005#29442#0" expanded="false" />
-            <element signature="e#29524#30164#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/fitting/density/atomic_slater_density.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
-          <caret line="56" column="0" selection-start-line="56" selection-start-column="0" selection-end-line="56" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/fitting/fit/test_file.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#190#980#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/fitting/fit/model.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
-          <caret line="7" column="49" selection-start-line="7" selection-start-column="49" selection-end-line="7" selection-end-column="49" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-            <element signature="e#221#1453#0" expanded="false" />
-            <element signature="e#1515#1653#0" expanded="false" />
-            <element signature="e#1515#1588#1" expanded="false" />
-            <element signature="e#1716#1817#0" expanded="false" />
-            <element signature="e#1716#1744#1" expanded="false" />
-            <element signature="e#1894#2009#0" expanded="false" />
-            <element signature="e#1894#1922#1" expanded="false" />
-            <element signature="e#2081#2085#0" expanded="false" />
-            <element signature="e#2136#2230#0" expanded="false" />
-            <element signature="e#2295#2393#0" expanded="false" />
-            <element signature="e#2461#2562#0" expanded="false" />
-            <element signature="e#3477#4246#0" expanded="false" />
-            <element signature="e#3653#3753#0" expanded="false" />
-            <element signature="e#4318#4480#0" expanded="false" />
-            <element signature="e#4552#4624#0" expanded="false" />
-            <element signature="e#4728#5703#0" expanded="false" />
-            <element signature="e#5915#6001#0" expanded="false" />
-            <element signature="e#6063#6314#0" expanded="false" />
-            <element signature="e#6382#6848#0" expanded="false" />
-            <element signature="e#6931#7668#0" expanded="false" />
-            <element signature="e#7820#8480#0" expanded="false" />
-            <element signature="e#8563#9138#0" expanded="false" />
-            <element signature="e#8617#8728#0" expanded="false" />
-            <element signature="e#9227#10575#0" expanded="false" />
-            <element signature="e#10654#11171#0" expanded="false" />
-            <element signature="e#11352#19364#0" expanded="false" />
-            <element signature="e#11555#12342#0" expanded="false" />
-            <element signature="e#12424#12810#0" expanded="false" />
-            <element signature="e#12901#14574#0" expanded="false" />
-            <element signature="e#19455#20418#0" expanded="false" />
-            <element signature="e#19488#19621#0" expanded="false" />
-            <element signature="e#20493#21851#0" expanded="false" />
-            <element signature="e#22005#29442#0" expanded="false" />
-            <element signature="e#29524#30164#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/fitting/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/fitting/density/radial_grid.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/fitting/gbasis/gbasis.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
@@ -1421,13 +1179,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/fitting/density/radial_grid.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-0.084415585" vertical-offset="120" max-vertical-offset="901">
-          <caret line="5" column="50" selection-start-line="5" selection-start-column="44" selection-end-line="5" selection-end-column="50" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/fitting/density/atomic_slater_density.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="3239" max-vertical-offset="3995">
@@ -1450,40 +1201,22 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/fitting/fit/test/test_GaussianTotalBasisSet.py">
+    <entry file="file://$PROJECT_DIR$/fitting/fit/KL-Divergence.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="1412" max-vertical-offset="1904">
-          <caret line="104" column="65" selection-start-line="104" selection-start-column="65" selection-end-line="104" selection-end-column="65" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/fitting/fit/test_file.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2550">
-          <caret line="96" column="33" selection-start-line="96" selection-start-column="33" selection-end-line="96" selection-end-column="33" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="1390" max-vertical-offset="1819">
+          <caret line="97" column="51" selection-start-line="97" selection-start-column="51" selection-end-line="97" selection-end-column="51" />
           <folding>
-            <element signature="e#190#980#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/fitting/fit/junk_file.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="153">
-          <caret line="3" column="45" selection-start-line="3" selection-start-column="45" selection-end-line="3" selection-end-column="45" />
-          <folding>
-            <element signature="e#0#41#0" expanded="true" />
+            <element signature="e#0#31#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/fitting/fit/GaussianBasisSet.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="10" max-vertical-offset="2465">
+        <state vertical-scroll-proportion="0.7267951" vertical-offset="10" max-vertical-offset="2465">
           <caret line="33" column="0" selection-start-line="33" selection-start-column="0" selection-end-line="34" selection-end-column="60" />
           <folding>
-            <element signature="e#0#31#0" expanded="true" />
+            <element signature="e#0#31#0" expanded="false" />
             <element signature="e#497#934#0" expanded="false" />
             <element signature="e#1648#2703#0" expanded="false" />
             <element signature="e#2874#5224#0" expanded="false" />
@@ -1517,20 +1250,18 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/fitting/fit/KL-Divergence.py">
+    <entry file="file://$PROJECT_DIR$/fitting/fit/test/test_GaussianTotalBasisSet.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-8.931034" vertical-offset="1390" max-vertical-offset="1819">
-          <caret line="97" column="51" selection-start-line="97" selection-start-column="51" selection-end-line="97" selection-end-column="51" />
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-          </folding>
+        <state vertical-scroll-proportion="0.67250437" vertical-offset="1333" max-vertical-offset="1904">
+          <caret line="104" column="65" selection-start-line="104" selection-start-column="65" selection-end-line="104" selection-end-column="65" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/fitting/fit/model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.6181818" vertical-offset="969" max-vertical-offset="1700">
-          <caret line="184" column="0" selection-start-line="184" selection-start-column="0" selection-end-line="184" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.9404553" vertical-offset="1928" max-vertical-offset="3179">
+          <caret line="384" column="0" selection-start-line="384" selection-start-column="0" selection-end-line="384" selection-end-column="0" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
             <element signature="e#221#1453#0" expanded="false" />
@@ -1549,24 +1280,146 @@
             <element signature="e#4318#4480#0" expanded="false" />
             <element signature="e#4552#4624#0" expanded="false" />
             <element signature="e#4728#5703#0" expanded="false" />
-            <element signature="e#5915#6001#0" expanded="false" />
-            <element signature="e#6063#6314#0" expanded="false" />
-            <element signature="e#6382#6848#0" expanded="false" />
-            <element signature="e#6931#7668#0" expanded="false" />
-            <element signature="e#7820#8480#0" expanded="false" />
-            <element signature="e#8563#9138#0" expanded="false" />
-            <element signature="e#8617#8728#0" expanded="false" />
-            <element signature="e#9227#10575#0" expanded="false" />
-            <element signature="e#10654#11171#0" expanded="false" />
-            <element signature="e#11352#19364#0" expanded="false" />
-            <element signature="e#11555#12342#0" expanded="false" />
-            <element signature="e#12424#12810#0" expanded="false" />
-            <element signature="e#12901#14574#0" expanded="false" />
-            <element signature="e#19455#20418#0" expanded="false" />
-            <element signature="e#19488#19621#0" expanded="false" />
-            <element signature="e#20493#21851#0" expanded="false" />
-            <element signature="e#22005#29442#0" expanded="false" />
-            <element signature="e#29524#30164#0" expanded="false" />
+            <element signature="e#5769#5855#0" expanded="false" />
+            <element signature="e#5917#6168#0" expanded="false" />
+            <element signature="e#6236#6702#0" expanded="false" />
+            <element signature="e#6785#7522#0" expanded="false" />
+            <element signature="e#7670#8330#0" expanded="false" />
+            <element signature="e#8413#8988#0" expanded="false" />
+            <element signature="e#8467#8578#0" expanded="false" />
+            <element signature="e#9077#10425#0" expanded="false" />
+            <element signature="e#10504#11021#0" expanded="false" />
+            <element signature="e#11405#12192#0" expanded="false" />
+            <element signature="e#12274#12660#0" expanded="false" />
+            <element signature="e#12751#14424#0" expanded="false" />
+            <element signature="e#19524#20487#0" expanded="false" />
+            <element signature="e#19557#19690#0" expanded="false" />
+            <element signature="e#20562#21920#0" expanded="false" />
+            <element signature="e#22074#29511#0" expanded="false" />
+            <element signature="e#23252#24035#0" expanded="false" />
+            <element signature="e#29593#30233#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fitting/fit/test_file.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2550">
+          <caret line="96" column="33" selection-start-line="96" selection-start-column="33" selection-end-line="96" selection-end-column="33" />
+          <folding>
+            <element signature="e#190#980#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fitting/fit/junk_file.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="119">
+          <caret line="3" column="28" selection-start-line="3" selection-start-column="28" selection-end-line="3" selection-end-column="28" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fitting/density/radial_grid.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.11038961" vertical-offset="0" max-vertical-offset="901">
+          <caret line="5" column="50" selection-start-line="5" selection-start-column="44" selection-end-line="5" selection-end-column="50" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fitting/grid_generation/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="204">
+          <caret line="6" column="0" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#41#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fitting/grid_generation/grid_1D_difference.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1309">
+          <caret line="0" column="18" selection-start-line="0" selection-start-column="16" selection-end-line="0" selection-end-column="18" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fitting/grid_generation/multi_dimensional_grids.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1394">
+          <caret line="11" column="81" selection-start-line="11" selection-start-column="81" selection-end-line="11" selection-end-column="81" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fitting/grid_generation/tests/test_grid_1D.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="616">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fitting/grid_generation/grid_1D_generator.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1224">
+          <caret line="1" column="45" selection-start-line="1" selection-start-column="45" selection-end-line="1" selection-end-column="45" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fitting/grid_generation/tests/test_grid_1D_difference.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="616">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fitting/grid_generation/tests/test_grid_1D_generator.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="616">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fitting/grid_generation/tests/test_multi_dimensional_grids.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="616">
+          <caret line="0" column="22" selection-start-line="0" selection-start-column="22" selection-end-line="0" selection-end-column="22" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fitting/grid_generation/grid_1D.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="46" max-vertical-offset="1292">
+          <caret line="16" column="29" selection-start-line="16" selection-start-column="29" selection-end-line="16" selection-end-column="29" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fitting/grid_generation/BST.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="910" max-vertical-offset="1938">
+          <caret line="68" column="68" selection-start-line="68" selection-start-column="68" selection-end-line="68" selection-end-column="68" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fitting/grid_generation/tests/test_BST.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.24837662" vertical-offset="0" max-vertical-offset="616">
+          <caret line="9" column="8" selection-start-line="9" selection-start-column="8" selection-end-line="9" selection-end-column="8" />
+          <folding>
+            <element signature="e#0#36#0" expanded="true" />
           </folding>
         </state>
       </provider>

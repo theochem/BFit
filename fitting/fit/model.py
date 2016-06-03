@@ -142,9 +142,6 @@ class DensityModel():
 
 
 class Fitting():
-    #__metaclass__ = abc.ABCMeta
-    #TODO Ask farnaz, Should this class include cost function, derivative of cost funciton and cofactor matrix?
-
     def __init__(self, model_object):
         assert isinstance(model_object, DensityModel)
         self.model_object = model_object
@@ -179,10 +176,6 @@ class Fitting():
 
         parameters = f_min_l_bfgs_b[0]
         return(parameters)
-
-
-
-
 
 
 
@@ -335,8 +328,9 @@ class Fitting():
                    np.ravel(chosen_electron_density),
                    np.ravel(np.power(chosen_electron_density, 2.0))]
 
-
+        ##########################################
         # Selected Best Single Gaussian Function
+        ##########################################
         best_generated_UGBS_parameter_with_analytical_coefficient = self.find_best_parameter_from_analytical_coeff_and_generated_exponents(1)
         list_of_initial_one_function_choices = [best_generated_UGBS_parameter_with_analytical_coefficient]
 
@@ -354,8 +348,9 @@ class Fitting():
                 best_cost_function = cost_function_value
                 best_parameters_found = np.copy(parameters)
 
-
+        ###################################################
         # Iterate To Find the Next N+1 Gaussian Function
+        ##################################################
         local_parameter = np.copy(best_parameters_found)
         global_best_parameters = None
         counter = 1
