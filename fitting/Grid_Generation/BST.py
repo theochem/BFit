@@ -2,6 +2,9 @@ import copy
 
 class BST():
     def __init__(self, index, weight):
+        assert type(index) is int, "index is not an Integer: %r" % index
+        assert type(weight) is float, "weight is not a float: %r" % weight
+        assert index >= 0, "index should be greater than equal to zero: %r" % index
         self.root = Node(index, weight, None, None)
 
     def min(self, *args):
@@ -17,25 +20,25 @@ class BST():
     def put_grid_point(self, *args):
         if len(args) == 2 and isinstance(args[0], int) and isinstance(args[1], float):
             self.root = self.put_grid_point(args[0], args[1], self.root)
-        elif len(args) == 3 and isinstance(args[2], Node):
+        elif len(args) == 3 and args[2] is None or isinstance(args[2], Node):
             key = args[0]
             value = args[1]
             node = args[2]
-
             if(node == None):
                 return Node(key, value, None, None)
 
-            if key < node.index:
-                node.left = self.put(node.left, key, value)
-            elif key > node.index:
-                node.right = self.put(node.right, key, value)
-            elif key == node.index:
+            if key < node.key:
+                node.left = self.put_grid_point( key, value, node.left)
+            elif key > node.key:
+                node.right = self.put_grid_point( key, value, node.right)
+            elif key == node.key:
                 node.value += value
             else:
                 return None
             return (node)
         else:
-            raise TypeError('Arguments should be of type (int, float) or (int, float, Node)')
+            raise TypeError('Type of Arguments should formatted as (int, float) '
+                            'or (int, float, Node), but the input is %r' % [type(x) for x in args]  )
 
     def get(self, *args):
         if len(args) == 1 and isinstance(args[0], int):
@@ -95,13 +98,22 @@ class BST():
         else:
             raise TypeError('Type of Arguments should be either (int) or (int, Node)')
 
+    def printNode(self, node):
+        if node.left != None:
+            self.printNode(node.left)
+        if node.right != None:
+            self.printNode(node.right)
+        print(node.key)
+
+    def __str__(self):
+        return str(self.printNode(self.root))
 
 class Node():
     def __init__(self, index, weight, left, right):
         assert type(index) is int, "Key is not an integer: %r" % index
         assert type(weight) is float, "Value is not a float: %r" % weight
-        assert isinstance(left, Node), "Left is not an Node: %r" % left
-        assert isinstance(right, Node), "Right is not an Node: %r" % right
+        assert left is None or isinstance(left, Node), "Left is not an None/Node: %r" % left
+        assert right is None or isinstance(right, Node), "Right is not an None/Node: %r" % right
 
         self.key = index
         self.value = weight
