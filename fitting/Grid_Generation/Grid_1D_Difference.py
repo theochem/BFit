@@ -11,8 +11,9 @@ class Grid_1D_Difference():
 
         self.all_grids_obj = all_grids_obj
 
-        self.indexes_for_1D_difference = None
-        self.weights_for_1D_difference = None
+        #Confirm Deletion
+        #self.indexes_for_1D_difference = None
+        #self.weights_for_1D_difference = None
 
         self.all_indexes_for_1D_difference = np.empty(shape=(self.all_grids_obj.effort,), dtype=object)
         self.all_weights_for_1D_difference = np.empty(shape=(self.all_grids_obj.effort,), dtype=object)
