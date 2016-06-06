@@ -1,7 +1,6 @@
 import numpy as np
 import copy
 
-
 class Grid_1D():
     max_num_of_pts_of_all_1D_grids = 0
 

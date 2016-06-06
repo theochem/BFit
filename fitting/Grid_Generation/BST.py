@@ -9,13 +9,14 @@ class BST():
 
     def min(self, *args):
         if len(args) == 0:
-            return self.min(self.root).key
-        elif len(args) == 1 and isinstance(args[0], Node):
+            return self.min(self.root)
+        elif len(args) == 1 and args[0] is None or isinstance(args[0], Node):
             if args[0].left == None:
                 return args[0]
-            return min(args[0].left)
+            return self.min(args[0].left)
         else:
-            raise TypeError("Arguments should be nothing or (Node)")
+            raise TypeError("Type of Arguments should formatted as nothing or (Node),"
+                            " but input was instead: %r" %[type(x) for x in args])
 
     def put_grid_point(self, *args):
         if len(args) == 2 and isinstance(args[0], int) and isinstance(args[1], float):
@@ -42,34 +43,34 @@ class BST():
 
     def get(self, *args):
         if len(args) == 1 and isinstance(args[0], int):
-            self.get(args[0], self.root)
-        elif len(args) == 1 and isinstance(args[1], Node):
+            return self.get(args[0], self.root)
+        elif len(args) == 2 and (args[1] is None or isinstance(args[1], Node)):
             key = args[0]
             node = args[1]
 
-            if (key < self.root.key):
-                return(self.get(node.left, key))
-            elif (key > self.root.key):
-                return(self.get(node.right, key))
-            elif key == self.root.key:
+            if (key < node.key):
+                return(self.get(key, node.left))
+            elif (key > node.key):
+                return(self.get(key, node.right))
+            elif key == node.key:
                 return(node)
             else:
                 return(None)
         else:
-            raise TypeError('Arguments should be of type (int) or (int, Node)')
+            raise TypeError('Type of Arguments should formatted as (int) or (int, Node), but the input is %r' % [type(x) for x in args])
 
     def deleteMin(self, *args):
 
         if len(args) == 0:
-            self.root = self.delete_grid_point(self.root, None)
+            self.root = self.deleteMin(self.root, None)[0]
 
-        elif len(args) == 1 and isinstance(args[0], Node) and (isinstance(args[1], type(None)) or isinstance(args[1], Node)):
+        elif len(args) == 2 and isinstance(args[0], Node) and (isinstance(args[1], type(None)) or isinstance(args[1], Node)):
             if args[0].left == None:
                 return args[0].right, args[0]
-            args[0].left, min = self.deleteMin(args[0].left, args[1])
-            return args[0], min
+            args[0].left, mininum = self.deleteMin(args[0].left, args[1])
+            return args[0], mininum
         else:
-            raise TypeError("Arguments should be nothing or (Node)")
+            raise TypeError("Type of Arguments should formatted as nothing or (Node, Node/None), but the input is %r" % [type(x) for x in args])
 
     def delete_grid_point(self, *args):
         if len(args) == 1 and isinstance(args[0], int):
@@ -79,9 +80,9 @@ class BST():
             if (node == None):
                 return None
             if key < node.key:
-                node.left = self.delete_grid_point(node.left, key)
+                node.left = self.delete_grid_point(key, node.left)
             elif key > node.key:
-                node.right = self.delete_grid_point(node.right, key)
+                node.right = self.delete_grid_point(key, node.right)
             else:
                 if node.right == None:
                     return node.left
@@ -89,7 +90,7 @@ class BST():
                     return node.right
                 t = copy.deepcopy(node)
                 node = self.min(t.right)
-                node.right = self.deleteMin(t.right)[0]
+                node.right = self.deleteMin(t.right, None)[0]
                 node.left = t.left
 
             return node
@@ -105,8 +106,6 @@ class BST():
             self.printNode(node.right)
         print(node.key)
 
-    def __str__(self):
-        return str(self.printNode(self.root))
 
 class Node():
     def __init__(self, index, weight, left, right):

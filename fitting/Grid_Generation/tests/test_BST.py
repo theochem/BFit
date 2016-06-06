@@ -1,6 +1,7 @@
 from nose.tools import assert_equals, assert_not_equal
 import unittest
 from fitting.grid_generation.BST import BST, Node
+import numpy as np
 from nose.tools import with_setup
 
 class Test_BST_Put_Method(unittest.TestCase):
@@ -81,25 +82,74 @@ class Test_BST_Put_Method(unittest.TestCase):
 
 
 class Test_BST_Get_Method(unittest.TestCase):
-    def setup(self):
-        print ("TestUM:setup() before each test method")
+    def setUp(self):
+        self.index = 5
+        self.weight = 223.0
+        self.binary_tree = BST(self.index, self.weight)
+        for x in range(0, 10):
+            self.binary_tree.put_grid_point( int(np.random.random() * 500), np.random.random() )
+            self.binary_tree.put_grid_point(x, float(x + 1))
 
-    def teardown(self):
-        print ("TestUM:teardown() after each test method")
-
-    @classmethod
-    def setup_class(cls):
-        print ("setup_class() before any methods in this class")
-
-
-    @classmethod
-    def teardown_class(cls):
-        print ("teardown_class() after any methods in this class")
 
     def test_get_grid_point(self):
+        node_5 = self.binary_tree.get(5)
+
+        assert_equals(node_5.key, 5)
+        assert_equals(node_5.value,  229.0)
+
+        node_9 = self.binary_tree.get(9)
+        assert_equals(node_9.key, 9)
+        assert_equals(node_9.value, 10)
+
+        node_2 = self.binary_tree.get(2)
+        assert_equals(node_2.key, 2)
+        assert_equals(node_2.value, 3)
+
+        node_0 = self.binary_tree.get(0)
+        assert_equals(node_0.left, None)
+
+class Test_BST_Min_Method(unittest.TestCase):
+    def setUp(self):
+        self.index = 5
+        self.weight = 223.0
+        self.binary_tree = BST(self.index, self.weight)
+        for x in range(0, 10):
+            self.binary_tree.put_grid_point( int(np.random.random() * 500), np.random.random() )
+            self.binary_tree.put_grid_point(x, float(x + 1))
+
+    def test_check_min(self):
+        mins = self.binary_tree.min()
+        assert_equals(mins.key, 0)
+
+
+class Test_BST_Delete_Min(unittest.TestCase):
+    def setUp(self):
+       self.index = 5
+       self.weight = 223.0
+       self.binary_tree = BST(self.index, self.weight)
+       for x in range(0, 10):
+           self.binary_tree.put_grid_point( int(np.random.random() * 500), np.random.random() )
+           self.binary_tree.put_grid_point(x, float(x + 1))
+
+    def test_delete_min(self):
+        for x in range(0, 9):
+            self.binary_tree.deleteMin()
+            assert_equals(self.binary_tree.min().key, x + 1)
+        assert_not_equal(self.binary_tree.min().key, 11)
+
+
+class Test_BST_Delete_GridPt(unittest.TestCase):
+    def setUp(self):
+       self.index = 5
+       self.weight = 223.0
+       self.binary_tree = BST(self.index, self.weight)
+       for x in range(0, 10):
+           self.binary_tree.put_grid_point( int(np.random.random() * 500), np.random.random() )
+           self.binary_tree.put_grid_point(x, float(x + 1))
+
+    def test_delete_grid_pt(self):
+        #TODO: THIS
         pass
-
-
 
 
 if __name__ == "__main__":
