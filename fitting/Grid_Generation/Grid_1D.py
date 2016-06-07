@@ -31,17 +31,25 @@ class Grid_1D():
         weights_1D = np.empty(num_of_points)
 
         coefficients = np.zeros(num_of_points)
-        for i in range(0, num_of_points):
-            grid_1D[i] = np.cos(i * np.pi / (num_of_points + 1))
+        if num_of_points == 1:
+            grid_1D[0] = 0.5
+            weights_1D[0] = 1.0
 
-            #TODO: FLOOR OR CEIL?
-            for x in range(0, int((num_of_points + 1) / 2.0)):
-                coefficients[i] = -4.0 * np.cos(2.0 * x * i * np.pi / (num_of_points + 1)) / (4.0 * x**2 - 1)
+        else:
+            for i in range(0, num_of_points):
+                grid_1D[i] = np.cos((i+1) * np.pi / (num_of_points + 1))
 
-            weights_1D[i] = (((np.sum(coefficients) - coefficients[0]) / 2.0) -
-                             (coefficients[int((num_of_points + 1) / 2.0)] / 2.0)) / (num_of_points + 1)
-        weights_1D = weights_1D / 2.0
-        grid_1D = (1 + grid_1D) / 2.0
+                #TODO: FLOOR OR CEIL?
+                coefficients = np.zeros(int((num_of_points + 1) / 2.0) + 1)
+                assert len(coefficients) == int((num_of_points + 1) / 2.0) + 1
+                for x in range(0, int((num_of_points + 1) / 2.0) + 1):
+                    coefficients[x] = -4.0 * np.cos(2.0 * x * (i+1) * np.pi / (num_of_points + 1)) / (4.0 * x**2 - 1)
+                weights_1D[i] = (np.sum(coefficients) - (coefficients[0] / 2.0) - \
+                                 (coefficients[int((num_of_points + 1) / 2.0) - 1] / 2.0) )/ (num_of_points + 1)
+
+
+            weights_1D = weights_1D / 2.0
+            grid_1D = (1 + grid_1D) / 2.0
 
         return(grid_1D, weights_1D)
 
@@ -51,16 +59,20 @@ class Grid_1D():
         pass
 
     @staticmethod
-    def get_clenshaw_curtis_1D_grid(delayed_sequence_number, effort):
-        num_of_points = 0
+    def get_clenshaw_curtis_1D_grid_object(delayed_sequence_number, effort):
+        num_of_points = Grid_1D.get_number_of_points_for_CC(delayed_sequence_number)
+        type_of_grid = "CC"
+        return Grid_1D(type_of_grid, num_of_points, effort)
+
+
+    @staticmethod
+    def get_number_of_points_for_CC(delayed_sequence_number):
         if delayed_sequence_number == 1:
             num_of_points = 1
         else:
-            #TODO: IS HTIS RIGHT?
+            #TODO: IS THIS RIGHT?
             num_of_points = int(2**(delayed_sequence_number - 1) - 1)
-        type_of_grid = "CC"
-
-        return Grid_1D(type_of_grid, num_of_points, effort)
+        return num_of_points
 
     @staticmethod
     def get_rectangle_1D_grid(delayed_sequence_number, effort):
