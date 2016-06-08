@@ -13,7 +13,7 @@ class Multi_Dimensional_Grids():
 
         self.dimension = dimension
         self.nsym = nsym
-        self.T_GK = 0
+        self.T_GK = T_GK
         self.accepted_indexes = None
         self.grid_diff_obj = Grid_1D_Difference(all_grids_obj)
         self.grid_diff_obj.generate_all_differences()
