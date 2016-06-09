@@ -4,6 +4,10 @@ from fitting.grid_generation.BST import BST, Node
 import numpy as np
 from nose.tools import with_setup
 
+########### TODO LIST
+### TODO - Ask Paul about the same list size for test_lt
+### TODO - If above is true, add tests for list4
+
 class Test_BST_Put_Method(unittest.TestCase):
     def setUp(self):
         self.index = 5
@@ -81,7 +85,7 @@ class Test_BST_Put_Method(unittest.TestCase):
         assert_equals(self.binary_tree.root.right.right.key, 9)
 
 
-class Test_BST_Get_Method(unittest.TestCase):
+class Test_BST_Int_Key_Values(unittest.TestCase):
     def setUp(self):
         self.index = 5
         self.weight = 223.0
@@ -89,7 +93,6 @@ class Test_BST_Get_Method(unittest.TestCase):
         for x in range(0, 10):
             self.binary_tree.put_grid_point( int(np.random.random() * 500), np.random.random() )
             self.binary_tree.put_grid_point(x, float(x + 1))
-
 
     def test_get_grid_point(self):
         node_5 = self.binary_tree.get(5)
@@ -108,28 +111,9 @@ class Test_BST_Get_Method(unittest.TestCase):
         node_0 = self.binary_tree.get(0)
         assert_equals(node_0.left, None)
 
-class Test_BST_Min_Method(unittest.TestCase):
-    def setUp(self):
-        self.index = 5
-        self.weight = 223.0
-        self.binary_tree = BST(self.index, self.weight)
-        for x in range(0, 10):
-            self.binary_tree.put_grid_point( int(np.random.random() * 500), np.random.random() )
-            self.binary_tree.put_grid_point(x, float(x + 1))
-
     def test_check_min(self):
         mins = self.binary_tree.min()
         assert_equals(mins.key, 0)
-
-
-class Test_BST_Delete_Min(unittest.TestCase):
-    def setUp(self):
-       self.index = 5
-       self.weight = 223.0
-       self.binary_tree = BST(self.index, self.weight)
-       for x in range(0, 10):
-           self.binary_tree.put_grid_point( int(np.random.random() * 500), np.random.random() )
-           self.binary_tree.put_grid_point(x, float(x + 1))
 
     def test_delete_min(self):
         for x in range(0, 9):
@@ -137,20 +121,78 @@ class Test_BST_Delete_Min(unittest.TestCase):
             assert_equals(self.binary_tree.min().key, x + 1)
         assert_not_equal(self.binary_tree.min().key, 11)
 
-
-class Test_BST_Delete_GridPt(unittest.TestCase):
-    def setUp(self):
-       self.index = 5
-       self.weight = 223.0
-       self.binary_tree = BST(self.index, self.weight)
-       for x in range(0, 10):
-           self.binary_tree.put_grid_point( int(np.random.random() * 500), np.random.random() )
-           self.binary_tree.put_grid_point(x, float(x + 1))
-
     def test_delete_grid_pt(self):
         #TODO: THIS
         pass
 
+
+
+class Test_BST_Comparision_Operators(unittest.TestCase):
+    def setUp(self):
+        self.list1 = [1., 2., 3., 4.]
+        self.list2 = [2., 3., 4., 5.]
+        self.list3 = [1., 2., 3., 4.]
+        self.list4 = [5., 6.]
+
+        self.Node1 = Node(self.list1, 1.0, None, None)
+        self.Node2 = Node(self.list2, 1.0, None, None)
+        self.Node3 = Node(self.list3, 1.0, None, None)
+        self.Node4 = Node(self.list4, 1.0, None, None)
+
+    def test_eq(self):
+        expected_results_1_2 = False
+        result_1_2 = Node.comparing_two_lists(self.list1, self.list2, "=")
+        assert expected_results_1_2 == result_1_2
+
+        expected_results_1_3 = True
+        result_1_3 = Node.comparing_two_lists(self.list1, self.list3, "=")
+        assert expected_results_1_3 == result_1_3
+
+        expected_results_1_4 = False
+        assert expected_results_1_4 == Node.compare_two_elements(self.list1, self.list4, "=")
+
+    def test_eq_through_nodes(self):
+        assert True == (self.Node1 == self.Node3)
+        assert False == (self.Node1 == self.Node2)
+        assert False == (self.Node1 == self.Node4)
+
+
+    def test_lt(self):
+        assert True == Node.comparing_two_lists(self.list1, self.list2, "<")
+        assert False == Node.comparing_two_lists(self.list1, self.list3, "<")
+        #assert True == Node.comparing_two_lists(self.list1, self.list4, "<")
+
+        assert False == (self.Node1 < self.Node3)
+        assert True == (self.Node1 < self.Node2)
+        assert False == (self.Node2 < self.Node1)
+
+    def test_gt(self):
+        assert False == Node.comparing_two_lists(self.list1, self.list2, ">")
+        assert True == Node.comparing_two_lists(self.list2, self.list1, ">")
+        assert False == Node.comparing_two_lists(self.list1, self.list3, ">")
+
+        assert False == (self.Node1 > self.Node2)
+        assert True == (self.Node2 > self.Node1)
+        assert False == (self.Node1 > self.Node3)
+
+
+    def test_le(self):
+        assert True == Node.comparing_two_lists(self.list1, self.list2, "<=")
+        assert False == Node.comparing_two_lists(self.list2, self.list1, "<=")
+        assert True == Node.comparing_two_lists(self.list1, self.list3, "<=")
+
+        assert True == (self.Node1 <= self.Node2)
+        assert True == (self.Node1 <= self.Node3)
+        assert False == (self.Node2 <= self.Node1)
+
+    def test_ge(self):
+        assert False == Node.comparing_two_lists(self.list1, self.list2, ">=")
+        assert True == Node.comparing_two_lists(self.list2, self.list1, ">=")
+        assert True == Node.comparing_two_lists(self.list1, self.list3, ">=")
+
+        assert False == (self.Node1 >= self.Node2)
+        assert True == (self.Node1 >= self.Node3)
+        assert True == (self.Node2 >= self.Node1)
 
 if __name__ == "__main__":
     unittest.main()

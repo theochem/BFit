@@ -3,6 +3,8 @@ import copy
 ####TODO#######
 #  TODO: - Test This code
 #  TODO: - see if the comparisions are right
+#  TODO: - Ask Paul if the array have to be of the same size Line:187
+# TODO: - Check For Return False for  comparing_two_lists from fortran code
 
 class BST():
     def __init__(self, index, weight):
@@ -128,10 +130,10 @@ class Node():
 
     def __eq__(self, other): # =
         if isinstance(other, Node):
-            if isinstance(Node.key, list) and isinstance(other.key, list):
-                return Node.key == other.key
-            elif isinstance(Node.key, int) and isinstance(other.key, int):
-                return Node.key == other.key
+            if isinstance(self.key, list) and isinstance(other.key, list):
+                return self.key == other.key
+            elif isinstance(self.key, int) and isinstance(other.key, int):
+                return self.key == other.key
             else:
                 return NotImplemented
         else:
@@ -139,10 +141,10 @@ class Node():
 
     def __lt__(self, other): # <
         if isinstance(other, Node):
-            if isinstance(Node.key, list) and isinstance(other.key, list):
-                return Node.comparing_two_lists(Node.key, other.key, "<")
-            elif isinstance(Node.key, int) and isinstance(other.key, int):
-                return Node.key < other.key
+            if isinstance(self.key, list) and isinstance(other.key, list):
+                return Node.comparing_two_lists(self.key, other.key, "<")
+            elif isinstance(self.key, int) and isinstance(other.key, int):
+                return self.key < other.key
             else:
                 return NotImplemented
         else:
@@ -150,10 +152,10 @@ class Node():
 
     def __gt__(self, other): # >
         if isinstance(other, Node):
-            if isinstance(Node.key, list) and isinstance(other.key, list):
-                return Node.comparing_two_lists(Node.key, other.key, ">")
-            elif isinstance(Node.key, int) and isinstance(other.key, int):
-                return Node.key > other.key
+            if isinstance(self.key, list) and isinstance(other.key, list):
+                return Node.comparing_two_lists(self.key, other.key, ">")
+            elif isinstance(self.key, int) and isinstance(other.key, int):
+                return self.key > other.key
             else:
                 return NotImplemented
         else:
@@ -161,10 +163,10 @@ class Node():
 
     def __le__(self, other): # <=
         if isinstance(other, Node):
-            if isinstance(Node.key, list) and isinstance(other.key, list):
-                return Node.comparing_two_lists(Node.key, other.key, "<=")
-            elif isinstance(Node.key, int) and isinstance(other.key, int):
-                return Node.key <= other.key
+            if isinstance(self.key, list) and isinstance(other.key, list):
+                return Node.comparing_two_lists(self.key, other.key, "<=")
+            elif isinstance(self.key, int) and isinstance(other.key, int):
+                return self.key <= other.key
             else:
                 return NotImplemented
         else:
@@ -172,10 +174,10 @@ class Node():
 
     def __ge__(self, other): # >=
         if isinstance(other, Node):
-            if isinstance(Node.key, list) and isinstance(other.key, list):
-                return Node.comparing_two_lists(Node.key, other.key, ">=")
-            elif isinstance(Node.key, int) and isinstance(other.key, int):
-                return Node.key >= other.key
+            if isinstance(self.key, list) and isinstance(other.key, list):
+                return Node.comparing_two_lists(self.key, other.key, ">=")
+            elif isinstance(self.key, int) and isinstance(other.key, int):
+                return self.key >= other.key
             else:
                 return NotImplemented
         else:
@@ -187,10 +189,13 @@ class Node():
         for i in range(0, len(list1)):
             if Node.compare_two_elements(list1[i], list2[i], comparision_string):
                 return True
-            elif list[i] == list2[i]:
+            elif list1[i] == list2[i]:
                 pass
             else:
                 return False
+
+        return False
+
 
     @staticmethod
     def compare_two_elements(element1, element2, comparision_string):
@@ -202,5 +207,7 @@ class Node():
             return element1 >= element2
         elif comparision_string == "<=":
             return element1 <= element2
+        elif comparision_string == "=":
+            return element1 == element2
 
 
