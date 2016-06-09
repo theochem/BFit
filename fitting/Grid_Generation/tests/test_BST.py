@@ -194,5 +194,68 @@ class Test_BST_Comparision_Operators(unittest.TestCase):
         assert True == (self.Node1 >= self.Node3)
         assert True == (self.Node2 >= self.Node1)
 
+
+class Test_BST_Put_With_Lists(unittest.TestCase):
+    def setUp(self):
+        self.list1 = [2., 2., 3.]
+        self.list2 = [1., 1., 2.]
+        self.list3 = [3., 4., 5.]
+        self.list4 = [0., 2., 3.]
+
+        self.binary_tree = BST(self.list1, 1.0)
+
+    def test_put(self):
+        self.binary_tree.put_grid_point(self.list2, 2.0)
+        assert self.binary_tree.root.left.key == self.list2
+        assert self.binary_tree.root.left.value == 2.0
+        assert self.binary_tree.root.right == None
+
+        self.binary_tree.put_grid_point(self.list3, 4.0)
+        assert self.binary_tree.root.right.key == self.list3
+        assert not self.binary_tree.root.left.key == self.list3
+        assert self.binary_tree.root.right.value == 4.0
+
+        self.binary_tree.put_grid_point(self.list4, 5.0)
+        assert self.binary_tree.root.left.left.key == self.list4
+        assert self.binary_tree.root.left.left.value == 5.0
+
+class Test_BST_Methods_With_Lists(unittest.TestCase):
+    def setUp(self):
+        self.index = [8., 6., 7.]
+        self.weight = 223.0
+        self.binary_tree = BST(self.index, self.weight)
+        for x in range(0, 10):
+            self.binary_tree.put_grid_point( [int(np.random.random() * 500) for x in range(0, 3)], np.random.random() )
+            self.binary_tree.put_grid_point([x, x + 1, x + 2], float(x + 1))
+
+
+    def test_min(self):
+        assert self.binary_tree.min().key == [0., 1., 2.]
+        assert self.binary_tree.min().value == 1.
+
+    def test_get(self):
+        get_list = [3., 4., 5.]
+        assert self.binary_tree.get([3., 4. ,5.]).key == get_list
+        assert self.binary_tree.get([3., 4., 5.]).value == 4.
+        assert self.binary_tree.get([10., 11., 12.]) == None
+
+    def test_delete_min(self):
+        self.binary_tree.deleteMin()
+        assert not self.binary_tree.min().key == [0., 1., 2.]
+        assert not self.binary_tree.min().value == 1.
+        assert self.binary_tree.min().key == [1., 2., 3.]
+        assert self.binary_tree.min().value == 2.
+
+    def test_delete_grid_point(self):
+        delete_point = [7., 8., 9.]
+        self.binary_tree.delete_grid_point(delete_point)
+
+        assert self.binary_tree.get([7., 8., 9.]) == None
+        delete_root = [8., 6., 7.]
+        self.binary_tree.delete_grid_point(delete_root)
+        assert self.binary_tree.root.key == [8., 9., 10.]
+        assert self.binary_tree.root.left.key == [0., 1., 2.]
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -10,7 +10,7 @@ class BST():
     def __init__(self, index, weight):
         assert type(index) is int or type(index) is list, "index is not an Integer or List: %r" % type(index)
         assert type(weight) is float, "weight is not a float: %r" % weight
-        assert index >= 0, "index should be greater than equal to zero: %r" % index
+        assert type(index) is list or index >= 0 , "index should be greater than equal to zero: %r" % index
         self.root = Node(index, weight, None, None)
 
     def min(self, *args):
@@ -54,7 +54,10 @@ class BST():
         elif len(args) == 2 and (args[1] is None or isinstance(args[1], Node)):
             key = args[0]
             node = args[1]
+
             new_node = Node(key, 1.0, None, None)
+            if node == None:
+                return None
             if (new_node < node):
                 return(self.get(key, node.left))
             elif (new_node > node):
@@ -67,7 +70,6 @@ class BST():
             raise TypeError('Type of Arguments should formatted as (int) or (int, Node), but the input is %r' % [type(x) for x in args])
 
     def deleteMin(self, *args):
-
         if len(args) == 0:
             self.root = self.deleteMin(self.root, None)[0]
 
@@ -81,16 +83,17 @@ class BST():
 
     def delete_grid_point(self, *args):
         if len(args) == 1 and (isinstance(args[0], int) or isinstance(args[0], list)):
-            self.delete_grid_point(args[0], self.root)
+            self.root = self.delete_grid_point(args[0], self.root)
+
         elif len(args) == 2 and isinstance(args[1], Node) and (isinstance(args[0], int) or isinstance(args[0], list)):
             key, node = args
             if (node == None):
                 return None
 
             new_node = Node(key, 1.0, None, None)
-            if key < node.key:
+            if new_node < node:
                 node.left = self.delete_grid_point(key, node.left)
-            elif key > node.key:
+            elif new_node > node:
                 node.right = self.delete_grid_point(key, node.right)
             else:
                 if node.right == None:
@@ -98,9 +101,9 @@ class BST():
                 elif node.left == None:
                     return node.right
                 t = copy.deepcopy(node)
-                node = self.min(t.right)
+                node = copy.deepcopy(self.min(t.right))
                 node.right = self.deleteMin(t.right, None)[0]
-                node.left = t.left
+                node.left = copy.deepcopy(t.left)
 
             return node
 
