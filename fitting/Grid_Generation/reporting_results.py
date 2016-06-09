@@ -1,5 +1,5 @@
 import os
-from fitting.grid_generation import Grid_1D_Generator
+from fitting.grid_generation import grid_1D_generator
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -13,7 +13,7 @@ if __name__ == "__main__":
     effort = 10
     type_of_grid = "CC"
     delayed_seq = np.arange(1, effort + 1)
-    all_grids_obj = Grid_1D_Generator(type_of_grid, effort, delayed_seq)
+    all_grids_obj = grid_1D_generator(type_of_grid, effort, delayed_seq)
 
 
     list_of_colours = ["b", "g", "r", "c", "m", "y", "k", "w"]
