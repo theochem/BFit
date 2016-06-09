@@ -1,5 +1,5 @@
 import copy
-
+import numpy as np
 ####TODO#######
 #  TODO: - Test This code
 #  TODO: - see if the comparisions are right
@@ -9,7 +9,7 @@ import copy
 class BST():
     def __init__(self, index, weight):
         assert type(index) is int or type(index) is list, "index is not an Integer or List: %r" % type(index)
-        assert type(weight) is float, "weight is not a float: %r" % weight
+        assert type(weight) is float or isinstance(weight, np.float64), "weight is not a float: %r" % type(weight)
         assert type(index) is list or index >= 0 , "index should be greater than equal to zero: %r" % index
         self.root = Node(index, weight, None, None)
 
@@ -122,7 +122,7 @@ class BST():
 class Node():
     def __init__(self, index, weight, left, right):
         assert type(index) is int or type(index) is list, "index is not an Integer or a List: %r" % type(index)
-        assert type(weight) is float, "Value is not a float: %r" % weight
+        assert type(weight) is float or isinstance(weight, np.float64), "Value is not a float: %r" % type(weight)
         assert left is None or isinstance(left, Node), "Left is not an None/Node: %r" % left
         assert right is None or isinstance(right, Node), "Right is not an None/Node: %r" % right
 

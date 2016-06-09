@@ -29,10 +29,11 @@ if __name__ == "__main__":
     number_of_points = (be.electron_density.shape[0])
 
 
+
     G = np.empty((number_of_points, number_of_points))
-    for row_index in range(0,number_of_points):
+    for row_index in range(0,number_of_points ):
         for col_index in range(0, number_of_points):
-            G[row_index, col_index] = gaussian(1000000.0, [row_grid_points[col_index]], [row_grid_points[row_index]])
+            G[row_index, col_index] = gaussian(100000., [row_grid_points[col_index]], [row_grid_points[row_index]])
 
     weights = scipy.optimize.nnls(G, np.ravel(be.electron_density))[0]
 
@@ -40,11 +41,14 @@ if __name__ == "__main__":
 
     result = np.dot(G, weights)
     print(result.shape)
-    print(np.trapz(y=np.ravel(column_grid_points**2) * np.ravel(result), x=np.ravel(np.ravel(column_grid_points))))
+    print(np.sum((result > 0)))
+    inte = np.trapz(y=np.ravel(column_grid_points**2) * np.ravel(result), x=np.ravel(np.ravel(column_grid_points)))
+    print(inte)
     print(be.integrated_total_electron_density)
     plt.plot(result)
     plt.plot(be.electron_density)
     plt.show()
+
 
 
 
