@@ -10,6 +10,7 @@ if __name__ == "__main__":
     print(results_dir)
 
 
+
     effort = 10
     type_of_grid = "CC"
     delayed_seq = np.arange(1, effort + 1)

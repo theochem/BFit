@@ -365,7 +365,8 @@ class Fitting():
                 next_choice_of_exponent = np.append(local_parameter[number_of_functions:], best_analytical_parameters[1:])
                 if(np.isnan(next_choice_of_exponent).any()):
                     print("ISNAN IS DEECTED IN GREEDY ALGO")
-                next_list_of_choices_for_exponents.append(next_choice_of_exponent)
+                else:
+                    next_list_of_choices_for_exponents.append(next_choice_of_exponent)
 
             number_of_functions += 1
             local_best_cost_function_value = 1e20
@@ -399,9 +400,9 @@ class Fitting():
             #        ", Num Of Functions: " + str((number_of_functions))
             #self.model_object.plot_atomic_density(np.copy(self.model_object.grid), density_list_for_graph, title, self.model_object.element + "_" + str(counter))
 
-            #if np.where(local_best_parameters == 0.0) == True:
-            #    local_best_parameters = removeZeroFromParameters(local_best_parameters, number_of_functions)
-            #    number_of_functions = np.shape(local_best_parameters)[0]
+            if np.where(local_best_parameters == 0.0) == True:
+                local_best_parameters = removeZeroFromParameters(local_best_parameters, number_of_functions)
+                number_of_functions = np.shape(local_best_parameters)[0]
 
             print("best found", best_cost_function, "integration", integration, "integrate error", integrate_error)
             print("Counter", counter, "number of functions", number_of_functions, "\n")
