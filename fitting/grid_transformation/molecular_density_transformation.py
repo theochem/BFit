@@ -5,7 +5,7 @@ from fitting.fit.GaussianBasisSet import *
 
 ############## TODO LIST #######################
 #TODO: Ask them if they want |R - R_{alpha}| or |R|
-
+#TODO: Add Tests for N-Dimensions
 
 class Molecular_Density_Transformation():
     def __init__(self, molecular_density, coefficients_per_atom, exponents_per_atom, num_of_coordinates, displacement_vector):
@@ -48,6 +48,7 @@ class Molecular_Density_Transformation():
             theta_den = 0
 
             prefactor_exponent = (self.dimension - index_theta) / 2.0
+
             for index_atom in range(0, self.number_of_atoms):
                 coefficient_of_atom = self.coefficients_per_atom[index_atom]
                 exponent_of_atom = self.exponents_per_atom[index_atom]
@@ -56,8 +57,8 @@ class Molecular_Density_Transformation():
                 for index_gaussian in range(0, len(coefficient_of_atom)):
                     prefactor = coefficient_of_atom[index_gaussian] * 0.5 * (np.pi / exponent_of_atom[index_gaussian])**prefactor_exponent
 
-                    if index_atom != 0:
-                        theta_num += prefactor * (erf(np.sqrt(exponent_of_atom[index_gaussian]) * (points_on_real_lines[theta_list] - self.displacement_vector[index_theta])) - 1)
+                    if index_theta == 0:
+                        theta_num += prefactor * (erf(np.sqrt(exponent_of_atom[index_gaussian]) * (points_on_real_lines[index_theta] - self.displacement_vector[index_theta])) + 1)
                     else:
                         norm_of_radius = 0
                         for index_prev_calc_theta in range(0, index_atom):
@@ -66,11 +67,11 @@ class Molecular_Density_Transformation():
                         theta_num -= prefactor * np.exp(-exponent_of_atom[index_gaussian] * norm_of_radius) * \
                                  (erf(np.sqrt(exponent_of_atom[index_gaussian]) * (self.displacement_vector[index_theta] - points_on_real_lines[index_theta]))  - 1)
 
-                        theta_den += (prefactor / 2.0) * np.exp(-exponent_of_atom[index_gaussian] * norm_of_radius)
+                        theta_den += (prefactor) * 2.0 * np.exp(-exponent_of_atom[index_gaussian] * norm_of_radius)
 
             if index_theta == 0:
                 theta_den = self.integration_of_molecular_density_over_space()
-            print(theta_num, theta_den)
+            #print("num", theta_num, "den", theta_den)
             theta_list[index_theta] = theta_num / theta_den
 
         return theta_list
