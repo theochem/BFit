@@ -26,24 +26,24 @@ class BST():
 
     def put_grid_point(self, *args):
         if len(args) == 2 and (isinstance(args[0], int) or isinstance(args[0], list)) and isinstance(args[1], float):
-            self.root = self.put_grid_point(args[0], args[1], self.root)
+            self.root, new_pt = self.put_grid_point(args[0], args[1], self.root)
+            return new_pt
         elif len(args) == 3 and args[2] is None or isinstance(args[2], Node):
             key = args[0]
             value = args[1]
             new_node = Node(key, value, None, None)
             node = args[2]
             if(node == None):
-                return Node(key, value, None, None)
+                return Node(key, value, None, None), False
 
             if new_node < node:
-                node.left = self.put_grid_point( key, value, node.left)
+                node.left = self.put_grid_point( key, value, node.left)[0]
             elif new_node > node:
-                node.right = self.put_grid_point( key, value, node.right)
+                node.right = self.put_grid_point( key, value, node.right)[0]
             elif new_node == node:
                 node.value += value
-            else:
-                return None
-            return (node)
+                return node, False
+            return (node), True
         else:
             raise TypeError('Type of Arguments should formatted as (int, float) '
                             'or (int, float, Node), but the input is %r' % [type(x) for x in args]  )
@@ -71,12 +71,13 @@ class BST():
 
     def deleteMin(self, *args):
         if len(args) == 0:
-            self.root = self.deleteMin(self.root, None)[0]
-
+            self.root, minimum = self.deleteMin(self.root, None)
+            return minimum
         elif len(args) == 2 and isinstance(args[0], Node) and (isinstance(args[1], type(None)) or isinstance(args[1], Node)):
             if args[0].left == None:
                 return args[0].right, args[0]
             args[0].left, mininum = self.deleteMin(args[0].left, args[1])
+
             return args[0], mininum
         else:
             raise TypeError("Type of Arguments should formatted as nothing or (Node, Node/None), but the input is %r" % [type(x) for x in args])
@@ -110,6 +111,19 @@ class BST():
 
         else:
             raise TypeError('Type of Arguments should be either (int) or (int, Node)')
+
+    def remove_grid_pt(self, node):
+        if node == None:
+            print("remove_grid_pt node is None")
+            return None
+        elif node.left != None:
+            return self.remove_grid_pt(node.left)
+        elif node.right != None:
+            return self.remove_grid_pt(node.right)
+        else:
+            temp_key, temp_value = copy.deepcopy(node.key), node.value
+            self.delete_grid_point(node.key)
+            return temp_key, temp_value
 
     def printNode(self, node):
         if node.left != None:

@@ -56,7 +56,14 @@ class Grid_1D():
 
 
     def generate_rectangle_1D_grid(self, num_of_points):
-        pass
+        grid_1D = np.empty(num_of_points)
+        weights_1D = np.empty(num_of_points)
+        n_plus_one = num_of_points + 1
+        for x in range(1, num_of_points + 1):
+            weights_1D[x - 1] = 1.0 / n_plus_one
+            grid_1D[x - 1] = x / n_plus_one
+        return grid_1D, weights_1D
+
 
     @staticmethod
     def get_clenshaw_curtis_1D_grid_object(delayed_sequence_number, effort):
@@ -76,10 +83,10 @@ class Grid_1D():
 
     @staticmethod
     def get_rectangle_1D_grid(delayed_sequence_number, effort):
-        assert type(delayed_sequence_number) is int, "delayed_sequence_number is not an Integer: %r" % delayed_sequence_number
+        #assert type(delayed_sequence_number) is int, "delayed_sequence_number is not an Integer: %r" % delayed_sequence_number
 
         type_of_grid = "RR"
-        num_of_points = 2**(delayed_sequence_number) - 1
+        num_of_points = int(2**(delayed_sequence_number)) - 1
 
         return Grid_1D(type_of_grid, num_of_points, effort)
 

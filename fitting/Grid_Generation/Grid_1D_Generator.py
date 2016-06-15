@@ -17,6 +17,7 @@ class Grid_1D_Generator():
 
         self.labels_of_all_1D_grids = copy.deepcopy(self.all_1D_grid_objs[self.effort - 1].grid_1D)
         self.max_num_of_pts_of_all_1D_grids = Grid_1D.max_num_of_pts_of_all_1D_grids
+        assert self.max_num_of_pts_of_all_1D_grids == len(self.labels_of_all_1D_grids)
         Grid_1D.max_num_of_pts_of_all_1D_grids = 0 #Set to 0 to use another generator again
 
 

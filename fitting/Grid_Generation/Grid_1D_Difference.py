@@ -19,12 +19,12 @@ class Grid_1D_Difference():
         self.all_weights_for_1D_difference = np.empty(shape=(self.all_grids_obj.effort,), dtype=object)
 
 
-    def generate_difference_for_weights(self, index_of_grid):
-        grid_i_obj = self.all_grids_obj.all_1D_grid_objs[index_of_grid]
+    def generate_difference_for_weights(self, effort):
+        grid_i_obj = self.all_grids_obj.all_1D_grid_objs[effort]
         grid_i = grid_i_obj.grid_1D
         weight_i = grid_i_obj.weights_1D
 
-        grid_i_min_1_obj = self.all_grids_obj.all_1D_grid_objs[index_of_grid]
+        grid_i_min_1_obj = self.all_grids_obj.all_1D_grid_objs[effort - 1]
         grid_i_min_1 = grid_i_min_1_obj.grid_1D
         weight_i_min_1 = grid_i_min_1_obj.weights_1D
 
