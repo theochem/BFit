@@ -78,12 +78,12 @@ class Molecular_Density_Transformation():
 
 
 if __name__ == "__main__":
-    ELEMENT = "BE"
-    ATOMIC_NUMBER = 4
-    file_path = r"C:\Users\Alireza\PycharmProjects\fitting\fitting\data\examples\\" + ELEMENT + ".slater"
+    ELEMENT = "B"
+    ATOMIC_NUMBER = 5
+    file_path = r"C:\Users\Alireza\PycharmProjects\fitting\fitting\data\examples\\" + ELEMENT
 
-    ELEMENT_2 = "cl"
-    ATOMIC_NUMBER_2 = 17
+    ELEMENT_2 = "F"
+    ATOMIC_NUMBER_2 = 9
     file_path_2 = r"C:\Users\Alireza\PycharmProjects\fitting\fitting\data\examples\\" + ELEMENT_2
 
     #Create Grid for the modeling
@@ -99,6 +99,22 @@ if __name__ == "__main__":
     # Create a total gaussian basis set
     be = GaussianTotalBasisSet(ELEMENT, column_grid_points, file_path)
     fitting_object = Fitting(be)
+
+    flu = GaussianTotalBasisSet(ELEMENT_2, column_grid_points, file_path_2)
+    fitting_object_flu = Fitting(flu)
+
+    with open(r"C:\Users\Alireza\PycharmProjects\fitting\fitting\QTAIM\parameters.txt", 'w') as f:
+        f.write(ELEMENT_2)
+
+        parameters = fitting_object_flu.forward_greedy_algorithm(2.0, 0.01, flu.electron_density, maximum_num_of_functions=30)[0]
+        f.write(str(parameters))
+        f.write(" ")
+
+        f.write(ELEMENT)
+        parameters_be = fitting_object.forward_greedy_algorithm(2.0, 14, be.electron_density, maximum_num_of_functions=30)[0]
+        f.write(str(parameters_be))
+
+    """
     cofactor_matrix = be.create_cofactor_matrix(be.UGBS_s_exponents)
     coeff = fitting_object.optimize_using_nnls(cofactor_matrix)
     coeff_exp = fitting_object.optimize_using_l_bfgs(np.concatenate((coeff, be.UGBS_s_exponents)), len(coeff))
@@ -116,6 +132,7 @@ if __name__ == "__main__":
     molecular_dens = Molecular_Density_Transformation(elec_dens, np.reshape(coeff_exp[:len(coeff)], (-1, len(coeff))), np.reshape(coeff_exp[len(coeff):], (-1, len(coeff))), 2, np.array([0 for x in range(0, len(coeff))]))
     print(molecular_dens.integration_of_molecular_density_over_space())
     print(molecular_dens.new_weights(row_grid_points))
+    """
 
 
 

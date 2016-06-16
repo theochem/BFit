@@ -388,6 +388,7 @@ class Fitting():
                 best_cost_function = local_best_cost_function_value
                 global_best_parameters = local_best_parameters
 
+
             model = self.model_object.create_model(local_best_parameters, number_of_functions)
             integrate_error = self.model_object.measure_error_by_integration_of_difference(chosen_electron_density, model)
             integration = self.model_object.integrate_model_using_trapz(model)
