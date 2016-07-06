@@ -64,7 +64,7 @@ class Test_Molecular_Density_Transformation_One_Atom(unittest.TestCase):
         ####### 1-Dimension ##############
         ##################################
         self.molecular_dens_25_coeffs.dimension = 1
-        one_d_integration = self.molecular_dens_25_coeffs.integrate_of_one_gaussian_over_reals(gaussian_coefficient, gaussian_exponent)
+        one_d_integration = self.molecular_dens_25_coeffs.integrate_a_gaussian_over_the_reals(gaussian_coefficient, gaussian_exponent)
         scipy_integrate = quad(lambda  x: gaussian_coefficient * np.exp(-gaussian_exponent * x**2), -np.inf, np.inf)
         assert np.abs(one_d_integration - scipy_integrate[0]) < 1e-8
 
@@ -72,7 +72,7 @@ class Test_Molecular_Density_Transformation_One_Atom(unittest.TestCase):
         ###### 2-Dimensions ###############
         ###################################
         self.molecular_dens_25_coeffs.dimension = 2
-        one_d_integration = self.molecular_dens_25_coeffs.integrate_of_one_gaussian_over_reals(gaussian_coefficient, gaussian_exponent)
+        one_d_integration = self.molecular_dens_25_coeffs.integrate_a_gaussian_over_the_reals(gaussian_coefficient, gaussian_exponent)
         scipy_integraiton = dblquad(lambda x, y : gaussian_coefficient * np.exp(-gaussian_exponent * np.sqrt(x**2 + y**2)**2), -np.inf, np.inf, lambda x: -np.inf, lambda x: np.inf)
         assert np.abs(one_d_integration - scipy_integraiton[0]) < 1e-8
 
@@ -80,7 +80,7 @@ class Test_Molecular_Density_Transformation_One_Atom(unittest.TestCase):
         ###### 3-Dimensions ###############
         ###################################
         self.molecular_dens_25_coeffs.dimension = 3
-        one_d_integration = self.molecular_dens_25_coeffs.integrate_of_one_gaussian_over_reals(gaussian_coefficient, gaussian_exponent)
+        one_d_integration = self.molecular_dens_25_coeffs.integrate_a_gaussian_over_the_reals(gaussian_coefficient, gaussian_exponent)
 
         scipy_integraiton = tplquad(lambda x, y, z : gaussian_coefficient * np.exp(-gaussian_exponent * np.sqrt(x**2 + y**2 + z**2)**2),
                                                                                    -np.inf, np.inf, lambda x: -np.inf, lambda  x: np.inf,
@@ -95,7 +95,7 @@ class Test_Molecular_Density_Transformation_One_Atom(unittest.TestCase):
         ##############################
         ####### 2-Dimensions #########
         ##############################
-        integration_2_d_space = self.molecular_dens_25_coeffs.integration_of_molecular_density_over_space()
+        integration_2_d_space = self.molecular_dens_25_coeffs.integrate_promolecular_density
 
         analytically_sol = 0
         coefficients_atom = self.molecular_dens_25_coeffs.coefficients_per_atom[0]
@@ -115,7 +115,7 @@ class Test_Molecular_Density_Transformation_One_Atom(unittest.TestCase):
         ####### 1-Dimensions #########
         ##############################
         self.molecular_dens_25_coeffs.dimension = 1
-        integration_1_d_space = self.molecular_dens_25_coeffs.integration_of_molecular_density_over_space()
+        integration_1_d_space = self.molecular_dens_25_coeffs.integrate_promolecular_density
 
         analytically_sol = 0
         for index_gaussian in range(0, len(coefficients_atom)):
@@ -132,7 +132,7 @@ class Test_Molecular_Density_Transformation_One_Atom(unittest.TestCase):
         ####### 3-Dimensions #########
         ##############################
         self.molecular_dens_25_coeffs.dimension = 3
-        integration_3_d_space = self.molecular_dens_25_coeffs.integration_of_molecular_density_over_space()
+        integration_3_d_space = self.molecular_dens_25_coeffs.integrate_promolecular_density
 
         analytically_sol = 0
         for index_gaussian in range(0, len(coefficients_atom)):
