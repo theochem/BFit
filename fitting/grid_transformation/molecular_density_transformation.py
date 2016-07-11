@@ -15,7 +15,7 @@ class Molecular_Density_Transformation():
     """
     Given a specified pro-molecular density
     composed of gaussian-type function. Transform
-    the integration of the density from the reals
+    the integration of the density over the reals
     to integration over the unit hyper-cube.
 
     Attributes
@@ -44,8 +44,14 @@ class Molecular_Density_Transformation():
 
     Methods
     -------
-    transform_coordinates_to_hyper_cube :
-    transform_entire_grid_to_hyper_cube :
+    transform_coordinates_to_hyper_cube : float
+                                          Converts a real vector to its
+                                          corresponding value inside a hypercube
+
+    transform_entire_grid_to_hyper_cube : array_like
+                                          Converts all vectors inside the array
+                                          to it's corresponding value inside
+                                          a hypercube
 
     Notes
     -----
@@ -59,10 +65,12 @@ class Molecular_Density_Transformation():
         assert np.all(coefficients_per_atom >= 0.), "coefficients should all be non-zero positive numbers"
         assert np.all(exponents_per_atom >= 0.), "exponents should all be non-zero positive numbers"
         assert isinstance(exponents_per_atom, np.ndarray), "exponents_per_atom should be a numpy array: %r" % type(exponents_per_atom)
-        assert type(dimension_of_coordinates) is int, "The number of coordinates should be of type integer: %r" % type(dimension_of_coordinates)
+        assert type(dimension_of_coordinates) is int, "The dimension of the coordinates should be of type integer: %r" % type(dimension_of_coordinates)
         assert isinstance(displacement_vector, np.ndarray), "The displacement vector should be a numpy array: %r" % type(displacement_vector)
-        assert coefficients_per_atom.ndim == 2, "Coefficients per atoms should be in a MxN matrix where M = corresponding atom and N = atom's exponents"
-        assert exponents_per_atom.ndim == 2, "Exponents per atoms should be in a MxN matrix where M = corresponding atom and N = atom's exponents"
+        assert coefficients_per_atom.ndim == 2, \
+            "Coefficients per atoms should be in a MxN matrix where M = corresponding atom and N = # of atom's exponents"
+        assert exponents_per_atom.ndim == 2, \
+            "Exponents per atoms should be in a MxN matrix where M = corresponding atom and N = # of atom's exponents"
         assert dimension_of_coordinates in [1, 2, 3], "Number of coordinates should be 1 or 2 or 3: %r" % dimension_of_coordinates
         assert coefficients_per_atom.shape[0] > 0. and coefficients_per_atom.shape[1] > 0., "Coefficients_per_atom cannot be empty"
         assert exponents_per_atom.shape[0] > 0. and exponents_per_atom.shape[1] > 0., "Exponents_per_atom cannot be empty"
@@ -141,7 +149,7 @@ class Molecular_Density_Transformation():
 
         Returns
         -------
-        new_coordinates : float array_like
+        new_coordinates : array_like
                           The transformed vector where each
                           element should be between 0 and 1
 
@@ -165,7 +173,7 @@ class Molecular_Density_Transformation():
 
         Notes
         ---------
-        [1] Juan I Rodriguez, David C. Thompson, James S. M. Anderson,
+        ..  [1] Juan I Rodriguez, David C. Thompson, James S. M. Anderson,
             Jordan W Thomson and Paul W Ayers, "A physically motivated
             sparse cubature scheme with applications to molecular
             density-functional theory"
@@ -214,6 +222,19 @@ class Molecular_Density_Transformation():
 
         Parameters
         ----------
+        prefactor : float
+
+
+        exponent : float
+
+
+        norm_of_radius : float
+
+
+        coordinate : array_like
+
+
+        index : int
 
 
         Returns
@@ -224,6 +245,10 @@ class Molecular_Density_Transformation():
         --------
         transform_coordinates_to_hyper_cube : used in this function to convert coordinate to
                                                 be in a hyper-cube
+
+        Notes
+        -----
+
         """
         if index == 0:
             return prefactor * (erf(np.sqrt(exponent) * (coordinate - self.displacement_vector[index])) + 1)

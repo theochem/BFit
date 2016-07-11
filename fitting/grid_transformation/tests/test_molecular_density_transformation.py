@@ -6,7 +6,7 @@ from fitting.fit.model import Fitting
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from scipy.integrate import quad, dblquad, tplquad, nquad, trapz
+from nose.plugins.attrib import attr
 
 class Default_Molecular_Density_Transformation_One_Be_Atom(unittest.TestCase):
     def set_up_grid(self):
@@ -72,6 +72,7 @@ class Test_Integration_of_One_Gaussian_Function(Default_Molecular_Density_Transf
         scipy_integration = dblquad(lambda x, y : gaussian_coefficient * np.exp(-gaussian_exponent * np.sqrt(x**2 + y**2)**2), -np.inf, np.inf, lambda x: -np.inf, lambda x: np.inf)
         assert np.abs(two_d_integration - scipy_integration[0]) < 1e-8
 
+    @attr(speed='slow')
     def test_3D_integration_one_gaussian(self):
         gaussian_coefficient = self.coeffs_25[int(np.random.random() * 25)]
         gaussian_exponent = self.exps_25[int(np.random.random() * 25)]
@@ -118,6 +119,7 @@ class Test_Integration_of_ProMolecular_Density(Default_Molecular_Density_Transfo
                                       -np.inf, np.inf, lambda x: -np.inf, lambda x: np.inf)[0]
         assert np.abs(scipy_solution - integration_2_d_space) < 1e-9
 
+    @attr(speed="slow")
     def test_3D_integration_of_promolecular_density(self):
         self.molecular_dens_25_coeffs.dimension = 3
         integration_3_d_space = self.molecular_dens_25_coeffs.integrate_promolecular_density()
@@ -129,13 +131,13 @@ class Test_Integration_of_ProMolecular_Density(Default_Molecular_Density_Transfo
         assert integration_3_d_space == analytically_sol
 
         #Scipy Solution
-        #scipy_solution = 0
-        #for index_gaussian in range(0, len(coefficients_atom)):
-        #    if coefficients_atom[index_gaussian] != 0.0 and exponents_atom[index_gaussian] != 0.0:
-        #        scipy_solution += tplquad(lambda x, y, z : coefficients_atom[index_gaussian] * np.exp(-exponents_atom[index_gaussian] * np.sqrt(x**2 + y**2 + z**2)**2),
-        #                                                                               -np.inf, np.inf, lambda x: -np.inf, lambda  x: np.inf,
-        #                                                                               lambda x, y: -np.inf, lambda x , y:np.inf)[0]
-        #assert np.abs(scipy_solution - integration_3_d_space) < 1e-4
+        scipy_solution = 0
+        for index_gaussian in range(0, len(self.coeffs_25)):
+            if self.coeffs_25[index_gaussian] != 0.0 and self.coeffs_25[index_gaussian] != 0.0:
+                scipy_solution += tplquad(lambda x, y, z : self.coeffs_25[index_gaussian] * np.exp(-self.exps_25[index_gaussian] * np.sqrt(x**2 + y**2 + z**2)**2),
+                                                                                       -np.inf, np.inf, lambda x: -np.inf, lambda  x: np.inf,
+                                                                                       lambda x, y: -np.inf, lambda x , y:np.inf)[0]
+        assert np.abs(scipy_solution - integration_3_d_space) < 1e-4
 
 class Test_Helper_Functions_for_Transformation_Coords(Default_Molecular_Density_Transformation_One_Be_Atom):
     def test_norm_one_dimension(self):
@@ -350,6 +352,7 @@ class Test_Molecular_Density_Transformation_One_Be_Atom(Default_Molecular_Densit
 
             assert  np.abs(theta_2 - scipy_solution_theta2_num / scipy_solution_theta2_den) < 1e-2
 
+    @attr(speed="slow")
     def test_new_thetas_two_basis_funcs_three_dimensions(self):
         self.molecular_dens_2_coeffs.dimension = 3
         self.molecular_dens_2_coeffs.displacement_vector = [.0, .0, .0]

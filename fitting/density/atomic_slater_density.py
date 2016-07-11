@@ -57,6 +57,7 @@ class Atomic_Density():
         self.GRID = grid
         self.ALL_SLATOR_ORBITALS = self.slator_dict()
 
+
     def slator_type_orbital(self, exponent, quantumNum, r):
         """
         Computes the Slator Type Orbital equation.
@@ -70,8 +71,7 @@ class Atomic_Density():
         assert exponent.shape[1] == 1
         assert quantumNum.shape[1] == 1
         #assert r.shape[1] == 1
-
-        normalization = ((2 * exponent)**quantumNum) * np.sqrt(((2 * exponent) / scipy.misc.factorial(2 * quantumNum)))
+        normalization = ((2 * exponent)**quantumNum) * np.sqrt((2 * exponent) / scipy.misc.factorial(2 * quantumNum))
         assert normalization.shape == exponent.shape
         pre_factor = np.transpose(r ** (np.ravel(quantumNum) - 1))
         slater =  pre_factor * (np.exp(-exponent * np.transpose(r)))
@@ -94,6 +94,7 @@ class Atomic_Density():
             basis_numbers = self.VALUES['basis_numbers'][subshell]
             slater = self.slator_type_orbital(exponents, basis_numbers, self.GRID)
             dict_orbital[subshell] = np.transpose(slater)
+
         return dict_orbital
 
     def all_coeff_matrix(self, subshell):
@@ -119,7 +120,6 @@ class Atomic_Density():
                 counter += 1;
             else:
                 array_coeffs = np.concatenate((array_coeffs, self.VALUES['orbitals_coeff'][key]), axis = 1)
-
         return array_coeffs
 
     def phi_LCAO(self, subshell):
