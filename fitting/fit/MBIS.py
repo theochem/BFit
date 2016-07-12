@@ -5,20 +5,25 @@ from scipy.integrate import simps, trapz
 import numpy as np
 
 def update_coefficients(initial_coeffs, constant_exponents, electron_density, grid):
+    assert np.all(initial_coeffs > 0) == True
     assert len(initial_coeffs) == len(constant_exponents)
+    assert len(np.ravel(electron_density)) == len(np.ravel(grid))
 
     exponential = np.exp(-constant_exponents * np.power(grid, 2.))
+    assert exponential.shape[1] == len(constant_exponents)
+    assert exponential.shape[0] == len(np.ravel(grid))
     gaussian_density = np.dot(exponential, initial_coeffs)
+    assert gaussian_density.shape[0] == len(np.ravel(grid))
 
     masked_gaussian_density = np.ma.asarray(gaussian_density)
     masked_electron_density = np.ma.asarray(np.ravel(electron_density))
-    print(gaussian_density.shape, len(initial_coeffs))
+
     new_coefficients = np.empty(len(initial_coeffs))
     for i in range(0, len(initial_coeffs)):
-        prefactor = initial_coeffs[i] * (constant_exponents[i] / np.pi)**(3/2)
+        factor = initial_coeffs[i] * (constant_exponents[i] / np.pi)**(3/2)
         integrand = masked_electron_density * np.ravel(np.ma.asarray(np.exp(- constant_exponents[i] * np.power(grid, 2.))))\
                     / masked_gaussian_density
-        new_coefficients[i] = prefactor * np.trapz(y=integrand, x=np.ravel(grid))
+        new_coefficients[i] = factor * np.trapz(y=integrand, x=np.ravel(grid))
     return new_coefficients
 
 if __name__ == "__main__":

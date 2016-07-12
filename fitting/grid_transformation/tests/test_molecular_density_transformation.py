@@ -4,6 +4,9 @@ from fitting.grid_transformation.molecular_density_transformation import Molecul
 from fitting.density.radial_grid import Radial_Grid
 from fitting.fit.model import Fitting
 import numpy as np
+from scipy.integrate import quad, dblquad, tplquad
+import sympy as sp
+from sympy.abc import a, b, c, d, r, x, y, z
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from nose.plugins.attrib import attr
@@ -175,129 +178,183 @@ class Test_Helper_Functions_for_Transformation_Coords(Default_Molecular_Density_
         norm_value = self.molecular_dens_25_coeffs.get_norm(x_value, index)
         assert norm_value == (52. - 10.)**2 + (25. + 12.)**2
 
-    def test_numerator_of_transformation_one_dimension(self):
-        #scipy solution
+class Test_Numerator_Of_Transformation_Method_In_One_Dimensions(Default_Molecular_Density_Transformation_One_Be_Atom):
+    def check_numerator_of_transformation_one_dimension(self, point):
+        """This test is done using sympy
+        """
         self.molecular_dens_2_coeffs.dimension = 1
         self.molecular_dens_2_coeffs.displacement_vector = [1.]
 
-        upper_bound = 0.00000000001
+        coordinate = upper_bound = point
         number_of_coefficients = 2
-        scipy_solution = 0
         coefficients = self.molecular_dens_2_coeffs.coefficients_per_atom[0]
         exponents = self.molecular_dens_2_coeffs.exponents_per_atom[0]
 
-        from scipy import integrate
-        for i in range(0, number_of_coefficients):
-            print(exponents, coefficients)
-            scipy_solution += quad(lambda x: coefficients[i] * np.exp(-exponents[i] * (x - self.molecular_dens_2_coeffs.displacement_vector[0])**2),
-                               -np.inf, upper_bound)[0]
+        ################
+        #Sympy Solution
+        ################
+        func_1 = coefficients[0] * sp.exp(- exponents[0] * (x - self.molecular_dens_2_coeffs.displacement_vector[0])**2)
+        func_2 = coefficients[1] * sp.exp(- exponents[1] * (x - self.molecular_dens_2_coeffs.displacement_vector[0])**2)
+        sympy_solution = sp.integrate(func_1, (x, -sp.oo, upper_bound)).evalf() +  sp.integrate(func_2, (x, -sp.oo, upper_bound)).evalf()
 
+        #####################
+        #Analytical Solution
+        #####################
         prefactor_1 = coefficients[0] * 0.5 * np.sqrt(np.pi / exponents[0])
         prefactor_2 = coefficients[1] * 0.5 * np.sqrt(np.pi / exponents[1])
         coordinate = upper_bound
         norm_of_radius_1 = (coordinate - self.molecular_dens_2_coeffs.displacement_vector[0])**2
         index = 0
-        analytical_solution = self.molecular_dens_2_coeffs.get_numerator_for_conditional_distribution(prefactor_1, exponents[0], coordinate, norm_of_radius_1, index)
-        analytical_solution += self.molecular_dens_2_coeffs.get_numerator_for_conditional_distribution(prefactor_2, exponents[1], coordinate, norm_of_radius_1, index)
-        print(analytical_solution, scipy_solution)
+        analytical_solution = self.molecular_dens_2_coeffs.get_numerator_for_conditional_distribution(prefactor_1, exponents[0], norm_of_radius_1, coordinate, index)
+        analytical_solution += self.molecular_dens_2_coeffs.get_numerator_for_conditional_distribution(prefactor_2, exponents[1], norm_of_radius_1,coordinate, index)
+
+        assert np.abs(analytical_solution - sympy_solution) < 1e-4
+
+    def test_numerator_of_transformation_one_dimension_positive_big_number(self):
+        number = 10000.0
+        self.check_numerator_of_transformation_one_dimension(number)
+
+    def test_numerator_of_transformation_one_dimension_positive_small_number(self):
+        number = 0.005
+        self.check_numerator_of_transformation_one_dimension(number)
+
+    def test_numerator_of_transformation_one_dimension_negative_big_number(self):
+        number = -10000.0
+        self.check_numerator_of_transformation_one_dimension(number)
+
+    def test_numerator_of_transformation_one_dimension_negative_small_number(self):
+        number = -0.00005
+        self.check_numerator_of_transformation_one_dimension(number)
+
+class Test_Numerator_Of_Transformation_Method_In_Two_Dimensions(Default_Molecular_Density_Transformation_One_Be_Atom):
+    def check_numerator_of_transformation_two_dimensions(self, point):
+        self.molecular_dens_2_coeffs.dimension = 2
+        self.molecular_dens_2_coeffs.displacement_vector = [1., 2.]
+        coefficients = self.molecular_dens_2_coeffs.coefficients_per_atom[0]
+        exponents = self.molecular_dens_2_coeffs.exponents_per_atom[0]
+
+        ####################
+        # Sympy Solution
+        ####################
+        func_1 = coefficients[0] * sp.exp(- exponents[0] * ((x - self.molecular_dens_2_coeffs.displacement_vector[0])**2 + (y - self.molecular_dens_2_coeffs.displacement_vector[1])**2))
+        func_2 = coefficients[1] * sp.exp(- exponents[1] * ((x - self.molecular_dens_2_coeffs.displacement_vector[0])**2 + (y - self.molecular_dens_2_coeffs.displacement_vector[1])**2))
+        transformed_point_x = sp.integrate(func_1, (x, -sp.oo, point[0]), (y, -sp.oo, sp.oo)) + sp.integrate(func_2, (x, -sp.oo, point[0]), (y, -sp.oo, sp.oo))
+
+        func_1_at_new_point = coefficients[0] * sp.exp(- exponents[0] * ((transformed_point_x - self.molecular_dens_2_coeffs.displacement_vector[0])**2 \
+                                                                         + (y - self.molecular_dens_2_coeffs.displacement_vector[1])**2))
+        func_2_at_new_point = coefficients[1] * sp.exp(- exponents[1] * ((transformed_point_x - self.molecular_dens_2_coeffs.displacement_vector[0])**2 \
+                                                                         + (y - self.molecular_dens_2_coeffs.displacement_vector[1])**2))
+        transformed_point_y = sp.integrate(func_1_at_new_point, (y, -sp.oo, point[1])) + sp.integrate(func_2_at_new_point, (y, -sp.oo, point[1]))
+
+        #print(sp.integrate(c*sp.exp(-a *((x - self.molecular_dens_2_coeffs.displacement_vector[0])**2 + (y-self.molecular_dens_2_coeffs.displacement_vector[1])**2)), (x, y)))
+
+        #####################
+        # Analytical Solution
+        #####################
+        prefactor_1 = coefficients[0] * 0.5 * (np.pi / exponents[0])
+        prefactor_2 = coefficients[1] * 0.5 * (np.pi / exponents[1])
+        prefactor_1_y = coefficients[0] * 0.5 * (np.pi / exponents[0])**(1/2)
+        prefactor_2_y = coefficients[1] * 0.5 * (np.pi / exponents[1])**(1/2)
+
+        norm_of_radius_1 = (point[0] - self.molecular_dens_2_coeffs.displacement_vector[0])**2 + (point[1] - self.molecular_dens_2_coeffs.displacement_vector[1])**2
+        point_x = self.molecular_dens_2_coeffs.get_numerator_for_conditional_distribution(prefactor_1, exponents[0], norm_of_radius_1, point[0], 0)
+        point_x += self.molecular_dens_2_coeffs.get_numerator_for_conditional_distribution(prefactor_2, exponents[1], norm_of_radius_1, point[0], 0)
+
+        norm_of_radius_1 = (point_x - self.molecular_dens_2_coeffs.displacement_vector[0])**2 + (point[1] - self.molecular_dens_2_coeffs.displacement_vector[1])**2
+        point_y = self.molecular_dens_2_coeffs.get_numerator_for_conditional_distribution(prefactor_1_y, exponents[0], norm_of_radius_1, point[1], 1)
+        point_y += self.molecular_dens_2_coeffs.get_numerator_for_conditional_distribution(prefactor_2_y, exponents[1], norm_of_radius_1, point[1], 1)
+
+        assert np.abs(point_x - transformed_point_x.evalf()) < 1e-5
+        assert  np.abs(point_y - transformed_point_y.evalf()) < 1e-5
+
+    def test_numerator_of_transformed_two_dimensions_big_x_vector(self):
+        point = [1000., 3.]
+        self.check_numerator_of_transformation_two_dimensions(point)
+
+    def test_numerator_of_transformed_two_dimensions_big_y_vector(self):
+        point = [3., 1000.]
+        self.check_numerator_of_transformation_two_dimensions(point)
+
+    def test_numerator_of_transformation_two_dimensions_big_vector(self):
+        point = [2000., 1000.]
+        self.check_numerator_of_transformation_two_dimensions(point)
+
+    def test_numerator_of_transformation_two_dimensions_small_vector(self):
+        point = [0.05, 0.5]
+        self.check_numerator_of_transformation_two_dimensions(point)
+
+    def test_numerator_of_transformation_two_dimensions_neg_big_vector(self):
+        point = [-1000., -2000.]
+        self.check_numerator_of_transformation_two_dimensions(point)
+
+    def test_numerator_of_transformation_two_dimensions_neg_small_vector(self):
+        point = [-0.5, -0.001]
+        self.check_numerator_of_transformation_two_dimensions(point)
+
+class Test_Numerator_Of_Transformation_Method_In_Three_Dimensions(Default_Molecular_Density_Transformation_One_Be_Atom):
+    @attr(speed="slow")
+    def test_numerator_of_transformation_in_three_dimensions(self):
+        self.molecular_dens_2_coeffs.dimension = 3
+        self.molecular_dens_2_coeffs.displacement_vector = [1., 2., 5.]
+        coefficients = self.molecular_dens_2_coeffs.coefficients_per_atom[0]
+        exponents = self.molecular_dens_2_coeffs.exponents_per_atom[0]
+        point = [10., 20., 5.]
+        ####################
+        # Sympy Solution
+        ####################
+        func_1 = coefficients[0] * sp.exp(- exponents[0] * ((x - self.molecular_dens_2_coeffs.displacement_vector[0])**2 + (y - self.molecular_dens_2_coeffs.displacement_vector[1])**2\
+            + (z - self.molecular_dens_2_coeffs.displacement_vector[2])**2))
+        func_2 = coefficients[1] * sp.exp(- exponents[1] * ((x - self.molecular_dens_2_coeffs.displacement_vector[0])**2 + (y - self.molecular_dens_2_coeffs.displacement_vector[1])**2)\
+            + (z - self.molecular_dens_2_coeffs.displacement_vector[2])**2)
+        transformed_point_x = sp.integrate(func_1, (x, -sp.oo, point[0]), (y, -sp.oo, sp.oo), (z, -sp.oo, sp.oo)) + sp.integrate(func_2, (x, -sp.oo, point[0]), (y, -sp.oo, sp.oo),
+            (z, -sp.oo, sp.oo))
+
+        func_1_at_new_x_point = coefficients[0] * sp.exp(- exponents[0] * ((transformed_point_x - self.molecular_dens_2_coeffs.displacement_vector[0])**2 \
+                                                                         + (y - self.molecular_dens_2_coeffs.displacement_vector[1])**2 \
+                                                                         + (z - self.molecular_dens_2_coeffs.displacement_vector[2])**2))
+        func_2_at_new_x_point = coefficients[1] * sp.exp(- exponents[1] * ((transformed_point_x - self.molecular_dens_2_coeffs.displacement_vector[0])**2 \
+                                                                         + (y - self.molecular_dens_2_coeffs.displacement_vector[1])**2 \
+                                                                         + (z - self.molecular_dens_2_coeffs.displacement_vector[2])**2))
+        transformed_point_y = sp.integrate(func_1_at_new_x_point, (y, -sp.oo, point[1]), (z, -sp.oo, sp.oo)) + sp.integrate(func_2_at_new_x_point, (y, -sp.oo, point[1]), (z, -sp.oo, sp.oo))
+
+        func_1_at_new_y_point = coefficients[0] * sp.exp(- exponents[0] * ((transformed_point_x - self.molecular_dens_2_coeffs.displacement_vector[0])**2 \
+                                                                         + (transformed_point_y - self.molecular_dens_2_coeffs.displacement_vector[1])**2 \
+                                                                         + (z - self.molecular_dens_2_coeffs.displacement_vector[2])**2))
+        func_2_at_new_y_point = coefficients[1] * sp.exp(- exponents[1] * ((transformed_point_x - self.molecular_dens_2_coeffs.displacement_vector[0])**2 \
+                                                                         + (transformed_point_y - self.molecular_dens_2_coeffs.displacement_vector[1])**2 \
+                                                                         + (z - self.molecular_dens_2_coeffs.displacement_vector[2])**2))
+        transformed_point_z = sp.integrate(func_1_at_new_y_point, (z, -sp.oo, point[2])) + sp.integrate(func_2_at_new_y_point, -sp.oo, point[2])
+
+        ###################
+        # Analytical Sol
+        ###################
+        prefactor_1_x = coefficients[0] * 0.5 * (np.pi / exponents[0])**(3/2)
+        prefactor_2_x = coefficients[1] * 0.5 * (np.pi / exponents[1])**(3/2)
+        prefactor_1_y = coefficients[0] * 0.5 * (np.pi / exponents[0])
+        prefactor_2_y = coefficients[1] * 0.5 * (np.pi / exponents[1])
+        prefactor_1_z = coefficients[0] * 0.5 * (np.pi / exponents[0])**(1/2)
+        prefactor_2_z = coefficients[1] * 0.5 * (np.pi / exponents[1])**(1/2)
+
+        norm_of_radius_1 = (point[0] - self.molecular_dens_2_coeffs.displacement_vector[0])**2 + (point[1] - self.molecular_dens_2_coeffs.displacement_vector[1])**2 \
+                        + (point[2] - self.molecular_dens_2_coeffs.displacement_vector[2])**2
+        point_x = self.molecular_dens_2_coeffs.get_numerator_for_conditional_distribution(prefactor_1_x, exponents[0], norm_of_radius_1, point[0], 0)
+        point_x += self.molecular_dens_2_coeffs.get_numerator_for_conditional_distribution(prefactor_2_x, exponents[1], norm_of_radius_1, point[0], 0)
+
+        norm_of_radius_1 = (point_x - self.molecular_dens_2_coeffs.displacement_vector[0])**2 + (point[1] - self.molecular_dens_2_coeffs.displacement_vector[1])**2 \
+                        + (point[2] - self.molecular_dens_2_coeffs.displacement_vector[2])**2
+        point_y = self.molecular_dens_2_coeffs.get_numerator_for_conditional_distribution(prefactor_1_y, exponents[0], norm_of_radius_1, point[0], 1)
+        point_y += self.molecular_dens_2_coeffs.get_numerator_for_conditional_distribution(prefactor_2_y, exponents[1], norm_of_radius_1, point[0], 1)
+
+        norm_of_radius_1 = (point_x - self.molecular_dens_2_coeffs.displacement_vector[0])**2 + (point_y - self.molecular_dens_2_coeffs.displacement_vector[1])**2 \
+                        + (point[2] - self.molecular_dens_2_coeffs.displacement_vector[2])**2
+        point_z = self.molecular_dens_2_coeffs.get_numerator_for_conditional_distribution(prefactor_1_z, exponents[0], norm_of_radius_1, point[0], 2)
+        point_z += self.molecular_dens_2_coeffs.get_numerator_for_conditional_distribution(prefactor_2_z, exponents[1], norm_of_radius_1, point[0], 2)
+
+        print(point_x, point_y, point_z, transformed_point_x, transformed_point_y, transformed_point_z)
 
 
-
-    def test_denominator_of_transformation(self):
-        pass
 
 class Test_Molecular_Density_Transformation_One_Be_Atom(Default_Molecular_Density_Transformation_One_Be_Atom):
-    def test_new_thetas_two_basis_funcs(self):
-        #print(self.molecular_dens_2_coeffs.dimension)
-        self.molecular_dens_2_coeffs.displacement_vector = [0.0]
-        #print(self.molecular_dens_2_coeffs.number_of_atoms)
-        #print(self.molecular_dens_2_coeffs.new_weights([10.]))
-
-        """
-        X = np.arange(-100, 100, 0.01)
-        Y = []
-        for p in X:
-            Y.append(self.molecular_dens_2_coeffs.transform_coordinates_to_hyper_cube([p]))
-        print(Y)
-        plt.title("Grid Transformation from R to [0, 1] for Be of Two Gaussian Basis Funcs. Centered at 0")
-        plt.plot(X, np.array(Y), "bo")
-        plt.xlabel("X-values in R")
-        plt.ylabel("Theta_1 values")
-        plt.show()
-
-        X = np.arange(-0.5, 0.5, 0.001)
-        Y = []
-        for p in X:
-            Y.append(self.molecular_dens_2_coeffs.transform_coordinates_to_hyper_cube([p]))
-        print(Y)
-        plt.title("Grid Transformation from R to [0, 1] for Be of Two Gaussian Basis Funcs. Centered at 0")
-        plt.plot(X, np.array(Y), "bo")
-        plt.xlabel("X-values in R")
-        plt.ylabel("Theta_1 values")
-        plt.show()
-        """
-
-        ##########################
-        ###### 2-Dimensions ######
-        ##########################
-        self.molecular_dens_2_coeffs.dimension = 2
-        self.molecular_dens_2_coeffs.displacement_vector = [0.0, 0.0]
-        #print(self.molecular_dens_2_coeffs.new_weights([0.0, 0.0]))
-
-
-        """
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        x = y = np.arange(-10.0, 10.0, .1)
-        X, Y = np.meshgrid(x, y)
-        zs = np.array([self.molecular_dens_2_coeffs.new_weights([x,y]) for x,y in zip(np.ravel(X), np.ravel(Y))])
-        Zs = zs[:,0].reshape(X.shape)
-        Zz = zs[:,1].reshape(X.shape)
-
-        ax.scatter(X, Y, Zs,c='r', marker='o')
-        ax.scatter(X, Y, Zz, c="b", marker='o')
-        plt.show()
-
-        x = y = np.arange(-10.0, 10.0, .01)
-        X, Y = np.meshgrid(x, y)
-        zs = np.array([self.molecular_dens_2_coeffs.new_weights([x,y]) for x,y in zip(np.ravel(X), np.ravel(Y))])
-        Zs = zs[:,0].reshape(X.shape)
-        Zz = zs[:,1].reshape(X.shape)
-
-        plt.plot(Zs, Zz, "ro")
-        plt.title("Grid Trans. from R to [0,1]^2 for Be of Two Gaussian Basis Funcs, Centered at 0")
-        plt.xlabel("Theta_1(x_1)")
-        plt.ylabel("Theta_2(x_2)")
-        plt.show()
-        """
-
-
-
-
-
-        #########################
-        ##### 3-Dimensions ######
-        #########################
-        self.molecular_dens_2_coeffs.dimension = 3
-        self.molecular_dens_2_coeffs.displacement_vector = [0.0, 0.0, 0.0]
-        #print(self.molecular_dens_2_coeffs.new_weights([0.0, 0.0, 10000.0]))
-        """
-        x = y = z = np.arange(-0.5, 0.5, .03)
-        X, Y, Z = np.meshgrid(x, y, z)
-        zs = np.array([self.molecular_dens_2_coeffs.new_weights([x,y,z]) for x,y,z in zip(np.ravel(X), np.ravel(Y), np.ravel(Z))])
-        Zx = zs[:,0]
-        Zy = zs[:,1]
-        Zz = zs[:,2]
-
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        ax.scatter(Zx, Zy, Zz, c='r', marker='o')
-        plt.title("Grid Trans. from R to [0,1]^3 for Be of Two Gaussian Basis Funcs, Cent. At 0")
-        ax.set_xlabel("Theta_1")
-        ax.set_ylabel("Theta_2")
-        ax.set_zlabel("Theta_3")
-        plt.show()
-        """
     def test_new_thetas_two_basis_funcs_one_dimensions(self):
         self.molecular_dens_2_coeffs.dimension = 1
         self.molecular_dens_2_coeffs.displacement_vector = [0.0]

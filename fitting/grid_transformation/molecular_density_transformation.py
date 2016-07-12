@@ -1,5 +1,6 @@
 import numpy as np
-from scipy.special import erf
+from mpmath import erf
+
 from fitting.fit.GaussianBasisSet import *
 
 
@@ -255,7 +256,7 @@ class Molecular_Density_Transformation():
         exponential = np.exp(-exponent * norm_of_radius)
         #if exponential == 0.0:
         #    exponential = np.finfo(np.double).tiny #Smallest Positive number
-        return (-1) * prefactor * exponential * (erf(np.sqrt(exponent) * (self.displacement_vector[index] - coordinate)) - 1)
+        return -prefactor * exponential * (erf(np.sqrt(exponent) * (self.displacement_vector[index] - coordinate)) - 1)
 
     def get_denominator_for_condition_distribution(self, prefactor, exponent, norm_of_radius):
         """A helper function for integrating the denominator
