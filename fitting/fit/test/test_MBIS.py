@@ -213,17 +213,17 @@ class Test_Iterative_MBIS_Method(Default_Setup_For_MBIS):
     def test_iterative_updating_one_coefficient_medium_exponent(self):
         coeff = np.array([5.])
         exponent = np.array([50.])
-        self.check_iterative_updating_one_coefficients(coeff, exponent, 1.)
+        self.check_iterative_updating_one_coefficients(coeff, exponent, error_threshold=1.)
 
     def test_iterative_updating_one_coefficient_large_medium_exponent(self):
         coeff = np.array([5.])
         exponent = np.array([100.])
-        self.check_iterative_updating_one_coefficients(coeff, exponent, 12)
+        self.check_iterative_updating_one_coefficients(coeff, exponent, error_threshold=12)
 
     def test_iterative_updating_one_coefficient_very_large_exponent(self):
         coeff = np.array([5.])
         exponent = np.array([1000.])
-        self.check_iterative_updating_one_coefficients(coeff, exponent, 3200)
+        self.check_iterative_updating_one_coefficients(coeff, exponent, error_threshold=3200)
 
     def check_plot_different_exponents(self, coefficient_value):
         constant_coefficient = np.array([coefficient_value])
