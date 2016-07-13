@@ -6,30 +6,30 @@ from fitting.fit.GaussianBasisSet import *
 
 ############## TODO LIST #######################
 #TODO: Ask them if they want |R - R_{alpha}| or |R|
-#TODO: Add Tests for N-Dimensions
 #TODO: Why did I add moleuclar density to the class instants
 #TODO: Line 17-18, 39-40 should all coefficients and exponents be > or >= 0.
 #TODO: What to do with the transformed grid point is either 0. or 1.?? For now it is assumed to can 0. or 1. Line 86
 #TODO: get num and get den, I put the exponential to the smallest positive number if it is zero
+#TODO: Add Latex Notes To Class and Examples
 
 class Molecular_Density_Transformation():
     """
     Given a specified pro-molecular density
     composed of gaussian-type function. Transform
-    the integration of the density over the reals
-    to integration over the unit hyper-cube.
+    the integration of the density over a d-dimensional
+    real space to integration over the unit hyper-cube.
 
     Attributes
     ----------
     coefficients_per_atom : array_like
                             MxN array where M equals number of
                             atoms and N equals the number of
-                            coefficients for that atom.
+                            gaussian coefficients for that atom.
 
     exponents_per_atom : array_like
                             MxN array where M equals number of
                             atoms and N equals the number of
-                            exponents for that atom.
+                            gaussian exponents for that atom.
 
     num_of_coordinates : int
                         Indicates what dimension is the
@@ -46,7 +46,7 @@ class Molecular_Density_Transformation():
     Methods
     -------
     transform_coordinates_to_hyper_cube : float
-                                          Converts a real vector to its
+                                          Converts a real vector to it's
                                           corresponding value inside a hypercube
 
     transform_entire_grid_to_hyper_cube : array_like
@@ -54,7 +54,17 @@ class Molecular_Density_Transformation():
                                           to it's corresponding value inside
                                           a hypercube
 
+    Raises
+    ------
+    AssertionError
+        Coefficients and Exponents should be positive non-zero numbers
+
     Notes
+    -----
+
+    .. math:: \theta_1(x) = \int
+
+    References
     -----
     ..  [1] Juan I Rodriguez, David C. Thompson, James S. M. Anderson,
         Jordan W Thomson and Paul W Ayers, "A physically motivated
@@ -79,7 +89,6 @@ class Molecular_Density_Transformation():
             "Length of coefficients_per_atom should equal exponents_per_atom" % (coefficients_per_atom.shape[0], exponents_per_atom.shape[0])
 
         self.number_of_atoms = coefficients_per_atom.shape[0]
-        #self.dimension = dimension_of_coordinates * self.number_of_atoms
         self.dimension = dimension_of_coordinates
         self.coefficients_per_atom = coefficients_per_atom
         self.exponents_per_atom = exponents_per_atom
@@ -87,7 +96,8 @@ class Molecular_Density_Transformation():
 
 
     def integrate_a_gaussian_over_the_reals(self, gaussian_coefficient, gaussian_exponent):
-        """ Integrate a gaussian-type function from negative infinity to infinity.
+        """ Integrate a single gaussian-type function
+         from negative infinity to infinity.
 
         Parameters
         ----------
@@ -111,15 +121,15 @@ class Molecular_Density_Transformation():
 
 
     def integrate_promolecular_density(self):
-        """Integration of promolecular density function over the reals
-        (i.e. sum of electronic density functions for each atom that is
+        """Integration of pro-molecular density function over the 1-dimensional reals
+        (i.e. Integrate the sum of electronic density functions for each atom that is
         composed of a sum of gaussian-type functions).
-
 
         Returns
         -------
         float
-            analytical solution using the linearity of the integration operator
+            sum of the analytical solution of each
+            gaussian-type function
 
         See Also
         --------
@@ -295,8 +305,8 @@ class Molecular_Density_Transformation():
         return prefactor * 2.0 * exponential
 
     def transform_entire_grid_to_hyper_cube(self, grid):
-        """Given a set of points on a D-dimensional real space.
-            Each point is transformed to a D-dimensional hypercube.
+        """Given a set of points on a D-dimensional real space, where
+            each point is transformed to a D-dimensional hypercube.
 
 
         Parameters
@@ -352,6 +362,8 @@ if __name__ == "__main__":
 
     flu = GaussianTotalBasisSet(ELEMENT_2, column_grid_points, file_path_2)
     fitting_object_flu = Fitting(flu)
+
+
 
 
 

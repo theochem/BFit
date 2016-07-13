@@ -26,6 +26,27 @@ def update_coefficients(initial_coeffs, constant_exponents, electron_density, gr
         new_coefficients[i] = factor * np.trapz(y=integrand, x=np.ravel(grid))
     return new_coefficients
 
+def measure_error_by_integration_of_difference(true_model, approximate_model, grid):
+        error = np.trapz(y=np.ravel(grid**2) * (np.absolute(np.ravel(true_model) - np.ravel(approximate_model))), x=np.ravel(grid))
+        return error
+
+def iterative_MBIS_method(initial_coeffs, constant_exponents, electron_density, grid, error=1e-5):
+    current_error = 1e10
+    old_coefficients = np.copy(initial_coeffs)
+    new_coefficients = np.copy(initial_coeffs)
+    print(error * len(initial_coeffs))
+
+    #while current_error > error * len(initial_coeffs):
+    for x in range(0, 100):
+        temp = np.copy(new_coefficients)
+        new_coefficients = update_coefficients(old_coefficients, constant_exponents, electron_density, grid)
+        old_coefficients = np.copy(temp)
+        current_error = np.sum(np.abs((old_coefficients - new_coefficients)))
+        model = np.dot(np.exp(-constant_exponents * grid**2), new_coefficients)
+        print(current_error,  measure_error_by_integration_of_difference(model, np.ravel(electron_density), np.ravel(grid)),"\n")
+
+    return new_coefficients, current_error
+
 if __name__ == "__main__":
     ELEMENT_NAME = "be"
     ATOMIC_NUMBER = 4
