@@ -18,7 +18,7 @@ class Default_Setup_For_MBIS(unittest.TestCase):
         ATOMIC_NUMBER = 4
         from fitting.density.radial_grid import Radial_Grid
         radial_grid = Radial_Grid(ATOMIC_NUMBER)
-        NUMBER_OF_CORE_POINTS = 1000; NUMBER_OF_DIFFUSED_PTS = 1000
+        NUMBER_OF_CORE_POINTS = 200; NUMBER_OF_DIFFUSED_PTS = 300
         row_grid_points = radial_grid.grid_points(NUMBER_OF_CORE_POINTS, NUMBER_OF_DIFFUSED_PTS, [50, 75, 100])
         column_grid_points = np.reshape(row_grid_points, (len(row_grid_points), 1))
         return column_grid_points
@@ -75,12 +75,14 @@ class Test_MBIS_For_Coefficients(Default_Setup_For_MBIS):
         integrand = np.ravel(self.electron_density) * np.exp(-1. * np.power(np.ravel(self.grid), 2.))
         masked_integrand = np.ma.array(integrand / (np.exp(-1 * grid_squared) + np.exp(-2. * grid_squared)))
         expected_trapz_solution_1 = (1. / np.pi)**(3/2) * np.trapz(y=masked_integrand, x=np.ravel(self.grid))
+        print(np.abs(expected_trapz_solution_1 - new_coefficient_1))
         assert np.abs(expected_trapz_solution_1 - new_coefficient_1) < 1e-5
 
         # Second Coefficient
         integrand_2 = np.ravel(self.electron_density) * np.exp(-2. * grid_squared)
         masked_integrand = np.ma.array(integrand / (np.exp(-1 * grid_squared) + np.exp(-2. * grid_squared)))
         expected_trapz_solution_2 = (2. / np.pi)**(3/2) * np.trapz(y=masked_integrand, x=np.ravel(self.grid))
+        print(np.abs(expected_trapz_solution_1 - new_coefficient_1))
         assert np.abs(expected_trapz_solution_2 - new_coefficient_2) < 1.
 
         #################################
@@ -100,68 +102,23 @@ class Test_MBIS_For_Coefficients(Default_Setup_For_MBIS):
         assert np.abs(expected_trapz_solution_2 - new_coefficient_2) < 1.
 
 
-    def test_updating_one_coefficient(self):
-        initial_coefficient = np.array([5.0])
-        constant_exponents = np.array([20.])
-        new_coefficient = update_coefficients(initial_coefficient, constant_exponents, self.electron_density, self.grid)
+    def test_updating_10_coefficients_using_trapz(self):
+        initial_coefficients = np.array([1., 2., 100., 25., 10000., 150., 1230. ,15., 120., 125.])
+        EXPONENTS = np.array([2., 5., 3., 1., 0.05, 0.01, 12, 2.5, 1.2, 10000.])
 
-        scipy_solution = 0
-        def add_func(h, f, g):
-            return lambda r: h(f(r), g(r))
+        coefficients_MBIS = update_coefficients(initial_coefficients, EXPONENTS, self.electron_density, self.grid)
 
-        def scalar_mult_func(h, f, g):
-            return lambda r : h(f(r), g)
+        integrand = np.ravel(self.electron_density).copy()
+        denominator = 0
+        for x in range(0, len(initial_coefficients)):
+            denominator += initial_coefficients[x] * np.exp(-EXPONENTS[x] * np.ravel(self.grid)**2)
+        integrand /= denominator
 
-        def norm_squared_func(f):
-            return lambda r : (f(r))**2
+        for x in range(0, len(initial_coefficients)):
+            expected_answ = np.trapz(y=integrand * np.exp(-EXPONENTS[x] * np.ravel(self.grid)**2) *\
+                                     initial_coefficients[x] * (EXPONENTS[x] / np.pi)**(3/2), x=np.ravel(self.grid))
+            assert np.abs(expected_answ - coefficients_MBIS[x]) < 1e-10
 
-        def add_stuff(f, exponent, coefficient):
-            return lambda r : truediv(mul(f(r), np.exp(-exponent * r**2)), (coefficient * np.exp(-exponent * r**2)))
-        from operator import add, mul, truediv
-
-        from sympy.utilities import lambdify
-        from sympy.abc import r
-
-        phi_1s = None
-        phi_2s = None
-        for x in range(0, 2):
-            for i in range(0, self.slater_coeffs.shape[0]):
-                coefficient = self.slater_coeffs[i, x]
-                exponent = np.ravel(self.slater_exps)[i]
-                quantumNum = np.ravel(self.slater_basis_nums)[i]
-
-                if i == 0:
-                    if x == 0:
-                        phi_1s = lambda r: coefficient * ((2 * exponent)**(quantumNum) * \
-                                                     np.sqrt(2 * exponent / factorial(2 * quantumNum)) * r**(quantumNum - 1) * \
-                                                     np.exp(-exponent * r))
-                    else:
-                        phi_2s = lambda r: coefficient * ((2 * exponent)**(quantumNum) * \
-                                                     np.sqrt(2 * exponent / factorial(2 * quantumNum)) * r**(quantumNum - 1) * \
-                                                     np.exp(-exponent * r))
-                else:
-                    if x == 0:
-                        phi_1s = add_func(add, phi_1s,  lambda r: coefficient * (((2 * exponent)**(quantumNum) * \
-                                                                        np.sqrt(2 * exponent / factorial(2 * quantumNum)) * r**(quantumNum - 1) * \
-                                                                        np.exp(-exponent * r))))
-                    else:
-                        phi_2s = add_func(add, phi_2s,  lambda r: coefficient * (((2 * exponent)**(quantumNum) * \
-                                                                        np.sqrt(2 * exponent / factorial(2 * quantumNum)) * r**(quantumNum - 1) * \
-                                                                        np.exp(-exponent * r))))
-        g = norm_squared_func(phi_2s)
-        g = scalar_mult_func(mul, g, 2)
-        f = norm_squared_func(phi_1s)
-        f = scalar_mult_func(mul, f, 2)
-        f = add_func(add, f, g)
-
-
-        #f = add_stuff(f, constant_exponents[0], initial_coefficient[0])
-
-        lambdify_f = lambdify(r, f(r))
-        print(sp.integrate(lambdify_f, (r, 0, 100)))
-        print("4 = ", quad(lambda r: f(r) * r**2 , 0, np.inf)[0])
-        scipy_solution = quad(lambda r :(constant_exponents[0] / np.pi)**(3/2) * f(r), 0, np.inf)
-        print(scipy_solution, new_coefficient)
 
 
 
@@ -175,9 +132,9 @@ class Test_Iterative_MBIS_Method(Default_Setup_For_MBIS):
         coefficient_1, error = iterative_MBIS_method(coefficient, exponent, self.electron_density, self.grid,
                                               error=1e-5)
         expected_trapz_solution = (exponent[0] / np.pi)**(3/2) *\
-                                        np.trapz(y=np.ravel(self.electron_density), x=np.ravel(self.grid))
+                                        np.trapz(y=np.ravel(self.electron_density)[0:219], x=np.ravel(self.grid)[0:219])
         assert error == 0.
-        #print(np.abs(expected_trapz_solution - coefficient_1[0]), expected_trapz_solution, coefficient_1)
+        print("Absolute difference", np.abs(expected_trapz_solution - coefficient_1[0]), expected_trapz_solution, coefficient_1)
         assert np.abs(expected_trapz_solution - coefficient_1[0]) < error_threshold
 
         return np.abs(expected_trapz_solution - coefficient_1[0])
@@ -315,7 +272,7 @@ class Test_Iterative_MBIS_Method(Default_Setup_For_MBIS):
     def test2(self):
         initial_coefficients = np.array([1. for x in range(0, 25)])
         exponents = self.be.UGBS_s_exponents#np.array([np.random.random() for x in range(0, 25)])
-        exponents[0:25] = 1.
+        #exponents[0:25] = 1.
         new_coeffs, error = iterative_MBIS_method(initial_coefficients, exponents, self.electron_density, self.grid)
         model = self.be.create_model(np.append(new_coeffs, exponents), 25)
         error = self.be.integrate_model_using_trapz(model)
