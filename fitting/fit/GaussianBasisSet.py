@@ -120,57 +120,6 @@ class GaussianTotalBasisSet(DensityModel):
         return(exponential)
 
 
-
-class GaussianTotalKL(DensityModel):
-    def __init__(self, element_name, grid, file_path):
-        DensityModel.__init__(self, element_name, grid, file_path)
-
-    def cost_function(self,parameters, exponents=[], optimize_coeff=True):
-        assert parameters.ndim == 1
-        coefficients = np.copy(parameters)
-        exponents = np.ravel(np.array(exponents))
-
-        exponential = np.exp(-exponents * np.power(self.grid, 2.0))
-        gaussian_density = np.dot(exponential, coefficients)
-
-        #Ignore dvision by zero
-        old_err_state = np.seterr(divide='raise')
-        ignored_states = np.seterr(**old_err_state)
-
-        electron_density = np.ravel(np.copy(self.electron_density))
-        gaussian_density_divided_by_electron_density = np.divide(gaussian_density , electron_density)
-        assert electron_density.shape[0] == gaussian_density.shape[0]
-        assert gaussian_density_divided_by_electron_density.shape[0] == electron_density.shape[0]
-
-        log_of_above = np.log(gaussian_density_divided_by_electron_density)
-        log_of_above = np.nan_to_num(log_of_above)
-        multiply_together = np.multiply(gaussian_density , log_of_above)
-        multiply_together = np.nan_to_num(multiply_together)
-        integrate_it = np.trapz(y=np.ravel(multiply_together), x=np.ravel(self.grid))
-        return integrate_it
-
-    def derivative_of_cost_function(self, parameters, exponents=[], optimize_coeff=True):
-        derivative_of_all_coefficients = np.empty(parameters.shape[0])
-
-        coefficients = np.copy(parameters)
-        exponents = exponents
-
-        exponential = np.exp(-exponents * np.power(self.grid, 2.0))
-        gaussian_density = np.dot(exponential, coefficients)
-        log_gaussian_density = np.log(gaussian_density)
-        log_gaussian_density = np.nan_to_num(log_gaussian_density)
-        log_electron_density = np.ravel(np.nan_to_num(np.log(self.electron_density)))
-        for i in range(0, parameters.shape[0]):
-            derivative = 0
-
-            exponent_alpha = np.exp(-exponents[i] * np.power(np.ravel(self.grid), 2.0))
-            derivative += np.trapz(y=np.multiply(exponent_alpha, log_gaussian_density), x=np.ravel(self.grid))
-            derivative += np.sqrt(np.pi) / exponents[i]
-            derivative -= np.trapz(y=np.ravel(np.multiply(log_electron_density, exponent_alpha)), x=np.ravel(self.grid))
-            derivative_of_all_coefficients[i] = derivative
-
-        return derivative_of_all_coefficients
-
 class GaussianCoreBasisSet(DensityModel):
     def __init__(self, element_symbol, grid, file_path):
         DensityModel.__init__(self, element_symbol, grid, file_path)
@@ -421,7 +370,7 @@ if __name__ == "__main__":
     #Create Grid for the modeling
     from fitting.density.radial_grid import *
     radial_grid = Radial_Grid(ATOMIC_NUMBER)
-    NUMBER_OF_CORE_POINTS = 200; NUMBER_OF_DIFFUSED_PTS = 300
+    NUMBER_OF_CORE_POINTS = 400; NUMBER_OF_DIFFUSED_PTS = 500
     row_grid_points = radial_grid.grid_points(NUMBER_OF_CORE_POINTS, NUMBER_OF_DIFFUSED_PTS, [50, 75, 100])
     column_grid_points = np.reshape(row_grid_points, (len(row_grid_points), 1))
 
@@ -429,31 +378,6 @@ if __name__ == "__main__":
     be = GaussianTotalBasisSet(ELEMENT, column_grid_points, file_path)
     fitting_object = Fitting(be)
 
-    c = fitting_object.optimize_using_l_bfgs(np.array([np.random.random()*10 for x in range(0, be.UGBS_s_exponents.shape[0])]),be.UGBS_s_exponents.shape[0],np.array(be.UGBS_s_exponents),[], False, True, False)
-    param = np.concatenate((c, be.UGBS_s_exponents))
-
-    model = be.create_model(param, param.shape[0]/2)
-    print(be.measure_error_by_integration_of_difference(be.electron_density, model))
-    print(be.measure_error_by_integration_of_difference(be.electron_density, model))
-    print(be.integrate_model_using_trapz(model), be.integrate_model_using_trapz(be.electron_density))
-    # Save Results
-    """
-    import os
-    directory_to_save_results = os.path.dirname(__file__).rsplit('/', 2)[0] + "/fitting/examples"
-    #be.graph_and_save_the_results(directory_to_save_results)
-    """
-    #KL
-    beKL = GaussianTotalKL(ELEMENT, column_grid_points, file_path)
-    fitting_objectKL = Fitting(beKL)
-    print(c)
-    noise = np.random.normal(0, 1, c.shape[0])
-    coeff = fitting_objectKL.optimize_using_l_bfgs(noise, np.array(beKL.UGBS_s_exponents))
-    print(coeff)
-    param = np.concatenate((coeff, beKL.UGBS_s_exponents))
-    model = be.create_model(param, param.shape[0]/2)
-    print(be.measure_error_by_integration_of_difference(be.electron_density, model))
-    print(be.measure_error_by_integration_of_difference(be.electron_density, model))
-    print(be.integrate_model_using_trapz(model), be.integrate_model_using_trapz(be.electron_density))
 
     # Fit Model Using Greedy Algorithm
     #fitting_object.forward_greedy_algorithm(2.0, 0.01, np.copy(be.electron_density), maximum_num_of_functions=100)
@@ -463,45 +387,64 @@ if __name__ == "__main__":
 
 
     # CORE
-    #be_core = GaussianCoreBasisSet(ELEMENT, column_grid_points, file_path)
-    #Create fitting object based on core and fit the model using the greedy algorithm
-    #fitting_object_core = Fitting(be_core)
-    #fitting_object_core.forward_greedy_algorithm(2.0, 0.01, np.copy(be_core.electron_density_core),maximum_num_of_functions=100)
+    be_core = GaussianCoreBasisSet(ELEMENT, column_grid_points, file_path)
+    fitting_object_core = Fitting(be_core)
 
+    def plot_core_density():
+        plt.semilogy(np.ravel(be_core.grid), np.ravel(be_core.electron_density),  label="Electron Density")
+        plt.semilogy(np.ravel(be_core.grid), np.ravel(be_core.electron_density_core), label="Core Electron Density")
+        plt.legend()
+        plt.title("Log Plot of Electron Density & Core Density")
+        plt.xlabel("Radius from nucleus")
+        plt.savefig("Core Electron Density Plot")
+        plt.show()
+
+    initial_exps = np.array([  2.50000000e-02 ,  5.00000000e-02 ,  1.00000000e-01 ,  2.00000000e-01,
+                               4.00000000e-01 ,  8.00000000e-01 ,  1.60000000e+00 ,  3.20000000e+00,
+                               6.40000000e+00 ,  1.28000000e+01 ,  2.56000000e+01 ,  5.12000000e+01,
+                               1.02400000e+02 ,  2.04800000e+02 ,  4.09600000e+02 ,  8.19200000e+02,
+                               1.63840000e+03 ,  3.27680000e+03 ,  6.55360000e+03 ,  1.31072000e+04,
+                               2.62144000e+04 ,  5.24288000e+04 ,  1.04857600e+05 ,  2.09715200e+05,
+                               4.19430400e+05 ,  8.38860800e+05 ,  1.67772160e+06 ,  3.35544320e+06,
+                               6.71088640e+06 ,  1.34217728e+07 ,  2.68435456e+07 ,  5.36870912e+07,
+                               1.07374182e+08 ,  2.14748365e+08 ,  4.29496730e+08 ,  8.58993459e+08,
+                               1.71798692e+09 ,  3.43597384e+09])[20:]
+    cofactor_matrix = be_core.create_cofactor_matrix(initial_exps)
+    nnls_coeffs = fitting_object_core.optimize_using_nnls(cofactor_matrix)
+    slsqp_opt_parameters = fitting_object_core.optimize_using_slsqp(np.append(nnls_coeffs, initial_exps), len(initial_exps))
+
+    coeffs = np.array([  0.00000000e+00,   0.00000000e+00 ,  0.00000000e+00,   4.25912844e-01,
+                       0.00000000e+00 ,  0.00000000e+00,   0.00000000e+00  , 3.09449679e+00,
+                       2.91030895e+01 ,  5.23047943e+01,   7.34205506e+01,   6.75374558e+01,
+                       5.95145093e+01 ,  4.37592889e+01,   3.35704286e+01,   2.34014079e+01,
+                       1.72925903e+01 ,  1.18801679e+01,   8.73220442e+00,   5.94357796e+00,
+                       4.39272469e+00 ,  2.95990732e+00,   2.20835184e+00,   1.47305069e+00,
+                       1.10841180e+00 ,  7.35833088e-01,   5.50702168e-01,   3.76937065e-01,
+                       2.59418902e-01 ,  2.12612761e-01,   9.56166882e-02,   1.50902095e-01,
+                       1.59128983e-03 ,  9.79221884e-02,   2.79737616e-02,   0.00000000e+00,
+                       0.00000000e+00 ,  6.44357952e-02])
+    exps = np.array(\
+                  [  2.50000000e-02 ,  5.00000000e-02 ,  1.00000000e-01 ,  2.00000000e-01,
+                    4.00000000e-01 ,  8.00000000e-01 ,  1.60000000e+00 ,  3.20000000e+00,
+                    6.40000000e+00 ,  1.28000000e+01 ,  2.56000000e+01 ,  5.12000000e+01,
+                    1.02400000e+02 ,  2.04800000e+02 ,  4.09600000e+02 ,  8.19200000e+02,
+                    1.63840000e+03 ,  3.27680000e+03 ,  6.55360000e+03 ,  1.31072000e+04,
+                    2.62144000e+04 ,  5.24288000e+04 ,  1.04857600e+05 ,  2.09715200e+05,
+                    4.19430400e+05 ,  8.38860800e+05 ,  1.67772160e+06 ,  3.35544320e+06,
+                    6.71088640e+06 ,  1.34217728e+07 ,  2.68435456e+07 ,  5.36870912e+07,
+                    1.07374182e+08 ,  2.14748365e+08 ,  4.29496730e+08 ,  8.58993459e+08,
+                    1.71798692e+09 ,  3.43597384e+09])
+    final_parameters = np.append(coeffs,exps)
+    previous_model = be.create_model(final_parameters, 38)
+    FACTOR = 1000.
+    THRESHOLD = 0.0001
+    print(fitting_object.forward_greedy_algorithm(FACTOR, THRESHOLD, chosen_electron_density=be.electron_density))
+    #new_coeffs = fitting_object.forward_greedy_algorithm_from_initial_params(FACTOR, THRESHOLD, be.electron_density, coeffs, exps)
+    #print(new_coeffs)
 
     # VALENCE
-    #be_valence = GaussianValenceBasisSet(element, column_grid_points, file_path)
+    #be_valence = GaussianValenceBasisSet(ELEMENT, column_grid_points, file_path)
     #fitting_object_valence = Fitting(be_valence)
     #fitting_object_valence.forward_greedy_algorithm_valence(2.0, 0.01)
     #fitting_object_valence.forward_greedy_algorithm(2.0, 0.01, np.copy(be_valence.electron_density_core), maximum_num_of_functions=100)
 
-    """
-    c1 = [x for x in range(0, 100)]
-    WEIGHTS = [np.ones(np.shape(fitting_object_valence.model_object.grid)[0]), np.ravel(elec_d), np.ravel(np.power(elec_d, 2.0))]
-    d1 = [x for x in range(0, 100)]
-
-    def func(c1, d1):
-        grid = np.copy(fitting_object_valence.model_object.grid)
-        electron_density = np.copy(fitting_object_valence.model_object.electron_density_valence)
-        weights = np.ravel(WEIGHTS[2])
-        UGBS_S = fitting_object_valence.model_object.UGBS_s_exponents
-        alpha_s = UGBS_S[np.random.randint(0, np.shape(UGBS_S)[0])]
-        UGBS_p = fitting_object_valence.model_object.UGBS_p_exponents
-        alpha_p = UGBS_p[np.random.randint(0, np.shape(UGBS_p)[0])]
-
-        hey = np.log(electron_density) - np.log(c1 * np.exp(-alpha_s*np.power(grid, 2.0)) + d1*np.power(grid, 2.0) * np.exp(-alpha_p*np.power(grid,2.0)))
-        weights = np.reshape(weights, (np.shape(weights)[0], 1))
-        weights = np.repeat(weights, 100, axis=1)
-        print(weights.shape)
-        as2 = weights * hey
-        as2 *= np.exp(-alpha_s*np.power(grid, 2.0)) / (c1 * np.exp(-alpha_s*np.power(grid, 2.0)) + d1*np.power(grid, 2.0) * np.exp(-alpha_p*np.power(grid,2.0)))
-
-        return np.nansum(as2,axis = 0)
-
-
-    as2 = func(c1, d1)
-
-
-    plt.plot(c1, as2, 'r--')
-    plt.show()
-    """

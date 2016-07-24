@@ -2,7 +2,72 @@ from fitting.fit.model import *
 from fitting.fit.GaussianBasisSet import *
 import  matplotlib.pyplot as plt
 from scipy.integrate import simps, trapz
+import decimal
 import numpy as np
+
+d = decimal.Decimal
+#Absolute difference= 314245.645194 15667.5795399 [ 329913.2247343]
+
+def update_coefficients_using_decimal_lib(initial_coeffs, constant_exponents, electron_density, grid, masked_value=1e-6):
+    #assert np.all(initial_coeffs > 0) == True
+    assert len(initial_coeffs) == len(constant_exponents)
+    assert len(np.ravel(electron_density)) == len(np.ravel(grid))
+
+    def turn_float_array_into_decimal_array(float_array):
+        if float_array.ndim == 2:
+            decimal_s = [[decimal.Decimal(x) for x in y] for y in float_array]
+            float_array = np.array(decimal_s)
+        else:
+            decimal_s = [d(x) for x in float_array]
+            float_array = np.array(decimal_s)
+        return float_array
+
+    def turn_decimal_array_to_float_array(decimal_array):
+        if decimal_array.ndim == 2:
+            float_array = [[float(x) for x in y] for y in decimal_array]
+            decimal_array = np.array(float_array)
+        else:
+            float_array = [float(x) for x in decimal_array]
+            decimal_array = np.array(float_array)
+        return decimal_array
+
+    def simple_integration(y_array, x_array):
+        integration_value = 0
+        for i in range(0, len(y_array) - 1):
+            integration_value += y_array[i] * (x_array[i+1] - x_array[i])
+        return integration_value
+
+    initial_coeffs = (turn_float_array_into_decimal_array(initial_coeffs))
+    constant_exponents = turn_float_array_into_decimal_array(constant_exponents)
+    electron_density = turn_float_array_into_decimal_array(electron_density)
+    grid = turn_float_array_into_decimal_array(grid)
+    grid_squared = turn_float_array_into_decimal_array(grid**2)
+
+    exponential = np.exp(d(-1) * constant_exponents * grid_squared)
+    gaussian_density = np.dot(exponential, initial_coeffs)
+
+    mininum_value = min(gaussian_density)
+    print(gaussian_density)
+    gaussian_density[-1] = min(gaussian_density)
+    gaussian_density[-2] = min(gaussian_density)
+    gaussian_density[-3] = min(gaussian_density)
+    ratio = np.ravel(electron_density) / gaussian_density
+
+    new_coefficients = np.empty(len(initial_coeffs))
+    for i in range(0, len(initial_coeffs)):
+        factor = initial_coeffs[i] * (constant_exponents[i] / d(np.pi))**(d(1.5))
+        integrand = ratio * np.ravel(np.exp(d(-1) *constant_exponents[i] * grid_squared))
+        if False:
+            factor = float(factor)
+            grid = turn_decimal_array_to_float_array(grid)
+            integrand = turn_decimal_array_to_float_array(integrand)
+            new_coefficients[i] = factor * np.trapz(y=integrand, x=np.ravel(grid))
+        else:
+            print(factor * simple_integration(integrand, np.ravel(grid)), factor)
+            new_coefficients[i] = factor * simple_integration(integrand, np.ravel(grid))
+    print(new_coefficients)
+
+    return new_coefficients
 
 def update_coefficients(initial_coeffs, constant_exponents, electron_density, grid, masked_value=1e-6):
     assert np.all(initial_coeffs > 0) == True
@@ -71,11 +136,9 @@ def iterative_MBIS_method(initial_coeffs, constant_exponents, electron_density, 
 
         log_ratio = np.log(masked_electron_density / masked_gaussian_density)
         list_of_obj_func.append(np.trapz(y=masked_electron_density * log_ratio, x=np.ravel(grid)))
-    print(list_of_obj_func)
+
     return new_coefficients, current_error
 
-
-from scipy.optimize import minimize
 
 
 if __name__ == "__main__":
@@ -89,37 +152,36 @@ if __name__ == "__main__":
     NUMBER_OF_CORE_POINTS = 200; NUMBER_OF_DIFFUSED_PTS = 300
     row_grid_points = radial_grid.grid_points(NUMBER_OF_CORE_POINTS, NUMBER_OF_DIFFUSED_PTS, [50, 75, 100])
     column_grid_points = np.reshape(row_grid_points, (len(row_grid_points), 1))
+
     be =  GaussianTotalBasisSet(ELEMENT_NAME, column_grid_points, file_path)
+    fitting_obj = Fitting(be)
+    exps = be.UGBS_s_exponents
+    coeffs = fitting_obj.optimize_using_nnls(be.create_cofactor_matrix(exps))
+    parameters = fitting_obj.optimize_using_slsqp(np.append(coeffs, exps), len(exps))
 
-    def objective_func(initial_coefficients):
-        exponential = np.exp(-be.UGBS_s_exponents * np.power(be.grid, 2.))
-        assert exponential.shape[1] == len(be.UGBS_s_exponents)
-        assert exponential.shape[0] == len(np.ravel(be.grid))
-        gaussian_density = np.dot(exponential, initial_coefficients)
-        assert gaussian_density.shape[0] == len(np.ravel(be.grid))
+    coeffs = np.array([  4.60324888e-01,   9.19456961e+01,   4.79749149e+01,   2.93911644e+01,
+                       4.20695562e+00  , 1.50178575e+01 ,  8.37636270e+00  , 2.68685289e+00,
+                       3.87217847e-02  , 3.86481849e+00 ,  3.04965224e+00  , 7.18423730e+01,
+                       1.38606313e+00  , 8.78115461e+01 ,  5.38490394e+01  , 1.90931929e+01,
+                       2.97048571e+00  , 3.53039750e-01 ,  1.35711130e-01  , 2.14012097e-17,
+                       1.24857356e-01  , 6.07955954e-04 ,  6.21881715e-02  , 0.00000000e+00,
+                       3.13859437e-02  , 6.28853566e-18 ,  1.57425388e-20  , 5.75945121e-19,
+                       2.77635641e-02])
+    exps = np.array([  2.15899348e-01,   5.99319569e+01,   4.45356400e+02,   1.28866588e+03,
+                       2.80585114e+03,   4.31678205e+03,   1.23235613e+04,   2.03075424e+04,
+                       1.56690242e+05,   7.83980009e+04,   3.92728749e+04,   1.59210737e+02,
+                       2.32770302e+06,   2.41903878e+01,   1.06840644e+01,   4.93675587e+00,
+                       3.36368188e+05,   1.67604360e+07,   3.31845039e+07,   6.60326396e+07,
+                       1.31728911e+08,   2.63121454e+08,   5.25906539e+08,   1.05147671e+09,
+                       2.10261705e+09,   4.20489774e+09,   8.40945911e+09,   1.68185818e+10,
+                       3.36368273e+10])
+    coeffs[coeffs == 0] = 1E-6
 
-        masked_gaussian_density = np.ma.asarray(gaussian_density)
-        masked_electron_density = np.ma.asarray(np.ravel(be.electron_density))
-        masked_gaussian_density[masked_gaussian_density <= 1e-12] = 0.0
+    coeffs = update_coefficients(coeffs, exps, be.electron_density, be.grid)
 
-        log_ratio = np.log(masked_electron_density / masked_gaussian_density)
-        result = (np.trapz(y=masked_electron_density * log_ratio, x=np.ravel(be.grid)))
-        return result
+    params = np.append(coeffs, exps)
+    print(be.integrate_model_using_trapz(be.create_model(params, len(exps))))
 
-    def jacobian(initial_coefficients):
-        pass
-    initial_coefficients = np.array([100. for x in range(0, 25)])
-    EXPONENTS = be.UGBS_s_exponents.copy()
-
-    cons = ({'type': 'eq'})
-    bnds = tuple((0., np.inf) for x in initial_coefficients)
-
-    new_coefficients = minimize(objective_func, initial_coefficients, method='SLSQP', bounds=bnds)
-    print(new_coefficients)
-
-    model = be.create_model(np.append(new_coefficients['x'], be.UGBS_s_exponents), 25)
-
-    print(be.integrate_model_using_trapz(model))
 
 
 

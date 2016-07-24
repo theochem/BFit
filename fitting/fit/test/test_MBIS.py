@@ -134,7 +134,7 @@ class Test_Iterative_MBIS_Method(Default_Setup_For_MBIS):
         expected_trapz_solution = (exponent[0] / np.pi)**(3/2) *\
                                         np.trapz(y=np.ravel(self.electron_density)[0:219], x=np.ravel(self.grid)[0:219])
         assert error == 0.
-        print("Absolute difference", np.abs(expected_trapz_solution - coefficient_1[0]), expected_trapz_solution, coefficient_1)
+        print("Absolute difference=", np.abs(expected_trapz_solution - coefficient_1[0]), expected_trapz_solution, coefficient_1)
         assert np.abs(expected_trapz_solution - coefficient_1[0]) < error_threshold
 
         return np.abs(expected_trapz_solution - coefficient_1[0])

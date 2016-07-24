@@ -89,6 +89,8 @@ class DensityModel():
     def generation_of_UGBS_exponents(self, p, UGBS_exponents):
         max_number_of_UGBS = np.amax(UGBS_exponents)
         min_number_of_UGBS = np.amin(UGBS_exponents)
+        print("max_number_of_UGBS", max_number_of_UGBS)
+        print("min_number_of_UGBS", min_number_of_UGBS)
 
         def calculate_number_of_Gaussian_functions(p, max, min):
             num_of_basis_functions = np.log(2 * max / min) / np.log(p)
@@ -154,14 +156,39 @@ class Fitting():
         row_nnls_coefficients = scipy.optimize.nnls(cofactor_matrix, b_vector)
         return(row_nnls_coefficients[0])
 
-    def optimize_using_slsqp(self, initial_guess, *args):
-        bounds = np.array([(0.0, np.inf) for x in range(0, len(initial_guess))], dtype=np.float64)
+    def optimize_using_slsqp(self, initial_guess, *args, additional_constraints=False):
+        if additional_constraints == True:
+            def constraint(x, *args):
+                leng = len(x) // 2
+                return np.sum(x[0:leng]) - np.ravel(self.model_object.electron_density)[0]
 
-        f_min_slsqp = scipy.optimize.fmin_slsqp(self.model_object.cost_function, x0=initial_guess, bounds=bounds, fprime=self.model_object.derivative_of_cost_function,
-                                                acc =1e-06,iter=15000, args=(args), full_output=True, iprint=-1)
-        parameters = f_min_slsqp[0]
-        #print(f_min_slsqp[4])
-        return(parameters)
+            def integration_constraint(x):
+                leng = len(x) //2
+                integration_value = 0
+                for i in range(0, leng):
+                    if x[leng + i ] != 0:
+                        integration_value += x[i] * (1 / (4 * x[leng + i])) *(np.pi / x[leng + i])**0.5
+                return integration_value - 4 #int(self.model_object.integrated_total_electron_density)
+
+
+            cons=(#{'type':'eq','fun':integration_constraint},
+                  {'type':'eq', 'fun':constraint})  #lambda x : np.sum(x[0:len(x)//2]) - np.ravel(self.model_object.electron_density)[0]})
+            bounds = np.array([(0.0, np.inf) for x in range(0, len(initial_guess))], dtype=np.float64)
+            f_min_slsqp = scipy.optimize.minimize(self.model_object.cost_function, x0=initial_guess, method="SLSQP",
+                                                  bounds=bounds, constraints=cons, args=(args),
+                                                  jac=True)
+
+            parameters = f_min_slsqp['x']
+            return parameters
+
+        else:
+            bounds = np.array([(0.0, np.inf) for x in range(0, len(initial_guess))], dtype=np.float64)
+
+            f_min_slsqp = scipy.optimize.fmin_slsqp(self.model_object.cost_function, x0=initial_guess, bounds=bounds, fprime=self.model_object.derivative_of_cost_function,
+                                                    acc =1e-06,iter=15000, args=(args), full_output=True, iprint=-1)
+            parameters = f_min_slsqp[0]
+            #print(f_min_slsqp[4])
+            return(parameters)
 
     def optimize_using_l_bfgs(self, initial_guess, *args, iprint=False):
         bounds = np.array([(0.0, 1.7976931348623157e+308) for x in range(0, len(initial_guess))], dtype=np.float64)
@@ -179,14 +206,14 @@ class Fitting():
 
 
 
-    def find_best_parameter_from_analytical_coeff_and_generated_exponents(self, *args, p=1.5, optimization_algo=optimize_using_l_bfgs):
+    def find_best_parameter_from_analytical_coeff_and_generated_exponents(self, *args, p=1.5, optimization_algo=optimize_using_slsqp):
         generated_UGBS_exponents = self.model_object.generation_of_UGBS_exponents(p, self.model_object.UGBS_s_exponents)
 
         list_of_parameters = []
         for exponent in generated_UGBS_exponents:
             coefficient = self.analytically_find_coefficient(self.model_object.electron_density, exponent)
             parameters = np.array([coefficient, exponent])
-            parameters = optimization_algo(self, parameters, *args)
+            parameters = self.optimize_using_slsqp(parameters, *args, additional_constraints=True)
             #print(exponent, parameters)
             list_of_parameters.append(parameters)
 
@@ -252,14 +279,31 @@ class Fitting():
 
         for choice in list_of_choices:
             model = self.model_object.create_model(choice, *args)
-            error_measured = self.model_object.measure_error_by_integration_of_difference(self.model_object.electron_density, model)
+            error_measured = self.model_object.measure_error_by_integration_of_difference(self.model_object.electron_density,
+                                                                                          model)
             if(error_measured < lowest_error_found):
                 lowest_error_found = error_measured
                 best_parameter_found = np.copy(choice)
 
         return best_parameter_found, lowest_error_found
 
+    def next_list_of_exponents(exponents_array, factor):
+        assert exponents_array.ndim == 1
+        size = exponents_array.shape[0]
+        all_choices_of_exponents = []
 
+        for index, exp in np.ndenumerate(exponents_array):
+            if index[0] == 0:
+                exponent_array = np.insert(exponents_array, index, exp / factor )
+
+            elif index[0] <= size:
+                exponent_array = np.insert(exponents_array, index, (exponents_array[index[0] - 1] + exponents_array[index[0]])/2)
+            all_choices_of_exponents.append(exponent_array)
+
+            if index[0] == size - 1:
+                exponent_array = np.append(exponents_array, np.array([ exp * factor] ))
+                all_choices_of_exponents.append(exponent_array)
+        return(all_choices_of_exponents)
 
     def forward_greedy_algorithm(self, factor, desired_accuracy, chosen_electron_density, optimization_algo=optimize_using_l_bfgs, maximum_num_of_functions=100, *args):
         assert type(factor) is float
@@ -300,29 +344,12 @@ class Fitting():
             optimized_coefficients = self.optimize_using_nnls(cofactor_matrix)
 
             initial_guess_of_parameters = np.concatenate((optimized_coefficients, exponents))
-            optimized_parameters_slsqp = self.optimize_using_slsqp(initial_guess_of_parameters, num_of_functions)
-            optimized_parameters_bfgs = self.optimize_using_l_bfgs(initial_guess_of_parameters, num_of_functions)
+            optimized_parameters_slsqp = self.optimize_using_slsqp(initial_guess_of_parameters, num_of_functions, additional_constraints=True)
 
             cost_function_slsqp = self.model_object.cost_function(optimized_parameters_slsqp, num_of_functions)
-            cost_function_bfgs = self.model_object.cost_function(optimized_parameters_bfgs, num_of_functions)
-
-            cost_function_value = None
-            best_parameters_from_technique = None
-            if cost_function_slsqp < cost_function_bfgs:
-                cost_function_value = cost_function_slsqp
-                best_parameters_from_technique = optimized_parameters_slsqp
-            else:
-                cost_function_value = cost_function_bfgs
-                best_parameters_from_technique = optimized_parameters_bfgs
-
-            if iprint:
-                print(exponents)
-                print("Optimized Coeff(NNLS) with initial exponent, resp", optimized_coefficients, exponents)
-                print("Initial Guess of Parameters", initial_guess_of_parameters)
-                print("Optimized Parameters SLSQP/BFGS, resp", optimized_parameters_slsqp, optimized_parameters_bfgs)
-                print("Cost Function Value SLSQP/BFGS, resp", cost_function_slsqp, cost_function_bfgs, "\n")
-
-            return cost_function_value, best_parameters_from_technique
+            if type(cost_function_slsqp) is tuple:
+                return cost_function_slsqp[0], optimized_parameters_slsqp
+            return cost_function_slsqp, optimized_parameters_slsqp
 
         WEIGHTS = [np.ones(np.shape(self.model_object.grid)[0]),
                    np.ravel(chosen_electron_density),
@@ -347,6 +374,7 @@ class Fitting():
             if cost_function_value < best_cost_function:
                 best_cost_function = cost_function_value
                 best_parameters_found = np.copy(parameters)
+        print("Best Signle Parameters Found Are ", best_parameters_found)
 
         ###################################################
         # Iterate To Find the Next N+1 Gaussian Function
@@ -395,7 +423,8 @@ class Fitting():
             local_parameter = np.copy(local_best_parameters)
             electron_density -= model
 
-            #density_list_for_graph = [(self.model_object.electron_density, "True Density"),
+            #I changed this to electron_density_core from electron_density
+            #density_list_for_graph = [(self.model_object.electron_density_core, "True Density"),
             #                                      (model, "Model Density,d=" + str(integrate_error))]
             #title = str(counter) + "_" + self.model_object.element + " Density, " + "\n d=Integrate(|True - Approx| Densities) " \
             #        ", Num Of Functions: " + str((number_of_functions))
@@ -409,6 +438,101 @@ class Fitting():
             print("Counter", counter, "number of functions", number_of_functions, "\n")
             counter += 1
             #break
+        return global_best_parameters, best_cost_function
+
+
+    def forward_greedy_algorithm_from_initial_params(self, factor, desired_accuracy, chosen_electron_density, coefficients, exponents,
+                                                     optimization_algo=optimize_using_l_bfgs, maximum_num_of_functions=100, *args):
+        """
+        This is the same forward greedy algo from above
+        except that it doesnt start from one gaussian
+        function but rather a pre-existing set.
+
+        """
+        def next_list_of_exponents(exponents_array, factor):
+            """
+            This helper function creates the next choice
+            of initial exponents given to the greedy
+            algorithm where it chooses the next best
+            iteration of exponent that gives a lower
+            cost function value.
+            """
+            assert exponents_array.ndim == 1
+            size = exponents_array.shape[0]
+            all_choices_of_exponents = []
+
+            for index, exp in np.ndenumerate(exponents_array):
+                if index[0] == 0:
+                    exponent_array = np.insert(exponents_array, index, exp / factor )
+
+                elif index[0] <= size:
+                    exponent_array = np.insert(exponents_array, index, (exponents_array[index[0] - 1] + exponents_array[index[0]])/2)
+                all_choices_of_exponents.append(exponent_array)
+
+                if index[0] == size - 1:
+                    exponent_array = np.append(exponents_array, np.array([ exp * factor] ))
+                    all_choices_of_exponents.append(exponent_array)
+            return(all_choices_of_exponents)
+
+
+        def optimization_routine(exponents, number_of_functions):
+            """
+            This helper functions takes the exponents, then gets
+            the coefficients from NNLS optimization routine.
+            Then uses this as an initial guess for the SLSQP
+            optimization routine of both coefficients and
+            exponents
+            """
+            cofactor_matrix_for_nnls = self.model_object.create_cofactor_matrix(exponents)
+            nnls_coefficients = self.optimize_using_nnls(cofactor_matrix_for_nnls)
+
+            initial_guess_of_parameters = np.concatenate((nnls_coefficients, exponents))
+            optimized_parameters_slsqp = self.optimize_using_slsqp(initial_guess_of_parameters, number_of_functions, additional_constraints=True)
+
+            cost_function_value = self.model_object.cost_function(optimized_parameters_slsqp, number_of_functions)
+
+            return cost_function_value, optimized_parameters_slsqp
+        WEIGHTS = [np.ones(np.shape(self.model_object.grid)[0]),
+                           np.ravel(chosen_electron_density),
+                           np.ravel(np.power(chosen_electron_density, 2.0))]
+        best_cost_function = 1e30
+        local_parameter = np.copy(np.append(coefficients, exponents))
+        global_best_parameters = None
+        counter = 1
+        number_of_functions = len(exponents)
+        #electron_density = np.ravel(chosen_electron_density) - self.model_object.create_model(local_parameter, len())
+        print("\nStart While Loop")
+        while(best_cost_function > desired_accuracy and number_of_functions < maximum_num_of_functions):
+            next_list_of_choices_for_exponents = next_list_of_exponents(local_parameter[number_of_functions:], factor)
+
+
+            number_of_functions += 1
+            local_best_cost_function_value = 1e20
+            local_best_parameters = None
+            for choice_of_exponents in next_list_of_choices_for_exponents:
+                cost_function_value, parameters = optimization_routine(choice_of_exponents, number_of_functions)
+
+                if cost_function_value < local_best_cost_function_value:
+                    local_best_cost_function_value = cost_function_value
+                    local_best_parameters = np.copy(parameters)
+
+            if local_best_cost_function_value < best_cost_function:
+                best_cost_function = local_best_cost_function_value
+                global_best_parameters = local_best_parameters
+
+            #########################
+            # Get Error Information
+            #########################
+            model = self.model_object.create_model(local_best_parameters, number_of_functions)
+            integrate_error = self.model_object.measure_error_by_integration_of_difference(chosen_electron_density, model)
+            integration = self.model_object.integrate_model_using_trapz(model)
+            local_parameter = np.copy(local_best_parameters)
+            if np.where(local_best_parameters == 0.0) == True:
+                print("Zero is found")
+            print("best found", best_cost_function, "integration", integration, "integrate error", integrate_error)
+            print("Counter", counter, "number of functions", number_of_functions, "\n")
+            counter += 1
+
         return global_best_parameters, best_cost_function
 
     def solve_for_single_coefficients(self, electron_density, alpha_s, alpha_p):
@@ -591,7 +715,7 @@ class Fitting():
 
 
 
-    def optimize_KL_l_bfgs(self, initial_guess, *args, iprint=False):
+    def optimize_KL_l_bfgs(self, initial_guess, iprint=False, *args):
         bounds = np.array([(0.0, 1.7976931348623157e+308) for x in range(0, len(initial_guess))], dtype=np.float64)
 
         f_min_l_bfgs_b = scipy.optimize.fmin_l_bfgs_b(self.model_object.cost_function, x0=initial_guess, bounds=bounds, approx_grad=True
