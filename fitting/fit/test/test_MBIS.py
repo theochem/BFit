@@ -131,7 +131,7 @@ class Test_Iterative_MBIS_Method(Default_Setup_For_MBIS):
         """
         coefficient_1, error = iterative_MBIS_method(coefficient, exponent, self.electron_density, self.grid,
                                               error=1e-5)
-        expected_trapz_solution = (exponent[0] / np.pi)**(3/2) *\
+        expected_trapz_solution = 2 * (exponent[0] / np.pi)**(1/2) *\
                                         np.trapz(y=np.ravel(self.electron_density)[0:219], x=np.ravel(self.grid)[0:219])
         assert error == 0.
         print("Absolute difference=", np.abs(expected_trapz_solution - coefficient_1[0]), expected_trapz_solution, coefficient_1)
@@ -139,19 +139,6 @@ class Test_Iterative_MBIS_Method(Default_Setup_For_MBIS):
 
         return np.abs(expected_trapz_solution - coefficient_1[0])
 
-        """
-        cofactor = self.be.create_cofactor_matrix(constant_exponents)
-        coefficient = self.fitting_obj.optimize_using_nnls(cofactor)
-        parameters = self.fitting_obj.optimize_using_slsqp(np.append(initial_coefficients, constant_exponents), 1)
-        parameters_1 = self.fitting_obj.optimize_using_l_bfgs(np.append(initial_coefficients, constant_exponents), 1)
-        WEIGHTS = [np.ones(np.shape(self.grid)[0]),
-                   np.ravel(self.electron_density),
-                   np.ravel(np.power(self.electron_density, 2.0))]
-        for weight in WEIGHTS:
-            best_analytical_parameters = self.fitting_obj.analytically_solve_objective_function(self.electron_density, weight)
-            print(self.fitting_obj.optimize_using_l_bfgs(best_analytical_parameters, 1)[0], self.fitting_obj.optimize_using_slsqp(best_analytical_parameters, 1)[0])
-        print(coefficient, parameters[0], parameters_1[0])
-        """
     def test_iterative_updating_one_coefficient_very_small_exponent(self):
         coeff = np.array([5.])
         exponent = np.array([0.05])

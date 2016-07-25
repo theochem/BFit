@@ -82,7 +82,7 @@ def update_coefficients(initial_coeffs, constant_exponents, electron_density, gr
 
     masked_gaussian_density = np.ma.asarray(gaussian_density)
     masked_electron_density = np.ma.asarray(np.ravel(electron_density))
-    masked_gaussian_density[masked_gaussian_density <= masked_value] = 0.0
+    masked_gaussian_density[masked_gaussian_density <= masked_value] = masked_value
 
     ratio = masked_electron_density / masked_gaussian_density
     #print(masked_electron_density[200:250], masked_gaussian_density[200:250])
@@ -95,12 +95,12 @@ def update_coefficients(initial_coeffs, constant_exponents, electron_density, gr
     index_max, index_min = (np.argmax(ratio), np.argmin(ratio))
     #index_max, index_min = (np.where(ratio == max_val), np.where(ratio==min_val))
     #print("index_max", index_max, "index_min", index_min)
-    print("max",ratio[index_max], "=", masked_electron_density[index_max],"/", masked_gaussian_density[index_max])
-    print("min",ratio[index_min], "=", masked_electron_density[index_min],"/", masked_gaussian_density[index_min])
+    #print("max",ratio[index_max], "=", masked_electron_density[index_max],"/", masked_gaussian_density[index_max])
+    #print("min",ratio[index_min], "=", masked_electron_density[index_min],"/", masked_gaussian_density[index_min])
 
     new_coefficients = np.empty(len(initial_coeffs))
     for i in range(0, len(initial_coeffs)):
-        factor = initial_coeffs[i] * (constant_exponents[i] / np.pi)**(3/2)
+        factor = initial_coeffs[i] * (constant_exponents[i] / np.pi)**(1/2) * 2.
         integrand = ratio * np.ravel(np.ma.asarray(np.exp(- constant_exponents[i] * np.power(grid, 2.))))
         new_coefficients[i] = factor * np.trapz(y=integrand, x=np.ravel(grid))
     return new_coefficients
@@ -149,7 +149,7 @@ if __name__ == "__main__":
     #Create Grid for the modeling
     from fitting.density.radial_grid import *
     radial_grid = Radial_Grid(ATOMIC_NUMBER)
-    NUMBER_OF_CORE_POINTS = 200; NUMBER_OF_DIFFUSED_PTS = 300
+    NUMBER_OF_CORE_POINTS = 300; NUMBER_OF_DIFFUSED_PTS = 400
     row_grid_points = radial_grid.grid_points(NUMBER_OF_CORE_POINTS, NUMBER_OF_DIFFUSED_PTS, [50, 75, 100])
     column_grid_points = np.reshape(row_grid_points, (len(row_grid_points), 1))
 
@@ -159,28 +159,24 @@ if __name__ == "__main__":
     coeffs = fitting_obj.optimize_using_nnls(be.create_cofactor_matrix(exps))
     parameters = fitting_obj.optimize_using_slsqp(np.append(coeffs, exps), len(exps))
 
-    coeffs = np.array([  4.60324888e-01,   9.19456961e+01,   4.79749149e+01,   2.93911644e+01,
-                       4.20695562e+00  , 1.50178575e+01 ,  8.37636270e+00  , 2.68685289e+00,
-                       3.87217847e-02  , 3.86481849e+00 ,  3.04965224e+00  , 7.18423730e+01,
-                       1.38606313e+00  , 8.78115461e+01 ,  5.38490394e+01  , 1.90931929e+01,
-                       2.97048571e+00  , 3.53039750e-01 ,  1.35711130e-01  , 2.14012097e-17,
-                       1.24857356e-01  , 6.07955954e-04 ,  6.21881715e-02  , 0.00000000e+00,
-                       3.13859437e-02  , 6.28853566e-18 ,  1.57425388e-20  , 5.75945121e-19,
-                       2.77635641e-02])
-    exps = np.array([  2.15899348e-01,   5.99319569e+01,   4.45356400e+02,   1.28866588e+03,
-                       2.80585114e+03,   4.31678205e+03,   1.23235613e+04,   2.03075424e+04,
-                       1.56690242e+05,   7.83980009e+04,   3.92728749e+04,   1.59210737e+02,
-                       2.32770302e+06,   2.41903878e+01,   1.06840644e+01,   4.93675587e+00,
-                       3.36368188e+05,   1.67604360e+07,   3.31845039e+07,   6.60326396e+07,
-                       1.31728911e+08,   2.63121454e+08,   5.25906539e+08,   1.05147671e+09,
-                       2.10261705e+09,   4.20489774e+09,   8.40945911e+09,   1.68185818e+10,
-                       3.36368273e+10])
+
     coeffs[coeffs == 0] = 1E-6
+
+
 
     coeffs = update_coefficients(coeffs, exps, be.electron_density, be.grid)
 
     params = np.append(coeffs, exps)
     print(be.integrate_model_using_trapz(be.create_model(params, len(exps))))
+    print(be.integrated_total_electron_density)
+    while True:
+        coeffs = update_coefficients(coeffs, exps, be.electron_density, be.grid)
+        #print(coeffs)
+        params = np.append(coeffs, exps)
+
+        mod = be.create_model(params, len(exps))
+
+        print(be.integrate_model_using_trapz(mod), be.measure_error_by_difference_of_integration(be.electron_density, mod))
 
 
 

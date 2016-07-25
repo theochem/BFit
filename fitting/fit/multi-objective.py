@@ -348,6 +348,10 @@ class GaussianSecondObjSquared(DensityModel):
         assert(exponential.shape[0] == len(np.ravel(self.grid)))
         assert np.ndim(exponential) == 2
         return(exponential)
+
+
+
+
 if __name__ == "__main__":
     # Grab Element and the file path
     ELEMENT = "BE"
@@ -365,9 +369,9 @@ if __name__ == "__main__":
     be = GaussianTotalBasisSet(ELEMENT, column_grid_points, file_path)
     fitting_object = Fitting(be)
 
-    FACTOR = 100.
+    FACTOR = 10000.
     THRESHOLD = 0.00001
-    LAMD = .1
+    LAMD = 1.
     print("FACTOR - ", FACTOR, "LAMBDA - ", LAMD)
     print("Electron Density at r = 0 - ", be.electron_density[0])
     #coeffs = fitting_object.forward_greedy_algorithm(FACTOR, THRESHOLD, be.electron_density)
@@ -393,4 +397,4 @@ if __name__ == "__main__":
                                                              atomic_number=ATOMIC_NUMBER,
                                                              lam=LAMD)
     fit_sec_obj_func = Fitting(sec_obj_func_squared)
-    coeffs = fit_sec_obj_func.forward_greedy_algorithm(FACTOR, THRESHOLD, sec_obj_func_squared.electron_density)
+    #coeffs = fit_sec_obj_func.forward_greedy_algorithm(FACTOR, THRESHOLD, sec_obj_func_squared.electron_density)
