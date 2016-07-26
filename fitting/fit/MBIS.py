@@ -139,7 +139,29 @@ def iterative_MBIS_method(initial_coeffs, constant_exponents, electron_density, 
 
     return new_coefficients, current_error
 
+def update_exponents(constant_coeffs, initial_exponents, electron_density, grid, masked_value=1e-6):
+    assert np.all(constant_coeffs > 0) == True
+    assert len(constant_coeffs) == len(initial_exponents)
+    assert len(np.ravel(electron_density)) == len(np.ravel(grid))
 
+    exponential = np.exp(-initial_exponents * np.power(grid, 2.))
+    assert exponential.shape[1] == len(initial_exponents)
+    assert exponential.shape[0] == len(np.ravel(grid))
+    gaussian_density = np.dot(exponential, constant_coeffs)
+    assert gaussian_density.shape[0] == len(np.ravel(grid))
+
+    masked_gaussian_density = np.ma.asarray(gaussian_density)
+    masked_electron_density = np.ma.asarray(np.ravel(electron_density))
+    masked_gaussian_density[masked_gaussian_density <= masked_value] = masked_value
+
+    ratio = masked_electron_density / masked_gaussian_density
+    new_exponents = np.empty(len(initial_exponents))
+    for i in range(0, len(initial_exponents)):
+        factor = 12. * np.sqrt(initial_exponents[i]) / np.sqrt(np.pi)
+        integrand = ratio * np.ravel(np.ma.asarray(np.exp(- initial_exponents[i] * np.power(grid, 2.)))) *\
+                    np.ravel(np.power(grid, 2.))
+        new_exponents[i] = 3. / ( factor * np.trapz(y=integrand, x=np.ravel(grid)) )
+    return new_exponents
 
 if __name__ == "__main__":
     ELEMENT_NAME = "be"
@@ -159,7 +181,7 @@ if __name__ == "__main__":
     coeffs = fitting_obj.optimize_using_nnls(be.create_cofactor_matrix(exps))
     parameters = fitting_obj.optimize_using_slsqp(np.append(coeffs, exps), len(exps))
 
-
+    print(coeffs)
     coeffs[coeffs == 0] = 1E-6
 
 
@@ -167,19 +189,61 @@ if __name__ == "__main__":
     coeffs = update_coefficients(coeffs, exps, be.electron_density, be.grid)
 
     params = np.append(coeffs, exps)
+
     print(be.integrate_model_using_trapz(be.create_model(params, len(exps))))
     print(be.integrated_total_electron_density)
-    while True:
-        coeffs = update_coefficients(coeffs, exps, be.electron_density, be.grid)
-        #print(coeffs)
-        params = np.append(coeffs, exps)
-
-        mod = be.create_model(params, len(exps))
-
-        print(be.integrate_model_using_trapz(mod), be.measure_error_by_difference_of_integration(be.electron_density, mod))
 
 
+    coeffs = np.array([  5.33709164e+00,   1.01105003e-06,   1.07761914e-06 ,  3.61361827e+00,
+                       7.11802069e+00  , 1.07314504e+00  , 1.16375759e+01   ,6.89402887e+00,
+                       1.92712479e+01  , 2.11742148e+01  , 3.12118175e+01   ,3.30352497e+01,
+                       5.61645084e+01  , 6.46846726e+01  , 7.18672691e+01   ,5.74473022e+01,
+                       4.14245042e+01  , 1.15887695e+01  , 2.59623476e-08   ,1.59932917e-10,
+                       1.72441908e-09  , 3.26702399e-01  , 1.63961938e-01   ,9.55857993e-07,
+                       4.87878588e-04])
+    coeffs = np.array([  4.34091354e+00,   1.33582923e-06,   1.44139576e-06,   4.35031993e+00,
+                       7.39847867e+00,   1.07327241e+00  , 1.16319700e+01  , 6.79821373e+00,
+                       1.73732251e+01,   2.40066201e+01  , 3.55321487e+01  , 2.60018439e+01,
+                       5.77018147e+01,   6.47299378e+01  , 7.22486452e+01  , 5.92268585e+01,
+                       3.68727197e+01,   1.47728726e+01  , 3.13846372e-08  , 1.61701722e-10,
+                       1.54922958e-09,   3.26240502e-01  , 1.19829147e-01  , 6.17412654e-05,
+                       3.32453049e-02,  3.32453049] )
+    exps = np.array([  8.85739185e+05 ,  1.31909417e+05  , 1.09656706e+05  , 7.69424471e+04,
+                       3.05932865e+04 ,  1.44355772e+04  , 6.73967763e+03  , 4.14294645e+03,
+                       2.39390689e+03 ,  6.14671455e+02  , 6.07266092e+02  , 2.61561578e+02,
+                       1.09935230e+02 ,  7.61664237e+01  , 3.09721409e+01  , 1.75499113e+01,
+                       8.66201893e+00 ,  4.76686045e+00  , 4.76686045e+00  , 4.76686044e+00,
+                       2.41596850e-01 ,  2.41596850e-01  , 2.41596850e-01  , 1.02014576e-01,
+                       1.02014576e-01, 0.1 * 10000.])
+    for y in range(0, 100):
+        counter = 0
+        for x in range(0, 300):
+            exps = update_exponents(coeffs, exps, be.electron_density, be.grid)
+            coeffs = update_coefficients(coeffs, exps, be.electron_density, be.grid) ###
 
+            params = np.append(coeffs, exps)
+            mod = be.create_model(params, len(exps))
+            print(counter, be.integrate_model_using_trapz(mod), be.measure_error_by_integration_of_difference(be.electron_density, mod),
+                            be.cost_function(np.append(coeffs, exps), len(exps)), y)
+            counter += 1
+        print(coeffs,exps)
+        """
+        counter = 0
+        for x in range(0, 300):
+            coeffs = update_coefficients(coeffs, exps, be.electron_density, be.grid)
+            #print(coeffs)
+            params = np.append(coeffs, exps)
+
+            mod = be.create_model(params, len(exps))
+
+            print(counter, be.integrate_model_using_trapz(mod), be.measure_error_by_integration_of_difference(be.electron_density, mod),
+                            be.cost_function(np.append(coeffs, exps), len(exps)), y)
+            counter += 1
+        print(coeffs, exps)
+        """
+
+
+    #parameters = fitting_obj.forward_greedy_algorithm()
 
 
 

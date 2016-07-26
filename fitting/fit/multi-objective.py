@@ -371,7 +371,7 @@ if __name__ == "__main__":
 
     FACTOR = 10000.
     THRESHOLD = 0.00001
-    LAMD = 1.
+    LAMD = 0.25
     print("FACTOR - ", FACTOR, "LAMBDA - ", LAMD)
     print("Electron Density at r = 0 - ", be.electron_density[0])
     #coeffs = fitting_object.forward_greedy_algorithm(FACTOR, THRESHOLD, be.electron_density)
@@ -397,4 +397,5 @@ if __name__ == "__main__":
                                                              atomic_number=ATOMIC_NUMBER,
                                                              lam=LAMD)
     fit_sec_obj_func = Fitting(sec_obj_func_squared)
-    #coeffs = fit_sec_obj_func.forward_greedy_algorithm(FACTOR, THRESHOLD, sec_obj_func_squared.electron_density)
+    parameters = fit_sec_obj_func.forward_greedy_algorithm(FACTOR, 50., sec_obj_func_squared.electron_density)
+    print(parameters)
