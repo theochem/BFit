@@ -258,10 +258,11 @@ class GaussianSecondObjTrapz(DensityModel):
         return(exponential)
 
 class GaussianSecondObjSquared(DensityModel):
-    def __init__(self, element_name, grid, file_path, atomic_number,lam=0.8):
+    def __init__(self, element_name, grid, file_path, atomic_number,lam=0.8, lam2=1.):
         DensityModel.__init__(self, element_name, grid, file_path)
         self.lam = lam
         self.atomic_number = atomic_number
+        self.lam2 = lam2
 
     def create_model(self,parameters, num_of_basis_funcs):
         assert parameters.ndim == 1
@@ -296,7 +297,7 @@ class GaussianSecondObjSquared(DensityModel):
         gaussian_dens = self.create_model(parameters, num_of_basis_funcs)
         integration_value = np.trapz(y=(gaussian_dens - np.ravel(self.electron_density))**2\
                                        * np.ravel(np.power(self.grid, 2.)), x=np.ravel(self.grid))
-        residual_squared = np.power(residual, 2.0) + self.lam * integration_value
+        residual_squared = self.lam2 * np.power(residual, 2.0) + self.lam * integration_value
         return(np.sum(residual_squared), self.derivative_of_cost_function(parameters, num_of_basis_funcs))
 
     def derivative_of_cost_function(self, parameters, num_of_basis_funcs):
@@ -304,7 +305,7 @@ class GaussianSecondObjSquared(DensityModel):
             derivative_coeff = []
             for exp in exponents:
                 g_function = -1.0 * np.exp(-1.0 * exp * self.grid**2)
-                derivative = f_function * np.ravel(g_function) +\
+                derivative = self.lam2 * f_function * np.ravel(g_function) +\
                                 self.lam * 2 * np.trapz(y=(mod - np.ravel(self.electron_density))\
                                 * (np.exp(-exp * np.ravel(np.power(self.grid, 2.))) )\
                                 * np.ravel(np.power(self.grid, 2.)), x=np.ravel(self.grid))
@@ -317,7 +318,7 @@ class GaussianSecondObjSquared(DensityModel):
             for index, coeff in np.ndenumerate(np.ravel(coefficients)):
                 exponent = exponents[index]
                 g_function = -coeff * self.grid**2 * np.exp(-1.0 * exponent * self.grid**2)
-                derivative = -f_function * np.ravel(g_function)  +\
+                derivative = -self.lam2 * f_function * np.ravel(g_function)  +\
                                 self.lam * 2 * np.trapz(y=(mod - np.ravel(self.electron_density))\
                                 * (np.exp(-exponent * np.ravel(np.power(self.grid, 2.))) ) \
                                 * (-1 *coeff)\
@@ -333,7 +334,7 @@ class GaussianSecondObjSquared(DensityModel):
 
         f_function = 2.0 * residual
         derivative = []
-        mod = be.create_model(parameters, num_of_basis_funcs)
+        mod = self.create_model(parameters, num_of_basis_funcs)
         derivative_coeff = derivative_wrt_coefficients()
         derivative_exp = derivative_wrt_exponents()
         derivative = derivative + derivative_coeff

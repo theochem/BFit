@@ -435,7 +435,7 @@ class Fitting():
                 number_of_functions = np.shape(local_best_parameters)[0]
 
             print("best found", best_cost_function, "integration", integration, "integrate error", integrate_error)
-            print("Counter", counter, "number of functions", number_of_functions, "\n")
+            print("Counter", counter, "number of functions", number_of_functions, global_best_parameters, "\n")
             counter += 1
             #break
         return global_best_parameters, best_cost_function
