@@ -206,10 +206,11 @@ class GaussianTotalIntegrationObjective(DensityModel):
         return(exponential)
 
 class GaussianSecondObjTrapz(DensityModel):
-    def __init__(self, element_name, grid, file_path, atomic_number,lam=0.8):
+    def __init__(self, element_name, grid, file_path, atomic_number,lam=0.8, lam2=1.):
         DensityModel.__init__(self, element_name, grid, file_path)
         self.lam = lam
         self.atomic_number = atomic_number
+        self.lam2 = lam2
 
     def create_model(self,parameters, num_of_basis_funcs):
         assert parameters.ndim == 1
@@ -244,7 +245,7 @@ class GaussianSecondObjTrapz(DensityModel):
         gaussian_dens = self.create_model(parameters, num_of_basis_funcs)
         integration_value = np.trapz(y=np.abs(gaussian_dens - np.ravel(self.electron_density))\
                                        * np.ravel(np.power(self.grid, 2.)), x=np.ravel(self.grid))
-        residual_squared = np.power(residual, 2.0) + self.lam * integration_value
+        residual_squared = self.lam2 * np.power(residual, 2.0) + self.lam * integration_value
         return np.sum(residual_squared)
 
     def derivative_of_cost_function(self, parameters, num_of_basis_funcs):
