@@ -168,11 +168,11 @@ class Fitting():
                 for i in range(0, leng):
                     if x[leng + i ] != 0:
                         integration_value += x[i] * (1 / (4 * x[leng + i])) *(np.pi / x[leng + i])**0.5
-                return integration_value - 4 #int(self.model_object.integrated_total_electron_density)
+                return integration_value - (self.model_object.integrated_total_electron_density)
 
 
-            cons=(#{'type':'eq','fun':integration_constraint},
-                  {'type':'eq', 'fun':constraint})  #lambda x : np.sum(x[0:len(x)//2]) - np.ravel(self.model_object.electron_density)[0]})
+            cons=({'type':'eq','fun':integration_constraint}
+                  ,{'type':'eq', 'fun':constraint})  #lambda x : np.sum(x[0:len(x)//2]) - np.ravel(self.model_object.electron_density)[0]})
             bounds = np.array([(0.0, np.inf) for x in range(0, len(initial_guess))], dtype=np.float64)
             f_min_slsqp = scipy.optimize.minimize(self.model_object.cost_function, x0=initial_guess, method="SLSQP",
                                                   bounds=bounds, constraints=cons, args=(args),
