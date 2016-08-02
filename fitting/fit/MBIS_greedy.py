@@ -87,9 +87,10 @@ if __name__ == "__main__":
         counter = 0
 
         for x in range(0, 50):
-            coeffs = update_coefficients(coeffs, exps, be.electron_density, be.grid) ###
+            temp_coeffs = coeffs.copy()
+            #coeffs = update_coefficients(coeffs, exps, be.electron_density, be.grid) ###
 
-            exps = update_exponents(coeffs, exps, be.electron_density, be.grid)
+            exps = update_exponents(temp_coeffs, exps, be.electron_density, be.grid)
             params = np.append(coeffs, exps)
             mod = be.create_model(params, len(exps))
             error = be.measure_error_by_integration_of_difference(be.electron_density, mod)
@@ -100,10 +101,12 @@ if __name__ == "__main__":
             counter += 1
 
         for x in range(0, 800):
+            temp_coeffs = coeffs.copy()
+
             if keep_coeff:
                 coeffs = update_coefficients(coeffs, exps, be.electron_density, be.grid) ###
             if keep_exps:
-                exps = update_exponents(coeffs, exps, be.electron_density, be.grid)
+                exps = update_exponents(temp_coeffs, exps, be.electron_density, be.grid)
 
             params = np.append(coeffs, exps)
             mod = be.create_model(params, len(exps))
