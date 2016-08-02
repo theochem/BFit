@@ -176,7 +176,7 @@ class Fitting():
             bounds = np.array([(0.0, np.inf) for x in range(0, len(initial_guess))], dtype=np.float64)
             f_min_slsqp = scipy.optimize.minimize(self.model_object.cost_function, x0=initial_guess, method="SLSQP",
                                                   bounds=bounds, constraints=cons, args=(args),
-                                                  jac=False)
+                                                  jac=True)
 
             parameters = f_min_slsqp['x']
             return parameters
