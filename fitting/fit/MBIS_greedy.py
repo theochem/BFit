@@ -22,14 +22,19 @@ def next_list_of_exponents(exponents_array, factor):
             all_choices_of_exponents.append(exponent_array)
     return(all_choices_of_exponents)
 
-def add_only_to_ends(exponents_array, factor):
+def add_only_to_ends(exponents_array, factor, coefficient_array):
     assert exponents_array.ndim == 1
     size = exponents_array.shape[0]
     all_choices_of_exponents = []
+    all_choices_of_coefficients = []
 
     all_choices_of_exponents.append(np.insert(exponents_array, 0, exponents_array[0]/factor))
     all_choices_of_exponents.append(np.append(exponents_array, exponents_array[size - 1] * factor))
-    return all_choices_of_exponents
+
+    all_choices_of_coefficients.append(np.insert(coefficient_array, 0, coefficient_array[0]/factor))
+    all_choices_of_coefficients.append(np.append(coefficient_array, coefficient_array[size - 1] * factor))
+
+    return all_choices_of_exponents, all_choices_of_coefficients
 
 def nnls_optimization_routine(exponents, fitting_obj):
     cofactor_matrix = fitting_obj.model_object.create_cofactor_matrix(exponents)
@@ -58,17 +63,20 @@ def greedy_MBIS_method(factor, desired_accuracy, fitting_obj):
     print("\n START GREEDY METHOD")
     global_best_error = current_error
     global_best_parameters = optimized_params.copy()
-    local_parameters = exponents.copy()
+    local_parameters = optimized_params.copy()
     counter = 6
     while current_error > desired_accuracy:
-        next_set_of_exps = add_only_to_ends(local_parameters, factor)
+        next_set_of_exps, next_set_of_coeffs = add_only_to_ends(local_parameters[len(local_parameters)//2:], factor,
+                                                                local_parameters[0:len(local_parameters)//2])
 
         local_best_error = 1e10
         local_best_parameters = None
+        i = 0
         for exp in next_set_of_exps:
-            coeffs = nnls_optimization_routine(exp, fitting_obj)
-            parameters, error  = fixed_iteration_MBIS_method(coeffs, exp, fitting_obj, num_of_iterations=100, iprint=True)
-
+            coeffs = next_set_of_coeffs[i]
+            print(coeffs)
+            parameters, error  = fixed_iteration_MBIS_method(coeffs, exp, fitting_obj, num_of_iterations=2000, iprint=False)
+            i += 1
             if error < local_best_error:
                 local_best_error = error
                 local_best_parameters = parameters.copy()
@@ -79,11 +87,11 @@ def greedy_MBIS_method(factor, desired_accuracy, fitting_obj):
 
         local_parameters = local_best_parameters.copy()
         model = fitting_obj.model_object.create_model(local_parameters, len(next_set_of_exps[0]))
+        int = fitting_obj.model_object.integrate_model_using_trapz(model)
         int_error = fitting_obj.model_object.measure_error_by_integration_of_difference(
                                                     fitting_obj.model_object.electron_density,
-                                                    model
-                                                )
-        print("Current best error for iteration - ", int_error, " Number of Functions - ", counter)
+                                                    model)
+        print("Current best error for iteration - ", int_error, " Number of Functions - ", counter, " Integration - ", int)
         counter += 1
     print("\n BEST RESULTS ")
     print(global_best_parameters)

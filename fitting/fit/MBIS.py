@@ -4,14 +4,11 @@ from fitting.fit.multi_objective import GaussianSecondObjTrapz, GaussianSecondOb
 import  matplotlib.pyplot as plt
 from scipy.integrate import simps, trapz
 
-import decimal
 import numpy as np
 
-d = decimal.Decimal
-#Absolute difference= 314245.645194 15667.5795399 [ 329913.2247343]
 
 def update_coefficients(initial_coeffs, constant_exponents, electron_density, grid, masked_value=1e-6):
-    assert np.all(initial_coeffs > 0) == True
+    assert np.all(initial_coeffs > 0) == True, "Coefficinets should be positive non zero, " + str(initial_coeffs)
     assert len(initial_coeffs) == len(constant_exponents)
     assert len(np.ravel(electron_density)) == len(np.ravel(grid))
 
@@ -69,6 +66,7 @@ def fixed_iteration_MBIS_method(coefficients, exponents,  fitting_obj, num_of_it
     old_coefficients = np.copy(coefficients)
     new_coefficients = np.copy(coefficients)
     counter = 0
+    error_array = [ [], [], [], [] ]
 
     for x in range(0, num_of_iterations):
         temp_coefficients = new_coefficients.copy()
@@ -88,6 +86,10 @@ def fixed_iteration_MBIS_method(coefficients, exponents,  fitting_obj, num_of_it
                                 fitting_obj.model_object.electron_density,
                                 approx_model)
         least_squares_error = fitting_obj.model_object.cost_function(parameters, len(exponents))
+        error_array[0].append(density_integration)
+        error_array[1].append(least_squares_error)
+        error_array[2].append(current_error)
+        error_array[3].append(diff_in_integration_error)
         if iprint:
             print(counter, density_integration,
                            least_squares_error,
@@ -95,7 +97,7 @@ def fixed_iteration_MBIS_method(coefficients, exponents,  fitting_obj, num_of_it
                            diff_in_integration_error)
         counter += 1
 
-    return np.append(new_coefficients, exponents), current_error
+    return np.append(new_coefficients, exponents), error_array
 
 def iterative_MBIS_method(coefficients, exponents, fitting_obj, threshold=1e-5, masked_value=1e-6, iprint=False):
     assert isinstance(fitting_obj, Fitting), "fitting object should be of type Fitting. It is instead %r" % type(fitting_obj)
@@ -210,8 +212,8 @@ def plot_density_sections(dens, prodens, points, title='None'):
         plt.close()
 
 if __name__ == "__main__":
-    ELEMENT_NAME = "ag"
-    ATOMIC_NUMBER = 47
+    ELEMENT_NAME = "ne"
+    ATOMIC_NUMBER = 10
     file_path = r"C:\Users\Alireza\PycharmProjects\fitting\fitting\data\examples\\" + ELEMENT_NAME + ".slater"
     #Create Grid for the modeling
     from fitting.density.radial_grid import *
@@ -226,13 +228,12 @@ if __name__ == "__main__":
     coeffs = fitting_obj.optimize_using_nnls(be.create_cofactor_matrix(exps))
 
 
-    be_abs = GaussianSecondObjTrapz(ELEMENT_NAME, column_grid_points, file_path, atomic_number=47, lam=1., lam2=0.)
+    be_abs = GaussianSecondObjTrapz(ELEMENT_NAME, column_grid_points, file_path, atomic_number=ATOMIC_NUMBER, lam=1., lam2=0.)
     fitting_abs = Fitting(be_abs)
-    be_squared = GaussianSecondObjSquared(ELEMENT_NAME, column_grid_points, file_path, atomic_number=4, lam=0.1, lam2=0.)
-    be_abs = GaussianSecondObjTrapz(ELEMENT_NAME, column_grid_points, file_path, atomic_number=4, lam=1., lam2=0.)
+    be_squared = GaussianSecondObjSquared(ELEMENT_NAME, column_grid_points, file_path, atomic_number=ATOMIC_NUMBER, lam=0.1, lam2=0.)
     fitting_squared = Fitting(be_squared)
 
-    parameters = fitting_squared.optimize_using_slsqp(np.append(coeffs, exps), len(exps), additional_constraints=True)
+    parameters = fitting_abs.optimize_using_slsqp(np.append(coeffs, exps), len(exps), additional_constraints=True)
     coeffs = parameters[0:len(parameters)//2]
     exps = parameters[len(parameters)//2:]
     print(ELEMENT_NAME + " True Density Integration " + str(be.integrated_total_electron_density))
@@ -240,9 +241,9 @@ if __name__ == "__main__":
     coeffs[coeffs == 0.] = 1E-6
     exps[exps == 0.] = 1E-6
 
-    parameters, error_array = iterative_MBIS_method(coeffs, exps, fitting_obj, threshold=0.046, iprint=True)
+    parameters, error_array = fixed_iteration_MBIS_method(coeffs, exps, fitting_abs, num_of_iterations=40205, iprint=True)
     approx_model = be.create_model(parameters, len(exps))
-    plot_density_sections(np.ravel(be.electron_density), approx_model, np.ravel(be.grid), title="Silver  MBIS Method")
+    plot_density_sections(np.ravel(be.electron_density), approx_model, np.ravel(be.grid), title=ELEMENT_NAME + "  MBIS Method")
 
     fig, axes = plt.subplots(2, 1)
     fig.suptitle("Integration and Cost Function Value", fontsize=12, fontweight='bold')
@@ -257,6 +258,7 @@ if __name__ == "__main__":
     ax2.set_xlabel("Number of Iteration")
     plt.savefig(ELEMENT_NAME + " NNLS_inte_and_Cost_func.png")
     plt.show()
+    plt.close()
 
     fig, axes = plt.subplots(2, 1)
     fig.suptitle("Different Integration Error Measures", fontsize=12, fontweight='bold')
@@ -267,10 +269,37 @@ if __name__ == "__main__":
     ax2=axes[1]
     ax2.plot(error_array[3], 'r')
     ax2.set_ylabel("Diff In Density Int. ")
-    plt.show()
     plt.savefig(ELEMENT_NAME + " NNLS_Integration_Error_Measures.png")
     plt.show()
+    plt.close()
 
+
+    fig, axes = plt.subplots(2, 1)
+    fig.suptitle("Integration and Cost Function Value", fontsize=12, fontweight='bold')
+    ax1 = axes[0]
+    ax1.plot(error_array[0][-100:], 'r')
+    ax1.set_ylabel("Density Integration of Approx")
+    ax1.set_xlabel("Number of Iteration")
+
+    ax2 = axes[1]
+    ax2.plot(error_array[1][-100:], 'r')
+    ax2.set_ylabel("Least Squares Value of Carbon")
+    ax2.set_xlabel("Number of Iteration")
+    plt.savefig(ELEMENT_NAME + " Last_100_Values_NNLS_inte_and_Cost_func.png")
+    plt.show()
+    plt.close()
+
+    fig, axes = plt.subplots(2, 1)
+    fig.suptitle("Last 100 Values Different Integration Error Measures", fontsize=12, fontweight='bold')
+    ax1 = axes[0]
+    ax1.plot(error_array[2][-100:], 'r')
+    ax1.set_ylabel("Int. of the Diff. ")
+
+    ax2=axes[1]
+    ax2.plot(error_array[3][-100:], 'r')
+    ax2.set_ylabel("Diff In Density Int. ")
+    plt.savefig(ELEMENT_NAME + " Last_100_Values_NNLS_Integration_Error_Measures.png")
+    plt.show()
 
 
 
