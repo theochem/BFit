@@ -6,11 +6,22 @@ from scipy.integrate import simps, trapz
 
 import numpy as np
 
+def get_normalization_constant(exponent):
+    return (exponent / np.pi)**(3/2)
+
+def get_normalization_constant2(exponent):
+    return (exponent / np.pi )**(1/2) * 2.
+
 def normalized_gaussian_model(coefficients, exponents, grid):
     exponential = np.exp(-exponents * np.power(grid, 2.))
-    normalization_constants = np.array([(exponents[x] / np.pi)**(1/2)  for x in range(0, len(exponents))])
+    normalization_constants = np.array([get_normalization_constant(exponents[x])  for x in range(0, len(exponents))])
     normalized_coeffs = normalization_constants * coefficients
     gaussian_density = np.dot(exponential, normalized_coeffs)
+    return gaussian_density
+
+def get_gaussian_model(coefficients, exponents, grid):
+    exponential = np.exp(-exponents * np.power(grid, 2.))
+    gaussian_density = np.dot(exponential, coefficients)
     return gaussian_density
 
 def integrate_error(coefficients, exponents, electron_density, grid):
@@ -20,7 +31,7 @@ def integrate_error(coefficients, exponents, electron_density, grid):
 
 def integrate_normalized_model(coefficients, exponents, electron_density, grid):
     gaussian_model = normalized_gaussian_model(coefficients, exponents, grid)
-    return np.trapz(y=np.power(np.ravel(grid), 2.) * gaussian_model , x=np.ravel(grid))
+    return np.trapz(y=np.power(np.ravel(grid), 2.) * 4 * np.pi * gaussian_model , x=np.ravel(grid))
 
 def KL_objective_function(coefficients, exponents, true_density, grid):
     gaussian_density = normalized_gaussian_model(coefficients, exponents, grid)
@@ -47,9 +58,11 @@ def update_coefficients(initial_coeffs, constant_exponents, electron_density, gr
 
     new_coefficients = np.empty(len(initial_coeffs))
     for i in range(0, len(initial_coeffs)):
-        factor = initial_coeffs[i] * (constant_exponents[i] / np.pi)**(1/2) * 2.
-        integrand = ratio * np.ravel(np.ma.asarray(np.exp(- constant_exponents[i] * np.power(grid, 2.))))
+        factor = initial_coeffs[i] * get_normalization_constant(constant_exponents[i])
+        integrand = ratio * np.ravel(np.ma.asarray(np.exp(- constant_exponents[i] * np.power(grid, 2.)))) *\
+                    np.ravel(np.power(grid, 2.))
         new_coefficients[i] = factor * np.trapz(y=integrand, x=np.ravel(grid))
+    print(np.sum(new_coefficients))
     return new_coefficients
 
 def update_exponents(constant_coeffs, initial_exponents, electron_density, grid, masked_value=1e-6):
@@ -62,10 +75,10 @@ def update_exponents(constant_coeffs, initial_exponents, electron_density, grid,
     ratio = masked_electron_density / masked_gaussian_density
     new_exponents = np.empty(len(initial_exponents))
     for i in range(0, len(initial_exponents)):
-        factor = 2. * ((initial_exponents[i]) / np.sqrt(np.pi))**(3/2)
+        factor = 2. * get_normalization_constant(initial_exponents[i])
         integrand = ratio * np.ravel(np.ma.asarray(np.exp(- initial_exponents[i] * np.power(grid, 2.)))) *\
                     np.ravel(np.power(grid, 2.))
-        new_exponents[i] = 3. / ( factor * np.trapz(y=integrand, x=np.ravel(grid)) )
+        new_exponents[i] = 1. / ( factor * np.trapz(y=integrand, x=np.ravel(grid)) )
     return new_exponents
 
 def fixed_iteration_MBIS_method(coefficients, exponents,  electron_density, grid, num_of_iterations=800,masked_value=1e-6, iprint=False):
@@ -79,19 +92,24 @@ def fixed_iteration_MBIS_method(coefficients, exponents,  electron_density, grid
         temp_coefficients = new_coefficients.copy()
         new_coefficients = update_coefficients(old_coefficients, exponents,electron_density,
                                             grid, masked_value=masked_value)
-        exponents = update_exponents(old_coefficients, exponents, electron_density, grid)
+        #exponents = update_exponents(old_coefficients, exponents, electron_density, grid)
         old_coefficients = temp_coefficients.copy()
 
         approx_model = normalized_gaussian_model(new_coefficients, exponents, grid)
         inte_error = integrate_error(new_coefficients, exponents, electron_density, grid)
         integration_model = integrate_normalized_model(new_coefficients, exponents, electron_density, grid)
         obj_func_error = KL_objective_function(new_coefficients, exponents, electron_density, grid)
-
+        if x % 1000 == 0.:
+            print("Coeffs")
+            print(new_coefficients)
+            print("Exps")
+            print(exponents)
         if iprint:
             print(counter, integration_model,
                inte_error,
                obj_func_error)
         counter += 1
+    return (coeffs, exps)
 
 if __name__ == "__main__":
     ELEMENT_NAME = "be"
@@ -117,9 +135,13 @@ if __name__ == "__main__":
                    6.71088640e+06,   1.34217728e+07,   2.68435456e+07,   5.36870912e+07,
                    1.07374182e+08,   2.14748365e+08,   4.29496730e+08,   8.58993459e+08,
                    1.71798692e+09,   3.43597384e+09])
-
+    exps = be.UGBS_s_exponents
     coeffs = fitting_obj.optimize_using_nnls(be.create_cofactor_matrix(exps))
     coeffs[coeffs == 0.] = 1e-12
 
+
+    #print("paams", parameters)
+    #model = be.create_model(np.append(parameters,exps), len(parameters))
+    #print(be.integrate_model_using_trapz(model))
     fixed_iteration_MBIS_method(coeffs, exps, be.electron_density, be.grid, num_of_iterations=10000000,iprint=True)
 

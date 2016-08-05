@@ -12,9 +12,6 @@ def update_coefficients(initial_coeffs, constant_exponents, electron_density, gr
     assert len(initial_coeffs) == len(constant_exponents)
     assert len(np.ravel(electron_density)) == len(np.ravel(grid))
 
-    def get_normalization_constants(coefficient, exponents):
-        [(constant_exponents[x] / np.pi)**(3/2) for x in range(0, len(constant_exponents))]
-
     exponential = np.exp(-constant_exponents * np.power(grid, 2.))
     assert exponential.shape[1] == len(constant_exponents)
     assert exponential.shape[0] == len(np.ravel(grid))
@@ -29,7 +26,7 @@ def update_coefficients(initial_coeffs, constant_exponents, electron_density, gr
 
     new_coefficients = np.empty(len(initial_coeffs))
     for i in range(0, len(initial_coeffs)):
-        factor = initial_coeffs[i] * (constant_exponents[i] / np.pi)**(3/2) * 2.
+        factor = initial_coeffs[i] * (constant_exponents[i] / np.pi)**(1/2) * 2.
         integrand = ratio * np.ravel(np.ma.asarray(np.exp(- constant_exponents[i] * np.power(grid, 2.))))
         new_coefficients[i] = factor * np.trapz(y=integrand, x=np.ravel(grid))
     return new_coefficients
@@ -67,10 +64,10 @@ def update_exponents(constant_coeffs, initial_exponents, electron_density, grid,
     ratio = masked_electron_density / masked_gaussian_density
     new_exponents = np.empty(len(initial_exponents))
     for i in range(0, len(initial_exponents)):
-        factor = 12. * np.sqrt(initial_exponents[i]) / np.sqrt(np.pi)
+        factor = 4. * np.sqrt(initial_exponents[i]) / np.sqrt(np.pi)
         integrand = ratio * np.ravel(np.ma.asarray(np.exp(- initial_exponents[i] * np.power(grid, 2.)))) *\
                     np.ravel(np.power(grid, 2.))
-        new_exponents[i] = 3. / ( factor * np.trapz(y=integrand, x=np.ravel(grid)) )
+        new_exponents[i] = 1. / ( factor * np.trapz(y=integrand, x=np.ravel(grid)) )
     return new_exponents
 
 
@@ -304,7 +301,7 @@ if __name__ == "__main__":
     coeffs[coeffs == 0.] = 1E-6
     exps[exps == 0.] = 1E-6
 
-    parameters, error_array = fixed_iteration_MBIS_method(coeffs, exps, fitting_obj, num_of_iterations=5000, iprint=False)
+    parameters, error_array = fixed_iteration_MBIS_method(coeffs, exps, fitting_obj, num_of_iterations=5000, iprint=True)
     print("Final Coeffs")
     print(parameters[:len(parameters)//2])
     print("Final Exps")
