@@ -42,6 +42,103 @@ def nnls_optimization_routine(exponents, fitting_obj):
     coeffs[coeffs == 0.] = 1e-6
     return coeffs
 
+def analytically_solve_objective_function(electron_density, grid, weight):
+    grid = np.copy(np.ravel(grid))
+    grid_squared = np.copy(np.power(grid, 2.0))
+    ln_of_electron_density = np.ma.log(np.ravel(electron_density))
+
+    if(np.isnan(ln_of_electron_density).any()):
+        print("ISNAN in the electron density")
+    a = 2.0 * np.sum(weight)
+    b = 2.0 * np.sum(weight * grid_squared)
+    c = 2.0 * weight * np.ravel(ln_of_electron_density)
+
+    c = c.sum()
+    if(np.isnan(c)):
+        print("C IS THE ISNAN")
+    d = np.copy(b)
+    e = 2.0 * np.sum(weight * np.power(grid, 4.0))
+    f = 2.0 * weight * grid_squared * ln_of_electron_density
+
+    f = f.sum()
+    if(np.isinf(f)):
+        print("F IS THE ISNAN")
+
+    A = (b * f - c * e) / (b * d - a * e)
+    B = (a * f - c * d) / (a * e - b * d)
+    coefficient = np.exp(A)
+    exponent = -B
+    if exponent < 0:
+        exponent = 0.0
+    if(np.isnan(exponent)):
+        print("ISNAN DETECTED In The Exponent")
+    return(np.array([coefficient, exponent]))
+
+def KL_objective_function(parameters, electron_density, grid):
+    coeffs = parameters[:len(parameters)//2]
+    exponents = parameters[len(parameters)//2:]
+    exponential = np.exp(exponents * np.power(grid, 2.))
+    gaussian_density = np.dot(exponential, coeffs)
+
+    masked_gaussian_density = np.ma.asarray(gaussian_density)
+    masked_electron_density = np.ma.asarray(np.ravel(electron_density))
+    masked_gaussian_density[masked_gaussian_density <= 1e-6] = 1e-6
+    ratio = masked_electron_density / masked_gaussian_density
+    return np.trapz(y=np.ravel(electron_density) * np.log(ratio), x=np.ravel(grid))
+
+def gaussian_model(parameters, grid):
+    coeffs = parameters[:len(parameters)//2]
+    exponents = parameters[len(parameters)//2:]
+
+    exponential = np.exp(-exponents * np.power(grid, 2.))
+    gaussian_density = np.dot(exponential, coeffs)
+    return gaussian_density
+
+def analytically_solve_with_weights(electron_density, grid):
+    WEIGHTS = [np.ones(np.shape(grid)[0]),
+               np.ravel(electron_density),
+               np.ravel(np.power(electron_density, 2.0))]
+    best_error = 1e10
+    best_parameter = None
+    for weight in WEIGHTS:
+        parameter = analytically_solve_objective_function(electron_density, grid, weight)
+        objective_func = KL_objective_function(parameter, electron_density, grid)
+        if objective_func < best_error:
+            best_error = objective_func
+            best_parameter = parameter
+
+    return best_parameter
+
+def join_parameters_together(parameters, added_parameters):
+    coeffs = parameters[:len(parameters)//2]
+    exponents = parameters[len(parameters)//2:]
+
+    coeffs = np.append(coeffs, added_parameters[0])
+    exponents = np.append(exponents, added_parameters[1])
+    return np.append(coeffs, exponents)
+
+def finding_first_five_parameters(electron_density, grid):
+
+    first_parameter = analytically_solve_with_weights(electron_density, grid)
+    print(first_parameter, electron_density[0])
+    model = gaussian_model(first_parameter, grid)
+    print(np.trapz(y=np.ravel(np.power(grid, 2.)) * model, x=np.ravel(grid)))
+
+    new_electron_density = electron_density.copy() - np.reshape(model, (len(model), 1))
+    best_params = first_parameter.copy()
+    for x in range(0, 4):
+        next_params = analytically_solve_with_weights(new_electron_density, grid)
+        best_params = join_parameters_together(best_params, next_params)
+        model = gaussian_model(first_parameter, grid)
+        print(np.trapz(y=np.ravel(np.power(grid, 2.)) * model, x=np.ravel(grid)))
+        new_electron_density = new_electron_density.copy() - np.reshape(model, (len(model), 1))
+    print(len(best_params), best_params)
+    return best_params
+
+
+
+
+
 def greedy_MBIS_method(factor, desired_accuracy, fitting_obj):
     assert isinstance(fitting_obj, Fitting), "fitting object should be of type Fitting. It is instead %r" % type(fitting_obj)
 
@@ -118,4 +215,5 @@ if __name__ == "__main__":
     #params = fitting_squared.forward_greedy_algorithm(10000., 0.0001, be.electron_density)
     #print(params)
     fitting_obj = Fitting(be)
-    greedy_MBIS_method(1000., 0.0045, fitting_obj)
+    #greedy_MBIS_method(1000., 0.0045, fitting_obj)
+    finding_first_five_parameters(be.electron_density, be.grid)
