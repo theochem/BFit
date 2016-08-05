@@ -7,7 +7,8 @@ from scipy.integrate import simps, trapz
 import numpy as np
 
 def get_normalization_constant(exponent):
-    return (exponent / np.pi)**(3/2)
+    #return (exponent / np.pi)**(3/2)
+    return  4 * exponent**(3/2) / np.pi**(1/2)
 
 def get_normalization_constant2(exponent):
     return (exponent / np.pi )**(1/2) * 2.
@@ -31,7 +32,7 @@ def integrate_error(coefficients, exponents, electron_density, grid):
 
 def integrate_normalized_model(coefficients, exponents, electron_density, grid):
     gaussian_model = normalized_gaussian_model(coefficients, exponents, grid)
-    return np.trapz(y=np.power(np.ravel(grid), 2.) * 4 * np.pi * gaussian_model , x=np.ravel(grid))
+    return np.trapz(y=np.power(np.ravel(grid), 2.) * gaussian_model , x=np.ravel(grid))
 
 def KL_objective_function(coefficients, exponents, true_density, grid):
     gaussian_density = normalized_gaussian_model(coefficients, exponents, grid)
@@ -74,11 +75,15 @@ def update_exponents(constant_coeffs, initial_exponents, electron_density, grid,
 
     ratio = masked_electron_density / masked_gaussian_density
     new_exponents = np.empty(len(initial_exponents))
+    masked_grid = np.ma.asarray(np.ravel(grid))
+    masked_grid_squared = np.ma.asarray(np.ravel(np.power(grid, 4.)))
+
     for i in range(0, len(initial_exponents)):
         factor = 2. * get_normalization_constant(initial_exponents[i])
         integrand = ratio * np.ravel(np.ma.asarray(np.exp(- initial_exponents[i] * np.power(grid, 2.)))) *\
-                    np.ravel(np.power(grid, 2.))
-        new_exponents[i] = 1. / ( factor * np.trapz(y=integrand, x=np.ravel(grid)) )
+                    masked_grid_squared
+        denom = (factor * np.trapz(y=integrand, x=masked_grid))
+        new_exponents[i] = 3. / denom
     return new_exponents
 
 def fixed_iteration_MBIS_method(coefficients, exponents,  electron_density, grid, num_of_iterations=800,masked_value=1e-6, iprint=False):
@@ -90,8 +95,9 @@ def fixed_iteration_MBIS_method(coefficients, exponents,  electron_density, grid
 
     for x in range(0, num_of_iterations):
         temp_coefficients = new_coefficients.copy()
+
         new_coefficients = update_coefficients(old_coefficients, exponents,electron_density,
-                                            grid, masked_value=masked_value)
+                                               grid, masked_value=masked_value)
         #exponents = update_exponents(old_coefficients, exponents, electron_density, grid)
         old_coefficients = temp_coefficients.copy()
 
@@ -108,8 +114,12 @@ def fixed_iteration_MBIS_method(coefficients, exponents,  electron_density, grid
             print(counter, integration_model,
                inte_error,
                obj_func_error)
+
+        error_array[0].append(inte_error)
+        error_array[1].append(integration_model)
+        error_array[2].append(obj_func_error)
         counter += 1
-    return (coeffs, exps)
+    return((coeffs, exps), error_array)
 
 if __name__ == "__main__":
     ELEMENT_NAME = "be"
