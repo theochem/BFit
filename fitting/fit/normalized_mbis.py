@@ -6,120 +6,267 @@ from scipy.integrate import simps, trapz
 
 import numpy as np
 
-def get_normalization_constant(exponent):
-    #return (exponent / np.pi)**(3/2)
-    return  4 * exponent**(3/2) / np.pi**(1/2)
+class MBIS():
+    def __init__(self, model_object, weights, atomic_number):
+        assert isinstance(model_object, DensityModel)
+        assert type(atomic_number) is int, "Atomic Number should be of type int. Instead it is %r" % type(atomic_number)
+        self.model_object = model_object
+        self.weights = np.ma.asarray(weights)
+        self.atomic_number = atomic_number #self.model_object.integrated_total_electron_density
+        self.lamda_multplier = self.lagrange_multiplier()
+        assert not np.isnan(self.lamda_multplier), "lagrange multiplier should not nan"
+        assert self.lamda_multplier != 0., "lagrange multiplier cannot be zero"
 
-def get_normalization_constant2(exponent):
-    return (exponent / np.pi )**(1/2) * 2.
+    @staticmethod
+    def get_normalization_constant(exponent):
+        return (exponent / np.pi)**(3./2.)
 
-def normalized_gaussian_model(coefficients, exponents, grid):
-    exponential = np.exp(-exponents * np.power(grid, 2.))
-    normalization_constants = np.array([get_normalization_constant(exponents[x])  for x in range(0, len(exponents))])
-    normalized_coeffs = normalization_constants * coefficients
-    gaussian_density = np.dot(exponential, normalized_coeffs)
-    return gaussian_density
+    def get_all_normalization_constants(self, exp_arr):
+        assert exp_arr.ndim == 1
+        return np.array([MBIS.get_normalization_constant(x) for x in exp_arr])
 
-def get_gaussian_model(coefficients, exponents, grid):
-    exponential = np.exp(-exponents * np.power(grid, 2.))
-    gaussian_density = np.dot(exponential, coefficients)
-    return gaussian_density
+    def get_normalized_coefficients(self, coeff_arr, exp_arr):
+        normalized_constants = self.get_all_normalization_constants(exp_arr)
+        assert len(normalized_constants) == len(coeff_arr)
+        return coeff_arr * normalized_constants
 
-def integrate_error(coefficients, exponents, electron_density, grid):
-    gaussian_model = normalized_gaussian_model(coefficients, exponents, grid)
-    return np.trapz(y=np.ravel(np.power(grid, 2.)) * np.abs(gaussian_model - np.ravel(electron_density)) ,x=
-            np.ravel(grid))
+    def get_normalized_gaussian_density(self, coeff_arr, exp_arr):
+        exponential = np.exp(-exp_arr * np.power(self.model_object.grid, 2.))
+        normalized_coeffs = self.get_normalized_coefficients(coeff_arr, exp_arr)
+        assert normalized_coeffs.ndim == 1.
+        return np.dot(exponential, normalized_coeffs)
 
-def integrate_normalized_model(coefficients, exponents, electron_density, grid):
-    gaussian_model = normalized_gaussian_model(coefficients, exponents, grid)
-    return np.trapz(y=np.power(np.ravel(grid), 2.) * gaussian_model , x=np.ravel(grid))
+    def lagrange_multiplier(self):
+        grid_squared = np.ravel(np.power(self.model_object.grid, 2.))
+        return 4 * np.pi * np.trapz(y=self.weights * np.ravel(self.model_object.electron_density) * grid_squared \
+                                    , x=np.ravel(self.model_object.grid)) / self.atomic_number
 
-def KL_objective_function(coefficients, exponents, true_density, grid):
-    gaussian_density = normalized_gaussian_model(coefficients, exponents, grid)
-    masked_gaussian_density = np.ma.asarray(gaussian_density)
-    masked_electron_density = np.ma.asarray(np.ravel(true_density))
-    #masked_gaussian_density[masked_gaussian_density <= 1e-6] = 1e-12
+    def get_integration_factor(self, exponent, masked_normed_gaussian):
+        masked_electron_density = np.ma.asarray(np.ravel(self.model_object.electron_density))
+        ratio = masked_electron_density / masked_normed_gaussian
+        masked_grid_squared = np.ma.asarray(np.ravel(np.power(self.model_object.grid, 2.)))
 
-    ratio = masked_electron_density / masked_gaussian_density
-    return np.trapz(y=masked_electron_density * np.log(ratio), x=np.ravel(grid))
+        prefactor = 4 * np.pi * MBIS.get_normalization_constant(exponent)
+        integrand = self.weights * ratio * np.exp(-exponent * masked_grid_squared)
+        return prefactor * np.trapz(y=integrand * masked_grid_squared, x=np.ravel(self.model_object.grid))
+
+    def update_coefficients(self, coeff_arr, exp_arr):
+        assert np.all(coeff_arr > 0), "Coefficients should be positive. Instead we got %r" % coeff_arr
+        assert np.all(exp_arr > 0), "Exponents should be positive. Instead we got %r" % exp_arr
+        masked_normed_gaussian = np.ma.asarray(self.get_normalized_gaussian_density(coeff_arr, exp_arr))
+
+        new_coeff = coeff_arr.copy()
+        for i in range(0, len(coeff_arr)):
+            new_coeff[i] *= self.get_integration_factor(exp_arr[i], masked_normed_gaussian)
+            new_coeff[i] /= self.lamda_multplier
+        return new_coeff
+
+    def update_exponents(self, coeff_arr, exp_arr):
+        assert np.all(coeff_arr > 0), "Coefficients should be positive. Instead we got %r" % coeff_arr
+        assert np.all(exp_arr > 0), "Exponents should be positive. Instead we got %r" % exp_arr
+        masked_normed_gaussian = np.ma.asarray(self.get_normalized_gaussian_density(coeff_arr, exp_arr))
+        masked_electron_density = np.ma.asarray(np.ravel(self.model_object.electron_density))
+        masked_grid_squared = np.ma.asarray(np.ravel(np.power(self.model_object.grid, 2.)))
+        masked_grid_quadrupled = np.ma.asarray(np.ravel(np.power(self.model_object.grid, 4.)))
+        ratio = masked_electron_density / masked_normed_gaussian
+
+        new_exps = exp_arr.copy()
+        for i in range(0, len(exp_arr)):
+            prefactor = 4 * np.pi * MBIS.get_normalization_constant(exp_arr[i])
+            integrand = self.weights * ratio * np.exp(-exp_arr[i] * masked_grid_squared)
+            new_exps[i] = 3 * self.lamda_multplier
+            integration = np.trapz(y=integrand * masked_grid_quadrupled, x=np.ravel(self.model_object.grid))
+            assert prefactor != 0, "prefactor should not be zero but the exponent for normalization constant is %r" % str(exp_arr[i])
+            assert integration != 0, "Integration of the integrand is zero. The Integrand Times r^4 is %r" % str(integrand * masked_grid_quadrupled)
+            assert not np.isnan(integration), "Integration should not be nan"
+            new_exps[i] /= ( 2 * prefactor * integration)
+        return new_exps
+
+    def update_exponents_without_convergence(self, coeff_arr, exp_arr):
+        masked_normed_gaussian = np.ma.asarray(self.get_normalized_gaussian_density(coeff_arr, exp_arr))
+        masked_electron_density = np.ma.asarray(np.ravel(self.model_object.electron_density))
+        masked_grid_squared = np.ma.asarray(np.ravel(np.power(self.model_object.grid, 2.)))
+        masked_grid_quadrupled = np.ma.asarray(np.ravel(np.power(self.model_object.grid, 4.)))
+        ratio = masked_electron_density / masked_normed_gaussian
+
+        new_exps = exp_arr.copy()
+        for i in range(0, len(exp_arr)):
+            integration_factor = self.get_integration_factor(exp_arr[i], masked_normed_gaussian)
+
+            prefactor = 4 * np.pi * MBIS.get_normalization_constant(exp_arr[i])
+            integrand = self.weights * ratio * np.exp(-exp_arr[i] * masked_grid_squared)
+            new_exps[i] = 3 * integration_factor
+            new_exps[i] /= ( 2 * prefactor * np.trapz(y=integrand * masked_grid_quadrupled, x=np.ravel(self.model_object.grid)))
+        return new_exps
+
+    def run(self, threshold_coeff, threshold_exp, coeff_arr, exp_arr, iprint=False):
+        old_coeffs = coeff_arr.copy() + 1
+        new_coeffs = coeff_arr.copy()
+        old_exps = exp_arr.copy() + 1
+        new_exps = exp_arr.copy()
+
+        counter = 0
+        while np.any(np.abs(new_exps - old_exps) > threshold_coeff):
+            temp_storage_coeffs = new_coeffs.copy()
+            new_coeffs = self.update_coefficients(new_coeffs, new_exps)
+            old_coeffs = temp_storage_coeffs.copy()
+
+            while np.any(np.abs(old_coeffs - new_coeffs) > threshold_exp):
+                temp_storage_coeffs = new_coeffs.copy()
+                new_coeffs = self.update_coefficients(new_coeffs, new_exps)
+                # print(new_coeffs)
+                old_coeffs = temp_storage_coeffs.copy()
+                model = self.get_normalized_gaussian_density(new_coeffs , new_exps)
+                if iprint:
+                    print(counter, self.integrate_model(model), self.integrate_model_with_four_pi(model), np.sum(new_coeffs), \
+                          self.goodness_of_fit(model), self.goodness_of_fit_grid_squared(model), \
+                          self.get_objective_function(new_coeffs, new_exps),  True, np.max(np.abs(old_coeffs - new_coeffs)))
+                counter += 1
+
+            temp_storage_exps = new_exps.copy()
+            new_exps = self.update_exponents(new_coeffs, new_exps)
+            #print(new_exps)
+            old_exps = temp_storage_exps.copy()
+            model = self.get_normalized_gaussian_density(new_coeffs, new_exps)
+
+            if iprint:
+                if counter % 100 == 0.:
+                    for x in range(0, len(new_coeffs)):
+                        print(new_coeffs[x], new_exps[x])
+                print(counter, self.integrate_model(model), self.integrate_model_with_four_pi(model), np.sum(new_coeffs), \
+                      self.goodness_of_fit(model), self.goodness_of_fit_grid_squared(model), \
+                      self.get_objective_function(new_coeffs, new_exps),  False, np.max(np.abs(new_exps - old_exps)))
+            counter += 1
+        return new_coeffs, new_exps
+
+    def run_greedy(self, threshold, iprint=False):
+        def next_list_of_exponents(exponents_array, coefficient_array, factor, coeff_guess):
+            assert exponents_array.ndim == 1
+            size = exponents_array.shape[0]
+            all_choices_of_exponents = []
+            all_choices_of_coeffs = []
+
+            for index, exp in np.ndenumerate(exponents_array):
+                if index[0] == 0:
+                    exponent_array = np.insert(exponents_array, index, exp / factor )
+                    coeff_array = np.insert(coefficient_array, index, coeff_guess)
+                elif index[0] <= size:
+                    exponent_array = np.insert(exponents_array, index, (exponents_array[index[0] - 1] + exponents_array[index[0]])/2)
+                    coeff_array = np.insert(coeff_arr, index, coeff_guess)
+
+                all_choices_of_exponents.append(exponent_array)
+                all_choices_of_coeffs.append(coeff_array)
+
+                if index[0] == size - 1:
+                    exponent_array = np.append(exponents_array, np.array([ exp * factor] ))
+                    coeff_array = np.append(coeff_arr, np.array([coeff_guess]))
+                    all_choices_of_exponents.append(exponent_array)
+                    all_choices_of_coeffs.append(coeff_array)
+            return(all_choices_of_exponents, all_choices_of_coeffs)
+
+        coeff_arr = np.array([4.])
+        exp_arr = np.array([333.])
+        coeff_arr, exp_arr = self.run(threshold, coeff_arr, exp_arr)
+        model = self.get_normalized_gaussian_density(coeff_arr, exp_arr)
+
+        for x in range(0, 50):
+            next_list_of_exps, next_list_of_coeffs = next_list_of_exponents(exp_arr, coeff_arr, 100., coeff_guess=1.)
+
+            best_next_exps = None
+            best_next_coeffs = None
+            best_objective_func = 1e10
+            for i in range(0, len(next_list_of_exps)):
+                objective_func = self.get_objective_function(next_list_of_coeffs[i], next_list_of_exps[i])
+
+                #objective_func, coeffs, exps = self.optimize_using_slsqp(np.append(next_list_of_coeffs[i], next_list_of_exps[i]))
+                if objective_func < best_objective_func:
+                    best_next_exps = next_list_of_exps[i]
+                    best_next_coeffs = next_list_of_coeffs[i]
+            print("Pre - Optimized", objective_func)
+            objective_func, best_next_coeffs, best_next_exps = self.optimize_using_slsqp(np.append(next_list_of_coeffs[i], next_list_of_exps[i]))
+            print("SLSQP OPtimized", objective_func, np.sum(coeffs))
+
+            best_next_coeffs[best_next_coeffs == 0.] = 1e-12
+            coeff_arr, exp_arr = self.run(threshold, best_next_coeffs, best_next_exps)
+            model = self.get_normalized_gaussian_density(coeff_arr, exp_arr)
+            if iprint:
+                print(x, self.integrate_model(model), self.integrate_model_with_four_pi(model), np.sum(coeff_arr),\
+                      self.goodness_of_fit(model), self.goodness_of_fit_grid_squared(model), \
+                      self.get_objective_function(coeff_arr, exp_arr))
 
 
-def update_coefficients(initial_coeffs, constant_exponents, electron_density, grid, masked_value=1e-6):
-    assert np.all(initial_coeffs > 0) == True, "Coefficinets should be positive non zero, " + str(initial_coeffs)
-    assert len(initial_coeffs) == len(constant_exponents)
-    assert len(np.ravel(electron_density)) == len(np.ravel(grid))
+        return coeff_arr, exp_arr
 
-    gaussian_density = normalized_gaussian_model(initial_coeffs, constant_exponents,  grid)
 
-    masked_gaussian_density = np.ma.asarray(gaussian_density)
-    masked_electron_density = np.ma.asarray(np.ravel(electron_density))
-    masked_gaussian_density[masked_gaussian_density <= masked_value] = masked_value
+    def fixed_iterations(self, coeff_arr, exp_arr):
+        for y in range(0, 5):
+            for x in range(0, 1000):
+                coeff_arr = self.update_coefficients(coeff_arr, exp_arr)
+                #print(coeff_arr)
+                model = self.get_normalized_gaussian_density(coeff_arr, exp_arr)
+                print(x, self.integrate_model(model), self.integrate_model_with_four_pi(model), np.sum(coeff_arr),\
+                      self.goodness_of_fit(model), self.goodness_of_fit_grid_squared(model), \
+                      self.get_objective_function(coeff_arr, exp_arr))
+            for x in range(0, 1000):
+                exp_arr = self.update_exponents(coeff_arr, exp_arr)
+                print(exp_arr)
+                model = self.get_normalized_gaussian_density(coeff_arr, exp_arr)
+                print(x, self.integrate_model(model), self.integrate_model_with_four_pi(model), np.sum(coeff_arr),\
+                      self.goodness_of_fit(model), self.goodness_of_fit_grid_squared(model), \
+                      self.get_objective_function(coeff_arr, exp_arr))
 
-    ratio = masked_electron_density / masked_gaussian_density
+    def get_objective_function(self, coeff_arr, exp_arr):
+        masked_normed_gaussian = np.ma.asarray(self.get_normalized_gaussian_density(coeff_arr, exp_arr))
+        masked_electron_density = np.ma.asarray(np.ravel(self.model_object.electron_density))
+        masked_grid_squared = np.ma.asarray(np.ravel(np.power(self.model_object.grid, 2.)))
+        return np.trapz(y=masked_electron_density * self.weights * 4 * np.pi * masked_grid_squared * np.log(masked_electron_density / masked_normed_gaussian),\
+                        x=np.ravel(self.model_object.grid))
 
-    new_coefficients = np.empty(len(initial_coeffs))
-    for i in range(0, len(initial_coeffs)):
-        factor = initial_coeffs[i] * get_normalization_constant(constant_exponents[i])
-        integrand = ratio * np.ravel(np.ma.asarray(np.exp(- constant_exponents[i] * np.power(grid, 2.)))) *\
-                    np.ravel(np.power(grid, 2.))
-        new_coefficients[i] = factor * np.trapz(y=integrand, x=np.ravel(grid))
-    print(np.sum(new_coefficients))
-    return new_coefficients
+    def integrate_model(self, model):
+        return np.trapz(y=model * np.ravel(np.power(self.model_object.grid, 2.)), x=np.ravel(self.model_object.grid))
 
-def update_exponents(constant_coeffs, initial_exponents, electron_density, grid, masked_value=1e-6):
-    gaussian_density = normalized_gaussian_model(constant_coeffs, initial_exponents, grid)
+    def integrate_model_with_four_pi(self, model):
+        return np.trapz(y= 4 * np.pi * model * np.ravel(np.power(self.model_object.grid, 2.)), x=np.ravel(self.model_object.grid))
 
-    masked_gaussian_density = np.ma.asarray(gaussian_density)
-    masked_electron_density = np.ma.asarray(np.ravel(electron_density))
-    masked_gaussian_density[masked_gaussian_density <= masked_value] = masked_value
+    def goodness_of_fit_grid_squared(self, model):
+        masked_grid_squared = np.ma.asarray(np.ravel(np.power(self.model_object.grid, 2.)))
+        return np.trapz(y=masked_grid_squared *np.abs(model - np.ravel(self.model_object.electron_density)), x=np.ravel(self.model_object.grid))
 
-    ratio = masked_electron_density / masked_gaussian_density
-    new_exponents = np.empty(len(initial_exponents))
-    masked_grid = np.ma.asarray(np.ravel(grid))
-    masked_grid_squared = np.ma.asarray(np.ravel(np.power(grid, 4.)))
+    def goodness_of_fit(self, model):
+        return np.trapz(y=np.abs(model - np.ravel(self.model_object.electron_density)), x=np.ravel(self.model_object.grid))
 
-    for i in range(0, len(initial_exponents)):
-        factor = 2. * get_normalization_constant(initial_exponents[i])
-        integrand = ratio * np.ravel(np.ma.asarray(np.exp(- initial_exponents[i] * np.power(grid, 2.)))) *\
-                    masked_grid_squared
-        denom = (factor * np.trapz(y=integrand, x=masked_grid))
-        new_exponents[i] = 3. / denom
-    return new_exponents
+    def maximum_difference(self):
+        return np.max()
 
-def fixed_iteration_MBIS_method(coefficients, exponents,  electron_density, grid, num_of_iterations=800,masked_value=1e-6, iprint=False):
-    current_error = 1e10
-    old_coefficients = np.copy(coefficients)
-    new_coefficients = np.copy(coefficients)
-    counter = 0
-    error_array = [ [], [], [], [], [] ,[]]
+    def get_KL_divergence(self, parameters):
+        coeff_arr = parameters[:len(parameters)//2]
+        exp_arr = parameters[len(parameters)//2:]
+        masked_normed_gaussian = np.ma.asarray(self.get_normalized_gaussian_density(coeff_arr, exp_arr))
+        masked_electron_density = np.ma.asarray(np.ravel(self.model_object.electron_density))
+        masked_grid_squared = np.ma.asarray(np.ravel(np.power(self.model_object.grid, 2.)))
+        return np.trapz(y=masked_electron_density * self.weights * 4 * np.pi * masked_grid_squared * np.log(masked_electron_density / masked_normed_gaussian),\
+                        x=np.ravel(self.model_object.grid))
 
-    for x in range(0, num_of_iterations):
-        temp_coefficients = new_coefficients.copy()
+    def optimize_using_slsqp(self, parameters):
+        def constraint(x):
+            num_of_funcs = len(x)//2
+            return self.atomic_number - np.sum(x[:num_of_funcs])
+        def constraint2(x):
+            num_of_funcs = len(x)//2
+            model = self.get_normalized_gaussian_density(x[:num_of_funcs], x[num_of_funcs:])
+            return np.sum(np.abs(np.ravel(self.model_object.electron_density) - model))
 
-        new_coefficients = update_coefficients(old_coefficients, exponents,electron_density,
-                                               grid, masked_value=masked_value)
-        #exponents = update_exponents(old_coefficients, exponents, electron_density, grid)
-        old_coefficients = temp_coefficients.copy()
-
-        approx_model = normalized_gaussian_model(new_coefficients, exponents, grid)
-        inte_error = integrate_error(new_coefficients, exponents, electron_density, grid)
-        integration_model = integrate_normalized_model(new_coefficients, exponents, electron_density, grid)
-        obj_func_error = KL_objective_function(new_coefficients, exponents, electron_density, grid)
-        if x % 1000 == 0.:
-            print("Coeffs")
-            print(new_coefficients)
-            print("Exps")
-            print(exponents)
-        if iprint:
-            print(counter, integration_model,
-               inte_error,
-               obj_func_error)
-
-        error_array[0].append(inte_error)
-        error_array[1].append(integration_model)
-        error_array[2].append(obj_func_error)
-        counter += 1
-    return((coeffs, exps), error_array)
+        #cons=({'type':'eq', 'fun':constraint},
+        #      {'type':'eq', 'fun':constraint2})
+        cons = ({'type':'eq', 'fun':constraint})
+        bounds = np.array([(0.0, np.inf) for x in range(0, len(parameters))], dtype=np.float64)
+        f_min_slsqp = scipy.optimize.minimize(self.get_KL_divergence, x0=parameters, method="SLSQP",
+                                              bounds=bounds, constraints=cons, jac=False)
+        parameters = f_min_slsqp['x']
+        coeffs = parameters[:len(parameters)//2]
+        exps = parameters[len(parameters)//2:]
+        objective_func = f_min_slsqp['fun']
+        return objective_func, coeffs, exps
 
 if __name__ == "__main__":
     ELEMENT_NAME = "be"
@@ -128,8 +275,8 @@ if __name__ == "__main__":
     #Create Grid for the modeling
     from fitting.density.radial_grid import *
     radial_grid = Radial_Grid(ATOMIC_NUMBER)
-    NUMBER_OF_CORE_POINTS = 300; NUMBER_OF_DIFFUSED_PTS = 400
-    row_grid_points = radial_grid.grid_points(NUMBER_OF_CORE_POINTS, NUMBER_OF_DIFFUSED_PTS, [50, 75, 100])
+    NUMBER_OF_CORE_POINTS = 400; NUMBER_OF_DIFFUSED_PTS = 500
+    row_grid_points = radial_grid.grid_points(NUMBER_OF_CORE_POINTS, NUMBER_OF_DIFFUSED_PTS, [50, 75, 100])[1:]
     column_grid_points = np.reshape(row_grid_points, (len(row_grid_points), 1))
 
     be =  GaussianTotalBasisSet(ELEMENT_NAME, column_grid_points, file_path)
@@ -148,10 +295,129 @@ if __name__ == "__main__":
     exps = be.UGBS_s_exponents
     coeffs = fitting_obj.optimize_using_nnls(be.create_cofactor_matrix(exps))
     coeffs[coeffs == 0.] = 1e-12
+    #coeffs = np.array([4.])
+    #exps = np.array([1000000.])
+    def f():
+        pass
+
+    be.electron_density /= (4 * np.pi)
+    print(np.trapz(y=4 * np.pi * np.ravel(be.electron_density) * np.ravel(np.power(be.grid, 2.)),
+                   x=np.ravel(be.grid)))
+    weights = np.ones(len(row_grid_points)) # 1 / (4 * np.pi * np.power(row_grid_points, 2.))
+    mbis_obj = MBIS(be, weights, ATOMIC_NUMBER)
+    #print("final", mbis_obj.fixed_iterations(coeffs, exps))
+    #print("final", mbis_obj.run_greedy(1e-4, iprint=True))
+
+    #coeffs, exps = (mbis_obj.run(1e-5, coeffs, exps, iprint=True))
+    print("final", coeffs, exps)
+    #103615 0.318309348608 3.99999324462 4.0 0.00670581613856 0.00280627515515 0.00036309846081 False 9.99977783067e-06
+    coeffs =np.array([  3.83890243e-07 ,  3.71252359e-22,   1.58527317e-31  , 2.14531607e-26,
+   1.05259725e-26,   1.17651815e-19,   2.96049951e-05,   3.92003638e-06,
+   8.70547107e-09,   3.98656980e-04,   1.24336654e-03,   2.41337878e-03,
+   2.66584164e-02,   6.21639077e-02,   1.17802789e-01,   5.30885523e-01,
+   1.32326853e-01,   9.98212646e-01,   1.00494143e-45,   2.37485664e-99,
+   5.51337881e-56,   1.41979765e+00,   5.17732947e-01,   1.49944073e-01,
+   4.03858771e-02] )
+    exps = np.array([  5.44068719e+04 ,  5.44068436e+04  , 5.44068401e+04,   5.44068378e+04,
+       5.44068348e+04,   5.44068201e+04,   5.34124207e+03,   5.34124207e+03,
+       5.34124207e+03,   7.04715110e+02,   7.04715110e+02,   1.35999855e+02,
+       1.35999735e+02,   4.18539745e+01,   4.17816843e+01,   1.49638131e+01,
+       1.49638074e+01,   5.60658326e+00,   5.60658326e+00,   5.60658326e+00,
+       2.63932808e-01,   2.63932808e-01,   1.25323913e-01,   1.25323913e-01,
+       6.59955967e-02])
+
+    model = mbis_obj.get_normalized_gaussian_density(coeffs, exps)
 
 
-    #print("paams", parameters)
-    #model = be.create_model(np.append(parameters,exps), len(parameters))
-    #print(be.integrate_model_using_trapz(model))
-    fixed_iteration_MBIS_method(coeffs, exps, be.electron_density, be.grid, num_of_iterations=10000000,iprint=True)
+    def plot_atomic_density(radial_grid, model, electron_density, title, figure_name):
+        #Density List should be in the form
+        # [(electron density, legend reference),(model1, legend reference), ..]
+        import matplotlib.pyplot as plt
+        colors = ["#FF00FF", "#FF0000", "#FFAA00", "#00AA00", "#00AAFF", "#0000FF", "#777777", "#00AA00", "#00AAFF"]
+        ls_list = ['-', ':', ':', '-.', '-.', '--', '--', ':', ':']
+
+        radial_grid *= 0.5291772082999999   #convert a.u. to angstrom
+        plt.semilogy(radial_grid, model, lw=3, label="approx_model", color=colors[0], ls=ls_list[0])
+        plt.semilogy(radial_grid, electron_density, lw=3, label="True Model", color=colors[2], ls=ls_list[3])
+        #plt.xlim(0, 25.0*0.5291772082999999)
+        plt.xlim(0, 9)
+        plt.ylim(ymin=1e-9)
+        plt.xlabel('Distance from the nucleus [A]')
+        plt.ylabel('Log(density [Bohr**-3])')
+        plt.title(title)
+        plt.legend()
+        plt.savefig(figure_name)
+        plt.show()
+        plt.close()
+    plot_atomic_density(row_grid_points, model, np.ravel(be.electron_density), "Hey I Just Met You", "This is Crazy")
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import matplotlib.ticker as mtick
+    from matplotlib import rcParams
+    def plot_density_sections(dens, prodens, points, title='None'):
+        '''
+        '''
+        # choose fonts
+        rcParams['font.family'] = 'serif'
+        rcParams['font.serif'] = ['Times New Roman']
+
+        # plotting intervals
+        sector = 1.e-5
+        conditions = [points <= sector,
+                      np.logical_and(points > sector, points <= 100 * sector),
+                      np.logical_and(points > 100 * sector, points <= 1000 * sector),
+                      np.logical_and(points > 1000 * sector, points <= 1.e5 * sector),
+                      np.logical_and(points > 1.e5 * sector, points <= 2.e5 * sector),
+                      np.logical_and(points > 2.e5 * sector, points <= 5.0),
+                      np.logical_and(points > 5.0, points <= 10.0)]
+
+        # plot within each interval
+        for cond in conditions:
+            # setup figure
+            fig, axes = plt.subplots(2, 1)
+            fig.suptitle(title, fontsize=12, fontweight='bold')
+
+            # plot true & model density
+            ax1 = axes[0]
+            ax1.plot(points[cond], dens[cond], 'ro', linestyle='-', label='True')
+            ax1.plot(points[cond], prodens[cond], 'bo', linestyle='--', label='Approx')
+            ax1.legend(loc=0, frameon=False)
+            xmin, xmax = np.min(points[cond]), np.max(points[cond])
+            ax1.set_xticks(ticks=np.linspace(xmin, xmax, 5))
+            ymin, ymax = np.min(dens[cond]), np.max(dens[cond])
+            ax1.set_yticks(ticks=np.linspace(ymin, ymax, 5))
+            ax1.set_ylabel('Density')
+            if np.any(points[cond] < 1.0):
+                ax1.xaxis.set_major_formatter(mtick.FormatStrFormatter('%.2e'))
+            # Hide the right and top spines
+            ax1.spines['right'].set_visible(False)
+            ax1.spines['top'].set_visible(False)
+            # Only show ticks on the left and bottom spines
+            ax1.yaxis.set_ticks_position('left')
+            ax1.xaxis.set_ticks_position('bottom')
+            ax1.grid(True, zorder=0, color='0.60')
+
+            # plot difference of true & model density
+            ax2 = axes[1]
+            ax2.plot(points[cond], dens[cond] - prodens[cond], 'ko', linestyle='-')
+            ax2.set_xticks(ticks=np.linspace(xmin, xmax, 5))
+            ax2.set_ylabel('True - Approx')
+            ax2.set_xlabel('Distance from the nueleus')
+            ymin, ymax = np.min(dens[cond] - prodens[cond]), np.max(dens[cond] - prodens[cond])
+            ax2.set_yticks(ticks=np.linspace(ymin, ymax, 5))
+            if np.any(points[cond] < 1.0):
+                ax2.xaxis.set_major_formatter(mtick.FormatStrFormatter('%.2e'))
+            # Hide the right and top spines
+            ax2.spines['right'].set_visible(False)
+            ax2.spines['top'].set_visible(False)
+            # Only show ticks on the left and bottom spines
+            ax2.yaxis.set_ticks_position('left')
+            ax2.xaxis.set_ticks_position('bottom')
+            ax2.grid(True, zorder=0, color='0.60')
+
+            plt.tight_layout()
+            plt.show()
+            plt.close()
+
+    plot_density_sections(np.ravel(be.electron_density), model, row_grid_points, title="hey i just met you")
 
