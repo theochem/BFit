@@ -99,28 +99,41 @@ class MBIS():
             new_exps[i] /= ( 2 * prefactor * np.trapz(y=integrand * masked_grid_quadrupled, x=np.ravel(self.model_object.grid)))
         return new_exps
 
-    def run(self, threshold_coeff, threshold_exp, coeff_arr, exp_arr, iprint=False):
-        old_coeffs = coeff_arr.copy() + 1
+    def run(self, threshold_coeff, threshold_exp, coeff_arr, exp_arr, iprint=False, iplot=False):
+        old_coeffs = coeff_arr.copy() + threshold_coeff * 2.
         new_coeffs = coeff_arr.copy()
-        old_exps = exp_arr.copy() + 1
+        old_exps = exp_arr.copy() + threshold_exp * 2.
         new_exps = exp_arr.copy()
+        storage_of_errors = [[], [], [], [], []]
 
         counter = 0
-        while np.any(np.abs(new_exps - old_exps) > threshold_coeff):
+        while np.any(np.abs(new_exps - old_exps) > threshold_exp ):
             temp_storage_coeffs = new_coeffs.copy()
             new_coeffs = self.update_coefficients(new_coeffs, new_exps)
             old_coeffs = temp_storage_coeffs.copy()
 
-            while np.any(np.abs(old_coeffs - new_coeffs) > threshold_exp):
+            while np.any(np.abs(old_coeffs - new_coeffs) > threshold_coeff):
                 temp_storage_coeffs = new_coeffs.copy()
                 new_coeffs = self.update_coefficients(new_coeffs, new_exps)
                 # print(new_coeffs)
                 old_coeffs = temp_storage_coeffs.copy()
                 model = self.get_normalized_gaussian_density(new_coeffs , new_exps)
+
+                integration_model_four_pi = self.integrate_model_with_four_pi(model)
+                sum_of_coeffs = np.sum(new_coeffs)
+                goodness_of_fit = self.goodness_of_fit(model)
+                goodness_of_fit_r_squared = self.goodness_of_fit_grid_squared(model)
+                objective_function = self.get_objective_function(new_coeffs, new_exps)
                 if iprint:
-                    print(counter, self.integrate_model(model), self.integrate_model_with_four_pi(model), np.sum(new_coeffs), \
-                          self.goodness_of_fit(model), self.goodness_of_fit_grid_squared(model), \
-                          self.get_objective_function(new_coeffs, new_exps),  True, np.max(np.abs(old_coeffs - new_coeffs)))
+                    print(counter, integration_model_four_pi, sum_of_coeffs, \
+                          goodness_of_fit, goodness_of_fit_r_squared, \
+                          objective_function,  True, np.max(np.abs(old_coeffs - new_coeffs)))
+                if iplot:
+                    storage_of_errors[0].append(integration_model_four_pi)
+                    storage_of_errors[1].append(sum_of_coeffs)
+                    storage_of_errors[2].append(goodness_of_fit)
+                    storage_of_errors[3].append(goodness_of_fit_r_squared)
+                    storage_of_errors[4].append(objective_function)
                 counter += 1
 
             temp_storage_exps = new_exps.copy()
@@ -129,14 +142,65 @@ class MBIS():
             old_exps = temp_storage_exps.copy()
             model = self.get_normalized_gaussian_density(new_coeffs, new_exps)
 
+            integration_model_four_pi = self.integrate_model_with_four_pi(model)
+            sum_of_coeffs = np.sum(new_coeffs)
+            goodness_of_fit = self.goodness_of_fit(model)
+            goodness_of_fit_r_squared = self.goodness_of_fit_grid_squared(model)
+            objective_function = self.get_objective_function(new_coeffs, new_exps)
             if iprint:
                 if counter % 100 == 0.:
                     for x in range(0, len(new_coeffs)):
                         print(new_coeffs[x], new_exps[x])
-                print(counter, self.integrate_model(model), self.integrate_model_with_four_pi(model), np.sum(new_coeffs), \
-                      self.goodness_of_fit(model), self.goodness_of_fit_grid_squared(model), \
-                      self.get_objective_function(new_coeffs, new_exps),  False, np.max(np.abs(new_exps - old_exps)))
+                print(counter, integration_model_four_pi, sum_of_coeffs, \
+                      goodness_of_fit, goodness_of_fit_r_squared, \
+                      objective_function, False, np.max(np.abs(new_exps - old_exps)))
+            if iplot:
+                storage_of_errors[0].append(integration_model_four_pi)
+                storage_of_errors[1].append(sum_of_coeffs)
+                storage_of_errors[2].append(goodness_of_fit)
+                storage_of_errors[3].append(goodness_of_fit_r_squared)
+                storage_of_errors[4].append(objective_function)
             counter += 1
+
+        #########
+        # PLotting
+        #####
+        if iplot:
+            storage_of_errors = np.array(storage_of_errors)
+            plt.plot(storage_of_errors[0])
+            plt.title(self.model_object.element + " - Integration of Model Using Trapz")
+            plt.xlabel("Num of Iterations")
+            plt.ylabel("Integration of Model Using Trapz")
+            plt.savefig(self.model_object.element + "_Integration_Trapz.png")
+            plt.close()
+
+            plt.plot(storage_of_errors[1])
+            plt.xlabel("Num of Iterations")
+            plt.title(self.model_object.element + " - Sum of Coefficients")
+            plt.ylabel("Sum of Coefficients")
+            plt.savefig(self.model_object.element + "_Sum_of_coefficients.png")
+            plt.close()
+
+            plt.plot(storage_of_errors[2])
+            plt.xlabel("Num of Iterations")
+            plt.title(self.model_object.element + " - Goodness of Fit")
+            plt.ylabel("Int |Model - True| dr")
+            plt.savefig(self.model_object.element + "_good_of_fit.png")
+            plt.close()
+
+            plt.plot(storage_of_errors[3])
+            plt.xlabel("Num of Iterations")
+            plt.title(self.model_object.element + " - Goodness of Fit with r^2")
+            plt.ylabel("Int |Model - True| r^2 dr")
+            plt.savefig(self.model_object.element + "_goodness_of_fit_r_squared.png")
+            plt.close()
+
+            plt.plot(storage_of_errors[4])
+            plt.xlabel("Num of Iterations")
+            plt.title(self.model_object.element + " -  Objective Function")
+            plt.ylabel("KL Divergence Formula")
+            plt.savefig(self.model_object.element + "_objective_function.png")
+            plt.close()
         return new_coeffs, new_exps
 
     def run_greedy(self, threshold, iprint=False):
@@ -235,9 +299,6 @@ class MBIS():
     def goodness_of_fit(self, model):
         return np.trapz(y=np.abs(model - np.ravel(self.model_object.electron_density)), x=np.ravel(self.model_object.grid))
 
-    def maximum_difference(self):
-        return np.max()
-
     def get_KL_divergence(self, parameters):
         coeff_arr = parameters[:len(parameters)//2]
         exp_arr = parameters[len(parameters)//2:]
@@ -269,8 +330,8 @@ class MBIS():
         return objective_func, coeffs, exps
 
 if __name__ == "__main__":
-    ELEMENT_NAME = "be"
-    ATOMIC_NUMBER = 4
+    ELEMENT_NAME = "ag"
+    ATOMIC_NUMBER = 47
     file_path = r"C:\Users\Alireza\PycharmProjects\fitting\fitting\data\examples\\" + ELEMENT_NAME + ".slater"
     #Create Grid for the modeling
     from fitting.density.radial_grid import *
@@ -308,24 +369,25 @@ if __name__ == "__main__":
     #print("final", mbis_obj.fixed_iterations(coeffs, exps))
     #print("final", mbis_obj.run_greedy(1e-4, iprint=True))
 
-    #coeffs, exps = (mbis_obj.run(1e-5, coeffs, exps, iprint=True))
+    coeffs, exps = mbis_obj.run(1e-4, 10., coeffs, exps, iprint=True, iplot=True)
     print("final", coeffs, exps)
     #103615 0.318309348608 3.99999324462 4.0 0.00670581613856 0.00280627515515 0.00036309846081 False 9.99977783067e-06
+    """
     coeffs =np.array([  3.83890243e-07 ,  3.71252359e-22,   1.58527317e-31  , 2.14531607e-26,
-   1.05259725e-26,   1.17651815e-19,   2.96049951e-05,   3.92003638e-06,
-   8.70547107e-09,   3.98656980e-04,   1.24336654e-03,   2.41337878e-03,
-   2.66584164e-02,   6.21639077e-02,   1.17802789e-01,   5.30885523e-01,
-   1.32326853e-01,   9.98212646e-01,   1.00494143e-45,   2.37485664e-99,
-   5.51337881e-56,   1.41979765e+00,   5.17732947e-01,   1.49944073e-01,
-   4.03858771e-02] )
+                       1.05259725e-26,   1.17651815e-19,   2.96049951e-05,   3.92003638e-06,
+                       8.70547107e-09,   3.98656980e-04,   1.24336654e-03,   2.41337878e-03,
+                       2.66584164e-02,   6.21639077e-02,   1.17802789e-01,   5.30885523e-01,
+                       1.32326853e-01,   9.98212646e-01,   1.00494143e-45,   2.37485664e-99,
+                       5.51337881e-56,   1.41979765e+00,   5.17732947e-01,   1.49944073e-01,
+                       4.03858771e-02] )
     exps = np.array([  5.44068719e+04 ,  5.44068436e+04  , 5.44068401e+04,   5.44068378e+04,
-       5.44068348e+04,   5.44068201e+04,   5.34124207e+03,   5.34124207e+03,
-       5.34124207e+03,   7.04715110e+02,   7.04715110e+02,   1.35999855e+02,
-       1.35999735e+02,   4.18539745e+01,   4.17816843e+01,   1.49638131e+01,
-       1.49638074e+01,   5.60658326e+00,   5.60658326e+00,   5.60658326e+00,
-       2.63932808e-01,   2.63932808e-01,   1.25323913e-01,   1.25323913e-01,
-       6.59955967e-02])
-
+                       5.44068348e+04,   5.44068201e+04,   5.34124207e+03,   5.34124207e+03,
+                       5.34124207e+03,   7.04715110e+02,   7.04715110e+02,   1.35999855e+02,
+                       1.35999735e+02,   4.18539745e+01,   4.17816843e+01,   1.49638131e+01,
+                       1.49638074e+01,   5.60658326e+00,   5.60658326e+00,   5.60658326e+00,
+                       2.63932808e-01,   2.63932808e-01,   1.25323913e-01,   1.25323913e-01,
+                       6.59955967e-02])
+    """
     model = mbis_obj.get_normalized_gaussian_density(coeffs, exps)
 
 
@@ -419,5 +481,5 @@ if __name__ == "__main__":
             plt.show()
             plt.close()
 
-    plot_density_sections(np.ravel(be.electron_density), model, row_grid_points, title="hey i just met you")
+    plot_density_sections(np.ravel(be.electron_density), model, row_grid_points, title=ELEMENT_NAME)
 
