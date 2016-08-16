@@ -12,10 +12,13 @@ from abc import ABCMeta, abstractmethod
 
 class MBIS_ABC():
     __metaclass__ = ABCMeta
-    def __init__(self, electron_density, grid_points, weights, atomic_number, element_name):
+    def __init__(self, electron_density, grid_obj, weights, atomic_number, element_name):
         assert isinstance(atomic_number, int), "atomic_number should be of type Integer instead it is %r" % type(atomic_number)
+        assert isinstance(grid_obj, RadialGrid)
         self.electron_density = electron_density
-        self.grid_points = grid_points
+        self.grid_obj = grid_obj
+        self.grid_points = np.reshape(grid_obj.points, (len(grid_obj.points), 1))
+
         self.weights = np.ma.asarray(weights) #Weights are masked due the fact that they tend to be small
         self.atomic_number = atomic_number
         self.lagrange_multiplier = self.get_lagrange_multiplier()
@@ -50,12 +53,16 @@ class MBIS_ABC():
         pass
 
     @abstractmethod
-    def get_normalization_constant():
+    def get_normalization_constant(self):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def run(self):
         raise NotImplementedError()
 
     def get_lagrange_multiplier(self):
-        return 4 * np.pi * np.trapz(y=self.weights * self.masked_electron_density * self.masked_grid_squared \
-                                    , x=np.ravel(self.grid_points)) / self.atomic_number
+        return self.grid_obj.integrate(self.weights * self.masked_electron_density * self.masked_grid_squared)\
+                / (self.atomic_number)
 
     def get_all_normalization_constants(self, exp_arr):
         assert exp_arr.ndim == 1
@@ -63,10 +70,8 @@ class MBIS_ABC():
 
     def get_objective_function(self, model):
         log_ratio_of_models = np.log(self.masked_electron_density / model)
-        four_pi_grid_squared = 4 * np.pi * self.masked_grid_squared
-        return np.trapz(y=self.masked_electron_density * self.weights * four_pi_grid_squared * log_ratio_of_models,\
-                        x=np.ravel(self.model_object.grid))
-
+        four_pi_grid_squared = self.masked_grid_squared
+        return self.grid_obj.integrate(self.masked_electron_density * self.weights * four_pi_grid_squared * log_ratio_of_models)
 
     def run_for_valence_density(self):
         pass
@@ -74,22 +79,16 @@ class MBIS_ABC():
     def run_greedy(self):
         pass
 
-    def get_updated_exps_and_old_exps(self, coeff_arr, exp_arr):
-        new_exp = self.update_exponents()
-
-    def get_updated_coeffs_and_old_coeffs(self, coeff_arr, exp_arr):
-        new_coeffs = self.update_coefficients(coeff_arr, exp_arr)
-        return new_coeffs, coeff_arr
 
     def integrate_model_with_four_pi(self, model):
-        return np.trapz(y= 4 * np.pi * self.masked_grid_squared * model , x=np.ravel(self.grid_points))
+        return self.grid_obj.integrate(self.masked_grid_squared * model)
 
     def goodness_of_fit_grid_squared(self, model):
         masked_grid_squared = np.ma.asarray(np.ravel(np.power(self.model_object.grid, 2.)))
-        return np.trapz(y=masked_grid_squared *np.abs(model - np.ravel(self.electron_density)), x=np.ravel(self.grid_points))
+        return self.grid_obj.integrate(masked_grid_squared *np.abs(model - np.ravel(self.electron_density))) / (4 * np.pi)
 
     def goodness_of_fit(self, model):
-        return np.trapz(y=np.abs(model - np.ravel(self.electron_density)), x=np.ravel(self.grid_points))
+        return self.grid_obj.integrate(np.abs(model - np.ravel(self.electron_density))) / (4 * np.pi)
 
     def get_descriptors_of_model(self, model):
         return(self.integrate_model_with_four_pi(model),
@@ -125,6 +124,118 @@ class MBIS_ABC():
         plt.ylabel("KL Divergence Formula")
         plt.savefig(self.element_name + "_objective_function.png")
         plt.close()
+
+class TotalMBIS(MBIS_ABC):
+    def __init__(self, electron_density, grid_obj, weights, atomic_number, element_name):
+        super(TotalMBIS, self).__init__(electron_density, grid_obj, weights, atomic_number, element_name)
+
+    def get_normalized_gaussian_density(self, coeff_arr, exp_arr):
+        exponential = np.exp(-exp_arr * np.power(self.grid_points, 2.))
+        normalized_coeffs = self.get_normalized_coefficients(coeff_arr, exp_arr)
+        assert normalized_coeffs.ndim == 1.
+        return np.dot(exponential, normalized_coeffs)
+
+    def get_integration_factor(self, exponent, masked_normed_gaussian):
+        ratio = self.masked_electron_density / masked_normed_gaussian
+
+        integrand = self.weights * ratio * np.exp(-exponent * self.masked_grid_squared)
+        return MBIS.get_normalization_constant(exponent) * self.grid_obj.integrate(integrand * self.masked_grid_squared)
+
+    def update_coefficients(self, coeff_arr, exp_arr):
+        assert np.all(coeff_arr > 0), "Coefficients should be positive. Instead we got %r" % coeff_arr
+        assert np.all(exp_arr > 0), "Exponents should be positive. Instead we got %r" % exp_arr
+        masked_normed_gaussian = np.ma.asarray(self.get_normalized_gaussian_density(coeff_arr, exp_arr))
+
+        new_coeff = coeff_arr.copy()
+        for i in range(0, len(coeff_arr)):
+            new_coeff[i] *= self.get_integration_factor(exp_arr[i], masked_normed_gaussian)
+            new_coeff[i] /= self.lamda_multplier
+        return new_coeff
+
+    def update_exponents(self, coeff_arr, exp_arr):
+        assert np.all(coeff_arr > 0), "Coefficients should be positive. Instead we got %r" % coeff_arr
+        assert np.all(exp_arr > 0), "Exponents should be positive. Instead we got %r" % exp_arr
+        masked_normed_gaussian = np.ma.asarray(self.get_normalized_gaussian_density(coeff_arr, exp_arr))
+        masked_grid_quadrupled = np.ma.asarray(np.ravel(np.power(self.grid_points, 4.)))
+        ratio = self.masked_electron_density / masked_normed_gaussian
+
+        new_exps = exp_arr.copy()
+        for i in range(0, len(exp_arr)):
+            prefactor = MBIS.get_normalization_constant(exp_arr[i])
+            integrand = self.weights * ratio * np.exp(-exp_arr[i] * self.masked_grid_squared)
+            new_exps[i] = 3 * self.lamda_multplier
+            integration = self.grid_obj.integrate(integrand * masked_grid_quadrupled)
+            assert prefactor != 0, "prefactor should not be zero but the exponent for normalization constant is %r" % str(exp_arr[i])
+            assert integration != 0, "Integration of the integrand is zero. The Integrand Times r^4 is %r" % str(integrand * masked_grid_quadrupled)
+            assert not np.isnan(integration), "Integration should not be nan"
+            new_exps[i] /= ( 2 * prefactor * integration)
+        return new_exps
+
+    def get_normalization_constant(self, exponent):
+        return (exponent / np.pi) **(3/2)
+
+    def get_new_coeffs_and_old_coeffs(self, coeff_arr, exp_arr):
+        new_coeff = self.update_coefficients(coeff_arr, exp_arr)
+        return new_coeff, coeff_arr
+
+    def get_new_exps_and_old_exps(self, coeff_arr, exp_arr):
+        new_exps = self.update_exponents(coeff_arr, exp_arr)
+        return new_exps, exp_arr
+
+    def run(self, threshold_coeff, threshold_exp, coeff_arr, exp_arr, iprint=False, iplot=False):
+        old_coeffs = coeff_arr.copy() + threshold_coeff * 2.
+        new_coeffs = coeff_arr.copy()
+        old_exps = exp_arr.copy() + threshold_exp * 2.
+        new_exps = exp_arr.copy()
+        storage_of_errors = [["""Integration Using Trapz"""],
+                             [""" goodness of fit"""],
+                             [""" goof of fit with r^2"""],
+                             [""" KL Divergence Formula"""]]
+
+        counter = 0
+        while np.any(np.abs(new_exps - old_exps) > threshold_exp ):
+            new_coeffs, old_coeffs = self.get_new_coeffs_and_old_coeffs(coeff_arr, exp_arr)
+
+            while np.any(np.abs(old_coeffs - new_coeffs) > threshold_coeff):
+                new_coeffs, old_coeffs = self.get_new_coeffs_and_old_coeffs(coeff_arr, exp_arr)
+                model = self.get_normalized_gaussian_density(new_coeffs , new_exps)
+
+                sum_of_coeffs = np.sum(new_coeffs)
+                integration_model_four_pi, goodness_of_fit, goodness_of_fit_r_squared, objective_function = \
+                        self.get_descriptors_of_model(model)
+                if iprint:
+                    print(counter, integration_model_four_pi, sum_of_coeffs, \
+                          goodness_of_fit, goodness_of_fit_r_squared, \
+                          objective_function,  True, np.max(np.abs(old_coeffs - new_coeffs)))
+                if iplot:
+                    storage_of_errors[0].append(integration_model_four_pi)
+                    storage_of_errors[1].append(goodness_of_fit)
+                    storage_of_errors[2].append(goodness_of_fit_r_squared)
+                    storage_of_errors[3].append(objective_function)
+                counter += 1
+
+            new_exps, old_exps = self.get_new_exps_and_old_exps(new_coeffs, new_exps)
+            model = self.get_normalized_gaussian_density(new_coeffs, new_exps)
+
+            sum_of_coeffs = np.sum(new_coeffs)
+            integration_model_four_pi, goodness_of_fit, goodness_of_fit_r_squared, objective_function = \
+                        self.get_descriptors_of_model(model)
+            if iprint:
+                if counter % 100 == 0.:
+                    for x in range(0, len(new_coeffs)):
+                        print(new_coeffs[x], new_exps[x])
+                print(counter, integration_model_four_pi, sum_of_coeffs, \
+                      goodness_of_fit, goodness_of_fit_r_squared, \
+                      objective_function, False, np.max(np.abs(new_exps - old_exps)))
+            if iplot:
+                storage_of_errors[0].append(integration_model_four_pi)
+                storage_of_errors[1].append(goodness_of_fit)
+                storage_of_errors[2].append(goodness_of_fit_r_squared)
+                storage_of_errors[3].append(objective_function)
+            counter += 1
+        if iplot:
+            self.create_plots(storage_of_errors[0], storage_of_errors[1], storage_of_errors[2], storage_of_errors[3])
+        return new_coeffs, old_coeffs
 
 class MBIS():
     def __init__(self, model_object, weights, atomic_number, horton_grid=None):
@@ -451,11 +562,11 @@ if __name__ == "__main__":
     row_grid_points = radial_grid.grid_points(NUMBER_OF_CORE_POINTS, NUMBER_OF_DIFFUSED_PTS, [50, 75, 100])[1:]
     column_grid_points = np.reshape(row_grid_points, (len(row_grid_points), 1))
 
-    import horton
-    rtf = horton.ExpRTransform(1.0e-6, 2e1, 200)
-    grid = horton.RadialGrid(rtf)
-    points = grid.radii
-    print(points)
+    #import horton
+    #rtf = horton.ExpRTransform(1.0e-6, 2e1, 200)
+    #grid = horton.RadialGrid(rtf)
+    #points = grid.radii
+    #print(points)
 
     be =  GaussianTotalBasisSet(ELEMENT_NAME, column_grid_points, file_path)
     fitting_obj = Fitting(be)
