@@ -156,7 +156,7 @@ class Fitting():
         row_nnls_coefficients = scipy.optimize.nnls(cofactor_matrix, b_vector)
         return(row_nnls_coefficients[0])
 
-    def optimize_using_slsqp(self, initial_guess, *args, additional_constraints=False):
+    def optimize_using_slsqp(self, initial_guess, additional_constraints=False,*args ):
         if additional_constraints == True:
             def constraint(x, *args):
                 leng = len(x) // 2
@@ -190,7 +190,7 @@ class Fitting():
             #print(f_min_slsqp[4])
             return(parameters)
 
-    def optimize_using_l_bfgs(self, initial_guess, *args, iprint=False):
+    def optimize_using_l_bfgs(self, initial_guess, iprint=False, *args):
         bounds = np.array([(0.0, 1.7976931348623157e+308) for x in range(0, len(initial_guess))], dtype=np.float64)
         #fprime=self.model_object.derivative_of_cost_function
         f_min_l_bfgs_b = scipy.optimize.fmin_l_bfgs_b(self.model_object.cost_function, x0=initial_guess, bounds=bounds, fprime=self.model_object.derivative_of_cost_function
@@ -206,7 +206,7 @@ class Fitting():
 
 
 
-    def find_best_parameter_from_analytical_coeff_and_generated_exponents(self, *args, p=1.5, optimization_algo=optimize_using_slsqp):
+    def find_best_parameter_from_analytical_coeff_and_generated_exponents(self, p=1.5, optimization_algo=optimize_using_slsqp, *args):
         generated_UGBS_exponents = self.model_object.generation_of_UGBS_exponents(p, self.model_object.UGBS_s_exponents)
 
         list_of_parameters = []

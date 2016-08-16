@@ -1,3 +1,5 @@
+from __future__ import division
+
 from fitting.fit.model import *
 from fitting.fit.GaussianBasisSet import *
 import  matplotlib.pyplot as plt
@@ -7,7 +9,9 @@ import numpy as np
 
 from abc import ABCMeta, abstractmethod
 
-class MBIS_ABC(metaclass=ABCMeta):
+
+class MBIS_ABC():
+    __metaclass__ = ABCMeta
     def __init__(self, electron_density, grid_points, weights, atomic_number, element_name):
         assert isinstance(atomic_number, int), "atomic_number should be of type Integer instead it is %r" % type(atomic_number)
         self.electron_density = electron_density
@@ -46,7 +50,6 @@ class MBIS_ABC(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    @staticmethod
     def get_normalization_constant():
         raise NotImplementedError()
 
@@ -64,70 +67,6 @@ class MBIS_ABC(metaclass=ABCMeta):
         return np.trapz(y=self.masked_electron_density * self.weights * four_pi_grid_squared * log_ratio_of_models,\
                         x=np.ravel(self.model_object.grid))
 
-    def run(self, threshold_coeff, threshold_exp, *args, iprint=False, iplot=False):
-        if self.is_valence_density:
-            self.run_for_valence_density(threshold_coeff, threshold_exp, *args, iprint=iprint, iplot=iplot)
-        else:
-            assert len(args) == 2, "Length of args should be 2 or 4, instead it is %r" % len(args)
-            coeff_arr = args[0]
-            exp_arr = args[1]
-
-            old_coeffs = coeff_arr.copy() + threshold_coeff * 2.
-            new_coeffs = coeff_arr.copy()
-            old_exps = exp_arr.copy() + threshold_exp * 2.
-            new_exps = exp_arr.copy()
-            storage_of_errors = [["""Integration Using Trapz"""],
-                                 [""" goodness of fit"""],
-                                 [""" goof of fit with r^2"""],
-                                 [""" KL Divergence Formula"""]]
-
-            counter = 0
-            while np.any(np.abs(new_exps - old_exps) > threshold_exp ):
-                new_coeffs, old_coeffs = self.get_updated_coeffs_and_old_coeffs(new_coeffs, new_exps)
-
-                while np.any(np.abs(old_coeffs - new_coeffs) > threshold_coeff):
-                    temp_storage_coeffs = new_coeffs.copy()
-                    new_coeffs = self.update_coefficients(new_coeffs, new_exps)
-                    old_coeffs = temp_storage_coeffs.copy()
-
-                    model = self.get_normalized_gaussian_density(new_coeffs , new_exps)
-
-                    sum_of_coeffs = np.sum(new_coeffs)
-                    integration_model_four_pi, goodness_of_fit, goodness_of_fit_r_squared,\
-                        objective_function = self.get_descriptors_of_model(model)
-
-                    if iprint:
-                        print(counter, integration_model_four_pi, sum_of_coeffs, \
-                              goodness_of_fit, goodness_of_fit_r_squared, \
-                              objective_function,  True, np.max(np.abs(old_coeffs - new_coeffs)))
-                    if iplot:
-                        storage_of_errors[0].append(integration_model_four_pi)
-                        storage_of_errors[1].append(goodness_of_fit)
-                        storage_of_errors[2].append(goodness_of_fit_r_squared)
-                        storage_of_errors[3].append(objective_function)
-                    counter += 1
-
-                temp_storage_exps = new_exps.copy()
-                new_exps = self.update_exponents(new_coeffs, new_exps)
-                old_exps = temp_storage_exps.copy()
-
-                model = self.get_normalized_gaussian_density(new_coeffs, new_exps)
-                sum_of_coeffs = np.sum(new_coeffs)
-                integration_model_four_pi, goodness_of_fit, goodness_of_fit_r_squared,\
-                        objective_function = self.get_descriptors_of_model(model)
-                if iprint:
-                    print(counter, integration_model_four_pi, sum_of_coeffs, \
-                          goodness_of_fit, goodness_of_fit_r_squared, \
-                          objective_function, False, np.max(np.abs(new_exps - old_exps)))
-                if iplot:
-                    storage_of_errors[0].append(integration_model_four_pi)
-                    storage_of_errors[1].append(goodness_of_fit)
-                    storage_of_errors[2].append(goodness_of_fit_r_squared)
-                    storage_of_errors[3].append(objective_function)
-                counter += 1
-            if iplot:
-                self.create_plots(storage_of_errors[0], storage_of_errors[1],
-                                  storage_of_errors[2], storage_of_errors[3])
 
     def run_for_valence_density(self):
         pass
@@ -188,7 +127,7 @@ class MBIS_ABC(metaclass=ABCMeta):
         plt.close()
 
 class MBIS():
-    def __init__(self, model_object, weights, atomic_number):
+    def __init__(self, model_object, weights, atomic_number, horton_grid=None):
         assert isinstance(model_object, DensityModel)
         assert type(atomic_number) is int, "Atomic Number should be of type int. Instead it is %r" % type(atomic_number)
         self.model_object = model_object
@@ -500,13 +439,23 @@ class MBIS():
 if __name__ == "__main__":
     ELEMENT_NAME = "be"
     ATOMIC_NUMBER = 4
-    file_path = r"C:\Users\Alireza\PycharmProjects\fitting\fitting\data\examples\\" + ELEMENT_NAME #+ ".slater"
+    import os
+    print()
+    current_directory = os.path.dirname(os.path.abspath(__file__))[:-3]
+    print(current_directory + "data/examples/")
+    file_path = current_directory + "data/examples/" + ELEMENT_NAME #+ ".slater"
     #Create Grid for the modeling
     from fitting.density.radial_grid import *
     radial_grid = Radial_Grid(ATOMIC_NUMBER)
     NUMBER_OF_CORE_POINTS = 400; NUMBER_OF_DIFFUSED_PTS = 500
     row_grid_points = radial_grid.grid_points(NUMBER_OF_CORE_POINTS, NUMBER_OF_DIFFUSED_PTS, [50, 75, 100])[1:]
     column_grid_points = np.reshape(row_grid_points, (len(row_grid_points), 1))
+
+    import horton
+    rtf = horton.ExpRTransform(1.0e-6, 2e1, 200)
+    grid = horton.RadialGrid(rtf)
+    points = grid.radii
+    print(points)
 
     be =  GaussianTotalBasisSet(ELEMENT_NAME, column_grid_points, file_path)
     fitting_obj = Fitting(be)
@@ -522,7 +471,7 @@ if __name__ == "__main__":
                        1.07374182e+08,   2.14748365e+08,   4.29496730e+08,   8.58993459e+08,
                        1.71798692e+09,   3.43597384e+09])
     exps = be.UGBS_s_exponents
-    exps = np.array([np.random.random()*1000. for x in exps])
+    #exps = np.array([np.random.random()*1000. for x in exps])
     coeffs = fitting_obj.optimize_using_nnls(be.create_cofactor_matrix(exps))
     coeffs[coeffs == 0.] = 1e-12
     #coeffs = np.array([4.])

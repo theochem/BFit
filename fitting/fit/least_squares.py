@@ -813,19 +813,6 @@ class Model():
         return(parameters ,lowest_error)
 
 
-file_path = r"C:\Users\Alireza\PycharmProjects\fitting\fitting\data\examples\be.slater"
-from fitting.density.radial_grid import *
-radial_grid = Radial_Grid(4)
-row_grid_points = radial_grid.grid_points(200, 300, [50, 75, 100])
-
-column_grid_points = np.reshape(row_grid_points, (len(row_grid_points), 1))
-be = Model('be', file_path, column_grid_points)
-#be.cost_function(np.array([1.0, 2.0]), np.array([1.0, 2.0]), change_exponents=True, core=True, valence=False)
-
-#best_particle = be.particle_swarm_optimization(np.array([403, 1.0]), 1.0, num_of_particles=10, num_of_basis=1)
-#be.pauls_GA(2.0, 1e-5, factr=1e7, opt_coeff=False, opt_both=True, core=False)
-#be.pauls_new_GA(factor=2.0, accuracy=0.01)
-#print(be.model_p_gaussians(np.array([1.]), np.array([2.]), np.array([3.]), np.array([4.])))
 
 def plot_atomic_desnity(radial_grid, density_list, title, figure_name):
     import matplotlib.pyplot as plt
