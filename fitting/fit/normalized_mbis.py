@@ -200,8 +200,8 @@ class TotalMBIS(MBIS_ABC):
 
             while np.any(np.abs(old_coeffs - new_coeffs) > threshold_coeff):
                 new_coeffs, old_coeffs = self.get_new_coeffs_and_old_coeffs(new_coeffs, new_exps)
-                model = self.get_normalized_gaussian_density(new_coeffs , new_exps)
 
+                model = self.get_normalized_gaussian_density(new_coeffs , new_exps)
                 sum_of_coeffs = np.sum(new_coeffs)
                 integration_model_four_pi, goodness_of_fit, goodness_of_fit_r_squared, objective_function = \
                         self.get_descriptors_of_model(model)
@@ -217,8 +217,8 @@ class TotalMBIS(MBIS_ABC):
                 counter += 1
 
             new_exps, old_exps = self.get_new_exps_and_old_exps(new_coeffs, new_exps)
-            model = self.get_normalized_gaussian_density(new_coeffs, new_exps)
 
+            model = self.get_normalized_gaussian_density(new_coeffs, new_exps)
             sum_of_coeffs = np.sum(new_coeffs)
             integration_model_four_pi, goodness_of_fit, goodness_of_fit_r_squared, objective_function = \
                         self.get_descriptors_of_model(model)
@@ -237,7 +237,8 @@ class TotalMBIS(MBIS_ABC):
             counter += 1
         if iplot:
             self.create_plots(storage_of_errors[0], storage_of_errors[1], storage_of_errors[2], storage_of_errors[3])
-        return new_coeffs, old_coeffs
+        return new_coeffs, new_exps
+
     def run_greedy(self):
         pass
     
@@ -428,20 +429,20 @@ class ValenceMBIS(TotalMBIS):
         return new_coeffs, new_coeffs2, new_exps, new_exps2
 
 if __name__ == "__main__":
-    ELEMENT_NAME = "be"
-    ATOMIC_NUMBER = 4
+    ELEMENT_NAME = "f"
+    ATOMIC_NUMBER = 9
     import os
     print()
     current_directory = os.path.dirname(os.path.abspath(__file__))[:-3]
-    print(current_directory + "data/examples/")
-    file_path = current_directory + "data/examples/" + ELEMENT_NAME #+ ".slater"
+    print(current_directory + "data\examples\\")
+    file_path = current_directory + "data\examples\\" + ELEMENT_NAME #+ ".slater"
     #Create Grid for the modeling
     from fitting.density.radial_grid import *
 
     NUMBER_OF_CORE_POINTS = 400; NUMBER_OF_DIFFUSED_PTS = 500
     radial_grid = Radial_Grid(ATOMIC_NUMBER, NUMBER_OF_CORE_POINTS, NUMBER_OF_DIFFUSED_PTS, [50, 75, 100])
-    radial_grid.radii = radial_grid.radii[1:]
-    row_grid_points = radial_grid.grid_points(NUMBER_OF_CORE_POINTS, NUMBER_OF_DIFFUSED_PTS, [50, 75, 100])[1:]
+    radial_grid.radii = radial_grid.radii
+    row_grid_points = radial_grid.grid_points(NUMBER_OF_CORE_POINTS, NUMBER_OF_DIFFUSED_PTS, [50, 75, 100])
     column_grid_points = np.reshape(row_grid_points, (len(row_grid_points), 1))
 
     #import horton
@@ -451,37 +452,33 @@ if __name__ == "__main__":
     #column_grid_points = np.reshape(row_grid_points, (len(row_grid_points), 1))
 
     be =  GaussianTotalBasisSet(ELEMENT_NAME, column_grid_points, file_path)
-    be = GaussianValenceBasisSet(ELEMENT_NAME, column_grid_points, file_path)
+    be_val = GaussianValenceBasisSet(ELEMENT_NAME, column_grid_points, file_path)
     fitting_obj = Fitting(be)
+    fitting_obj_val = Fitting(be_val)
 
-    exps = np.array([  2.50000000e-02,   5.00000000e-02,   1.00000000e-01,   2.00000000e-01,
-                       4.00000000e-01,   8.00000000e-01,   1.60000000e+00,   3.20000000e+00,
-                       6.40000000e+00,   1.28000000e+01,   2.56000000e+01,   5.12000000e+01,
-                       1.02400000e+02,   2.04800000e+02,   4.09600000e+02,   8.19200000e+02,
-                       1.63840000e+03,   3.27680000e+03,   6.55360000e+03,   1.31072000e+04,
-                       2.62144000e+04,   5.24288000e+04,   1.04857600e+05,   2.09715200e+05,
-                       4.19430400e+05,   8.38860800e+05,   1.67772160e+06,   3.35544320e+06,
-                       6.71088640e+06,   1.34217728e+07,   2.68435456e+07,   5.36870912e+07,
-                       1.07374182e+08,   2.14748365e+08,   4.29496730e+08,   8.58993459e+08,
-                       1.71798692e+09,   3.43597384e+09])
     exps = be.UGBS_s_exponents
-    exps_valence = be.UGBS_p_exponents
-    coeffs_valence = fitting_obj.optimize_using_nnls_valence(be.create_cofactor_matrix(exps, exps_valence))
-    coeffs_valence[coeffs_valence == 0.] = 1e-12
-    coeffs = coeffs_valence[0:len(be.UGBS_s_exponents)]
-    coeffs_valence = coeffs_valence[len(exps):]
+    coeffs = fitting_obj.optimize_using_nnls(be.create_cofactor_matrix(exps))
+    coeffs[coeffs == 0.] = 1e-6
+
+
+
+    #exps_valence = be_val.UGBS_p_exponents
+    #coeffs_valence = fitting_obj_val.optimize_using_nnls_valence(be_val.create_cofactor_matrix(exps, exps_valence))
+    #coeffs_valence[coeffs_valence == 0.] = 1e-12
+    #coeffs = coeffs_valence[0:len(be_val.UGBS_s_exponents)]
+    #coeffs_valence = coeffs_valence[len(exps):]
     def f():
         pass
 
     be.electron_density /= (4 * np.pi)
-    be.electron_density_valence /= (4 * np.pi)
+    be_val.electron_density_valence /= (4 * np.pi)
     print(np.trapz(y=4 * np.pi * np.ravel(be.electron_density) * np.ravel(np.power(be.grid, 2.)),
                    x=np.ravel(be.grid)))
     weights = np.ones(len(row_grid_points)) #  1 / (4 * np.pi * np.power(row_grid_points, .1))
-    mbis_obj = ValenceMBIS(be.electron_density_valence, radial_grid, weights=weights, element_name=ELEMENT_NAME, atomic_number=2)#MBIS(be, weights, ATOMIC_NUMBER)
+    mbis_obj_val = ValenceMBIS(be.electron_density_valence, radial_grid, weights=weights, element_name=ELEMENT_NAME, atomic_number=2)
+    mbis_obj = TotalMBIS(be.electron_density, radial_grid, weights=weights, atomic_number=ATOMIC_NUMBER, element_name=ELEMENT_NAME)
 
-
-    coeffs, exps = mbis_obj.run_valence(1e-4, 1e-5, coeffs, coeffs_valence, exps, exps_valence, iprint=True)
+    coeffs, exps = mbis_obj.run(1e-4, 1e-2, coeffs, exps, iprint=True)
     print("final", coeffs, exps)
 
     model = mbis_obj.get_normalized_gaussian_density(coeffs, exps)
