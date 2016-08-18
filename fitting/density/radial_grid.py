@@ -2,10 +2,10 @@ import scipy
 import numpy as np;
 
 class Radial_Grid():
-    def __init__(self, atomic_number):
+    def __init__(self, atomic_number, num_of_core_points, num_of_diffuse_points, extra_list):
         assert type(atomic_number) is int, "Atomic number has to be an integer"
         self.atomic_number = atomic_number
-
+        self.radii = self.grid_points(num_of_core_points, num_of_diffuse_points, extra_list=extra_list)
 
     def core_points(self, num_points):
         assert type(num_points) is int, "Grid points is not an integer"
@@ -46,3 +46,8 @@ class Radial_Grid():
 
         return(sorted_grid_points)
 
+    def integrate(self, arr):
+        return np.trapz(y=arr * 4 * np.pi * np.power(self.radii, 2.), x=self.radii)
+
+class Horton_Grid():
+    pass

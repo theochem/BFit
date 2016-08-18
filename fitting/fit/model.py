@@ -156,6 +156,13 @@ class Fitting():
         row_nnls_coefficients = scipy.optimize.nnls(cofactor_matrix, b_vector)
         return(row_nnls_coefficients[0])
 
+    def optimize_using_nnls_valence(self, cofactor_matrix):
+        b_vector = np.copy(self.model_object.electron_density_valence)
+        b_vector = np.ravel(b_vector)
+        assert np.ndim(b_vector) == 1
+
+        row_nnls_coefficients = scipy.optimize.nnls(cofactor_matrix, b_vector)
+        return(row_nnls_coefficients[0])
     def optimize_using_slsqp(self, initial_guess, additional_constraints=False,*args ):
         if additional_constraints == True:
             def constraint(x, *args):
