@@ -429,8 +429,8 @@ class ValenceMBIS(TotalMBIS):
         return new_coeffs, new_coeffs2, new_exps, new_exps2
 
 if __name__ == "__main__":
-    ELEMENT_NAME = "f"
-    ATOMIC_NUMBER = 9
+    ELEMENT_NAME = "li"
+    ATOMIC_NUMBER = 3
     import os
     print()
     current_directory = os.path.dirname(os.path.abspath(__file__))[:-3]
@@ -478,7 +478,7 @@ if __name__ == "__main__":
     mbis_obj_val = ValenceMBIS(be.electron_density_valence, radial_grid, weights=weights, element_name=ELEMENT_NAME, atomic_number=2)
     mbis_obj = TotalMBIS(be.electron_density, radial_grid, weights=weights, atomic_number=ATOMIC_NUMBER, element_name=ELEMENT_NAME)
 
-    coeffs, exps = mbis_obj.run(1e-4, 1e-2, coeffs, exps, iprint=True)
+    coeffs, exps = mbis_obj.run(1e-4, 0.2, coeffs, exps, iprint=True)
     print("final", coeffs, exps)
 
     model = mbis_obj.get_normalized_gaussian_density(coeffs, exps)
