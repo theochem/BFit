@@ -139,7 +139,7 @@ class TotalMBIS(MBIS_ABC):
 
         integrand = self.weights * ratio * np.exp(-exponent * self.masked_grid_squared)
         if upt_exponent:
-            return self.get_normalization_constant(exponent) * self.grid_obj.integrate(integrand * self.masked_grid_squared)
+            integrand *= self.masked_grid_squared
         return self.get_normalization_constant(exponent) * self.grid_obj.integrate(integrand)
 
     def update_coefficients(self, coeff_arr, exp_arr):
@@ -157,17 +157,12 @@ class TotalMBIS(MBIS_ABC):
         assert np.all(coeff_arr > 0), "Coefficients should be positive. Instead we got %r" % coeff_arr
         assert np.all(exp_arr > 0), "Exponents should be positive. Instead we got %r" % exp_arr
         masked_normed_gaussian = np.ma.asarray(self.get_normalized_gaussian_density(coeff_arr, exp_arr))
-        #masked_grid_quadrupled = np.ma.asarray(np.ravel(np.power(self.grid_points, 4.)))
         ratio = self.masked_electron_density / masked_normed_gaussian
 
         new_exps = exp_arr.copy()
         for i in range(0, len(exp_arr)):
-            #prefactor = self.get_normalization_constant(exp_arr[i])
-            #integrand = self.weights * ratio * np.exp(-exp_arr[i] * self.masked_grid_squared)
             new_exps[i] = 3 * self.lagrange_multiplier
-            #integration = self.grid_obj.integrate(integrand * self.masked_grid_squared)
             integration = self.get_integration_factor(exp_arr[i], masked_normed_gaussian, upt_exponent=True)
-            #assert prefactor != 0, "prefactor should not be zero but the exponent for normalization constant is %r" % str(exp_arr[i])
             assert integration != 0, "Integration of the integrand is zero."
             assert not np.isnan(integration), "Integration should not be nan"
             new_exps[i] /= ( 2 * integration)
@@ -247,17 +242,11 @@ class ValenceMBIS(TotalMBIS):
         super(TotalMBIS, self).__init__(electron_density, grid_obj, weights, atomic_number, element_name)
         self.masked_grid_quadrupled = np.power(self.masked_grid_squared, 2.)
 
-    def get_normalization_constant(self, exponent):
-        return (exponent / np.pi) ** (3/2)
-
     def get_normalization_constant_valence(self, exponent):
         return (2 * exponent**(5/2) / (3 * np.pi**(3/2)))
 
-    def get_normalized_coefficients(self, coeff_arr, exp_arr):
-        return coeff_arr * self.get_normalization_constant(exp_arr)
-
-    def get_normalized_coefficients_valence(self, coeff_arr, exp_arr):
-        return coeff_arr * self.get_normalization_constant_valence(exp_arr)
+    def get_normalized_coefficients_valence(self, coeff_val_arr, exp_val_arr):
+        return coeff_val_arr * self.get_normalization_constant_valence(exp_val_arr)
 
     def get_normalized_gaussian_density(self, coeff_arr, coeff2_arr, exp_arr, exp2_arr):
         s_exponential = np.exp(-exp_arr * np.power(self.grid_points, 2.))
@@ -373,7 +362,7 @@ class ValenceMBIS(TotalMBIS):
         while np.any(np.abs(new_exps - old_exps) > threshold_exp ) or np.any(np.abs(new_exps2 - old_exps2) > threshold_exps):
             new_coeffs, old_coeffs, old_coeffs2 = self.get_new_coeffs_and_old_coeffs2(new_coeffs, new_coeffs2,
                                                                                      new_exps, new_exps2,
-                                                                          f=self.update_coefficients)
+                                                                                    f=self.update_coefficients)
             new_coeffs2, old_coeffs, old_coeffs2 = self.get_new_coeffs_and_old_coeffs2(old_coeffs, new_coeffs2,
                                                                                       new_exps, new_exps2,
                                                                           f=self.update_valence_coefficients)
@@ -386,7 +375,7 @@ class ValenceMBIS(TotalMBIS):
                 new_coeffs2, old_coeffs, old_coeffs2 = self.get_new_coeffs_and_old_coeffs2(old_coeffs, new_coeffs2,
                                                                                           new_exps, new_exps2,
                                                                               f=self.update_valence_coefficients)
-                print(new_coeffs2)
+                #print(new_coeffs2)
                 model = self.get_normalized_gaussian_density(new_coeffs, new_coeffs2, new_exps, new_exps2)
                 sum_of_coeffs = np.sum(new_coeffs) + np.sum(new_coeffs2)
                 integration_model_four_pi, goodness_of_fit, goodness_of_fit_r_squared, objective_function = \
@@ -428,9 +417,11 @@ class ValenceMBIS(TotalMBIS):
             self.create_plots(storage_of_errors[0], storage_of_errors[1], storage_of_errors[2], storage_of_errors[3])
         return new_coeffs, new_coeffs2, new_exps, new_exps2
 
+    def run_greedy(self):
+        pass
 if __name__ == "__main__":
-    ELEMENT_NAME = "f"
-    ATOMIC_NUMBER = 9
+    ELEMENT_NAME = "be"
+    ATOMIC_NUMBER = 4
     import os
     print()
     current_directory = os.path.dirname(os.path.abspath(__file__))[:-3]
@@ -455,23 +446,25 @@ if __name__ == "__main__":
     be_val = GaussianValenceBasisSet(ELEMENT_NAME, column_grid_points, file_path)
     fitting_obj = Fitting(be)
     fitting_obj_val = Fitting(be_val)
+    be.electron_density /= (4 * np.pi)
+    be_val.electron_density_valence /= (4 * np.pi)
 
     exps = be.UGBS_s_exponents
     coeffs = fitting_obj.optimize_using_nnls(be.create_cofactor_matrix(exps))
     coeffs[coeffs == 0.] = 1e-6
-
-
 
     #exps_valence = be_val.UGBS_p_exponents
     #coeffs_valence = fitting_obj_val.optimize_using_nnls_valence(be_val.create_cofactor_matrix(exps, exps_valence))
     #coeffs_valence[coeffs_valence == 0.] = 1e-12
     #coeffs = coeffs_valence[0:len(be_val.UGBS_s_exponents)]
     #coeffs_valence = coeffs_valence[len(exps):]
+
+    coeffs = np.array([4.])
+    exps = np.array([100.])
+
     def f():
         pass
 
-    be.electron_density /= (4 * np.pi)
-    be_val.electron_density_valence /= (4 * np.pi)
     print(np.trapz(y=4 * np.pi * np.ravel(be.electron_density) * np.ravel(np.power(be.grid, 2.)),
                    x=np.ravel(be.grid)))
     weights = np.ones(len(row_grid_points)) #  1 / (4 * np.pi * np.power(row_grid_points, .1))
@@ -479,6 +472,7 @@ if __name__ == "__main__":
     mbis_obj = TotalMBIS(be.electron_density, radial_grid, weights=weights, atomic_number=ATOMIC_NUMBER, element_name=ELEMENT_NAME)
 
     coeffs, exps = mbis_obj.run(1e-4, 1e-2, coeffs, exps, iprint=True)
+    #coeffs, coeffs2, exps, exps2 = mbis_obj_val.run_valence(1e-2, 1e-2, coeffs, coeffs_valence, exps, exps_valence, iprint=True)
     print("final", coeffs, exps)
 
     model = mbis_obj.get_normalized_gaussian_density(coeffs, exps)
@@ -502,7 +496,7 @@ if __name__ == "__main__":
         plt.savefig(figure_name)
         plt.show()
         plt.close()
-    plot_atomic_density(row_grid_points, model, np.ravel(be.electron_density), "Hey I Just Met You", "This is Crazy")
+    #plot_atomic_density(row_grid_points, model, np.ravel(be.electron_density), "Hey I Just Met You", "This is Crazy")
     import numpy as np
     import matplotlib.pyplot as plt
     import matplotlib.ticker as mtick
@@ -572,5 +566,14 @@ if __name__ == "__main__":
             plt.show()
             plt.close()
 
-    plot_density_sections(np.ravel(be.electron_density), model, row_grid_points, title="hey i just met you")
+    #plot_density_sections(np.ravel(be.electron_density), model, row_grid_points, title="hey i just met you")
 
+    def try_one_gaussian_func(coeff):
+        return -(np.trapz(y=4 * np.pi * mbis_obj.masked_grid_squared * mbis_obj.masked_electron_density *
+                         np.log(mbis_obj.masked_electron_density / coeff),
+                         x=np.ravel(mbis_obj.grid_points))) / \
+               (np.trapz(y= 4 * np.pi * mbis_obj_val.masked_grid_quadrupled * mbis_obj.masked_electron_density,
+                         x=np.ravel(mbis_obj.grid_points)))
+    exp = (try_one_gaussian_func(4.))
+    print(exp)
+    print(mbis_obj.get_descriptors_of_model(mbis_obj.get_normalized_gaussian_density(coeffs, np.array([exp]))))
