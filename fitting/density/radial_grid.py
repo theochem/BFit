@@ -47,7 +47,10 @@ class Radial_Grid():
         return(sorted_grid_points)
 
     def integrate(self, arr):
-        return np.trapz(y=arr * 4 * np.pi * np.power(self.radii, 2.), x=self.radii)
+        return np.trapz(y=np.ravel(arr) * 4 * np.pi * np.power(self.radii, 2.), x=self.radii)
+
+    def uniform_grid(self, number_of_points):
+        return np.arange(100, step=1/number_of_points)
 
 class Horton_Grid():
     pass
