@@ -54,7 +54,8 @@ class Atomic_Density():
     """
     def __init__(self, file_name, grid):
         self.VALUES = load_slater_wfn(file_name)
-        self.GRID = grid
+        self.row_grid = np.ravel(grid)
+        self.GRID = np.reshape(np.ravel(grid), (len(grid), 1))
         self.ALL_SLATOR_ORBITALS = self.slator_dict()
 
 
@@ -165,7 +166,7 @@ class Atomic_Density():
         :return: the electron density where row = number of point
                  and column = 1
         """
-        return np.dot(np.absolute(self.phi_matrix())**2, self.VALUES['orbitals_electron_array'] )
+        return np.ravel(np.dot(np.absolute(self.phi_matrix())**2, self.VALUES['orbitals_electron_array'] )) / (4. * np.pi)
 
     def atomic_density_core_valence(self):
         """
@@ -218,18 +219,6 @@ class Atomic_Density():
                np.dot(valence, self.VALUES['orbitals_electron_array']))
 
     def integrate_total_density_using_trapz(self):
-        integrate = np.trapz(y=np.ravel(np.power(self.GRID, 2.0)) * np.ravel(self.atomic_density()), x=np.ravel(self.GRID) )
+        integrate = np.trapz(y= 4. * np.pi * np.ravel(np.power(self.GRID, 2.0)) * np.ravel(self.atomic_density()), x=np.ravel(self.GRID) )
         return(integrate)
-
-r"""
-from fitting.density.radial_grid import *
-Grid_Object = Radial_Grid(4)
-grid = Grid_Object.grid_points(200, 300, [50, 75, 100])
-column_grid_points = np.reshape(grid, (len(grid), 1))
-
-be = Atomic_Density(r'C:\Users\Alireza\PycharmProjects\fitting\fitting\data\examples\ag.slater', column_grid_points)
-
-be.atomic_density_core_valence()
-"""
-
 

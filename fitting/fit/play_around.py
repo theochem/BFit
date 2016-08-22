@@ -1,6 +1,6 @@
 import numpy as np
 
-from normalized_mbis import TotalMBIS
+from mbis_abc import TotalMBIS
 from fitting.density.radial_grid import Radial_Grid
 from fitting.fit.GaussianBasisSet import GaussianTotalBasisSet
 import os

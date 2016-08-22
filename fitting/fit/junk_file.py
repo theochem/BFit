@@ -1,7 +1,7 @@
 import numpy as np
 from fitting.fit.model import *
 from fitting.fit.GaussianBasisSet import *
-from fitting.fit.normalized_mbis import MBIS
+from fitting.fit.mbis_abc import MBIS
 def get_exponents(electron_density, grid, atomic_number, coeff):
     return -(np.trapz(y=np.ravel(electron_density) * np.log(np.ravel(electron_density) / coeff), x=np.ravel(grid))) / atomic_number
 class MBIS():
