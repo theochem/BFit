@@ -53,4 +53,10 @@ class Radial_Grid():
         return np.arange(100, step=1/number_of_points)
 
 class Horton_Grid():
-    pass
+    def __init__(self, smallest_point, largest_point, number_of_points):
+        import horton
+        rtf = horton.ExpRTransform(smallest_point, largest_point, number_of_points)
+        radial_grid = horton.RadialGrid(rtf)
+
+    def integrate(self, arr):
+        pass

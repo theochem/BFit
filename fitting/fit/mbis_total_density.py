@@ -1,3 +1,4 @@
+from __future__ import division
 from mbis_abc import MBIS_ABC
 import numpy as np
 
@@ -11,34 +12,37 @@ class TotalMBIS(MBIS_ABC):
 
     def get_normalized_gaussian_density(self, coeff_arr, exp_arr):
         exponential = np.exp(-exp_arr * np.power(self.grid_points, 2.))
+        assert exponential.shape == (len(self.grid_points), len(exp_arr))
         normalized_coeffs = self.get_normalized_coefficients(coeff_arr, exp_arr)
         assert normalized_coeffs.ndim == 1.
         return np.dot(exponential, normalized_coeffs)
 
     def get_integration_factor(self, exponent, masked_normed_gaussian, upt_exponent=False):
         ratio = self.masked_electron_density / masked_normed_gaussian
-
-        integrand = self.weights * ratio * np.exp(-exponent * self.masked_grid_squared)
+        assert ratio.ndim == 1.
+        integrand = ratio * np.exp(-exponent * self.masked_grid_squared)
+        assert integrand.ndim == 1.
         if upt_exponent:
             integrand *= self.masked_grid_squared
-        return self.get_normalization_constant(exponent) * self.grid_obj.integrate(integrand)
+            assert integrand.ndim == 1.
+        return self.get_normalization_constant(exponent) * self.grid_obj.integrate(self.weights * integrand)
 
     def update_coefficients(self, coeff_arr, exp_arr):
         assert np.all(coeff_arr > 0), "Coefficients should be positive. Instead we got %r" % coeff_arr
         assert np.all(exp_arr > 0), "Exponents should be positive. Instead we got %r" % exp_arr
         masked_normed_gaussian = np.ma.asarray(self.get_normalized_gaussian_density(coeff_arr, exp_arr))
-
+        assert masked_normed_gaussian.ndim == 1.
         new_coeff = coeff_arr.copy()
         for i in range(0, len(coeff_arr)):
             new_coeff[i] *= self.get_integration_factor(exp_arr[i], masked_normed_gaussian)
             new_coeff[i] /= self.lagrange_multiplier
+
         return new_coeff
 
     def update_exponents(self, coeff_arr, exp_arr):
         assert np.all(coeff_arr > 0), "Coefficients should be positive. Instead we got %r" % coeff_arr
         assert np.all(exp_arr > 0), "Exponents should be positive. Instead we got %r" % exp_arr
         masked_normed_gaussian = np.ma.asarray(self.get_normalized_gaussian_density(coeff_arr, exp_arr))
-        ratio = self.masked_electron_density / masked_normed_gaussian
 
         new_exps = exp_arr.copy()
         for i in range(0, len(exp_arr)):
@@ -50,7 +54,7 @@ class TotalMBIS(MBIS_ABC):
         return new_exps
 
     def get_normalization_constant(self, exponent):
-        return (exponent / np.pi) **(3/2)
+        return (exponent / np.pi) **(3./2.)
 
     def get_new_coeffs_and_old_coeffs(self, coeff_arr, exp_arr):
         new_coeff = self.update_coefficients(coeff_arr, exp_arr)
@@ -86,7 +90,7 @@ class TotalMBIS(MBIS_ABC):
                 integration_model_four_pi, goodness_of_fit, goodness_of_fit_r_squared, objective_function = \
                         self.get_descriptors_of_model(model)
                 if iprint:
-                    print(counter, integration_model_four_pi, sum_of_coeffs, \
+                    print(counter, integration_model_four_pi, np.round(sum_of_coeffs), \
                           goodness_of_fit, goodness_of_fit_r_squared, \
                           objective_function,  True, np.max(np.abs(old_coeffs - new_coeffs)), model[0], self.electron_density[0])
                 if iplot:
@@ -109,7 +113,7 @@ class TotalMBIS(MBIS_ABC):
                 if counter % 100 == 0.:
                     for x in range(0, len(new_coeffs)):
                         print(new_coeffs[x], new_exps[x])
-                print(counter, integration_model_four_pi, sum_of_coeffs, \
+                print(counter, integration_model_four_pi, np.round(sum_of_coeffs), \
                       goodness_of_fit, goodness_of_fit_r_squared, \
                       objective_function, False, np.max(np.abs(new_exps - old_exps)), model[0], self.electron_density[0])
             if iplot:
@@ -203,86 +207,8 @@ class TotalMBIS(MBIS_ABC):
             coeffs, exps = self.check_redundancies(coeffs, exps)
             num_of_functions = len(coeffs)
 
-    def new_method(self, numb_of_funcs,probability_distribution_of_a, prob_dis_b):
-        coeffs = self.atomic_number * probability_distribution_of_a
-        assert np.dot(probability_distribution_of_a[:-1], prob_dis_b) < 1
-        assert len(prob_dis_b) == len(probability_distribution_of_a[:-1])
-        b_n = (1 - np.dot(probability_distribution_of_a[:-1], prob_dis_b) ) / probability_distribution_of_a[-1]
-        assert b_n > 0
-        print("b_n", b_n)
-        prob_dis_b = np.append(prob_dis_b, b_n)
-
-        exponents = np.pi * (prob_dis_b * self.electron_density[0] / self.atomic_number)**(2./3.)
-        print("should be one", np.dot(coeffs, exponents))
-        return coeffs, exponents
 
 
-    def get_new_density(self, coeff, exps):
-        exponential = np.exp(-exps * np.power(self.grid_points, 2.))
-        normalized_coeffs = self.get_normalized_coefficients(coeff, exps)
-        normalized_coeffs *= exps
-        assert normalized_coeffs.ndim == 1.
-        return np.dot(exponential, normalized_coeffs)
-
-    def C(self, coeffs, exps):
-        factor = - 2. / (3. * self.electron_density[0])
-        U = (3.* self.atomic_number / 2.)
-        ratio = np.log(self.masked_electron_density / self.get_normalized_gaussian_density(coeffs, exps))
-        U -= self.grid_obj.integrate(ratio * self.get_new_density(coeffs, exps) * self.masked_grid_squared)
-        return factor * U
-
-    def new_method2(self, coeffs, exps):
-        old_coeffs = coeffs.copy()
-        new_coeffs = coeffs.copy()
-        for x in range(0, 10):
-            old_coeffs = new_coeffs.copy()
-            for i, coeff in enumerate(old_coeffs):
-                ratio = np.log(self.masked_electron_density / self.get_normalized_gaussian_density(coeffs, exps))
-                factor = self.grid_obj.integrate(ratio * self.get_normalization_constant(exps[i]) * np.exp(-exps[i] * self.masked_grid_squared))
-                factor += ( self.C(coeffs, exps) * ((self.electron_density[0] / self.atomic_number) - self.get_normalization_constant(exps[i])))
-                new_coeffs[i] = coeff * factor
-
-
-            model = self.get_normalized_gaussian_density(new_coeffs, exps)
-            print(self.get_descriptors_of_model(model), model[0], self.electron_density[0])
-
-    def new_method3(self, numb_of_funcs, prob_dist):
-        coeffs = prob_dist * self.atomic_number
-        current_atomic_number = self.atomic_number
-        current_electron_density = self.electron_density
-
-        assert (np.sum(coeffs) - self.atomic_number) < 1e-3
-        self.atomic_number = coeffs[0]
-        print(coeffs[0])
-        self.lagrange_multiplier = self.get_lagrange_multiplier()
-        one_coeffs, one_exps = self.run(1e-3, 1e-2, np.array([coeffs[0]]), np.array([100.]), iprint=True)
-
-        all_coeffs, all_exps = one_coeffs.copy(), one_exps.copy()
-
-        for i in range(1, len(coeffs)):
-            print("------------", i, "-----------")
-            self.electron_density -= self.get_normalized_gaussian_density(one_coeffs, one_exps)
-            self.electron_density = np.abs(self.electron_density)
-            self.masked_electron_density = np.ma.asarray(np.abs(self.electron_density))
-            print((one_coeffs, one_exps))
-            self.atomic_number = coeffs[i]
-            self.lagrange_multiplier = self.get_lagrange_multiplier()
-            one_coeffs, one_exps = self.run(1e-3, 1e-2, np.array([coeffs[i]]), np.array([10000.]), iprint=True)
-
-            all_coeffs, all_exps = np.append(all_coeffs, one_coeffs), np.append(all_exps, one_exps)
-
-
-            print()
-            print()
-            model = self.get_normalized_gaussian_density(all_coeffs, all_exps)
-            print(self.get_descriptors_of_model(model), all_coeffs, all_exps)
-            print()
-        self.electron_density = current_electron_density
-        self.masked_electron_density = np.ma.asarray(self.electron_density)
-        self.atomic_number = current_atomic_number
-        model = self.get_normalized_gaussian_density(all_coeffs, all_exps)
-        print(self.get_descriptors_of_model(model))
-        return all_coeffs, all_exps
 
 if __name__ == "__main__":
     #################
@@ -290,37 +216,38 @@ if __name__ == "__main__":
     ###########
     ATOMIC_NUMBER = 29
     ELEMENT_NAME = "cu"
-
+    USE_HORTON = False
     import os
-    current_directory = os.path.dirname(os.path.abspath(__file__))[:-3]
-    file_path = current_directory + "data\examples\\" + ELEMENT_NAME
-    NUMB_OF_CORE_POINTS = 400; NUMB_OF_DIFFUSE_POINTS = 500
-    from fitting.density.radial_grid import Radial_Grid
-    from fitting.density.atomic_slater_density import Atomic_Density
-    radial_grid = Radial_Grid(ATOMIC_NUMBER, NUMB_OF_CORE_POINTS, NUMB_OF_DIFFUSE_POINTS, [50, 75, 100])
 
+    current_directory = os.path.dirname(os.path.abspath(__file__))[:-3]
+    file_path = current_directory + "data/examples//" + ELEMENT_NAME
+    if USE_HORTON:
+        import horton
+        rtf = horton.ExpRTransform(1.0e-2, 50, 900)
+        radial_grid = horton.RadialGrid(rtf)
+    else:
+        NUMB_OF_CORE_POINTS = 400; NUMB_OF_DIFFUSE_POINTS = 500
+        from fitting.density.radial_grid import Radial_Grid
+        from fitting.density.atomic_slater_density import Atomic_Density
+        radial_grid = Radial_Grid(ATOMIC_NUMBER, NUMB_OF_CORE_POINTS, NUMB_OF_DIFFUSE_POINTS, [50, 75, 100])
+
+    from fitting.density import Atomic_Density
     atomic_density = Atomic_Density(file_path, radial_grid.radii)
     from fitting.fit.GaussianBasisSet import GaussianTotalBasisSet
+    from fitting.fit.model import Fitting
     atomic_gaussian = GaussianTotalBasisSet(ELEMENT_NAME, np.reshape(radial_grid.radii,
                                                                     (len(radial_grid.radii), 1)), file_path)
-    mbis = TotalMBIS(ELEMENT_NAME, ATOMIC_NUMBER, radial_grid, atomic_density.electron_density)
 
-    weights = 1. / (4. * np.pi * np.power(radial_grid.radii, 2.))
-    coeffs, exps = mbis.run(1e-3, 1e-2, coeffs, exps, iprint=True)
+    fitting_obj = Fitting(atomic_gaussian)
+    weights = None #1. / (4. * np.pi * np.power(radial_grid.radii, 2.))
+    mbis = TotalMBIS(ELEMENT_NAME, ATOMIC_NUMBER, radial_grid, atomic_density.electron_density, weights=weights)
+
+    exps = atomic_gaussian.UGBS_s_exponents
+    coeffs = fitting_obj.optimize_using_nnls(atomic_gaussian.create_cofactor_matrix(exps))
+    coeffs[coeffs == 0.] = 1e-12
+    #coeffs = np.array([mbis.atomic_number/len(exps) for x in range(0, len(exps))])
+    print(radial_grid.integrate(mbis.electron_density))
+    print(radial_grid.integrate(mbis.get_normalized_gaussian_density(coeffs, exps)))
+    coeffs, exps = mbis.run(1e-4, 1e-3, coeffs, exps, iprint=True)
     #coeffs, exps = mbis.run_greedy(2. , 1e-2, 1e-1, iprint=True)
-    print("Final Coeffs, Exps: ", coeffs, exps)
-
-    ################
-    ## NEW METHOD ##
-    #################
-    NUMBER_OF_FUNCS = 12
-
-    def binomial_distrubituin(numb_of_funcs, probability):
-        from scipy.misc import comb
-        return np.array([comb(numb_of_funcs, x) * probability**x * (1-probability)**(numb_of_funcs - x) for x in range(0, numb_of_funcs)])
-
-    print(np.sum(binomial_distrubituin(NUMBER_OF_FUNCS, 0.2)), binomial_distrubituin(NUMBER_OF_FUNCS, 0.5))
-    probability_distribution_of_a = binomial_distrubituin(NUMBER_OF_FUNCS, 0.2)#  np.array([1./NUMBER_OF_FUNCS for x in range(0,NUMBER_OF_FUNCS)])
-    b_stuff = np.array([0.001 * (1.2525)**x for x in range(0, 24)])
-
-    #coeffs, exps = mbis.new_method3(NUMBER_OF_FUNCS, probability_distribution_of_a)
+    print("Final Coeffs, Exps: ", coeffs, exps )
