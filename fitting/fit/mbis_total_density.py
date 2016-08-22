@@ -234,6 +234,7 @@ if __name__ == "__main__":
     from fitting.density import Atomic_Density
     atomic_density = Atomic_Density(file_path, radial_grid.radii)
     from fitting.fit.GaussianBasisSet import GaussianTotalBasisSet
+
     from fitting.fit.model import Fitting
     atomic_gaussian = GaussianTotalBasisSet(ELEMENT_NAME, np.reshape(radial_grid.radii,
                                                                     (len(radial_grid.radii), 1)), file_path)
@@ -249,5 +250,6 @@ if __name__ == "__main__":
     print(radial_grid.integrate(mbis.electron_density))
     print(radial_grid.integrate(mbis.get_normalized_gaussian_density(coeffs, exps)))
     coeffs, exps = mbis.run(1e-4, 1e-3, coeffs, exps, iprint=True)
+
     #coeffs, exps = mbis.run_greedy(2. , 1e-2, 1e-1, iprint=True)
     print("Final Coeffs, Exps: ", coeffs, exps )
