@@ -96,7 +96,6 @@ class MBIS_ABC():
                self.get_objective_function(model))
 
     def get_hydrogen_electron_density(self, n=1, l=0, bohr_radius=1.):
-        import math
         return ( 1/ (np.sqrt(np.pi) * bohr_radius**(3./2.))) * np.exp(-self.grid_points / bohr_radius)
 
     def create_plots(self, integration_trapz, goodness_of_fit, goodness_of_fit_with_r_sq, objective_function):

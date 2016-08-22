@@ -53,11 +53,18 @@ class Atomic_Density():
 
     """
     def __init__(self, file_name, grid):
-        self.VALUES = load_slater_wfn(file_name)
         self.row_grid = np.ravel(grid)
         self.GRID = np.reshape(np.ravel(grid), (len(grid), 1))
-        self.ALL_SLATOR_ORBITALS = self.slator_dict()
+        if file_name[-2:] == "\h":
+            self.electron_density = np.power(self.get_hydrogen_wave_func(), 2.)
+        else:
+            self.VALUES = load_slater_wfn(file_name)
+            self.ALL_SLATOR_ORBITALS = self.slator_dict()
+            self.electron_density = self.atomic_density()
 
+    def get_hydrogen_wave_func(self, n=1, l=0, bohr_radius=1.):
+        import math
+        return ( 1 / (np.sqrt(np.pi) * bohr_radius**(3./2.))) * np.exp(-self.row_grid / bohr_radius)
 
     def slator_type_orbital(self, exponent, quantumNum, r):
         """

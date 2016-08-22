@@ -78,6 +78,9 @@ class TotalMBIS(MBIS_ABC):
             while np.any(np.abs(old_coeffs - new_coeffs) > threshold_coeff):
                 new_coeffs, old_coeffs = self.get_new_coeffs_and_old_coeffs(new_coeffs, new_exps)
 
+                if 0. in new_coeffs:
+                    return new_coeffs, new_exps
+
                 model = self.get_normalized_gaussian_density(new_coeffs , new_exps)
                 sum_of_coeffs = np.sum(new_coeffs)
                 integration_model_four_pi, goodness_of_fit, goodness_of_fit_r_squared, objective_function = \
@@ -119,6 +122,24 @@ class TotalMBIS(MBIS_ABC):
             self.create_plots(storage_of_errors[0], storage_of_errors[1], storage_of_errors[2], storage_of_errors[3])
         return new_coeffs, new_exps
 
+    def check_redundancies(self, coeffs, exps):
+        for i, alpha in enumerate(exps):
+            indexes_where_they_are_same = []
+            for j in range(0, len(exps)):
+                if i != j:
+                    if np.abs(alpha - exps[j]) < 1e-5:
+                        indexes_where_they_are_same.append(j)
+
+            for index in indexes_where_they_are_same:
+                coeffs[i] += coeffs[j]
+            if len(indexes_where_they_are_same) != 0:
+                print("-------- Redundancies found ---------")
+                print()
+                exps = np.delete(exps, indexes_where_they_are_same)
+                coeffs = np.delete(coeffs, indexes_where_they_are_same)
+        assert len(exps) == len(coeffs)
+        return coeffs, exps
+
     def run_greedy(self,factor, threshold_coeff, threshold_exps, iprint=False):
         def get_next_possible_coeffs_and_exps(factor, coeffs, exps):
             size = exps.shape[0]
@@ -147,10 +168,12 @@ class TotalMBIS(MBIS_ABC):
         print(coeffs)
         exps = np.array([0.034])
         coeffs, exps = self.run(1e-4, 1e-3, coeffs, exps, iprint=iprint)
-        print(coeffs, exps)
-
+        print("Single Best Coeffs and Exps: ", coeffs, exps)
+        #######################################
+        ##### ITERATION: NEXT GAUSSIAN FUNCS##
+        ######################################
         num_of_functions = 1
-        for x in range(0, 50):
+        for x in range(0, 30):
             next_coeffs, next_exps = get_next_possible_coeffs_and_exps(factor, coeffs, exps)
 
             num_of_functions += 1
@@ -161,7 +184,7 @@ class TotalMBIS(MBIS_ABC):
             for i, exponents in enumerate(next_exps):
                 exponents[exponents==0] = 1e-6
                 next_coeffs[i][next_coeffs[i] == 0.] = 1e-12
-                #next_coeffs[i], exps = self.run(10., 1000., next_coeffs[i], exponents, iprint=False)
+                next_coeffs[i], exps = self.run(10., 1000., next_coeffs[i], exponents, iprint=False)
                 objective_func = self.get_objective_function(self.get_normalized_gaussian_density(next_coeffs[i],
                                                                                                exponents))
                 if objective_func < best_local_found_objective_func:
@@ -177,6 +200,8 @@ class TotalMBIS(MBIS_ABC):
             print(num_of_functions,
                     self.get_descriptors_of_model(self.get_normalized_gaussian_density(coeffs, exps)))
             print()
+            coeffs, exps = self.check_redundancies(coeffs, exps)
+            num_of_functions = len(coeffs)
 
     def new_method(self, numb_of_funcs,probability_distribution_of_a, prob_dis_b):
         coeffs = self.atomic_number * probability_distribution_of_a
@@ -220,12 +245,51 @@ class TotalMBIS(MBIS_ABC):
 
             model = self.get_normalized_gaussian_density(new_coeffs, exps)
             print(self.get_descriptors_of_model(model), model[0], self.electron_density[0])
+
+    def new_method3(self, numb_of_funcs, prob_dist):
+        coeffs = prob_dist * self.atomic_number
+        current_atomic_number = self.atomic_number
+        current_electron_density = self.electron_density
+
+        assert (np.sum(coeffs) - self.atomic_number) < 1e-3
+        self.atomic_number = coeffs[0]
+        print(coeffs[0])
+        self.lagrange_multiplier = self.get_lagrange_multiplier()
+        one_coeffs, one_exps = self.run(1e-3, 1e-2, np.array([coeffs[0]]), np.array([100.]), iprint=True)
+
+        all_coeffs, all_exps = one_coeffs.copy(), one_exps.copy()
+
+        for i in range(1, len(coeffs)):
+            print("------------", i, "-----------")
+            self.electron_density -= self.get_normalized_gaussian_density(one_coeffs, one_exps)
+            self.electron_density = np.abs(self.electron_density)
+            self.masked_electron_density = np.ma.asarray(np.abs(self.electron_density))
+            print((one_coeffs, one_exps))
+            self.atomic_number = coeffs[i]
+            self.lagrange_multiplier = self.get_lagrange_multiplier()
+            one_coeffs, one_exps = self.run(1e-3, 1e-2, np.array([coeffs[i]]), np.array([10000.]), iprint=True)
+
+            all_coeffs, all_exps = np.append(all_coeffs, one_coeffs), np.append(all_exps, one_exps)
+
+
+            print()
+            print()
+            model = self.get_normalized_gaussian_density(all_coeffs, all_exps)
+            print(self.get_descriptors_of_model(model), all_coeffs, all_exps)
+            print()
+        self.electron_density = current_electron_density
+        self.masked_electron_density = np.ma.asarray(self.electron_density)
+        self.atomic_number = current_atomic_number
+        model = self.get_normalized_gaussian_density(all_coeffs, all_exps)
+        print(self.get_descriptors_of_model(model))
+        return all_coeffs, all_exps
+
 if __name__ == "__main__":
     #################
     ## SET UP#######
     ###########
-    ATOMIC_NUMBER = 4
-    ELEMENT_NAME = "be"
+    ATOMIC_NUMBER = 29
+    ELEMENT_NAME = "cu"
 
     import os
     current_directory = os.path.dirname(os.path.abspath(__file__))[:-3]
@@ -236,27 +300,27 @@ if __name__ == "__main__":
     radial_grid = Radial_Grid(ATOMIC_NUMBER, NUMB_OF_CORE_POINTS, NUMB_OF_DIFFUSE_POINTS, [50, 75, 100])
 
     atomic_density = Atomic_Density(file_path, radial_grid.radii)
-    mbis = TotalMBIS(ELEMENT_NAME, ATOMIC_NUMBER, radial_grid, atomic_density.atomic_density())
+    from fitting.fit.GaussianBasisSet import GaussianTotalBasisSet
+    atomic_gaussian = GaussianTotalBasisSet(ELEMENT_NAME, np.reshape(radial_grid.radii,
+                                                                    (len(radial_grid.radii), 1)), file_path)
+    mbis = TotalMBIS(ELEMENT_NAME, ATOMIC_NUMBER, radial_grid, atomic_density.electron_density)
 
-
+    weights = 1. / (4. * np.pi * np.power(radial_grid.radii, 2.))
+    coeffs, exps = mbis.run(1e-3, 1e-2, coeffs, exps, iprint=True)
+    #coeffs, exps = mbis.run_greedy(2. , 1e-2, 1e-1, iprint=True)
+    print("Final Coeffs, Exps: ", coeffs, exps)
 
     ################
     ## NEW METHOD ##
     #################
-    NUMBER_OF_FUNCS = 25
+    NUMBER_OF_FUNCS = 12
 
     def binomial_distrubituin(numb_of_funcs, probability):
         from scipy.misc import comb
         return np.array([comb(numb_of_funcs, x) * probability**x * (1-probability)**(numb_of_funcs - x) for x in range(0, numb_of_funcs)])
-    print(np.sum(binomial_distrubituin(NUMBER_OF_FUNCS, 0.2)), binomial_distrubituin(NUMBER_OF_FUNCS, 0.5))
-    probability_distribution_of_a = binomial_distrubituin(NUMBER_OF_FUNCS, 0.5)#np.array([1./25. for x in range(0,25)])
-    b_stuff = np.array([0.001 * (1.2525)**x for x in range(0, 24)])
-    print(b_stuff)
-    coeffs, exps = (mbis.new_method(NUMBER_OF_FUNCS, probability_distribution_of_a, b_stuff))
-    print(np.sum(coeffs))
-    print("Cusp At Zero", mbis.electron_density[0], np.sum(coeffs * (exps / np.pi)**(3./2.)))
 
-    model = mbis.get_normalized_gaussian_density(coeffs, exps)
-    print(mbis.get_descriptors_of_model(model))
-    mbis.new_method2(coeffs, exps)
-    coeffs, exps = mbis.run_greedy(1000., 1e-4, 1e-5, iprint=True)
+    print(np.sum(binomial_distrubituin(NUMBER_OF_FUNCS, 0.2)), binomial_distrubituin(NUMBER_OF_FUNCS, 0.5))
+    probability_distribution_of_a = binomial_distrubituin(NUMBER_OF_FUNCS, 0.2)#  np.array([1./NUMBER_OF_FUNCS for x in range(0,NUMBER_OF_FUNCS)])
+    b_stuff = np.array([0.001 * (1.2525)**x for x in range(0, 24)])
+
+    #coeffs, exps = mbis.new_method3(NUMBER_OF_FUNCS, probability_distribution_of_a)
