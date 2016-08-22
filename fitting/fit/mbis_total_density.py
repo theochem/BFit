@@ -301,11 +301,34 @@ if __name__ == "__main__":
 
     atomic_density = Atomic_Density(file_path, radial_grid.radii)
     from fitting.fit.GaussianBasisSet import GaussianTotalBasisSet
-    atomic_gaussian = GaussianTotalBasisSet(ELEMENT_NAME, np.reshape(radial_grid.radii,
+    if ELEMENT_NAME != "h":
+        atomic_gaussian = GaussianTotalBasisSet(ELEMENT_NAME, np.reshape(radial_grid.radii,
                                                                     (len(radial_grid.radii), 1)), file_path)
+        from fitting.fit.model import Fitting
+        exps = atomic_gaussian.UGBS_s_exponents
+        fit = Fitting(atomic_gaussian)
+        coeffs = fit.optimize_using_nnls(atomic_gaussian.create_cofactor_matrix(exps))
+        coeffs[coeffs == 0.] = 1e-6
+    else:
+        exps = np.array( [ 2.50000000e-02 ,  5.00000000e-02 ,  1.00000000e-01,   2.00000000e-01,
+                       4.00000000e-01,   8.00000000e-01,   1.60000000e+00,   3.20000000e+00,
+                       6.40000000e+00,   1.28000000e+01,   2.56000000e+01,   5.12000000e+01,
+                       1.02400000e+02,   2.04800000e+02,   4.09600000e+02,   8.19200000e+02,
+                       1.63840000e+03,   3.27680000e+03,   6.55360000e+03,   1.31072000e+04,
+                       2.62144000e+04,   5.24288000e+04,   1.04857600e+05,   2.09715200e+05,
+                       4.19430400e+05,   8.38860800e+05,   1.67772160e+06,   3.35544320e+06,
+                       6.71088640e+06,   1.34217728e+07,   2.68435456e+07,   5.36870912e+07,
+                       1.07374182e+08,   2.14748365e+08,   4.29496730e+08,   8.58993459e+08,
+                       1.71798692e+09,   3.43597384e+09])
+        exponential = np.exp(-exps * np.power(atomic_density.GRID, 2.))
+        from scipy.optimize import nnls
+        coeffs = nnls(exponential, np.ravel(atomic_density.electron_density))[0]
+        coeffs[coeffs == 0.] = 1e-12
     mbis = TotalMBIS(ELEMENT_NAME, ATOMIC_NUMBER, radial_grid, atomic_density.electron_density)
 
     weights = 1. / (4. * np.pi * np.power(radial_grid.radii, 2.))
+
+
     coeffs, exps = mbis.run(1e-3, 1e-2, coeffs, exps, iprint=True)
     #coeffs, exps = mbis.run_greedy(2. , 1e-2, 1e-1, iprint=True)
     print("Final Coeffs, Exps: ", coeffs, exps)
