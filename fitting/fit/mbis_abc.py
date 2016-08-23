@@ -22,7 +22,8 @@ class MBIS_ABC():
             self.weights = np.ma.asarray(np.ones(len(self.grid_obj.radii)))
         else:
             self.weights = np.ma.asarray(weights) #Weights are masked due the fact that they tend to be small
-        self.atomic_number = atomic_number
+
+        self.atomic_number = float(atomic_number)
         self.element_name = element_name
         if element_name == "h" and atomic_number == 1:
             self.electron_density = self.get_hydrogen_electron_density()
@@ -136,7 +137,7 @@ if __name__ == "__main__":
 
     import os
     current_directory = os.path.dirname(os.path.abspath(__file__))[:-3]
-    file_path = current_directory + "data\examples\\" + ELEMENT_NAME #+ ".slater"
+    file_path = current_directory + "data/examples//" + ELEMENT_NAME #+ ".slater"
 
     from fitting.density.radial_grid import *
 
@@ -146,17 +147,16 @@ if __name__ == "__main__":
     row_grid_points = radial_grid.grid_points(NUMBER_OF_CORE_POINTS, NUMBER_OF_DIFFUSED_PTS, [50, 75, 100])
     column_grid_points = np.reshape(row_grid_points, (len(row_grid_points), 1))
 
-    #import horton
-    #rtf = horton.ExpRTransform(1.0e-4, 25, 800)
-    #radial_grid = horton.RadialGrid(rtf)
-    #row_grid_points = radial_grid.radii
-    #column_grid_points = np.reshape(row_grid_points, (len(row_grid_points), 1))
+    import horton
+    rtf = horton.ExpRTransform(1.0e-2, 25, 800)
+    radial_grid = horton.RadialGrid(rtf)
+    row_grid_points = radial_grid.radii
+    column_grid_points = np.reshape(row_grid_points, (len(row_grid_points), 1))
 
     be =  GaussianTotalBasisSet(ELEMENT_NAME, column_grid_points, file_path)
     #be_val = GaussianValenceBasisSet(ELEMENT_NAME, column_grid_points, file_path)
     #fitting_obj = Fitting(be)
     #fitting_obj_val = Fitting(be_val)
-    be.electron_density /= (4 * np.pi)
     #be_val.electron_density_valence /= (4 * np.pi)
 
     #exps = be.UGBS_s_exponents
@@ -169,9 +169,9 @@ if __name__ == "__main__":
 
     def f():
         pass
-
+    from fitting.fit.mbis_total_density import TotalMBIS
     weights = np.ones(len(row_grid_points)) #  1 / (4 * np.pi * np.power(row_grid_points, .1))
-    mbis_obj = TotalMBIS(be.electron_density, radial_grid, weights=weights, atomic_number=ATOMIC_NUMBER, element_name=ELEMENT_NAME)
+    mbis_obj = TotalMBIS(electron_density=be.electron_density, grid_obj=radial_grid, weights=weights, atomic_number=ATOMIC_NUMBER, element_name=ELEMENT_NAME)
 
     def generation_of_UGBS_exponents(p, UGBS_exponents):
         max_number_of_UGBS = np.amax(UGBS_exponents)

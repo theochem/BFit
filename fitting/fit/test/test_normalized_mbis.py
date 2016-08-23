@@ -1,4 +1,5 @@
 from fitting.fit.mbis_abc import MBIS_ABC
+from fitting.fit.mbis_total_density import TotalMBIS
 from fitting.density.radial_grid import Radial_Grid
 from fitting.density.atomic_slater_density import Atomic_Density
 import numpy as np
@@ -10,14 +11,14 @@ def get_grid_obj(atomic_number, numb_of_core_points, numb_of_diff_points, extra_
 def get_electron_density(element_name, grid):
     import os
     current_directory = os.path.dirname(os.path.abspath(__file__))[:-8]
-    file_path = current_directory + "data\examples\\" + element_name
+    file_path = current_directory + "data/examples//" + element_name
 
     return Atomic_Density(file_path, grid)
 
 def get_mbis_object(weights, atomic_number, element_name):
     radial_grid = get_grid_obj(atomic_number, 300, 400)
     atomic_dens = get_electron_density(element_name, radial_grid.radii)
-    mbis_abc = MBIS_ABC(element_name, atomic_number, radial_grid, atomic_dens.atomic_density(), weights)
+    mbis_abc = TotalMBIS(element_name, atomic_number, radial_grid, atomic_dens.atomic_density(), weights)
 
     return mbis_abc
 
@@ -32,7 +33,7 @@ def test_lagrange_multipliers_with_no_weights():
     assert np.abs(mbis.lagrange_multiplier - 1.) < 1e-5
 
     #Copper
-    mbis = get_mbis_object(no_weight, 29, 'Cu')
+    mbis = get_mbis_object(no_weight, 29, 'cu')
     assert np.abs(mbis.lagrange_multiplier - 1.) < 1e-5
 
     #Silver
@@ -68,7 +69,7 @@ def test_lagrange_multiplier_with_four_pi_weight():
 
     weight = 1 / (4 * np.pi * np.power(grid_obj.radii, 2.))
     mbis = get_mbis_object(weight, atomic_number, "be")
-    assert np.abs(mbis.lagrange_multiplier -  np.trapz(y=mbis.masked_electron_density, x=np.ma.asarray(grid_obj.radii)) / atomic_number) < 1e-4
+    assert np.abs(mbis.lagrange_multiplier -  np.trapz(y=mbis.masked_electron_density, x=np.ma.asarray(grid_obj.radii)) / atomic_number) < 1e-2
 
     # Carbon
     atomic_number = 6
@@ -76,13 +77,11 @@ def test_lagrange_multiplier_with_four_pi_weight():
 
     weight = 1 / (4 * np.pi * np.power(grid_obj.radii, 2.))
     mbis = get_mbis_object(weight, atomic_number, "c")
-    assert np.abs(mbis.lagrange_multiplier -  np.trapz(y=mbis.masked_electron_density, x=np.ma.asarray(grid_obj.radii)) / atomic_number) < 1e-4
 
-def test_integration_of_hydrogen_wave_function():
-    mbis = get_mbis_object(None, 1, "h")
-    assert np.abs(mbis.grid_obj.integrate(mbis.electron_density) - 1) < 1e-3
+    assert np.abs(mbis.lagrange_multiplier -  np.trapz(y=mbis.masked_electron_density, x=np.ma.asarray(grid_obj.radii)) / atomic_number) < 1e-2
+
+
 if __name__ == "__main__":
     test_lagrange_multipliers_with_no_weights()
     test_lagrange_multiplier_with_constant_weight()
     test_lagrange_multiplier_with_four_pi_weight()
-    test_integration_of_hydrogen_wave_function()
