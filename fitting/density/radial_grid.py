@@ -46,7 +46,14 @@ class Radial_Grid():
 
         return(sorted_grid_points)
 
-    def integrate(self, arr):
+    def integrate(self, *args):
+        total_arr = np.ma.asarray(np.ones(len(args[0])))
+        for arr in args:
+            assert isinstance(arr, np.ndarray)
+            assert arr.ndim == 1.
+            assert len(arr) == len(total_arr)
+            total_arr *= arr
+
         return np.trapz(y=np.ravel(arr) * 4 * np.pi * np.power(self.radii, 2.), x=self.radii)
 
     def uniform_grid(self, number_of_points):

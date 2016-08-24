@@ -20,13 +20,14 @@ class TotalMBIS(MBIS_ABC):
     def get_integration_factor(self, exponent, masked_normed_gaussian, upt_exponent=False):
         ratio = self.masked_electron_density / masked_normed_gaussian
         assert ratio.ndim == 1.
-        integrand = ratio * np.ma.asarray(np.exp(-exponent * self.masked_grid_squared))
-        assert integrand.ndim == 1.
+
         if upt_exponent:
-            integrand *= self.masked_grid_squared
-            assert integrand.ndim == 1.
-        #integrand = integrand * self.weights
-        return self.get_normalization_constant(exponent) * self.grid_obj.integrate( integrand )
+            return(self.get_normalization_constant(exponent) *\
+                   self.grid_obj.integrate(self.weights, ratio, self.masked_grid_squared,
+                                           np.ma.asarray(np.exp(-exponent * self.masked_grid_squared))))
+
+        return self.get_normalization_constant(exponent) *\
+               self.grid_obj.integrate(ratio , np.ma.asarray(np.exp(-exponent * self.masked_grid_squared)), self.weights)
 
     def update_coefficients(self, coeff_arr, exp_arr):
         #assert np.all(coeff_arr > 0), "Coefficients should be positive. Instead we got %r" % coeff_arr
@@ -37,7 +38,6 @@ class TotalMBIS(MBIS_ABC):
         for i in range(0, len(coeff_arr)):
             new_coeff[i] *= self.get_integration_factor(exp_arr[i], masked_normed_gaussian)
             new_coeff[i] /= self.lagrange_multiplier
-
         return new_coeff
 
     def update_exponents(self, coeff_arr, exp_arr):
@@ -232,7 +232,7 @@ class TotalMBIS(MBIS_ABC):
             print(num_of_functions,
                     self.get_descriptors_of_model(self.get_normalized_gaussian_density(coeffs, exps)))
             print()
-            coeffs, exps = self.check_redundancies(coeffs, exps)
+            coeffs, exps = self.checkFalse_redundancies(coeffs, exps)
             num_of_functions = len(coeffs)
 
 
