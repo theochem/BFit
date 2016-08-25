@@ -5,7 +5,7 @@ from fitting.density.atomic_slater_density import Atomic_Density
 import numpy as np
 
 def get_grid_obj(atomic_number, numb_of_core_points, numb_of_diff_points, extra_list=[50, 75, 100]):
-    radial_grid = Radial_Grid(atomic_number, numb_of_core_points, numb_of_diff_points, extra_list)
+    radial_grid = Radial_Grid(atomic_number, numb_of_core_points, numb_of_diff_points, extra_list, filled=True)
     return radial_grid
 
 def get_electron_density(element_name, grid):
@@ -82,6 +82,7 @@ def test_lagrange_multiplier_with_four_pi_weight():
 
 
 if __name__ == "__main__":
+    print ("TEST")
     test_lagrange_multipliers_with_no_weights()
     test_lagrange_multiplier_with_constant_weight()
     test_lagrange_multiplier_with_four_pi_weight()

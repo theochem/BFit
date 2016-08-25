@@ -2,10 +2,11 @@ import scipy
 import numpy as np;
 
 class Radial_Grid():
-    def __init__(self, atomic_number, num_of_core_points, num_of_diffuse_points, extra_list):
+    def __init__(self, atomic_number, num_of_core_points, num_of_diffuse_points, extra_list, filled=False):
         assert type(atomic_number) is int, "Atomic number has to be an integer"
         self.atomic_number = atomic_number
         self.radii = self.grid_points(num_of_core_points, num_of_diffuse_points, extra_list=extra_list)
+        self.filled = filled
 
     def core_points(self, num_points):
         assert type(num_points) is int, "Grid points is not an integer"
@@ -53,17 +54,28 @@ class Radial_Grid():
             assert arr.ndim == 1.
             assert len(arr) == len(total_arr)
             total_arr *= arr
-
+        if self.filled:
+            total_arr = np.ma.filled(total_arr, 0.)
         return np.trapz(y=np.ravel(arr) * 4 * np.pi * np.power(self.radii, 2.), x=self.radii)
 
     def uniform_grid(self, number_of_points):
         return np.arange(100, step=1/number_of_points)
 
 class Horton_Grid():
-    def __init__(self, smallest_point, largest_point, number_of_points):
+    def __init__(self, smallest_point, largest_point, number_of_points, filled=False):
         import horton
         rtf = horton.ExpRTransform(smallest_point, largest_point, number_of_points)
-        radial_grid = horton.RadialGrid(rtf)
+        self.radial_grid = horton.RadialGrid(rtf)
+        self.radii = self.radial_grid.radii.copy()
+        self.filled = filled
 
-    def integrate(self, arr):
-        pass
+    def integrate(self, *args):
+        total_arr = np.ma.asarray(np.ones(len(args[0])))
+        for arr in args:
+            assert isinstance(arr, np.ndarray)
+            assert arr.ndim == 1.
+            assert len(arr) == len(total_arr)
+            total_arr *= arr
+        if self.filled:
+            total_arr = np.ma.filled(total_arr, 0.)
+        return self.radial_grid.integrate(total_arr)

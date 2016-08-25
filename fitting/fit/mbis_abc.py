@@ -71,7 +71,7 @@ class MBIS_ABC():
 
     def get_lagrange_multiplier(self):
         return self.grid_obj.integrate(self.weights * self.masked_electron_density)\
-                / (self.atomic_number)
+                / self.atomic_number
 
     def get_all_normalization_constants(self, exp_arr):
         assert exp_arr.ndim == 1
