@@ -15,7 +15,6 @@ class TotalMBIS(MBIS_ABC):
         assert norm_coeff_arr[0] == coeff_arr[0] * normalized_constants[0], "Instead we get %r and %r * %r" %(norm_coeff_arr[0],
                                                                                                          coeff_arr[0],
                                                                                                          normalized_constants[0])
-        assert norm_coeff_arr[5] == coeff_arr[5] * normalized_constants[5]
         return coeff_arr * normalized_constants
 
     def get_normalized_gaussian_density(self, coeff_arr, exp_arr):
@@ -281,9 +280,10 @@ class TotalMBIS(MBIS_ABC):
         bounds = np.array([(0.0, np.inf) for x in range(0, len(parameters))], dtype=np.float64)
         f_min_slsqp = minimize(self.get_obj_func_for_optimizing, x0=parameters, method="SLSQP",
                                               bounds=bounds, constraints=cons,
-                                              jac=False)
+                                              jac=False,  options={"maxiter": 100000, "disp":True})
 
         parameters = f_min_slsqp['x']
+        print(f_min_slsqp)
         return parameters
 
 
@@ -320,14 +320,14 @@ if __name__ == "__main__":
     from fitting.density import Atomic_Density
     atomic_density = Atomic_Density(file_path, radial_grid.radii)
     from fitting.fit.GaussianBasisSet import GaussianTotalBasisSet
-
+    atomic_density.electron_density /= ATOMIC_NUMBER
     from fitting.fit.model import Fitting
     atomic_gaussian = GaussianTotalBasisSet(ELEMENT_NAME, np.reshape(radial_grid.radii,
                                                                     (len(radial_grid.radii), 1)), file_path)
-    weights = 1 / (np.pi * radial_grid.radii**2.) #np.exp(-0.01 * radial_grid.radii**2.)
+    weights = None#(4. * np.pi * radial_grid.radii**1.)#1. / (1 + (4. * np.pi * radial_grid.radii ** 2.))#1. / (4. * np.pi * radial_grid.radii**0.5) #np.exp(-0.01 * radial_grid.radii**2.)
 
     fitting_obj = Fitting(atomic_gaussian)
-    mbis = TotalMBIS(ELEMENT_NAME, ATOMIC_NUMBER, radial_grid, atomic_density.electron_density, weights=weights)
+    mbis = TotalMBIS(ELEMENT_NAME, 1, radial_grid, atomic_density.electron_density, weights=weights)
 
     exps = atomic_gaussian.UGBS_s_exponents[:-3]
     coeffs = fitting_obj.optimize_using_nnls(atomic_gaussian.create_cofactor_matrix(exps))
@@ -336,12 +336,19 @@ if __name__ == "__main__":
 
     print(radial_grid.integrate(mbis.electron_density))
     print(radial_grid.integrate(mbis.get_normalized_gaussian_density(coeffs, exps)))
-    #coeffs, exps = mbis.run(1e-2, 1e-1, coeffs, exps, iprint=True)
+    coeffs, exps = mbis.run(1e-2, 1e-1, coeffs, exps, iprint=True)
+    #coeffs = np.array([500.])
+    #exps = np.array([0.05])
 
     parameters = mbis.optimize_using_slsqp(np.append(coeffs, exps))
     coeffs, exps = parameters[:len(parameters)//2], parameters[len(parameters)//2:]
     model = mbis.get_normalized_gaussian_density(coeffs, exps)
-    print(mbis.get_descriptors_of_model(model))
+    print(mbis.get_descriptors_of_model(model), np.abs(model[0] - atomic_density.electron_density[0]))
+    coeffs[coeffs == 0.] = 1e-30
+    exps[exps==0.] = 1e-30
+    import sys
+    sys.exit()
+
     coeffs, exps = mbis.run(THRESHOLD_COEFF, THRESHOLD_EXPS, coeffs, exps, iprint=True)
     #coeffs, exps = mbis.run_greedy(2. , 1e-2, 1e-1, iprint=True)
     print("Final Coeffs, Exps: ", coeffs, exps )
