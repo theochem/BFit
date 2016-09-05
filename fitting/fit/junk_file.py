@@ -348,15 +348,8 @@ if __name__ == "__main__":
                        7.82852278e+03 ,  7.82852278e+03,   7.82852278e+03  , 7.82852278e+03,
                        7.82852278e+03 ,  7.82852278e+03,   7.82852278e+03  , 7.82852278e+03,
                        7.82852278e+03 ,  7.82852278e+03])
-    be.electron_density /= 4 * np.pi
-    weights = 1 / (4 * np.pi * row_grid_points)
-    mbis_obj = MBIS(be, weights, ATOMIC_NUMBER)
-    print(mbis_obj.lamda_multplier)
-    model = mbis_obj.get_normalized_gaussian_density(coeffs, exps)
-    masked_elec = np.ma.asarray(np.ravel(be.electron_density.copy()))
-    masked_model = np.ma.asarray(model)
-    masked_model[masked_model == 0.] = 1e-20
-    ratio = masked_elec / masked_model
-    print(np.trapz(y=np.ravel(be.electron_density), x=row_grid_points) / 4)
-    print((exps[-1] / np.pi)**(3/2) * np.trapz(y=(ratio) * np.exp(-exps[-1] * np.power(row_grid_points, 2.))
-                                                  ,   x=row_grid_points))
+
+
+    import sympy as sp
+    from sympy.abc import x, y
+    print(sp.integrate())

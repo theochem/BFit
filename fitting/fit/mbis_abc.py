@@ -70,8 +70,7 @@ class MBIS_ABC():
         pass
 
     def get_lagrange_multiplier(self):
-        return self.grid_obj.integrate(self.weights * self.masked_electron_density)\
-                / self.atomic_number
+        return self.grid_obj.integrate(self.weights * self.masked_electron_density) / self.atomic_number
 
     def get_all_normalization_constants(self, exp_arr):
         assert exp_arr.ndim == 1
@@ -79,7 +78,7 @@ class MBIS_ABC():
 
     def get_objective_function(self, model):
         log_ratio_of_models = np.log(self.masked_electron_density / np.ma.asarray(model))
-        return self.grid_obj.integrate(self.masked_electron_density * self.weights * log_ratio_of_models)
+        return self.grid_obj.integrate(self.masked_electron_density * self.weights * log_ratio_of_models / self.atomic_number)
 
     def integrate_model_with_four_pi(self, model):
         return self.grid_obj.integrate(model)

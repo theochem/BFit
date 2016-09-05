@@ -78,7 +78,7 @@ class TotalMBIS(MBIS_ABC):
             if integration == 0.:
                 print(coeff_arr, exp_arr)
             assert not np.isnan(integration), "Integration should not be nan"
-            new_exps[i] /= ( 2. * integration)
+            new_exps[i] /= (2. * integration)
         return new_exps
 
     def get_normalization_constant(self, exponent):
@@ -108,7 +108,7 @@ class TotalMBIS(MBIS_ABC):
         while np.any(np.abs(new_exps - old_exps) > threshold_exp ) and np.abs(previous_objective_func - current_objective_func) > 1e-10:
             new_coeffs, old_coeffs = self.get_new_coeffs_and_old_coeffs(new_coeffs, new_exps)
 
-            while np.any(np.abs(old_coeffs - new_coeffs)  > threshold_coeff):
+            while np.any(np.abs(old_coeffs - new_coeffs) > threshold_coeff):
                 new_coeffs, old_coeffs = self.get_new_coeffs_and_old_coeffs(new_coeffs, new_exps)
 
                 #if 0. in new_coeffs:
@@ -130,31 +130,7 @@ class TotalMBIS(MBIS_ABC):
                     storage_of_errors[3].append(objective_function)
                 counter += 1
             new_exps, old_exps = self.get_new_exps_and_old_exps(new_coeffs, new_exps)
-            """
-            for i, exps in enumerate(new_exps):
-                # weights = 1
-                print(self.grid_obj.integrate(self.weights * self.masked_electron_density ) / self.atomic_number,
-                      (exps / np.pi)**(3./2.) * self.grid_obj.integrate(self.weights * np.exp(-exps * self.masked_grid_squared)))
 
-                #WEIGHTS = 1/ 4 pi r^2
-                model = mbis.get_normalized_gaussian_density(new_coeffs, new_exps)
-                print(self.grid_obj.integrate(self.masked_electron_density / (4. * np.pi * np.power(self.grid_obj.radii,2.)) /  self.atomic_number),
-                      (exps / np.pi) ** (3. / 2.) * self.grid_obj.integrate((self.masked_electron_density / model) * np.exp(-exps * self.masked_grid_squared)
-                                                                            / (4. * np.pi * np.power(self.grid_obj.radii,2.)) ),
-
-                      (exps / np.pi) ** (3. / 2.) * self.grid_obj.integrate( np.exp(-exps * self.masked_grid_squared)
-                          / (4. * np.pi * np.power(self.grid_obj.radii, 2.))
-                          ))
-
-                # WEIGHTS = 1 / 4 pi r
-                print(self.grid_obj.integrate(self.masked_electron_density / (4. * np.pi * self.grid_obj.radii) / self.atomic_number),
-                      (exps / np.pi) ** (3. / 2.) * self.grid_obj.integrate(np.exp(-exps * self.masked_grid_squared) / (4 * np.pi * self.grid_obj.radii)))
-                print("")
-            for i, exps in enumerate(new_exps):
-                first = (2. / 3.) * (exps**(5./2.) / np.pi **(3./2.) * np.trapz(4. * np.pi * self.weights * np.exp(-exps * np.power(self.grid_obj.radii,2.)) * np.power(self.grid_obj.radii,4.),
-                                                                                    x=np.ravel(self.grid_obj.radii)))
-                print(first, 1)
-            """
             model = self.get_normalized_gaussian_density(new_coeffs, new_exps)
             sum_of_coeffs = np.sum(new_coeffs)
             integration_model_four_pi, goodness_of_fit, goodness_of_fit_r_squared, objective_function = \
@@ -296,9 +272,9 @@ if __name__ == "__main__":
     ###########
     ATOMIC_NUMBER = 9
     ELEMENT_NAME = "f"
-    USE_HORTON = False
+    USE_HORTON = True
     USE_FILLED_VALUES_TO_ZERO = True
-    THRESHOLD_COEFF = 1e-2
+    THRESHOLD_COEFF = 1e-8
     THRESHOLD_EXPS = 40
     import os
 
@@ -320,14 +296,14 @@ if __name__ == "__main__":
     from fitting.density import Atomic_Density
     atomic_density = Atomic_Density(file_path, radial_grid.radii)
     from fitting.fit.GaussianBasisSet import GaussianTotalBasisSet
-    atomic_density.electron_density /= ATOMIC_NUMBER
+
     from fitting.fit.model import Fitting
     atomic_gaussian = GaussianTotalBasisSet(ELEMENT_NAME, np.reshape(radial_grid.radii,
                                                                     (len(radial_grid.radii), 1)), file_path)
     weights = None#(4. * np.pi * radial_grid.radii**1.)#1. / (1 + (4. * np.pi * radial_grid.radii ** 2.))#1. / (4. * np.pi * radial_grid.radii**0.5) #np.exp(-0.01 * radial_grid.radii**2.)
 
     fitting_obj = Fitting(atomic_gaussian)
-    mbis = TotalMBIS(ELEMENT_NAME, 1, radial_grid, atomic_density.electron_density, weights=weights)
+    mbis = TotalMBIS(ELEMENT_NAME, ATOMIC_NUMBER, radial_grid, atomic_density.electron_density, weights=weights)
 
     exps = atomic_gaussian.UGBS_s_exponents[:-3]
     coeffs = fitting_obj.optimize_using_nnls(atomic_gaussian.create_cofactor_matrix(exps))
