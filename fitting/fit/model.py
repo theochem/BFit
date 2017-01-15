@@ -71,7 +71,7 @@ class DensityModel():
         return residual
 
     def integrate_model_using_trapz(self, approximate_model):
-        integrate = np.trapz(y=np.ravel(self.grid**2) * np.ravel(approximate_model), x=np.ravel(self.grid))
+        integrate = np.trapz(y=np.ravel(self.grid**2.) * np.ravel(approximate_model), x=np.ravel(self.grid))
         return integrate
 
     def measure_error_by_integration_of_difference(self, true_model, approximate_model):
@@ -152,7 +152,6 @@ class Fitting():
         b_vector = np.copy(self.model_object.electron_density)
         b_vector = np.ravel(b_vector)
         assert np.ndim(b_vector) == 1
-
         row_nnls_coefficients = scipy.optimize.nnls(cofactor_matrix, b_vector)
         return(row_nnls_coefficients[0])
 
@@ -163,6 +162,7 @@ class Fitting():
 
         row_nnls_coefficients = scipy.optimize.nnls(cofactor_matrix, b_vector)
         return(row_nnls_coefficients[0])
+
     def optimize_using_slsqp(self, initial_guess, additional_constraints=False,*args ):
         if additional_constraints == True:
             def constraint(x, *args):
@@ -192,9 +192,9 @@ class Fitting():
             bounds = np.array([(0.0, np.inf) for x in range(0, len(initial_guess))], dtype=np.float64)
 
             f_min_slsqp = scipy.optimize.fmin_slsqp(self.model_object.cost_function, x0=initial_guess, bounds=bounds, fprime=self.model_object.derivative_of_cost_function,
-                                                    acc =1e-06,iter=15000, args=(args), full_output=True, iprint=-1)
+                                                    acc=1e-09,iter=150000, args=(args), full_output=True, iprint=-1)
             parameters = f_min_slsqp[0]
-            #print(f_min_slsqp[4])
+            print(f_min_slsqp[4])
             return(parameters)
 
     def optimize_using_l_bfgs(self, initial_guess, iprint=False, *args):

@@ -367,6 +367,163 @@ if __name__ == "__main__":
     ATOMIC_NUMBER = 4
     file_path = r"C:\Users\Alireza\PycharmProjects\fitting\fitting\data\examples\\" + ELEMENT + ".slater"
 
+    LIST_OF_ATOMS = ["be", "LI", "HE", "B", "C", "N", "O", "F", "NE", "CU", "BR", "AG"]
+    ATOMIC_NUMBER_LIST = [4, 3, 2, 5, 6, 7, 8 ,9, 10, 29, 35, 47]
+    from fitting.density.radial_grid import *
+    import os
+    for i, atom_name in enumerate(LIST_OF_ATOMS):
+        atomic_number = ATOMIC_NUMBER_LIST[i]
+        print(atomic_number, atom_name)
+        file_path = r"C:\Users\Alireza\PycharmProjects\fitting\fitting\data\examples" + "\\" + atom_name
+
+        # Create Grid Object
+        NUMBER_OF_CORE_POINTS = 400; NUMBER_OF_DIFFUSED_PTS = 500
+        #row_grid_points = radial_grid.grid_points(NUMBER_OF_CORE_POINTS, NUMBER_OF_DIFFUSED_PTS, [50, 75, 100])
+        radial_grid = Radial_Grid(ATOMIC_NUMBER, NUMBER_OF_CORE_POINTS,  NUMBER_OF_DIFFUSED_PTS, [50, 75, 100])
+        row_grid_pts = np.copy(radial_grid.radii)
+        column_grid_pts = np.reshape(row_grid_pts, (len(row_grid_pts), 1))
+
+        # Create Total Gaussian Basis Set and Fitting Objects
+        total_gaussian_basis_set = GaussianTotalBasisSet(atom_name, column_grid_pts, file_path)
+        fitting_object = Fitting(total_gaussian_basis_set)
+
+        #Create Directories and result text file
+        directory =r"C:\Users\Alireza\PycharmProjects\fitting\fitting\fit\results2" + "\\"  + atom_name
+        if not os.path.exists(directory):
+            os.mkdir(directory)
+        if not os.path.exists(directory + r"\BEFORE_GREEDY"):
+            os.mkdir(directory + r"\BEFORE_GREEDY")
+        dir = r"C:\Users\Alireza\PycharmProjects\fitting\fitting\fit\results2" + "\\" + atom_name + r"\BEFORE_GREEDY"
+        file_obj = open(dir + "\\BEFORE_GREEDY.txt", "w")
+
+        file_obj.write("Integrating The True Model (Slater Basis Set) We Obtain \n")
+        file_obj.write(str(total_gaussian_basis_set.integrated_total_electron_density) + "\n")
+        file_obj.write("Starting With These UGBS Exponents \n")
+        file_obj.write("UGBS S EXPONENTS \n")
+        file_obj.write(str(total_gaussian_basis_set.UGBS_s_exponents) + "\n\n")
+
+        file_obj.write("Using the UGBS S Exponents Above, Optimize Using\n")
+        file_obj.write("\nNNLS \n")
+        nnls_coeff_ugbs = fitting_object.optimize_using_nnls(total_gaussian_basis_set.create_cofactor_matrix(total_gaussian_basis_set.UGBS_s_exponents))
+        file_obj.write("Optimized Coeffs \n")
+        file_obj.write(str(nnls_coeff_ugbs))
+        nnls_ugbs_model = total_gaussian_basis_set.create_model(np.append(nnls_coeff_ugbs, total_gaussian_basis_set.UGBS_s_exponents), len(nnls_coeff_ugbs))
+        file_obj.write("\nIntegrate The Approx Model - " + str( 4. * np.pi * total_gaussian_basis_set.integrate_model_using_trapz(nnls_ugbs_model)))
+        file_obj.write("\nIntegrating | True - Approx| * r^2  dx =  " + str(total_gaussian_basis_set.measure_error_by_integration_of_difference(
+            total_gaussian_basis_set.electron_density, nnls_ugbs_model
+        )))
+        file_obj.write("\nTaking The Difference of Integration = " + str(np.abs(total_gaussian_basis_set.integrated_total_electron_density - \
+                                                                         4. * np.pi * total_gaussian_basis_set.integrate_model_using_trapz(nnls_ugbs_model))))
+
+        file_obj.write("\n\nUsing Coefficients above As Initial Guess Optimize Coefficients Using")
+        file_obj.write("\nSLSQP")
+        slsqp_coeff_ugbs = fitting_object.optimize_using_slsqp(nnls_coeff_ugbs, False, len(nnls_coeff_ugbs),
+                                                               total_gaussian_basis_set.UGBS_s_exponents,
+                                                               [], False, True, False)
+        p = np.append(slsqp_coeff_ugbs, total_gaussian_basis_set.UGBS_s_exponents)
+        slsqp_ugbs_model = total_gaussian_basis_set.create_model(p, len(slsqp_coeff_ugbs))
+        file_obj.write("\nOptimized Coeffs \n")
+        file_obj.write(str(slsqp_coeff_ugbs))
+        file_obj.write("\nIntegrate The Approx Model - " + str(4. * np.pi * total_gaussian_basis_set.integrate_model_using_trapz(slsqp_ugbs_model)))
+        file_obj.write("\nIntegrating | True - Approx| * r^2  dx =  " + str(total_gaussian_basis_set.measure_error_by_integration_of_difference(
+            total_gaussian_basis_set.electron_density, slsqp_ugbs_model
+        )))
+        file_obj.write("\nTaking The Difference of Integration = " + str(np.abs(total_gaussian_basis_set.integrated_total_electron_density - \
+                                                                         4. * np.pi * total_gaussian_basis_set.integrate_model_using_trapz(nnls_ugbs_model))))
+
+        file_obj.write("\nBFGS")
+        slsqp_coeff_ugbs = fitting_object.optimize_using_l_bfgs(nnls_coeff_ugbs, False, len(nnls_coeff_ugbs),
+                                                               total_gaussian_basis_set.UGBS_s_exponents,
+                                                               [], False, True, False)
+        p = np.append(slsqp_coeff_ugbs, total_gaussian_basis_set.UGBS_s_exponents)
+        slsqp_ugbs_model = total_gaussian_basis_set.create_model(p, len(slsqp_coeff_ugbs))
+        file_obj.write("\nOptimized Coeffs \n")
+        file_obj.write(str(slsqp_coeff_ugbs))
+        file_obj.write("\nIntegrate The Approx Model - " + str(4. * np.pi * total_gaussian_basis_set.integrate_model_using_trapz(slsqp_ugbs_model)))
+        file_obj.write("\nIntegrating | True - Approx| * r^2  dx =  " + str(total_gaussian_basis_set.measure_error_by_integration_of_difference(
+            total_gaussian_basis_set.electron_density, slsqp_ugbs_model
+        )))
+        file_obj.write("\nTaking The Difference of Integration = " + str(np.abs(total_gaussian_basis_set.integrated_total_electron_density - \
+                                                                         4. * np.pi * total_gaussian_basis_set.integrate_model_using_trapz(nnls_ugbs_model))))
+
+
+        file_obj.write("\n\nUsing Coefficients above As Initial Guess Optimize Both Coefficients and Exponents Using")
+        file_obj.write("\nSLSQP")
+        slsqp_both = fitting_object.optimize_using_slsqp(np.append(nnls_coeff_ugbs, total_gaussian_basis_set.UGBS_s_exponents), False, len(total_gaussian_basis_set.UGBS_s_exponents))
+
+
+        slsqp_both_model = total_gaussian_basis_set.create_model(slsqp_both, len(total_gaussian_basis_set.UGBS_s_exponents))
+        file_obj.write("\nOptimized Coeffs \n")
+        file_obj.write(str(slsqp_both[:len(total_gaussian_basis_set.UGBS_s_exponents)]))
+        file_obj.write("\nOptimized Exponents \n")
+        file_obj.write(str(slsqp_both[len(total_gaussian_basis_set.UGBS_s_exponents):]))
+        file_obj.write("\nIntegrate The Approx Model - " + str(4. * np.pi * total_gaussian_basis_set.integrate_model_using_trapz(slsqp_both_model)))
+        file_obj.write("\nIntegrating | True - Approx| * r^2  dx =  " + str(total_gaussian_basis_set.measure_error_by_integration_of_difference(
+            total_gaussian_basis_set.electron_density, slsqp_both_model
+        )))
+        file_obj.write("\nTaking The Difference of Integration = " + str(np.abs(total_gaussian_basis_set.integrated_total_electron_density - \
+                                                                         4. * np.pi * total_gaussian_basis_set.integrate_model_using_trapz(slsqp_both_model))))
+
+
+        file_obj.write("\nBFGS")
+        bfgs_both = fitting_object.optimize_using_l_bfgs(np.append(nnls_coeff_ugbs, total_gaussian_basis_set.UGBS_s_exponents),
+                                                         False, len(total_gaussian_basis_set.UGBS_s_exponents))
+        bfgs_both_model = total_gaussian_basis_set.create_model(bfgs_both, len(total_gaussian_basis_set.UGBS_s_exponents))
+        file_obj.write("\nOptimized Coeffs \n")
+        file_obj.write(str(bfgs_both[:len(total_gaussian_basis_set.UGBS_s_exponents)]))
+        file_obj.write("\nOptimized Exponents \n")
+        file_obj.write(str(bfgs_both[len(total_gaussian_basis_set.UGBS_s_exponents):]))
+        file_obj.write("\nIntegrate The Approx Model - " + str(4. * np.pi * total_gaussian_basis_set.integrate_model_using_trapz(bfgs_both_model)))
+        file_obj.write("\nIntegrating | True - Approx| * r^2  dx =  " + str(total_gaussian_basis_set.measure_error_by_integration_of_difference(
+            total_gaussian_basis_set.electron_density, bfgs_both_model
+        )))
+        file_obj.write("\nTaking The Difference of Integration = " + str(np.abs(total_gaussian_basis_set.integrated_total_electron_density - \
+                                                                         4. * np.pi * total_gaussian_basis_set.integrate_model_using_trapz(bfgs_both_model))))
+
+
+        file_obj.write("\nIntegrate The Approx Model - ")
+        file_obj.write("\nIntegrating | True - Approx| * r^2  dx =  " )
+        file_obj.write("\nTaking The Difference of Integration = " )
+
+        # Generate Exponents
+        p_values = [1.25, 1.5, 1.75]
+        for p in p_values:
+            new_gaussian_exponents = total_gaussian_basis_set.generation_of_UGBS_exponents(p, total_gaussian_basis_set.UGBS_s_exponents)
+            nnls_p_coeffs = fitting_object.optimize_using_nnls(total_gaussian_basis_set.create_cofactor_matrix(new_gaussian_exponents))
+            nnls_p_model = total_gaussian_basis_set.create_model(np.append(nnls_p_coeffs, new_gaussian_exponents), len(new_gaussian_exponents))
+            file_obj.write("\n\nGenerate Gaussian Exponents Using P= " + str(p))
+            file_obj.write("\nNew UGBS Exponents")
+            file_obj.write(str(new_gaussian_exponents))
+            file_obj.write("\nOptimize Using NNLS To Get Coefficients -")
+            file_obj.write(str(nnls_p_coeffs))
+            file_obj.write("\nIntegrate The Approx Model - " + str(4. * np.pi * total_gaussian_basis_set.integrate_model_using_trapz(nnls_p_model)))
+            file_obj.write("\nIntegrating | True - Approx| * r^2  dx =  " + str(total_gaussian_basis_set.measure_error_by_integration_of_difference(
+                total_gaussian_basis_set.electron_density, nnls_p_model)
+            ) )
+            file_obj.write("\nTaking The Difference of Integration = " + str(np.abs(total_gaussian_basis_set.integrated_total_electron_density) -
+                                                                             4. * np.pi * total_gaussian_basis_set.integrate_model_using_trapz(nnls_p_model)) )
+
+            file_obj.write("\n\nUsing Coefficients above As Initial Guess Optimize Coefficients Using")
+            file_obj.write("\nSLSQP")
+            slsqp_p = fitting_object.optimize_using_slsqp(np.append(nnls_p_coeffs, new_gaussian_exponents),False, len(new_gaussian_exponents))
+            slsqp_p_model = total_gaussian_basis_set.create_model(slsqp_p, len(new_gaussian_exponents))
+            file_obj.write("\nIntegrate The Approx Model - " + str(4. * np.pi * total_gaussian_basis_set.integrate_model_using_trapz(slsqp_p_model)))
+            file_obj.write("\nIntegrating | True - Approx| * r^2  dx =  " + str(total_gaussian_basis_set.measure_error_by_integration_of_difference(
+                total_gaussian_basis_set.electron_density, slsqp_p_model
+            )))
+            file_obj.write("\nTaking The Difference of Integration = ")
+
+            file_obj.write("\nBFGS")
+            bfgs_p = fitting_object.optimize_using_l_bfgs(np.append(nnls_p_coeffs, new_gaussian_exponents),False, len(new_gaussian_exponents))
+            bfgs_p_model = total_gaussian_basis_set.create_model(bfgs_p, len(new_gaussian_exponents))
+            file_obj.write("\nIntegrate The Approx Model - " + str(4. * np.pi * total_gaussian_basis_set.integrate_model_using_trapz(bfgs_p_model)))
+            file_obj.write("\nIntegrating | True - Approx| * r^2  dx =  " + str(total_gaussian_basis_set.measure_error_by_integration_of_difference(
+                total_gaussian_basis_set.electron_density, bfgs_p_model
+            )))
+            file_obj.write("\nTaking The Difference of Integration = " )
+        file_obj.close()
+        #import sys; sys.exit()
+    """
     #Create Grid for the modeling
     from fitting.density.radial_grid import *
     radial_grid = Radial_Grid(ATOMIC_NUMBER)
@@ -447,4 +604,5 @@ if __name__ == "__main__":
     #fitting_object_valence = Fitting(be_valence)
     #fitting_object_valence.forward_greedy_algorithm_valence(2.0, 0.01)
     #fitting_object_valence.forward_greedy_algorithm(2.0, 0.01, np.copy(be_valence.electron_density_core), maximum_num_of_functions=100)
+    """
 

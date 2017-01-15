@@ -270,12 +270,12 @@ if __name__ == "__main__":
     #################
     ## SET UP#######
     ###########
-    ATOMIC_NUMBER = 9
-    ELEMENT_NAME = "f"
-    USE_HORTON = True
+    ATOMIC_NUMBER = 2
+    ELEMENT_NAME = "he"
+    USE_HORTON = False
     USE_FILLED_VALUES_TO_ZERO = True
     THRESHOLD_COEFF = 1e-8
-    THRESHOLD_EXPS = 40
+    THRESHOLD_EXPS = 1e-6
     import os
 
     current_directory = os.path.dirname(os.path.abspath(__file__))[:-3]
@@ -307,14 +307,8 @@ if __name__ == "__main__":
 
     exps = atomic_gaussian.UGBS_s_exponents[:-3]
     coeffs = fitting_obj.optimize_using_nnls(atomic_gaussian.create_cofactor_matrix(exps))
-    print(exps)
     coeffs[coeffs == 0.] = 1e-6
 
-    print(radial_grid.integrate(mbis.electron_density))
-    print(radial_grid.integrate(mbis.get_normalized_gaussian_density(coeffs, exps)))
-    coeffs, exps = mbis.run(1e-2, 1e-1, coeffs, exps, iprint=True)
-    #coeffs = np.array([500.])
-    #exps = np.array([0.05])
 
     parameters = mbis.optimize_using_slsqp(np.append(coeffs, exps))
     coeffs, exps = parameters[:len(parameters)//2], parameters[len(parameters)//2:]
@@ -322,8 +316,7 @@ if __name__ == "__main__":
     print(mbis.get_descriptors_of_model(model), np.abs(model[0] - atomic_density.electron_density[0]))
     coeffs[coeffs == 0.] = 1e-30
     exps[exps==0.] = 1e-30
-    import sys
-    sys.exit()
+
 
     coeffs, exps = mbis.run(THRESHOLD_COEFF, THRESHOLD_EXPS, coeffs, exps, iprint=True)
     #coeffs, exps = mbis.run_greedy(2. , 1e-2, 1e-1, iprint=True)
