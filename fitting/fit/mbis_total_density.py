@@ -270,22 +270,62 @@ if __name__ == "__main__":
     #################
     ## SET UP#######
     ###########
-    ATOMIC_NUMBER = 2
-    ELEMENT_NAME = "he"
-    USE_HORTON = False
+
+    LIST_OF_ATOMS = ["be", "LI", "HE", "B", "C", "N", "O", "F", "NE", "CU", "BR", "AG"]
+    ATOMIC_NUMBER_LIST = [4, 3, 2, 5, 6, 7, 8 ,9, 10, 29, 35, 47]
     USE_FILLED_VALUES_TO_ZERO = True
     THRESHOLD_COEFF = 1e-8
     THRESHOLD_EXPS = 1e-6
-    import os
+    WEIGHTS = None
 
-    current_directory = os.path.dirname(os.path.abspath(__file__))[:-3]
-    file_path = current_directory + "data/examples//" + ELEMENT_NAME
-    if USE_HORTON:
-        import horton
+    from fitting.density.radial_grid import *
+    import os
+    import horton
+    for i, atom_name in enumerate(LIST_OF_ATOMS):
+        atomic_number = ATOMIC_NUMBER_LIST[i]
+        print(atomic_number, atom_name)
+        file_path = r"C:\Users\Alireza\PycharmProjects\fitting\fitting\data\examples" + "\\" + atom_name
+
+        # Create Grid Object
         rtf = horton.ExpRTransform(1.0e-30, 25, 1000)
         radial_grid_2 = horton.RadialGrid(rtf)
         from fitting.density.radial_grid import Horton_Grid
         radial_grid = Horton_Grid(1e-80, 25, 1000, filled=USE_FILLED_VALUES_TO_ZERO)
+
+        dir = r"C:\Users\Alireza\PycharmProjects\fitting\fitting\fit\results2" + "\\"  + atom_name
+        if not os.path.exists(dir + r"\MBIS"):
+            os.mkdir(dir + r"\MBIS")
+            dir += "\MBIS"
+
+
+        from fitting.density import Atomic_Density
+        atomic_density = Atomic_Density(file_path, radial_grid.radii)
+        from fitting.fit.GaussianBasisSet import GaussianTotalBasisSet
+        from fitting.fit.model import Fitting
+        atomic_gaussian = GaussianTotalBasisSet(atom_name, np.reshape(radial_grid.radii,
+                                                                    (len(radial_grid.radii), 1)), file_path)
+        fitting_obj = Fitting(atomic_gaussian)
+        mbis = TotalMBIS(atom_name, atomic_number, radial_grid, atomic_density.electron_density, weights=WEIGHTS)
+
+
+        parameters = mbis.optimize_using_slsqp(np.append(coeffs, exps))
+        coeffs, exps = parameters[:len(parameters)//2], parameters[len(parameters)//2:]
+        model = mbis.get_normalized_gaussian_density(coeffs, exps)
+        print(mbis.get_descriptors_of_model(model), np.abs(model[0] - atomic_density.electron_density[0]))
+        coeffs[coeffs == 0.] = 1e-30
+        exps[exps==0.] = 1e-30
+
+
+        coeffs, exps = mbis.run(THRESHOLD_COEFF, THRESHOLD_EXPS, coeffs, exps, iprint=True)
+        print("Final Coeffs, Exps: ", coeffs, exps )
+        parameters = np.append(coeffs, exps)
+        np.save(dir + "\mbis_parameters.npy", parameters)
+
+    """
+    current_directory = os.path.dirname(os.path.abspath(__file__))[:-3]
+    file_path = current_directory + "data/examples//" + ELEMENT_NAME
+    if USE_HORTON:
+
     else:
         NUMB_OF_CORE_POINTS = 400; NUMB_OF_DIFFUSE_POINTS = 500
         from fitting.density.radial_grid import Radial_Grid
@@ -322,34 +362,5 @@ if __name__ == "__main__":
     #coeffs, exps = mbis.run_greedy(2. , 1e-2, 1e-1, iprint=True)
     print("Final Coeffs, Exps: ", coeffs, exps )
 
-
-    ##########################
-    ##### PLOT ############
-    #######################
-
-    from plotting_functions import *
-    model = mbis.get_normalized_gaussian_density(coeffs, exps)
-    plot_atomic_density(radial_grid.radii, model, atomic_density.electron_density, "Weights - 1/ (1 + 4 pi r^2)", "weights_one_plus_four_pi_rsquared_inv")
-    plot_density_sections(atomic_density.electron_density, model, radial_grid.radii, title='weights - 1/ (1 + 4 pi r^2)')
     """
-    coeffs = np.array([  5.37392144e-08,   1.43067270e-15,   9.55155646e-16,
-                         5.85184393e-08,   8.91743793e-06,   1.51012541e-06,
-                         6.75440699e-06,   3.77361749e-06,   2.81295280e-04,
-                         1.05047484e-03,   4.57818235e-04,   9.78497372e-03,
-                         3.28696365e-02,   6.47375622e-02,   1.52893402e-01,
-                         6.40408276e-01,   8.59436347e-01,   3.58250996e-02,
-                         7.37241184e-09,   1.18885179e+00,   2.31162944e+00,
-                         2.67638300e+00,   9.43193713e-01,   8.21760923e-02])
-    exps = np.array([  5.76797592e+05,   5.76797592e+05,   5.76797592e+05,
-                     5.76797592e+05,   3.87637212e+04,   3.87637212e+04,
-                     3.87637212e+04,   3.87637212e+04,   3.83630934e+03,
-                     3.83630934e+03,   3.83630934e+03,   6.16627np.exp(-100. * radial_grid.radii**4)733e+02,
-                     6.16627733e+02,   1.93492242e+02,   1.90876217e+02,
-                     7.72234427e+01,   3.28170225e+01,   3.28170225e+01,
-                     3.28170225e+01,   3.04085648e+00,   1.89568691e+00,
-                     9.62126885e-01,   4.64140464e-01,   2.27213679e-01])
 
-    for i in range(0, len(exps)):
-        model = mbis.get_normalized_gaussian_density(coeffs, exps)
-        print(mbis.get_normalization_constant(exps[i]) * radial_grid.integrate(mbis.masked_electron_density * np.exp(-exps[i] * mbis.masked_grid_squared) / model))
-    """
