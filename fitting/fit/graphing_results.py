@@ -106,6 +106,14 @@ if __name__ == "__main__":
         atomic_density = Atomic_Density(file_path, radial_grid.radii)
 
         mbis = TotalMBIS(atom_name, atomic_number, radial_grid, atomic_density.electron_density)
+        storage_errors = np.load(atom_name + "_greedy_mbis_errors_iteration.npy")
+        storage_errors = np.load(atom_name + "_greedy_mbis_parameters_iteration.npy")
+        print(storage_errors)
+        print(storage_errors)
+        break
+
+    """
+    # Plotting the split regions
 
         parameters = np.load(atom_name + "_mbis_parameters.npy")
         coeffs, exps = parameters[:len(parameters)//2], parameters[len(parameters)//2:]
@@ -114,9 +122,6 @@ if __name__ == "__main__":
                                                                                                  "Regions Between "
                                                                                                  "True and "
                                                                                                  "Model Densities")
-
-
-    """
     # PLOTTING ERRORS
 
         plt.rc('text', usetex=True)

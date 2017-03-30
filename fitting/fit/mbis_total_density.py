@@ -212,8 +212,8 @@ class TotalMBIS(MBIS_ABC):
         ##### ITERATION: NEXT GAUSSIAN FUNCS##
         ######################################
         num_of_functions = 1
-        storage_of_parameters_per_addition = np.array([np.append(coeffs, exps)], dtype=np.ndarray)
-        storage_of_errors_per_addition = np.array([[]], dtype=np.ndarray)
+        storage_of_parameters_per_addition = [np.append(coeffs, exps)]
+        storage_of_errors_per_addition = []
         for x in range(0, 30):
             next_coeffs, next_exps = get_next_possible_coeffs_and_exps(factor, coeffs, exps)
 
@@ -237,14 +237,14 @@ class TotalMBIS(MBIS_ABC):
                     self.get_descriptors_of_model(self.get_normalized_gaussian_density(best_local_coeffs, best_local_exps)))
             coeffs, exps = best_local_coeffs, best_local_exps
             coeffs, exps, storage_errors = self.run(threshold_coeff, threshold_exps, coeffs, exps, iprint=iprint, iplot=iplot)
-            storage_of_parameters_per_addition = np.append(storage_of_parameters_per_addition, np.append(coeffs, exps))
-            storage_of_errors_per_addition = np.append(storage_of_errors_per_addition, storage_errors)
+            storage_of_parameters_per_addition.append(np.append(coeffs, exps))
+            storage_of_errors_per_addition.append(storage_errors)
             print(num_of_functions,
                     self.get_descriptors_of_model(self.get_normalized_gaussian_density(coeffs, exps)))
             print()
             #coeffs, exps = self.checkFalse_redundancies(coeffs, exps)
             print(storage_of_errors_per_addition)
-            print(storage_of_errors_per_addition.shape)
+            print(len(storage_of_errors_per_addition))
             num_of_functions = len(coeffs)
         return coeffs, exps, storage_of_errors_per_addition, storage_of_parameters_per_addition
 
@@ -308,7 +308,7 @@ if __name__ == "__main__":
 
         mbis = TotalMBIS(atom_name, atomic_number, radial_grid, atomic_density.electron_density, weights=WEIGHTS)
 
-        coeffs, exps, storage_errors_parameters, storage_errors = mbis.run_greedy(2., THRESHOLD_COEFF, THRESHOLD_EXPS, iprint=True, iplot=True)
+        coeffs, exps, storage_errors, storage_errors_parameters = mbis.run_greedy(2., THRESHOLD_COEFF, THRESHOLD_EXPS, iprint=True, iplot=True)
         print("Final Coeffs, Exps: ", coeffs, exps )
         parameters = np.append(coeffs, exps)
         np.save(atom_name + "_greedy_mbis_parameters.npy", parameters)
