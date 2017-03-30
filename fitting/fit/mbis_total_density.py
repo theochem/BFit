@@ -175,7 +175,13 @@ class TotalMBIS(MBIS_ABC):
         assert len(exps) == len(coeffs)
         return coeffs, exps
 
-    def run_greedy(self,factor, threshold_coeff, threshold_exps, iprint=False):
+    def run_greedy(self,factor, threshold_coeff, threshold_exps, iprint=False, iplot=False):
+        def get_initial_parameters_analytically():
+            denom = 4. * np.pi * self.grid_obj.integrate(self.masked_electron_density
+                                            * np.power(self.masked_grid_squared, 2.))
+            exps = 3. * self.atomic_number / (2. * denom)
+            return np.array([np.float(self.atomic_number)]), np.array([exps])
+
         def get_next_possible_coeffs_and_exps(factor, coeffs, exps):
             size = exps.shape[0]
             all_choices_of_exponents = []
@@ -199,15 +205,15 @@ class TotalMBIS(MBIS_ABC):
         #######################################
         ##### SOLVE FOR ONE GAUSSIAN FUNCTION##
         ######################################
-        coeffs = np.array([float(self.atomic_number)])
-        print(coeffs)
-        exps = np.array([0.034])
-        coeffs, exps = self.run(1e-4, 1e-3, coeffs, exps, iprint=iprint)
+        coeffs, exps =get_initial_parameters_analytically()
         print("Single Best Coeffs and Exps: ", coeffs, exps)
+
         #######################################
         ##### ITERATION: NEXT GAUSSIAN FUNCS##
         ######################################
         num_of_functions = 1
+        storage_of_parameters_per_addition = np.array([np.append(coeffs, exps)], dtype=np.ndarray)
+        storage_of_errors_per_addition = np.array([[]], dtype=np.ndarray)
         for x in range(0, 30):
             next_coeffs, next_exps = get_next_possible_coeffs_and_exps(factor, coeffs, exps)
 
@@ -219,24 +225,28 @@ class TotalMBIS(MBIS_ABC):
             for i, exponents in enumerate(next_exps):
                 exponents[exponents==0] = 1e-6
                 next_coeffs[i][next_coeffs[i] == 0.] = 1e-12
-                next_coeffs[i], exps = self.run(10., 1000., next_coeffs[i], exponents, iprint=False)
+                next_coeffs[i], exps, storage_errors = self.run(10., 1000., next_coeffs[i], exponents, iprint=False)
                 objective_func = self.get_objective_function(self.get_normalized_gaussian_density(next_coeffs[i],
                                                                                                exponents))
                 if objective_func < best_local_found_objective_func:
                     best_local_found_objective_func = objective_func
                     best_local_coeffs = next_coeffs[i]
-                    best_local_exps = exponents
+                    best_local_exps = exps
 
             print(num_of_functions,
                     self.get_descriptors_of_model(self.get_normalized_gaussian_density(best_local_coeffs, best_local_exps)))
             coeffs, exps = best_local_coeffs, best_local_exps
-            coeffs, exps = self.run(threshold_coeff, threshold_exps, coeffs, exps, iprint=iprint)
-
+            coeffs, exps, storage_errors = self.run(threshold_coeff, threshold_exps, coeffs, exps, iprint=iprint, iplot=iplot)
+            storage_of_parameters_per_addition = np.append(storage_of_parameters_per_addition, np.append(coeffs, exps))
+            storage_of_errors_per_addition = np.append(storage_of_errors_per_addition, storage_errors)
             print(num_of_functions,
                     self.get_descriptors_of_model(self.get_normalized_gaussian_density(coeffs, exps)))
             print()
-            coeffs, exps = self.checkFalse_redundancies(coeffs, exps)
+            #coeffs, exps = self.checkFalse_redundancies(coeffs, exps)
+            print(storage_of_errors_per_addition)
+            print(storage_of_errors_per_addition.shape)
             num_of_functions = len(coeffs)
+        return coeffs, exps, storage_of_errors_per_addition, storage_of_parameters_per_addition
 
 
     def get_obj_func_for_optimizing(self, parameters):
@@ -295,23 +305,15 @@ if __name__ == "__main__":
 
         from fitting.density import Atomic_Density
         atomic_density = Atomic_Density(file_path, radial_grid.radii)
-        from fitting.fit.GaussianBasisSet import GaussianTotalBasisSet
-        from fitting.fit.model import Fitting
-        atomic_gaussian = GaussianTotalBasisSet(atom_name, np.reshape(radial_grid.radii,
-                                                                    (len(radial_grid.radii), 1)), file_path)
 
-        fitting_obj = Fitting(atomic_gaussian)
         mbis = TotalMBIS(atom_name, atomic_number, radial_grid, atomic_density.electron_density, weights=WEIGHTS)
 
-        exps = atomic_gaussian.UGBS_s_exponents
-        coeffs = fitting_obj.optimize_using_nnls(atomic_gaussian.create_cofactor_matrix(exps))
-        coeffs[coeffs == 0.] = 1e-6
-
-        coeffs, exps, storage_errors= mbis.run(THRESHOLD_COEFF, THRESHOLD_EXPS, coeffs, exps, iprint=True, iplot=True)
+        coeffs, exps, storage_errors_parameters, storage_errors = mbis.run_greedy(2., THRESHOLD_COEFF, THRESHOLD_EXPS, iprint=True, iplot=True)
         print("Final Coeffs, Exps: ", coeffs, exps )
         parameters = np.append(coeffs, exps)
-        np.save(atom_name + "_mbis_parameters.npy", parameters)
-        np.save(atom_name + "_mbis_errors.npy", storage_errors)
+        np.save(atom_name + "_greedy_mbis_parameters.npy", parameters)
+        np.save(atom_name + "_greedy_mbis_parameters_iteration.npy", storage_errors_parameters)
+        np.save(atom_name + "_greedy_mbis_errors_iteration.npy", storage_errors)
 
     """
     current_directory = os.path.dirname(os.path.abspath(__file__))[:-3]
@@ -353,6 +355,5 @@ if __name__ == "__main__":
     coeffs, exps = mbis.run(THRESHOLD_COEFF, THRESHOLD_EXPS, coeffs, exps, iprint=True)
     #coeffs, exps = mbis.run_greedy(2. , 1e-2, 1e-1, iprint=True)
     print("Final Coeffs, Exps: ", coeffs, exps )
-
     """
 
