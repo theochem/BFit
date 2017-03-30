@@ -153,9 +153,9 @@ class TotalMBIS(MBIS_ABC):
                 storage_of_errors[2].append(goodness_of_fit_r_squared)
                 storage_of_errors[3].append(objective_function)
             counter += 1
-        if iplot:
-            self.create_plots(storage_of_errors[0], storage_of_errors[1], storage_of_errors[2], storage_of_errors[3])
-        return new_coeffs, new_exps
+        #if iplot:
+        #    self.create_plots(storage_of_errors[0], storage_of_errors[1], storage_of_errors[2], storage_of_errors[3])
+        return new_coeffs, new_exps, storage_of_errors
 
     def check_redundancies(self, coeffs, exps):
         for i, alpha in enumerate(exps):
@@ -271,11 +271,11 @@ if __name__ == "__main__":
     ## SET UP#######
     ###########
 
-    LIST_OF_ATOMS = ["be", "LI", "HE", "B", "C", "N", "O", "F", "NE", "CU", "BR", "AG"]
-    ATOMIC_NUMBER_LIST = [4, 3, 2, 5, 6, 7, 8 ,9, 10, 29, 35, 47]
+    LIST_OF_ATOMS = [ "he", "li", "be", "b", "c", "n", "o", "f", "ne"]
+    ATOMIC_NUMBER_LIST = [2, 3, 4, 5, 6, 7, 8, 9, 10] #4,
     USE_FILLED_VALUES_TO_ZERO = True
-    THRESHOLD_COEFF = 1e-8
-    THRESHOLD_EXPS = 1e-6
+    THRESHOLD_COEFF = 1e-3
+    THRESHOLD_EXPS = 1e-4
     WEIGHTS = None
 
     from fitting.density.radial_grid import *
@@ -284,18 +284,13 @@ if __name__ == "__main__":
     for i, atom_name in enumerate(LIST_OF_ATOMS):
         atomic_number = ATOMIC_NUMBER_LIST[i]
         print(atomic_number, atom_name)
-        file_path = r"C:\Users\Alireza\PycharmProjects\fitting\fitting\data\examples" + "\\" + atom_name
+        file_path = os.path.expanduser('~') + r"/PythonProjects/fitting/fitting/data/examples" + "/" + atom_name
 
         # Create Grid Object
         rtf = horton.ExpRTransform(1.0e-30, 25, 1000)
         radial_grid_2 = horton.RadialGrid(rtf)
         from fitting.density.radial_grid import Horton_Grid
         radial_grid = Horton_Grid(1e-80, 25, 1000, filled=USE_FILLED_VALUES_TO_ZERO)
-
-        dir = r"C:\Users\Alireza\PycharmProjects\fitting\fitting\fit\results2" + "\\"  + atom_name
-        if not os.path.exists(dir + r"\MBIS"):
-            os.mkdir(dir + r"\MBIS")
-            dir += "\MBIS"
 
 
         from fitting.density import Atomic_Density
@@ -304,22 +299,19 @@ if __name__ == "__main__":
         from fitting.fit.model import Fitting
         atomic_gaussian = GaussianTotalBasisSet(atom_name, np.reshape(radial_grid.radii,
                                                                     (len(radial_grid.radii), 1)), file_path)
+
         fitting_obj = Fitting(atomic_gaussian)
         mbis = TotalMBIS(atom_name, atomic_number, radial_grid, atomic_density.electron_density, weights=WEIGHTS)
 
+        exps = atomic_gaussian.UGBS_s_exponents
+        coeffs = fitting_obj.optimize_using_nnls(atomic_gaussian.create_cofactor_matrix(exps))
+        coeffs[coeffs == 0.] = 1e-6
 
-        parameters = mbis.optimize_using_slsqp(np.append(coeffs, exps))
-        coeffs, exps = parameters[:len(parameters)//2], parameters[len(parameters)//2:]
-        model = mbis.get_normalized_gaussian_density(coeffs, exps)
-        print(mbis.get_descriptors_of_model(model), np.abs(model[0] - atomic_density.electron_density[0]))
-        coeffs[coeffs == 0.] = 1e-30
-        exps[exps==0.] = 1e-30
-
-
-        coeffs, exps = mbis.run(THRESHOLD_COEFF, THRESHOLD_EXPS, coeffs, exps, iprint=True)
+        coeffs, exps, storage_errors= mbis.run(THRESHOLD_COEFF, THRESHOLD_EXPS, coeffs, exps, iprint=True, iplot=True)
         print("Final Coeffs, Exps: ", coeffs, exps )
         parameters = np.append(coeffs, exps)
-        np.save(dir + "\mbis_parameters.npy", parameters)
+        np.save(atom_name + "_mbis_parameters.npy", parameters)
+        np.save(atom_name + "_mbis_errors.npy", storage_errors)
 
     """
     current_directory = os.path.dirname(os.path.abspath(__file__))[:-3]
