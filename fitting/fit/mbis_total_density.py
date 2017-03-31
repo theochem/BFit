@@ -158,22 +158,31 @@ class TotalMBIS(MBIS_ABC):
         return new_coeffs, new_exps, storage_of_errors
 
     def check_redundancies(self, coeffs, exps):
-        for i, alpha in enumerate(exps):
-            indexes_where_they_are_same = []
-            for j in range(0, len(exps)):
-                if i != j:
-                    if np.abs(alpha - exps[j]) < 1e-5:
-                        indexes_where_they_are_same.append(j)
+        new_coeffs = coeffs.copy()
+        new_exps = exps.copy()
 
-            for index in indexes_where_they_are_same:
-                coeffs[i] += coeffs[j]
-            if len(indexes_where_they_are_same) != 0:
-                print("-------- Redundancies found ---------")
-                print()
-                exps = np.delete(exps, indexes_where_they_are_same)
-                coeffs = np.delete(coeffs, indexes_where_they_are_same)
+        indexes_where_they_are_same = []
+        for i, alpha in enumerate(exps):
+            similar_indexes = []
+            for j in range(i + 1, len(exps)):
+                if j not in similar_indexes:
+                    if np.abs(alpha - exps[j]) < 1e-2:
+                        if i not in similar_indexes:
+                            similar_indexes.append(i)
+                        similar_indexes.append(j)
+            indexes_where_they_are_same.append(similar_indexes)
+
+        for group_of_similar_items in indexes_where_they_are_same:
+            for i in  range(1, len(group_of_similar_items)):
+                new_coeffs[group_of_similar_items[0]] += coeffs[group_of_similar_items[i]]
+
+        if len(indexes_where_they_are_same) != 0:
+            print("-------- Redundancies found ---------")
+            print()
+            new_exps = np.delete(new_exps, [y for x in indexes_where_they_are_same for y in x[1:]])
+            new_coeffs = np.delete(new_coeffs, [y for x in indexes_where_they_are_same for y in x[1:]])
         assert len(exps) == len(coeffs)
-        return coeffs, exps
+        return new_coeffs, new_exps
 
     def run_greedy(self,factor, threshold_coeff, threshold_exps, iprint=False, iplot=False):
         def get_initial_parameters_analytically():
@@ -245,6 +254,7 @@ class TotalMBIS(MBIS_ABC):
             #coeffs, exps = self.checkFalse_redundancies(coeffs, exps)
             print(storage_of_errors_per_addition)
             print(len(storage_of_errors_per_addition))
+            coeffs, exps = self.check_redundancies(coeffs, exps)
             num_of_functions = len(coeffs)
         return coeffs, exps, storage_of_errors_per_addition, storage_of_parameters_per_addition
 
