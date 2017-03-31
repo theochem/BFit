@@ -223,11 +223,11 @@ class TotalMBIS(MBIS_ABC):
         num_of_functions = 1
         storage_of_parameters_per_addition = [np.append(coeffs, exps)]
         storage_of_errors_per_addition = []
-        for x in range(0, 30):
+
+        while num_of_functions < 31:
             next_coeffs, next_exps = get_next_possible_coeffs_and_exps(factor, coeffs, exps)
 
             num_of_functions += 1
-
             best_local_found_objective_func = 1e10
             best_local_coeffs = None
             best_local_exps = None
@@ -246,8 +246,7 @@ class TotalMBIS(MBIS_ABC):
                     self.get_descriptors_of_model(self.get_normalized_gaussian_density(best_local_coeffs, best_local_exps)))
             coeffs, exps = best_local_coeffs, best_local_exps
             coeffs, exps, storage_errors = self.run(threshold_coeff, threshold_exps, coeffs, exps, iprint=iprint, iplot=iplot)
-            storage_of_parameters_per_addition.append(np.append(coeffs, exps))
-            storage_of_errors_per_addition.append(storage_errors)
+
             print(num_of_functions,
                     self.get_descriptors_of_model(self.get_normalized_gaussian_density(coeffs, exps)))
             print()
@@ -255,7 +254,13 @@ class TotalMBIS(MBIS_ABC):
             print(storage_of_errors_per_addition)
             print(len(storage_of_errors_per_addition))
             coeffs, exps = self.check_redundancies(coeffs, exps)
-            num_of_functions = len(coeffs)
+
+            if num_of_functions != len(coeffs):
+                num_of_functions = len(coeffs)
+            else:
+                # Only Store If Redudancies were not found
+                storage_of_parameters_per_addition.append(np.append(coeffs, exps))
+                storage_of_errors_per_addition.append(storage_errors)
         return coeffs, exps, storage_of_errors_per_addition, storage_of_parameters_per_addition
 
 
@@ -321,9 +326,9 @@ if __name__ == "__main__":
         coeffs, exps, storage_errors, storage_errors_parameters = mbis.run_greedy(2., THRESHOLD_COEFF, THRESHOLD_EXPS, iprint=True, iplot=True)
         print("Final Coeffs, Exps: ", coeffs, exps )
         parameters = np.append(coeffs, exps)
-        np.save(atom_name + "_greedy_mbis_parameters.npy", parameters)
-        np.save(atom_name + "_greedy_mbis_parameters_iteration.npy", storage_errors_parameters)
-        np.save(atom_name + "_greedy_mbis_errors_iteration.npy", storage_errors)
+        np.save(atom_name + "_greedy_mbis_parameters2.npy", parameters)
+        np.save(atom_name + "_greedy_mbis_parameters_iteration2.npy", storage_errors_parameters)
+        np.save(atom_name + "_greedy_mbis_errors_iteration2.npy", storage_errors)
 
     """
     current_directory = os.path.dirname(os.path.abspath(__file__))[:-3]
