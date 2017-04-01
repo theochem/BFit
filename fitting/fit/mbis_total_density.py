@@ -212,6 +212,7 @@ class TotalMBIS(MBIS_ABC):
                     all_choices_of_coeffs.append(np.append(coeffs, np.array([coeff_value])))
             return all_choices_of_coeffs, all_choices_of_exponents
 
+        initial_factor = factor
         #######################################
         ##### SOLVE FOR ONE GAUSSIAN FUNCTION##
         ######################################
@@ -258,10 +259,13 @@ class TotalMBIS(MBIS_ABC):
 
             if num_of_functions != len(coeffs):
                 num_of_functions = len(coeffs)
+                factor += 5
+                print("NEW FACTOR" , factor)
             else:
                 # Only Store If Redudancies were not found
                 storage_of_parameters_per_addition.append(np.append(coeffs, exps))
                 storage_of_errors_per_addition.append(storage_errors)
+                factor = initial_factor
         return coeffs, exps, storage_of_errors_per_addition, storage_of_parameters_per_addition
 
 
@@ -297,8 +301,8 @@ if __name__ == "__main__":
     ## SET UP#######
     ###########
 
-    LIST_OF_ATOMS = [ "he", "li", "be", "b", "c", "n", "o", "f", "ne"]
-    ATOMIC_NUMBER_LIST = [2, 3, 4, 5, 6, 7, 8, 9, 10] #4,
+    LIST_OF_ATOMS = ["c", 'n', "o", "f","ne"]
+    ATOMIC_NUMBER_LIST = [6, 7, 8, 9, 10] #4, "be", "b",  4, 5,
     USE_FILLED_VALUES_TO_ZERO = True
     THRESHOLD_COEFF = 1e-3
     THRESHOLD_EXPS = 1e-4
@@ -324,7 +328,7 @@ if __name__ == "__main__":
 
         mbis = TotalMBIS(atom_name, atomic_number, radial_grid, atomic_density.electron_density, weights=WEIGHTS)
 
-        coeffs, exps, storage_errors, storage_errors_parameters = mbis.run_greedy(2., THRESHOLD_COEFF, THRESHOLD_EXPS, iprint=True, iplot=True)
+        coeffs, exps, storage_errors, storage_errors_parameters = mbis.run_greedy(5., THRESHOLD_COEFF, THRESHOLD_EXPS, iprint=True, iplot=True)
         print("Final Coeffs, Exps: ", coeffs, exps )
         parameters = np.append(coeffs, exps)
         np.save(atom_name + "_greedy_mbis_parameters2.npy", parameters)
