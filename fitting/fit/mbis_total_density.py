@@ -170,7 +170,8 @@ class TotalMBIS(MBIS_ABC):
                         if i not in similar_indexes:
                             similar_indexes.append(i)
                         similar_indexes.append(j)
-            indexes_where_they_are_same.append(similar_indexes)
+            if len(similar_indexes) != 0:
+                indexes_where_they_are_same.append(similar_indexes)
 
         for group_of_similar_items in indexes_where_they_are_same:
             for i in  range(1, len(group_of_similar_items)):
@@ -251,8 +252,8 @@ class TotalMBIS(MBIS_ABC):
                     self.get_descriptors_of_model(self.get_normalized_gaussian_density(coeffs, exps)))
             print()
             #coeffs, exps = self.checkFalse_redundancies(coeffs, exps)
-            print(storage_of_errors_per_addition)
-            print(len(storage_of_errors_per_addition))
+            print(len(storage_of_errors_per_addition), (num_of_functions))
+            print(coeffs, exps)
             coeffs, exps = self.check_redundancies(coeffs, exps)
 
             if num_of_functions != len(coeffs):
