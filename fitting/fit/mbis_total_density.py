@@ -56,6 +56,7 @@ class TotalMBIS(MBIS_ABC):
         assert masked_normed_gaussian.ndim == 1.
         new_coeff = coeff_arr.copy()
         for i in range(0, len(coeff_arr)):
+            print(self.get_integration_factor(exp_arr[i], masked_normed_gaussian))
             new_coeff[i] *= self.get_integration_factor(exp_arr[i], masked_normed_gaussian)
             new_coeff[i] /= self.lagrange_multiplier
         assert np.all(coeff_arr != np.inf)
@@ -225,8 +226,8 @@ class TotalMBIS(MBIS_ABC):
         num_of_functions = 1
         storage_of_parameters_per_addition = [np.append(coeffs, exps)]
         storage_of_errors_per_addition = []
-
-        while num_of_functions < 31:
+        number_of_redum = 0
+        while num_of_functions < 31 and number_of_redum < 5:
             next_coeffs, next_exps = get_next_possible_coeffs_and_exps(factor, coeffs, exps)
 
             num_of_functions += 1
@@ -259,13 +260,18 @@ class TotalMBIS(MBIS_ABC):
 
             if num_of_functions != len(coeffs):
                 num_of_functions = len(coeffs)
-                factor += 5
+                number_of_redum += 1
+                factor += 10
                 print("NEW FACTOR" , factor)
             else:
                 # Only Store If Redudancies were not found
                 storage_of_parameters_per_addition.append(np.append(coeffs, exps))
                 storage_of_errors_per_addition.append(storage_errors)
                 factor = initial_factor
+                number_of_redum = 0
+            if number_of_redum == 4:
+                storage_of_parameters_per_addition.append(np.append(coeffs, exps))
+                storage_of_errors_per_addition.append(storage_errors)
         return coeffs, exps, storage_of_errors_per_addition, storage_of_parameters_per_addition
 
 
@@ -301,8 +307,8 @@ if __name__ == "__main__":
     ## SET UP#######
     ###########
 
-    LIST_OF_ATOMS = ["c", 'n', "o", "f","ne"]
-    ATOMIC_NUMBER_LIST = [6, 7, 8, 9, 10] #4, "be", "b",  4, 5,
+    LIST_OF_ATOMS = ["b"]#"c", 'n', "o", "f","ne"]
+    ATOMIC_NUMBER_LIST = [5]#6, 7, 8, 9, 10] #4,
     USE_FILLED_VALUES_TO_ZERO = True
     THRESHOLD_COEFF = 1e-3
     THRESHOLD_EXPS = 1e-4
@@ -328,7 +334,7 @@ if __name__ == "__main__":
 
         mbis = TotalMBIS(atom_name, atomic_number, radial_grid, atomic_density.electron_density, weights=WEIGHTS)
 
-        coeffs, exps, storage_errors, storage_errors_parameters = mbis.run_greedy(5., THRESHOLD_COEFF, THRESHOLD_EXPS, iprint=True, iplot=True)
+        coeffs, exps, storage_errors, storage_errors_parameters = mbis.run_greedy(2., THRESHOLD_COEFF, THRESHOLD_EXPS, iprint=True, iplot=True)
         print("Final Coeffs, Exps: ", coeffs, exps )
         parameters = np.append(coeffs, exps)
         np.save(atom_name + "_greedy_mbis_parameters2.npy", parameters)
