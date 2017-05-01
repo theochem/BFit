@@ -65,7 +65,17 @@ class MBIS_ABC():
     def run_for_valence_density(self):
         pass
 
+    def get_next_set_of_variables(self):
+        pass
+
     def run_greedy(self):
+        """
+        1. Solve For One Basis Function
+        While Error is fine
+             2. Get Next Iteration
+             3. Run MBIS on each iteration until good
+             4. Take the best and move on.
+        """
         pass
 
     def get_lagrange_multiplier(self):

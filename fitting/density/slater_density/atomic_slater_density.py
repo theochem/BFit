@@ -2,7 +2,7 @@ import scipy
 import scipy.integrate
 import scipy.misc
 
-from fitting.density.atomic_density.atomic_slater_wfn import *
+from fitting.density.slater_density.atomic_slater_wfn import *
 
 
 class Atomic_Density():
@@ -62,7 +62,7 @@ class Atomic_Density():
             self.electron_density = self.atomic_density()
 
     def get_hydrogen_wave_func(self, n=1, l=0, bohr_radius=1.):
-        return ( 1 / (np.sqrt(np.pi) * bohr_radius**(3./2.))) * np.exp(-self.row_grid / bohr_radius)
+        return (1. / (np.sqrt(np.pi) * bohr_radius**(3./2.))) * np.exp(-self.row_grid / bohr_radius)
 
     def slator_type_orbital(self, exponent, quantumNum, r):
         """
@@ -171,7 +171,7 @@ class Atomic_Density():
         :return: the electron density where row = number of point
                  and column = 1
         """
-        return np.ravel(np.dot(np.absolute(self.phi_matrix())**2, self.VALUES['orbitals_electron_array'] )) / (4. * np.pi)
+        return np.ravel(np.dot(np.absolute(self.phi_matrix())**2, self.VALUES['orbitals_electron_array']))/(4. * np.pi)
 
     def atomic_density_core_valence(self):
         """
@@ -224,6 +224,6 @@ class Atomic_Density():
                np.dot(valence, self.VALUES['orbitals_electron_array']))
 
     def integrate_total_density_using_trapz(self):
-        integrate = np.trapz(y= 4. * np.pi * np.ravel(np.power(self.GRID, 2.0)) * np.ravel(self.atomic_density()), x=np.ravel(self.GRID) )
+        integrate = np.trapz(y=4. * np.pi * np.ravel(np.power(self.GRID, 2.0)) * np.ravel(self.atomic_density()), x=np.ravel(self.GRID) )
         return(integrate)
 

@@ -382,7 +382,7 @@ if __name__ == "__main__":
         # Create Grid Object
         NUMBER_OF_CORE_POINTS = 400; NUMBER_OF_DIFFUSED_PTS = 500
         #row_grid_points = radial_grid.grid_points(NUMBER_OF_CORE_POINTS, NUMBER_OF_DIFFUSED_PTS, [50, 75, 100])
-        radial_grid = Radial_Grid(ATOMIC_NUMBER, NUMBER_OF_CORE_POINTS,  NUMBER_OF_DIFFUSED_PTS, [50, 75, 100])
+        radial_grid = RadialGrid(ATOMIC_NUMBER, NUMBER_OF_CORE_POINTS,  NUMBER_OF_DIFFUSED_PTS, [50, 75, 100])
         row_grid_pts = np.copy(radial_grid.radii)
         column_grid_pts = np.reshape(row_grid_pts, (len(row_grid_pts), 1))
 
@@ -394,7 +394,7 @@ if __name__ == "__main__":
 
     #Create Grid for the modeling
     from fitting.density.radial_grid import *
-    radial_grid = Radial_Grid(ATOMIC_NUMBER)
+    radial_grid = RadialGrid(ATOMIC_NUMBER)
     NUMBER_OF_CORE_POINTS = 400; NUMBER_OF_DIFFUSED_PTS = 500
     row_grid_points = radial_grid.grid_points(NUMBER_OF_CORE_POINTS, NUMBER_OF_DIFFUSED_PTS, [50, 75, 100])
     column_grid_points = np.reshape(row_grid_points, (len(row_grid_points), 1))

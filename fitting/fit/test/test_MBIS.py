@@ -1,14 +1,12 @@
+import numpy as np
 import unittest
+
+from fitting.density.atomic_density.atomic_slater_density import Atomic_Density
 from fitting.fit.MBIS import update_coefficients, iterative_MBIS_method, measure_error_by_integration_of_difference
-from fitting.density.atomic_slater_density import Atomic_Density
+
 from fitting.fit.GaussianBasisSet import GaussianTotalBasisSet
 from fitting.fit.model import Fitting
-from scipy.integrate import quad, dblquad, tplquad, nquad, trapz
-from scipy.misc import factorial
-import matplotlib.pyplot as plt
-import sympy as sp
-from sympy.abc import c, a
-import numpy as np
+
 
 #TODO LIST
 #TODO: Error for test_one_coefficient_using_trapz has a really small error
@@ -16,8 +14,8 @@ import numpy as np
 class Default_Setup_For_MBIS(unittest.TestCase):
     def set_up_grid(self):
         ATOMIC_NUMBER = 4
-        from fitting.density.radial_grid import Radial_Grid
-        radial_grid = Radial_Grid(ATOMIC_NUMBER)
+        from fitting.radial_grid.radial_grid import RadialGrid
+        radial_grid = RadialGrid(ATOMIC_NUMBER)
         NUMBER_OF_CORE_POINTS = 200; NUMBER_OF_DIFFUSED_PTS = 300
         row_grid_points = radial_grid.grid_points(NUMBER_OF_CORE_POINTS, NUMBER_OF_DIFFUSED_PTS, [50, 75, 100])
         column_grid_points = np.reshape(row_grid_points, (len(row_grid_points), 1))

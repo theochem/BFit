@@ -1,6 +1,9 @@
 from __future__ import division
-from mbis_abc import MBIS_ABC
+
 import numpy as np
+
+from mbis_abc import MBIS_ABC
+
 
 class BregmanMBIS(MBIS_ABC):
     def __init__(self, element_name, atomic_number, grid_obj, electron_density, weights=None):
@@ -115,13 +118,13 @@ if __name__ == "__main__":
         import horton
         rtf = horton.ExpRTransform(1.0e-30, 25, 1000)
         radial_grid_2 = horton.RadialGrid(rtf)
-        from fitting.density.radial_grid import Horton_Grid
+        from fitting.radial_grid.radial_grid import Horton_Grid
         radial_grid = Horton_Grid(1e-80, 10, 1000, filled=USE_FILLED_VALUES_TO_ZERO)
     else:
         NUMB_OF_CORE_POINTS = 400; NUMB_OF_DIFFUSE_POINTS = 500
-        from fitting.density.radial_grid import Radial_Grid
-        from fitting.density.atomic_slater_density import Atomic_Density
-        radial_grid = Radial_Grid(ATOMIC_NUMBER, NUMB_OF_CORE_POINTS, NUMB_OF_DIFFUSE_POINTS, [50, 75, 100],filled=USE_FILLED_VALUES_TO_ZERO)
+        from fitting.radial_grid.radial_grid import RadialGrid
+        from fitting.density.atomic_density.atomic_slater_density import Atomic_Density
+        radial_grid = RadialGrid(ATOMIC_NUMBER, NUMB_OF_CORE_POINTS, NUMB_OF_DIFFUSE_POINTS, [50, 75, 100], filled=USE_FILLED_VALUES_TO_ZERO)
 
 
     from fitting.density import Atomic_Density

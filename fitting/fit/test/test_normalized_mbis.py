@@ -1,11 +1,13 @@
-from fitting.fit.mbis_abc import MBIS_ABC
-from fitting.fit.mbis_total_density import TotalMBIS
-from fitting.density.radial_grid import Radial_Grid
-from fitting.density.atomic_slater_density import Atomic_Density
 import numpy as np
 
+from fitting.density.atomic_density.atomic_slater_density import Atomic_Density
+
+from fitting.fit.mbis_total_density import TotalMBIS
+from fitting.radial_grid.radial_grid import RadialGrid
+
+
 def get_grid_obj(atomic_number, numb_of_core_points, numb_of_diff_points, extra_list=[50, 75, 100]):
-    radial_grid = Radial_Grid(atomic_number, numb_of_core_points, numb_of_diff_points, extra_list, filled=True)
+    radial_grid = RadialGrid(atomic_number, numb_of_core_points, numb_of_diff_points, extra_list, filled=True)
     return radial_grid
 
 def get_electron_density(element_name, grid):

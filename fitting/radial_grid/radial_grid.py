@@ -1,7 +1,7 @@
-import scipy
 import numpy as np;
 
-class Radial_Grid():
+
+class RadialGrid(object):
     def __init__(self, atomic_number, num_of_core_points, num_of_diffuse_points, extra_list, filled=False):
         assert type(atomic_number) is int, "Atomic number has to be an integer"
         self.atomic_number = atomic_number
@@ -61,7 +61,8 @@ class Radial_Grid():
     def uniform_grid(self, number_of_points):
         return np.arange(100, step=1/number_of_points)
 
-class Horton_Grid():
+
+class HortonGrid(object):
     def __init__(self, smallest_point, largest_point, number_of_points, filled=False):
         import horton
         rtf = horton.ExpRTransform(smallest_point, largest_point, number_of_points)

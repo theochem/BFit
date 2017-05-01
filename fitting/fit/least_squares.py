@@ -1,4 +1,4 @@
-from fitting.density.atomic_slater_density import *
+from fitting.density.slater_density.atomic_slater_density import *
 from fitting.gbasis.gbasis import UGBSBasis
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np

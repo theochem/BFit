@@ -1,10 +1,11 @@
 from __future__ import division
 from mbis_abc import MBIS_ABC
-import numpy as np
+
 
 class TotalMBIS(MBIS_ABC):
     def __init__(self, element_name, atomic_number, grid_obj, electron_density, weights=None):
-        super(TotalMBIS, self).__init__(element_name, atomic_number, grid_obj, electron_density, weights=weights)
+        super(TotalMBIS, self).__init__(element_name, atomic_number, grid_obj, electron_density,
+                                        weights=weights)
 
     def get_normalized_coefficients(self, coeff_arr, exp_arr):
         normalized_constants = self.get_all_normalization_constants(exp_arr)
@@ -12,9 +13,8 @@ class TotalMBIS(MBIS_ABC):
         norm_coeff_arr = coeff_arr * normalized_constants
         assert norm_coeff_arr.ndim == 1
         assert len(norm_coeff_arr) == len(coeff_arr) == len(exp_arr)
-        assert norm_coeff_arr[0] == coeff_arr[0] * normalized_constants[0], "Instead we get %r and %r * %r" %(norm_coeff_arr[0],
-                                                                                                         coeff_arr[0],
-                                                                                                         normalized_constants[0])
+        assert norm_coeff_arr[0] == coeff_arr[0] * normalized_constants[0], \
+            "Instead we get %r and %r * %r" % (norm_coeff_arr[0], coeff_arr[0], normalized_constants[0])
         return coeff_arr * normalized_constants
 
     def get_normalized_gaussian_density(self, coeff_arr, exp_arr):
@@ -40,17 +40,13 @@ class TotalMBIS(MBIS_ABC):
         assert not np.all(integrand == 0.), "Exponent is %r " % exponent
         if upt_exponent:
             integrand = self.weights * integrand * self.masked_grid_squared
-            return(self.get_normalization_constant(exponent) *\
-                   self.grid_obj.integrate(integrand))
-        previous_int = integrand.copy()
+            return self.get_normalization_constant(exponent) * self.grid_obj.integrate(integrand)
         integrand = self.weights * integrand
-        #integrand = integrand * self.weights
 
-        return self.get_normalization_constant(exponent) *\
-               self.grid_obj.integrate(integrand)
+        return self.get_normalization_constant(exponent) * self.grid_obj.integrate(integrand)
 
     def update_coefficients(self, coeff_arr, exp_arr):
-        #assert np.all(coeff_arr > 0), "Coefficients should be positive. Instead we got %r" % coeff_arr
+        assert np.all(coeff_arr > 0), "Coefficients should be positive. Instead we got %r" % coeff_arr
         assert np.all(exp_arr > 0), "Exponents should be positive. Instead we got %r" % exp_arr
         masked_normed_gaussian = np.ma.asarray(self.get_normalized_gaussian_density(coeff_arr, exp_arr))
         assert masked_normed_gaussian.ndim == 1.
@@ -64,7 +60,7 @@ class TotalMBIS(MBIS_ABC):
         return new_coeff
 
     def update_exponents(self, coeff_arr, exp_arr, with_convergence=True):
-        #assert np.all(coeff_arr > 0), "Coefficients should be positive. Instead we got %r" % coeff_arr
+        assert np.all(coeff_arr > 0), "Coefficients should be positive. Instead we got %r" % coeff_arr
         assert np.all(exp_arr > 0), "Exponents should be positive. Instead we got %r" % exp_arr
         masked_normed_gaussian = np.ma.asarray(self.get_normalized_gaussian_density(coeff_arr, exp_arr)).copy()
 
@@ -75,7 +71,6 @@ class TotalMBIS(MBIS_ABC):
             else:
                 new_exps[i] = 3. * self.get_integration_factor(exp_arr[i], masked_normed_gaussian)
             integration = self.get_integration_factor(exp_arr[i], masked_normed_gaussian, upt_exponent=True)
-            #assert integration != 0, "Integration of the integrand is zero."
             if integration == 0.:
                 print(coeff_arr, exp_arr)
             assert not np.isnan(integration), "Integration should not be nan"
@@ -94,7 +89,7 @@ class TotalMBIS(MBIS_ABC):
         return new_exps, exp_arr
 
     def run(self, threshold_coeff, threshold_exp, coeff_arr, exp_arr, iprint=False, iplot=False):
-        # Old Coeffs/Exps are initized this way to allow while loop inequlity to hold initially
+        # Old Coeffs/Exps are initiazed this way to allow while loop inequality to hold initially
         old_coeffs = 2. * coeff_arr.copy() + threshold_coeff * 2.
         new_coeffs = coeff_arr.copy()
         old_exps = 2. * exp_arr.copy() + threshold_exp * 2.
@@ -106,7 +101,8 @@ class TotalMBIS(MBIS_ABC):
         previous_objective_func = 1e10
         current_objective_func = 1e4
         counter = 0
-        while np.any(np.abs(new_exps - old_exps) > threshold_exp ) and np.abs(previous_objective_func - current_objective_func) > 1e-10:
+        while np.any(np.abs(new_exps - old_exps) > threshold_exp) and \
+                        np.abs(previous_objective_func - current_objective_func) > 1e-10:
             new_coeffs, old_coeffs = self.get_new_coeffs_and_old_coeffs(new_coeffs, new_exps)
 
             while np.any(np.abs(old_coeffs - new_coeffs) > threshold_coeff):
@@ -123,7 +119,8 @@ class TotalMBIS(MBIS_ABC):
                     print(counter, integration_model_four_pi, np.round(sum_of_coeffs), \
                           goodness_of_fit, goodness_of_fit_r_squared, \
                           objective_function,  True, np.max(np.abs(old_coeffs - new_coeffs)),
-                          np.max(np.abs(new_coeffs - old_coeffs) / old_coeffs), model[0], self.electron_density[0])
+                          np.max(np.abs(new_coeffs - old_coeffs) / old_coeffs), model[0],
+                          self.electron_density[0])
                 if iplot:
                     storage_of_errors[0].append(integration_model_four_pi)
                     storage_of_errors[1].append(goodness_of_fit)
@@ -158,7 +155,8 @@ class TotalMBIS(MBIS_ABC):
         #    self.create_plots(storage_of_errors[0], storage_of_errors[1], storage_of_errors[2], storage_of_errors[3])
         return new_coeffs, new_exps, storage_of_errors
 
-    def check_redundancies(self, coeffs, exps):
+    @staticmethod
+    def check_redundancies(coeffs, exps):
         new_coeffs = coeffs.copy()
         new_exps = exps.copy()
 
@@ -189,7 +187,7 @@ class TotalMBIS(MBIS_ABC):
     def run_greedy(self,factor, threshold_coeff, threshold_exps, iprint=False, iplot=False):
         def get_initial_parameters_analytically():
             denom = 4. * np.pi * self.grid_obj.integrate(self.masked_electron_density
-                                            * np.power(self.masked_grid_squared, 2.))
+                                                         * np.power(self.masked_grid_squared, 2.))
             exps = 3. * self.atomic_number / (2. * denom)
             return np.array([np.float(self.atomic_number)]), np.array([exps])
 
@@ -217,7 +215,7 @@ class TotalMBIS(MBIS_ABC):
         #######################################
         ##### SOLVE FOR ONE GAUSSIAN FUNCTION##
         ######################################
-        coeffs, exps =get_initial_parameters_analytically()
+        coeffs, exps = get_initial_parameters_analytically()
         print("Single Best Coeffs and Exps: ", coeffs, exps)
 
         #######################################
@@ -314,7 +312,7 @@ if __name__ == "__main__":
     THRESHOLD_EXPS = 1e-4
     WEIGHTS = None
 
-    from fitting.density.radial_grid import *
+    from fitting.radial_grid.radial_grid import *
     import os
     import horton
     for i, atom_name in enumerate(LIST_OF_ATOMS):
@@ -325,7 +323,7 @@ if __name__ == "__main__":
         # Create Grid Object
         rtf = horton.ExpRTransform(1.0e-30, 25, 1000)
         radial_grid_2 = horton.RadialGrid(rtf)
-        from fitting.density.radial_grid import Horton_Grid
+        from fitting.radial_grid.radial_grid import Horton_Grid
         radial_grid = Horton_Grid(1e-80, 25, 1000, filled=USE_FILLED_VALUES_TO_ZERO)
 
 
@@ -335,7 +333,7 @@ if __name__ == "__main__":
         mbis = TotalMBIS(atom_name, atomic_number, radial_grid, atomic_density.electron_density, weights=WEIGHTS)
 
         coeffs, exps, storage_errors, storage_errors_parameters = mbis.run_greedy(2., THRESHOLD_COEFF, THRESHOLD_EXPS, iprint=True, iplot=True)
-        print("Final Coeffs, Exps: ", coeffs, exps )
+        print("Final Coeffs, Exps: ", coeffs, exps)
         parameters = np.append(coeffs, exps)
         np.save(atom_name + "_greedy_mbis_parameters2.npy", parameters)
         np.save(atom_name + "_greedy_mbis_parameters_iteration2.npy", storage_errors_parameters)
@@ -348,9 +346,9 @@ if __name__ == "__main__":
 
     else:
         NUMB_OF_CORE_POINTS = 400; NUMB_OF_DIFFUSE_POINTS = 500
-        from fitting.density.radial_grid import Radial_Grid
+        from fitting.density.radial_grid import RadialGrid
         from fitting.density.atomic_slater_density import Atomic_Density
-        radial_grid = Radial_Grid(ATOMIC_NUMBER, NUMB_OF_CORE_POINTS, NUMB_OF_DIFFUSE_POINTS, [50, 75, 100],filled=USE_FILLED_VALUES_TO_ZERO)
+        radial_grid = RadialGrid(ATOMIC_NUMBER, NUMB_OF_CORE_POINTS, NUMB_OF_DIFFUSE_POINTS, [50, 75, 100],filled=USE_FILLED_VALUES_TO_ZERO)
 
 
     from fitting.density import Atomic_Density
