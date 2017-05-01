@@ -1,15 +1,14 @@
-import sys
-import numpy as np
-import scipy.misc
 import scipy
 import scipy.integrate
-import matplotlib.pyplot as plt
-from fitting.density.atomic_slater_wfn import *
+import scipy.misc
+
+from fitting.density.atomic_density.atomic_slater_wfn import *
 
 
 class Atomic_Density():
     """
     Used to compute the atomic density of various elements
+    from a composition of slater functions.
 
     Attributes
     ----------
@@ -63,7 +62,6 @@ class Atomic_Density():
             self.electron_density = self.atomic_density()
 
     def get_hydrogen_wave_func(self, n=1, l=0, bohr_radius=1.):
-        import math
         return ( 1 / (np.sqrt(np.pi) * bohr_radius**(3./2.))) * np.exp(-self.row_grid / bohr_radius)
 
     def slator_type_orbital(self, exponent, quantumNum, r):
