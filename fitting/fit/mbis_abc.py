@@ -8,7 +8,7 @@ from abc import ABCMeta, abstractmethod
 class MBIS_ABC():
     __metaclass__ = ABCMeta
 
-    def __init__(self, element_name, atomic_number, grid_obj, electron_density, weights=None):
+    def __init__(self, element_name, atomic_number, grid_obj, electron_density):
         assert isinstance(atomic_number, int), \
             "atomic_number should be of type Integer instead it is %r" % type(atomic_number)
         assert np.abs(grid_obj.integrate(electron_density) - atomic_number) < 1e-1, \
@@ -16,12 +16,6 @@ class MBIS_ABC():
             % grid_obj.integrate(electron_density)
         self.grid_obj = grid_obj
         self.grid_points = np.ma.asarray(np.reshape(grid_obj.radii, (len(grid_obj.radii), 1)))
-
-        if weights is None:
-            self.weights = np.ma.asarray(np.ones(len(self.grid_obj.radii)))
-        else:
-            # Weights are masked due the fact that they tend to be small
-            self.weights = np.ma.asarray(weights)
 
         self.atomic_number = float(atomic_number)
         self.element_name = element_name
@@ -79,7 +73,7 @@ class MBIS_ABC():
         pass
 
     def get_lagrange_multiplier(self):
-        return self.grid_obj.integrate(self.weights * self.masked_electron_density) / self.atomic_number
+        return self.grid_obj.integrate(self.masked_electron_density) / self.atomic_number
 
     def get_all_normalization_constants(self, exp_arr):
         assert exp_arr.ndim == 1
@@ -87,8 +81,7 @@ class MBIS_ABC():
 
     def get_objective_function(self, model):
         log_ratio_of_models = np.log(self.masked_electron_density / np.ma.asarray(model))
-        return self.grid_obj.integrate(self.masked_electron_density * self.weights * log_ratio_of_models
-                                       / self.atomic_number)
+        return self.grid_obj.integrate(self.masked_electron_density * log_ratio_of_models / self.atomic_number)
 
     def integrate_model_with_four_pi(self, model):
         return self.grid_obj.integrate(model)

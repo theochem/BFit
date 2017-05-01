@@ -3,9 +3,8 @@ from mbis_abc import MBIS_ABC
 
 
 class TotalMBIS(MBIS_ABC):
-    def __init__(self, element_name, atomic_number, grid_obj, electron_density, weights=None):
-        super(TotalMBIS, self).__init__(element_name, atomic_number, grid_obj, electron_density,
-                                        weights=weights)
+    def __init__(self, element_name, atomic_number, grid_obj, electron_density):
+        super(TotalMBIS, self).__init__(element_name, atomic_number, grid_obj, electron_density)
 
     def get_normalized_coefficients(self, coeff_arr, exp_arr):
         normalized_constants = self.get_all_normalization_constants(exp_arr)
@@ -39,9 +38,9 @@ class TotalMBIS(MBIS_ABC):
         assert integrand.ndim == 1.
         assert not np.all(integrand == 0.), "Exponent is %r " % exponent
         if upt_exponent:
-            integrand = self.weights * integrand * self.masked_grid_squared
+            integrand = integrand * self.masked_grid_squared
             return self.get_normalization_constant(exponent) * self.grid_obj.integrate(integrand)
-        integrand = self.weights * integrand
+        integrand = integrand
 
         return self.get_normalization_constant(exponent) * self.grid_obj.integrate(integrand)
 
@@ -310,7 +309,6 @@ if __name__ == "__main__":
     USE_FILLED_VALUES_TO_ZERO = True
     THRESHOLD_COEFF = 1e-3
     THRESHOLD_EXPS = 1e-4
-    WEIGHTS = None
 
     from fitting.radial_grid.radial_grid import *
     import os
@@ -330,7 +328,7 @@ if __name__ == "__main__":
         from fitting.density import Atomic_Density
         atomic_density = Atomic_Density(file_path, radial_grid.radii)
 
-        mbis = TotalMBIS(atom_name, atomic_number, radial_grid, atomic_density.electron_density, weights=WEIGHTS)
+        mbis = TotalMBIS(atom_name, atomic_number, radial_grid, atomic_density.electron_density)
 
         coeffs, exps, storage_errors, storage_errors_parameters = mbis.run_greedy(2., THRESHOLD_COEFF, THRESHOLD_EXPS, iprint=True, iplot=True)
         print("Final Coeffs, Exps: ", coeffs, exps)
@@ -358,10 +356,9 @@ if __name__ == "__main__":
     from fitting.fit.model import Fitting
     atomic_gaussian = GaussianTotalBasisSet(ELEMENT_NAME, np.reshape(radial_grid.radii,
                                                                     (len(radial_grid.radii), 1)), file_path)
-    weights = None#(4. * np.pi * radial_grid.radii**1.)#1. / (1 + (4. * np.pi * radial_grid.radii ** 2.))#1. / (4. * np.pi * radial_grid.radii**0.5) #np.exp(-0.01 * radial_grid.radii**2.)
 
     fitting_obj = Fitting(atomic_gaussian)
-    mbis = TotalMBIS(ELEMENT_NAME, ATOMIC_NUMBER, radial_grid, atomic_density.electron_density, weights=weights)
+    mbis = TotalMBIS(ELEMENT_NAME, ATOMIC_NUMBER, radial_grid, atomic_density.electron_density)
 
     exps = atomic_gaussian.UGBS_s_exponents[:-3]
     coeffs = fitting_obj.optimize_using_nnls(atomic_gaussian.create_cofactor_matrix(exps))
