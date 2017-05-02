@@ -1,5 +1,5 @@
 import abc
-from fitting.density.atomic_density.atomic_slater_density import *
+from fitting.density.slater_density.atomic_slater_density import *
 from fitting.gbasis.gbasis import UGBSBasis
 
 class DensityModel():

@@ -1,6 +1,6 @@
 from __future__ import division
 from mbis_abc import MBIS_ABC
-
+import numpy as np
 
 class TotalMBIS(MBIS_ABC):
     def __init__(self, element_name, atomic_number, grid_obj, electron_density):
@@ -51,7 +51,6 @@ class TotalMBIS(MBIS_ABC):
         assert masked_normed_gaussian.ndim == 1.
         new_coeff = coeff_arr.copy()
         for i in range(0, len(coeff_arr)):
-            print(self.get_integration_factor(exp_arr[i], masked_normed_gaussian))
             new_coeff[i] *= self.get_integration_factor(exp_arr[i], masked_normed_gaussian)
             new_coeff[i] /= self.lagrange_multiplier
         assert np.all(coeff_arr != np.inf)
@@ -152,7 +151,9 @@ class TotalMBIS(MBIS_ABC):
             counter += 1
         #if iplot:
         #    self.create_plots(storage_of_errors[0], storage_of_errors[1], storage_of_errors[2], storage_of_errors[3])
-        return new_coeffs, new_exps, storage_of_errors
+        if iplot:
+            return np.concatenate(new_coeffs, new_exps), storage_of_errors
+        return np.append(new_coeffs, new_exps)
 
     @staticmethod
     def check_redundancies(coeffs, exps):
