@@ -1,0 +1,3 @@
+Method Used greedy-mbis
+Number Of Parameters 6
+{'max_numb_of_funcs': 2, 'backward_elim_funcs': None, 'factor': 2.0}

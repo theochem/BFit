@@ -1,0 +1,4 @@
+Method Used greedy-mbis
+Number Of Parameters 6
+{'max_numb_of_funcs': 2, 'backward_elim_funcs': None, 'factor': 2.0}
+Exit Information Exited Because Number of functions is equal to maxinum  allowed functions 3 < 2 or Cost function is less than epsilon0.00196175525404 <= 1e-05

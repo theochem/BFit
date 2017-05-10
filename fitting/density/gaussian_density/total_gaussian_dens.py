@@ -10,7 +10,7 @@ class GaussianTotalBasisSet(DensityModel):
             electron_density = Atomic_Density(file_path, grid)
         DensityModel.__init__(self, element_name, grid, electron_density)
 
-    def create_model(self, parameters, num_of_basis_funcs, exponents=[], coeff=[], optimize_both=True,
+    def create_model(self, parameters, exponents=[], coeff=[], optimize_both=True,
                      optimize_coeff=False, optimize_exp=False):
         assert parameters.ndim == 1
 
@@ -25,8 +25,8 @@ class GaussianTotalBasisSet(DensityModel):
             assert np.shape(gaussian_density)[0] == np.shape(self.grid)[0]
 
         if optimize_both:
-            coefficients = parameters[:num_of_basis_funcs]
-            exponents = parameters[num_of_basis_funcs:]
+            coefficients = parameters[:len(parameters)//2]
+            exponents = parameters[len(parameters)//2:]
 
         elif optimize_coeff:
             coefficients = np.copy(parameters)
@@ -36,7 +36,7 @@ class GaussianTotalBasisSet(DensityModel):
             exponents = np.copy(parameters)
             coefficients = coeff
 
-        exponential = np.exp(-exponents * np.power(self.grid, 2.0))
+        exponential = np.exp(-exponents * np.power(np.reshape(self.grid, (len(self.grid), 1)), 2.0))
         gaussian_density = np.dot(exponential, coefficients)
         check_dimension_and_shape()
         return gaussian_density

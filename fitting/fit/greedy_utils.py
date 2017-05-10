@@ -2,6 +2,33 @@ from abc import ABCMeta, abstractmethod
 from fitting.fit.mbis_total_density import TotalMBIS
 import numpy as np
 
+def check_redundancies(coeffs, exps):
+    new_coeffs = coeffs.copy()
+    new_exps = exps.copy()
+
+    indexes_where_they_are_same = []
+    for i, alpha in enumerate(exps):
+        similar_indexes = []
+        for j in range(i + 1, len(exps)):
+            if j not in similar_indexes:
+                if np.abs(alpha - exps[j]) < 1e-2:
+                    if i not in similar_indexes:
+                        similar_indexes.append(i)
+                    similar_indexes.append(j)
+        if len(similar_indexes) != 0:
+            indexes_where_they_are_same.append(similar_indexes)
+
+    for group_of_similar_items in indexes_where_they_are_same:
+        for i in range(1, len(group_of_similar_items)):
+            new_coeffs[group_of_similar_items[0]] += coeffs[group_of_similar_items[i]]
+
+    if len(indexes_where_they_are_same) != 0:
+        print("-------- Redundancies found ---------")
+        print()
+        new_exps = np.delete(new_exps, [y for x in indexes_where_they_are_same for y in x[1:]])
+        new_coeffs = np.delete(new_coeffs, [y for x in indexes_where_they_are_same for y in x[1:]])
+    assert len(exps) == len(coeffs)
+    return new_coeffs, new_exps
 
 def get_next_possible_coeffs_and_exps(factor, coeffs, exps):
     size = exps.shape[0]
@@ -31,6 +58,7 @@ class _GreedyStrategy(object):
 
     def __init__(self):
         self.errors = None
+        self.exit_info = None
 
     @abstractmethod
     def get_cost_function(self):
@@ -60,15 +88,19 @@ class _GreedyStrategy(object):
             for i, x in enumerate(err):
                 self.errors[i].append(x)
 
-    def run_greedy(self, factor, max_number_of_functions=30, additional_funcs=None,
-                   ioutput=False):
+    def run_greedy(self, factor, max_numb_of_funcs=30, backward_elim_funcs=None,
+                   add_choice_funcs=None, ioutput=False):
         global_parameters = self.get_best_one_function_solution()
         numb_one_func_params = len(global_parameters)
         # Should Be One
         number_of_functions = len(global_parameters) / numb_one_func_params
         best_global_value = 1e10
-        while number_of_functions < max_number_of_functions:
+        storage_of_parameters_per_addition = [global_parameters]
+        number_of_redum = 0; initial_factor = factor
+        while number_of_functions <= max_numb_of_funcs and best_global_value >= 1e-5 and number_of_redum < 5:
             choices_of_parameters = self.get_next_iteration_of_variables(factor, global_parameters)
+            if callable(add_choice_funcs):
+                choices_of_parameters.append(add_choice_funcs(global_parameters))
 
             best_local_value = 1e10
             best_local_param = None
@@ -78,21 +110,37 @@ class _GreedyStrategy(object):
                 if cost_func < best_local_value:
                     best_local_value = self.get_cost_function(local_param)
                     best_local_param = local_param
-            if best_local_value <= best_global_value:
+
+            number_of_functions = len(global_parameters) / numb_one_func_params
+            coeffs, exps = check_redundancies(global_parameters[:len(global_parameters)//2],
+                                              global_parameters[len(global_parameters)//2:])
+            global_parameters = np.append(coeffs, exps)
+            if number_of_functions != len(coeffs):
+                number_of_functions = len(coeffs)
+                number_of_redum += 1
+                factor += 5
+
+            elif best_local_value <= best_global_value:
                 best_global_value = best_local_value
                 global_parameters = self.get_optimization_routine(best_local_param)
                 self.store_errors(global_parameters)
+                storage_of_parameters_per_addition.append(global_parameters)
+                number_of_redum = 0
+                factor = initial_factor
             else:
-                print("Next Iteration Did Not Find THe Best Choice")
-                import sys
-                sys.exit()
-
-            if additional_funcs is not None:
-                global_parameters = additional_funcs(best_local_param)
-            number_of_functions = len(global_parameters) / numb_one_func_params
+                self.exit_info = "Next Iteration Did Not Find THe Best Choice"
+                break
+            if backward_elim_funcs is not None:
+                global_parameters = backward_elim_funcs(best_local_param)
+        print("parameters", storage_of_parameters_per_addition)
+        self.exit_info = "Exited Because Number of functions is equal to maxinum allowed functions " + \
+                         str(number_of_functions) + " < " + str(max_numb_of_funcs) + \
+                         " or Cost function is less than some epsilon " + str(best_global_value) + " <= " + str(1e-5) +\
+                        " or number of redudancies found in a row is more than 5"
         if ioutput:
-            return global_parameters, self.errors
-        return global_parameters
+            return global_parameters, storage_of_parameters_per_addition
+
+        return global_parameters, storage_of_parameters_per_addition
 
 
 class GreedyMBIS(_GreedyStrategy):
@@ -106,6 +154,7 @@ class GreedyMBIS(_GreedyStrategy):
         self.threshold_coeff = threshold_coeff
         self.threshold_exp = threshold_exps
         self.factor = factor
+        self.successfull = None
         super(GreedyMBIS, self).__init__()
 
     def get_cost_function(self, params):
@@ -174,33 +223,7 @@ class GreedyGeneral(_GreedyStrategy):
     def get_optimization_routine(self):
         raise NotImplementedError()
 
-def check_redundancies(coeffs, exps):
-    new_coeffs = coeffs.copy()
-    new_exps = exps.copy()
 
-    indexes_where_they_are_same = []
-    for i, alpha in enumerate(exps):
-        similar_indexes = []
-        for j in range(i + 1, len(exps)):
-            if j not in similar_indexes:
-                if np.abs(alpha - exps[j]) < 1e-2:
-                    if i not in similar_indexes:
-                        similar_indexes.append(i)
-                    similar_indexes.append(j)
-        if len(similar_indexes) != 0:
-            indexes_where_they_are_same.append(similar_indexes)
-
-    for group_of_similar_items in indexes_where_they_are_same:
-        for i in  range(1, len(group_of_similar_items)):
-            new_coeffs[group_of_similar_items[0]] += coeffs[group_of_similar_items[i]]
-
-    if len(indexes_where_they_are_same) != 0:
-        print("-------- Redundancies found ---------")
-        print()
-        new_exps = np.delete(new_exps, [y for x in indexes_where_they_are_same for y in x[1:]])
-        new_coeffs = np.delete(new_coeffs, [y for x in indexes_where_they_are_same for y in x[1:]])
-    assert len(exps) == len(coeffs)
-    return new_coeffs, new_exps
 
 
 

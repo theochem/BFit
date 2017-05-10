@@ -28,15 +28,13 @@ def optimize_using_slsqp(density_model, initial_guess, bounds=None, *args):
     return parameters
 
 
-def optimize_using_l_bfgs(density_model, initial_guess, bounds=None, iprint=False, *args):
+def optimize_using_l_bfgs(density_model, initial_guess, bounds=None, *args):
     if bounds == None:
         bounds = np.array([(0.0, 1.7976931348623157e+308) for x in range(0, len(initial_guess))],
                           dtype=np.float64)
     f_min_l_bfgs_b = scipy.optimize.fmin_l_bfgs_b(density_model.cost_function, x0=initial_guess, bounds=bounds,
                                                   fprime=density_model.derivative_of_cost_function
                                                   , maxfun=1500000, maxiter=1500000, factr=1e7, args=args, pgtol=1e-5)
-    if iprint:
-        print(f_min_l_bfgs_b[2]['warnflag'], "            ", f_min_l_bfgs_b[2]['task'])
 
     # if f_min_l_bfgs_b[2]['warnflag'] != 0:
     #        print(f_min_l_bfgs_b[2]['task'])
