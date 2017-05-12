@@ -92,6 +92,7 @@ class _GreedyStrategy(object):
                    add_choice_funcs=None, ioutput=False):
         global_parameters = self.get_best_one_function_solution()
         numb_one_func_params = len(global_parameters)
+        self.store_errors(global_parameters)
         # Should Be One
         number_of_functions = len(global_parameters) / numb_one_func_params
         best_global_value = 1e10
@@ -105,7 +106,7 @@ class _GreedyStrategy(object):
             best_local_value = 1e10
             best_local_param = None
             for param in choices_of_parameters:
-                local_param = self.get_optimization_routine(param)
+                local_param = self.get_optimization_routine(param, local=True)
                 cost_func = self.get_cost_function(local_param)
                 if cost_func < best_local_value:
                     best_local_value = self.get_cost_function(local_param)
@@ -172,8 +173,10 @@ class GreedyMBIS(_GreedyStrategy):
         coeffs, exps = params[:len(params)//2], params[len(params)//2:]
         return self.splitting_func(factor, coeffs, exps)
 
-    def get_optimization_routine(self, params):
+    def get_optimization_routine(self, params, local=False):
         coeff_arr, exp_arr = params[:len(params)//2], params[len(params)//2:]
+        if local:
+            return self.mbis_obj.run(0.1, 1e-2, coeff_arr, exp_arr, iprint=True)
         return self.mbis_obj.run(self.threshold_coeff, self.threshold_exp, coeff_arr, exp_arr, iprint=True)
 
     def get_errors_from_model(self, params):
@@ -249,6 +252,7 @@ def get_two_next_possible_coeffs_and_exps(factor, coeffs, exps):
             coeff2, exp2 = get_next_possible_coeffs_and_exps(factor, np.append(coeffs, np.array([coeff_value])), exponent_array)
             all_choices_of_coeffs.extend(coeff2)
             all_choices_of_exps.extend(exp2)
+
     return all_choices_of_coeffs, all_choices_of_exps
 
 if __name__ == "__main__":

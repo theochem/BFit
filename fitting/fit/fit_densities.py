@@ -15,6 +15,91 @@ from matplotlib import rc
 rc('text', usetex=True)
 rc('font', family='helvetica')
 
+
+def get_next_possible_coeffs_and_exps(factor, coeffs, exps):
+    size = exps.shape[0]
+    all_choices_of_exponents = []
+    all_choices_of_coeffs = []
+    all_choices_of_parameters = []
+    coeff_value = 100.
+    for index, exp in np.ndenumerate(exps):
+        if index[0] == 0:
+            exponent_array = np.insert(exps, index, exp / factor)
+            coefficient_array = np.insert(coeffs, index, coeff_value)
+        elif index[0] <= size:
+            exponent_array = np.insert(exps, index, (exps[index[0] - 1] + exps[index[0]]) / 2)
+            coefficient_array = np.insert(coeffs, index, coeff_value)
+        #all_choices_of_exponents.append(exponent_array)
+        #all_choices_of_coeffs.append(coefficient_array)
+        all_choices_of_parameters.append(np.append(coefficient_array, exponent_array))
+        if index[0] == size - 1:
+            exponent_array = np.append(exps, np.array([exp * factor]))
+            #all_choices_of_exponents.append(exponent_array)
+            #all_choices_of_coeffs.append()
+            all_choices_of_parameters.append(np.append(np.append(coeffs, np.array([coeff_value])), exponent_array))
+    return all_choices_of_parameters #all_choices_of_coeffs, all_choices_of_exponents
+
+def get_next_possible_coeffs_and_exps2(factor, coeffs, exps):
+    size = exps.shape[0]
+    all_choices_of_exponents = []
+    all_choices_of_coeffs = []
+    coeff_value = 100.
+    for index, exp in np.ndenumerate(exps):
+        if index[0] == 0:
+            exponent_array = np.insert(exps, index, exp / factor)
+            coefficient_array = np.insert(coeffs, index, coeff_value)
+        elif index[0] <= size:
+            exponent_array = np.insert(exps, index, (exps[index[0] - 1] + exps[index[0]]) / 2)
+            coefficient_array = np.insert(coeffs, index, coeff_value)
+        all_choices_of_exponents.append(exponent_array)
+        all_choices_of_coeffs.append(coefficient_array)
+        if index[0] == size - 1:
+            exponent_array = np.append(exps, np.array([exp * factor]))
+            all_choices_of_exponents.append(exponent_array)
+            all_choices_of_coeffs.append(np.append(coeffs,np.array([coeff_value])))
+    return all_choices_of_coeffs, all_choices_of_exponents
+
+def get_two_next_possible_coeffs_and_exps(factor, coeffs, exps):
+    size = len(exps)
+    all_choices_of_coeffs = []
+    all_choices_of_exps = []
+    coeff_value = 100.
+
+    for index, exp in np.ndenumerate(exps):
+        if index[0] == 0:
+            exponent_array = np.insert(exps, index, exp / factor)
+            coefficient_array = np.insert(coeffs, index, coeff_value)
+        elif index[0] <= size:
+            exponent_array = np.insert(exps, index, (exps[index[0] - 1] + exps[index[0]]) / 2)
+            coefficient_array = np.insert(coeffs, index, coeff_value)
+
+        coeff2, exp2 = get_next_possible_coeffs_and_exps2(factor, coefficient_array, exponent_array)
+        all_choices_of_coeffs.extend(coeff2)
+        all_choices_of_exps.extend(exp2)
+
+        if index[0] == size - 1:
+            exponent_array = np.append(exps, np.array([exp * factor]))
+            coeff2, exp2 = get_next_possible_coeffs_and_exps2(factor, np.append(coeffs, np.array([coeff_value])),
+                                                             exponent_array)
+            all_choices_of_coeffs.extend(coeff2)
+            all_choices_of_exps.extend(exp2)
+    all_choices_params = []
+    for i, c in enumerate(all_choices_of_coeffs):
+        all_choices_params.append(np.append(c, all_choices_of_exps[i]))
+    return all_choices_params
+
+def pick_two_lose_one(factor, coeffs, exps):
+    all_choices = []
+    coeff_value = 100.
+    two_choices = get_two_next_possible_coeffs_and_exps(factor, coeffs, exps)
+    for i, p in enumerate(two_choices):
+        coeff, exp = p[:len(p)//2], p[len(p)//2:]
+        for j in range(0, len(p)//2):
+            new_coeff = np.delete(coeff, j)
+            new_exp = np.delete(exp, j)
+            all_choices.append(np.append(new_coeff, new_exp))
+    return all_choices
+
 def plot_error(errors, element_name, title, figure_name):
     numb_of_errors = len(errors)
     tableau20 = [(31, 119, 180), (174, 199, 232), (255, 127, 14), (255, 187, 120),
@@ -38,25 +123,25 @@ def plot_error(errors, element_name, title, figure_name):
             axarr[x, y].spines["left"].set_visible(False)
             axarr[x, y].get_xaxis().tick_bottom()
             axarr[x, y].get_yaxis().tick_left()
-
-    axarr[0, 0].plot(xrange(1, len(errors[2]) + 1), errors[0], 'o-', color=tableau20[0])
+    # xrange(1, len(errors[2]) + 1, 2)
+    axarr[0, 0].plot([1] + [x + x - 1  for x in range(2, len(errors[2]) + 1)], errors[0], 'o-', color=tableau20[0])
     axarr[0, 0].set_title('Integrated Fitted Density Model')
     axarr[0, 0].set_ylabel(r'$\int \rho^o(r) 4 \pi r^2 dr$')
-    axarr[0, 1].semilogy(xrange(1, len(errors[2]) + 1), errors[1], 'o-', color=tableau20[0])
+    axarr[0, 1].semilogy([1] + [x + x - 1  for x in range(2, len(errors[2]) + 1)], errors[1], 'o-', color=tableau20[0])
     axarr[0, 1].set_title('Absolute Difference In Models')
     axarr[0, 1].set_ylabel(r'$\int |\rho(r) - \rho^o(r)| dr$')
-    axarr[1, 0].semilogy(xrange(1, len(errors[2]) + 1), errors[2], 'o-', color=tableau20[0])
+    axarr[1, 0].semilogy([1] + [x + x - 1  for x in range(2, len(errors[2]) + 1)], errors[2], 'o-', color=tableau20[0])
     axarr[1, 0].set_title("Absolute Difference Times Radius Squared")
     axarr[1, 0].set_xlabel("Number of Functions")
     axarr[1, 0].set_ylabel(r'$\int |\rho(r) - \rho^o(r)| r^2 dr$')
-    axarr[1, 1].semilogy(xrange(1, len(errors[2]) + 1), errors[3], 'o-', color=tableau20[0])
+    axarr[1, 1].semilogy([1] + [x + x - 1  for x in range(2, len(errors[2]) + 1)],errors[3], 'o-', color=tableau20[0])
     axarr[1, 1].set_title('Kullback-Leiger Function Value')
     axarr[1, 1].set_ylabel(r'$\int \rho(r) \frac{\rho(r)}{\rho^o(r)} 4 \pi r^2 dr$')
     axarr[1, 1].set_xlabel("Number of Functions")
     plt.tight_layout()
     plt.subplots_adjust(top=0.90)
 
-    directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/fitting/results_redudancies/" + element_name
+    directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/fitting/results_redudancies_two/" + element_name
     if not os.path.exists(directory):
         os.makedirs(directory)
     plt.savefig(directory + "/" + figure_name + ".png")
@@ -96,7 +181,7 @@ def plot_model_densities(true_dens, model_dens, grid_pts, title, element_name,
     plt.title(title, fontweight='bold')
     plt.grid(color=tableau20[-2])
     plt.legend()
-    directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/fitting/results_redudancies/" + element_name
+    directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/fitting/results_redudancies_two/" + element_name
     if not os.path.exists(directory):
         os.makedirs(directory)
     plt.savefig(directory + "/" + figure_name + ".png")
@@ -242,7 +327,7 @@ def fit_radial_densities(element_name, atomic_number, grid=None, true_density=No
     elif method == "greedy-ls-sqs":
         pass
     elif method == "greedy-mbis":
-        greedy_mbis = GreedyMBIS(element_name, atomic_number, grid, true_density)
+        greedy_mbis = GreedyMBIS(element_name, atomic_number, grid, true_density, splitting_func=get_two_next_possible_coeffs_and_exps)
 
         if ioutput:
             params, params_it = greedy_mbis.run_greedy(ioutput=ioutput, **options)
@@ -266,7 +351,7 @@ def fit_radial_densities(element_name, atomic_number, grid=None, true_density=No
                    figure_name="error_plot_using_" + method)
 
     if ioutput:
-        dir = os.path.dirname(__file__).rsplit('/', 2)[0] + '/fitting/results_redudancies/' + element_name
+        dir = os.path.dirname(__file__).rsplit('/', 2)[0] + '/fitting/results_redudancies_two/' + element_name
         file_object = open(dir + '/arguments_' + method + ".txt", "w+")
         file_object.write("Method Used " + method + "\n")
         file_object.write("Number Of Parameters " + str(len(params)) + "\n")
@@ -283,5 +368,6 @@ def fit_radial_densities(element_name, atomic_number, grid=None, true_density=No
 if __name__ == "__main__":
     for i, ele in enumerate(["he", "li", "be", "b", "c", "n", "o", "f", "ne"]):
         j = i + 2
-        fit_radial_densities(ele, j, method='greedy-mbis', options={'max_numb_of_funcs': 30}, iplot=True, ioutput=True)
+        fit_radial_densities(ele, j, method='greedy-mbis', options={'max_numb_of_funcs': 30},
+                             iplot=True, ioutput=True)
 
