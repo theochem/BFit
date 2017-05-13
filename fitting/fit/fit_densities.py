@@ -149,7 +149,7 @@ def plot_error(errors, element_name, title, figure_name):
 
 
 def plot_model_densities(true_dens, model_dens, grid_pts, title, element_name,
-                         figure_name):
+                         figure_name, additional_models_plots=None):
     tableau20 = [(31, 119, 180), (174, 199, 232), (255, 127, 14), (255, 187, 120),
                  (44, 160, 44), (152, 223, 138), (214, 39, 40), (255, 152, 150),
                  (148, 103, 189), (197, 176, 213), (140, 86, 75), (196, 156, 148),
@@ -168,10 +168,14 @@ def plot_model_densities(true_dens, model_dens, grid_pts, title, element_name,
     ax.spines["left"].set_visible(False)
     ax.get_xaxis().tick_bottom()
     ax.get_yaxis().tick_left()
-    ax.semilogy(grid_pts, model_dens, 'o-', lw=3, label="Gaussian Fitted Electron Density",
+    ax.semilogy(grid_pts, model_dens, '-', lw=3, label="Final Gaussian Fitted Electron Density",
                 color=(214/255., 39/255., 40/255.))
-    ax.semilogy(grid_pts, true_dens, 'o-', lw=3, label="Slater Electron Density",
+    ax.semilogy(grid_pts, true_dens, '-', lw=3, label="Slater Electron Density",
                 color=(31/255., 119/255., 180/255.))
+    if additional_models_plots is not None:
+        for model in additional_models_plots:
+            ax.semilogy(grid_pts, model_dens, 'o-', lw=3, label="Gaussian Fitted Electron Density",
+                        color=tableau20[7])
     # plt.xlim(0, 25.0*0.5291772082999999)
     plt.xlim(0, 9)
     plt.ylim(ymin=1e-9)
@@ -359,6 +363,7 @@ def fit_radial_densities(element_name, atomic_number, grid=None, true_density=No
         file_object.write("Iteration Parameters: " + str(params_it) + "\n")
         file_object.write(str(options) + "\n")
         file_object.write("Exit Information: " + str(exit_info) + "\n")
+        file_object.write("Redudandance Info: " + str(greedy_mbis.redudan_info_numb_basis_funcs))
         file_object.close()
         np.save(dir + "/parameters_" + method + ".npy", params)
         np.save(dir+"/parameters_" + method + "_iter.npy", params_it)

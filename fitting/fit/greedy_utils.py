@@ -59,6 +59,7 @@ class _GreedyStrategy(object):
     def __init__(self):
         self.errors = None
         self.exit_info = None
+        self.redudan_info_numb_basis_funcs = []
 
     @abstractmethod
     def get_cost_function(self):
@@ -117,10 +118,10 @@ class _GreedyStrategy(object):
                                               global_parameters[len(global_parameters)//2:])
             global_parameters = np.append(coeffs, exps)
             if number_of_functions != len(coeffs):
+                self.redudan_info_numb_basis_funcs.append([number_of_functions, len(coeffs)])
                 number_of_functions = len(coeffs)
                 number_of_redum += 1
                 factor += 5
-
             elif best_local_value <= best_global_value:
                 best_global_value = best_local_value
                 global_parameters = self.get_optimization_routine(best_local_param)
@@ -129,15 +130,17 @@ class _GreedyStrategy(object):
                 number_of_redum = 0
                 factor = initial_factor
             else:
-                self.exit_info = "Next Iteration Did Not Find THe Best Choice"
+                self.exit_info = "Next Iteration Did Not Find The Best Choice"
                 break
             if backward_elim_funcs is not None:
                 global_parameters = backward_elim_funcs(best_local_param)
         print("parameters", storage_of_parameters_per_addition)
-        self.exit_info = "Exited Because Number of functions is equal to maxinum allowed functions " + \
+        if self.exit_info != "Next Iteration Did Not Find THe Best Choice":
+            self.exit_info = "Exited Because Number of functions is equal to maximum allowed functions " + \
                          str(number_of_functions) + " < " + str(max_numb_of_funcs) + \
                          " or Cost function is less than some epsilon " + str(best_global_value) + " <= " + str(1e-5) +\
-                        " or number of redudancies found in a row is more than 5"
+                         " or number of redudancies found in a row is more than 5, number of redudans are " + \
+                         number_of_redum
         if ioutput:
             return global_parameters, storage_of_parameters_per_addition
 
