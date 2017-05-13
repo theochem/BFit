@@ -99,7 +99,7 @@ class _GreedyStrategy(object):
         best_global_value = 1e10
         storage_of_parameters_per_addition = [global_parameters]
         number_of_redum = 0; initial_factor = factor
-        while number_of_functions <= max_numb_of_funcs and best_global_value >= 1e-5 and number_of_redum < 5:
+        while number_of_functions < max_numb_of_funcs - 1 and best_global_value >= 1e-5 and number_of_redum < 5:
             choices_of_parameters = self.get_next_iteration_of_variables(factor, global_parameters)
             if callable(add_choice_funcs):
                 choices_of_parameters.append(add_choice_funcs(global_parameters))
@@ -122,6 +122,8 @@ class _GreedyStrategy(object):
                 number_of_functions = len(coeffs)
                 number_of_redum += 1
                 factor += 5
+                import sys
+                sys.exit()
             elif best_local_value <= best_global_value:
                 best_global_value = best_local_value
                 global_parameters = self.get_optimization_routine(best_local_param)
@@ -140,7 +142,7 @@ class _GreedyStrategy(object):
                          str(number_of_functions) + " < " + str(max_numb_of_funcs) + \
                          " or Cost function is less than some epsilon " + str(best_global_value) + " <= " + str(1e-5) +\
                          " or number of redudancies found in a row is more than 5, number of redudans are " + \
-                         number_of_redum
+                         str(number_of_redum)
         if ioutput:
             return global_parameters, storage_of_parameters_per_addition
 

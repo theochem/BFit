@@ -1,4 +1,10 @@
 Method Used greedy-mbis
-Number Of Parameters 6
-{'max_numb_of_funcs': 2, 'backward_elim_funcs': None, 'factor': 2.0}
-Exit Information Exited Because Number of functions is equal to maxinum  allowed functions 3 < 2 or Cost function is less than epsilon0.00196175525404 <= 1e-05
+Number Of Basis FUnctions4
+Final Parameters: [  0.74166611   0.14209045   0.90874128   0.20750216   3.29871524
+  14.92513016   1.07329959   0.41605601]
+Iteration Parameters: [array([ 2.        ,  0.03070155]), array([ 1.07614429,  0.92385571,  3.49320302,  0.72647123]), array([ 0.41135538,  1.15156642,  0.43707821,  7.56659943,  1.66161962,
+        0.52510213]), array([  0.74166611,   0.14209045,   0.90874128,   0.20750216,
+         3.29871524,  14.92513016,   1.07329959,   0.41605601])]
+{'max_numb_of_funcs': 4, 'backward_elim_funcs': None, 'factor': 2.0}
+Exit Information: Exited Because Number of functions is equal to maximum allowed functions 3 < 4 or Cost function is less than some epsilon 0.000951523081272 <= 1e-05 or number of redudancies found in a row is more than 5, number of redudans are 0
+Redudandance Info: []

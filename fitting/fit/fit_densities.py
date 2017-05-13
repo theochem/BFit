@@ -124,24 +124,25 @@ def plot_error(errors, element_name, title, figure_name):
             axarr[x, y].get_xaxis().tick_bottom()
             axarr[x, y].get_yaxis().tick_left()
     # xrange(1, len(errors[2]) + 1, 2)
-    axarr[0, 0].plot([1] + [x + x - 1  for x in range(2, len(errors[2]) + 1)], errors[0], 'o-', color=tableau20[0])
+    #[1] + [x + x - 1  for x in range(2, len(errors[2]) + 1)]
+    axarr[0, 0].plot(xrange(1, len(errors[2]) + 1, 1), errors[0], 'o-', color=tableau20[0])
     axarr[0, 0].set_title('Integrated Fitted Density Model')
     axarr[0, 0].set_ylabel(r'$\int \rho^o(r) 4 \pi r^2 dr$')
-    axarr[0, 1].semilogy([1] + [x + x - 1  for x in range(2, len(errors[2]) + 1)], errors[1], 'o-', color=tableau20[0])
+    axarr[0, 1].semilogy(xrange(1, len(errors[2]) + 1, 1), errors[1], 'o-', color=tableau20[0])
     axarr[0, 1].set_title('Absolute Difference In Models')
     axarr[0, 1].set_ylabel(r'$\int |\rho(r) - \rho^o(r)| dr$')
-    axarr[1, 0].semilogy([1] + [x + x - 1  for x in range(2, len(errors[2]) + 1)], errors[2], 'o-', color=tableau20[0])
+    axarr[1, 0].semilogy(xrange(1, len(errors[2]) + 1, 1), errors[2], 'o-', color=tableau20[0])
     axarr[1, 0].set_title("Absolute Difference Times Radius Squared")
-    axarr[1, 0].set_xlabel("Number of Functions")
+    axarr[1, 0].set_xlabel("Iterations")
     axarr[1, 0].set_ylabel(r'$\int |\rho(r) - \rho^o(r)| r^2 dr$')
-    axarr[1, 1].semilogy([1] + [x + x - 1  for x in range(2, len(errors[2]) + 1)],errors[3], 'o-', color=tableau20[0])
+    axarr[1, 1].semilogy(xrange(1, len(errors[2]) + 1, 1), errors[3], 'o-', color=tableau20[0])
     axarr[1, 1].set_title('Kullback-Leiger Function Value')
     axarr[1, 1].set_ylabel(r'$\int \rho(r) \frac{\rho(r)}{\rho^o(r)} 4 \pi r^2 dr$')
-    axarr[1, 1].set_xlabel("Number of Functions")
+    axarr[1, 1].set_xlabel("Iterations")
     plt.tight_layout()
     plt.subplots_adjust(top=0.90)
 
-    directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/fitting/results_redudancies_two/" + element_name
+    directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/fitting/results/" + element_name
     if not os.path.exists(directory):
         os.makedirs(directory)
     plt.savefig(directory + "/" + figure_name + ".png")
@@ -173,9 +174,12 @@ def plot_model_densities(true_dens, model_dens, grid_pts, title, element_name,
     ax.semilogy(grid_pts, true_dens, '-', lw=3, label="Slater Electron Density",
                 color=(31/255., 119/255., 180/255.))
     if additional_models_plots is not None:
-        for model in additional_models_plots:
-            ax.semilogy(grid_pts, model_dens, 'o-', lw=3, label="Gaussian Fitted Electron Density",
+        for i, model in enumerate(additional_models_plots):
+            if i == 0:
+                ax.semilogy(grid_pts, model_dens, '-', lw=1, label="Gaussian Fitted Electron Density",
                         color=tableau20[7])
+            else:
+                ax.semilogy(grid_pts, model_dens, '-', lw=1, color=tableau20[7])
     # plt.xlim(0, 25.0*0.5291772082999999)
     plt.xlim(0, 9)
     plt.ylim(ymin=1e-9)
@@ -185,7 +189,7 @@ def plot_model_densities(true_dens, model_dens, grid_pts, title, element_name,
     plt.title(title, fontweight='bold')
     plt.grid(color=tableau20[-2])
     plt.legend()
-    directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/fitting/results_redudancies_two/" + element_name
+    directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/fitting/results/" + element_name
     if not os.path.exists(directory):
         os.makedirs(directory)
     plt.savefig(directory + "/" + figure_name + ".png")
@@ -331,7 +335,7 @@ def fit_radial_densities(element_name, atomic_number, grid=None, true_density=No
     elif method == "greedy-ls-sqs":
         pass
     elif method == "greedy-mbis":
-        greedy_mbis = GreedyMBIS(element_name, atomic_number, grid, true_density, splitting_func=get_two_next_possible_coeffs_and_exps)
+        greedy_mbis = GreedyMBIS(element_name, atomic_number, grid, true_density, splitting_func=get_next_possible_coeffs_and_exps)
 
         if ioutput:
             params, params_it = greedy_mbis.run_greedy(ioutput=ioutput, **options)
@@ -345,20 +349,29 @@ def fit_radial_densities(element_name, atomic_number, grid=None, true_density=No
     if iplot:
         # Change Grid To Angstrom
         grid.radii *= 0.5291772082999999
-        model = density_model.create_model(params)
+        model = greedy_mbis.mbis_obj.get_normalized_gaussian_density(params[:len(params)//2],
+                                                                     params[len(params)//2:])
         plot_model_densities(true_density, model, grid.radii,
                              title="Electron Density Plot of " + full_names[element_name],
                              element_name=element_name,
                              figure_name="model_plot_using_" + method)
-
+        models_it = []
+        for p in params_it:
+            c, e = p[:len(p)//2], p[len(p)//2:]
+            models_it.append(greedy_mbis.mbis_obj.get_normalized_gaussian_density(c, e))
+        plot_model_densities(true_density, model, grid.radii,
+                             title="Electron Density Plot of " + full_names[element_name],
+                             element_name=element_name,
+                             figure_name="greedy_model_plot_using_" + method,
+                             additional_models_plots=models_it)
         plot_error(error, element_name, "Different Error Measures On " + full_names[element_name],
                    figure_name="error_plot_using_" + method)
 
     if ioutput:
-        dir = os.path.dirname(__file__).rsplit('/', 2)[0] + '/fitting/results_redudancies_two/' + element_name
+        dir = os.path.dirname(__file__).rsplit('/', 2)[0] + '/fitting/results/' + element_name
         file_object = open(dir + '/arguments_' + method + ".txt", "w+")
         file_object.write("Method Used " + method + "\n")
-        file_object.write("Number Of Parameters " + str(len(params)) + "\n")
+        file_object.write("Number Of Basis FUnctions" + str(len(params)//2) + "\n")
         file_object.write("Final Parameters: " + str(params) + "\n")
         file_object.write("Iteration Parameters: " + str(params_it) + "\n")
         file_object.write(str(options) + "\n")
@@ -373,6 +386,7 @@ def fit_radial_densities(element_name, atomic_number, grid=None, true_density=No
 if __name__ == "__main__":
     for i, ele in enumerate(["he", "li", "be", "b", "c", "n", "o", "f", "ne"]):
         j = i + 2
-        fit_radial_densities(ele, j, method='greedy-mbis', options={'max_numb_of_funcs': 30},
+        fit_radial_densities(ele, j, method='greedy-mbis', options={'max_numb_of_funcs': 2},
                              iplot=True, ioutput=True)
+        raise ValueError
 
