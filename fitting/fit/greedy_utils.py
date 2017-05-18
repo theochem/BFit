@@ -11,7 +11,7 @@ def check_redundancies(coeffs, exps):
         similar_indexes = []
         for j in range(i + 1, len(exps)):
             if j not in similar_indexes:
-                if np.abs(alpha - exps[j]) < 1e-2:
+                if np.abs(alpha - exps[j]) < 1e-3:
                     if i not in similar_indexes:
                         similar_indexes.append(i)
                     similar_indexes.append(j)
@@ -116,15 +116,29 @@ class _GreedyStrategy(object):
             number_of_functions = len(global_parameters) / numb_one_func_params
             coeffs, exps = check_redundancies(global_parameters[:len(global_parameters)//2],
                                               global_parameters[len(global_parameters)//2:])
-            global_parameters = np.append(coeffs, exps)
-            if number_of_functions != len(coeffs):
-                self.redudan_info_numb_basis_funcs.append([number_of_functions, len(coeffs)])
-                number_of_functions = len(coeffs)
+            #global_parameters = np.append(coeffs, exps)
+            """
+            if number_of_functions != len(coeffs): # Redudancies Found
+                new_params = np.append(coeffs, exps)
+                redudan_obj = self.get_cost_function(new_params)
+                if redudan_obj < best_global_value:
+                    global_parameters = np.append(coeffs, exps)
+                    self.redudan_info_numb_basis_funcs.append([number_of_functions, len(coeffs), "Gave Better Answer"])
+                    number_of_functions = len(coeffs)
+                    best_global_value = redudan_obj
+                    self.store_errors(global_parameters)
+                    storage_of_parameters_per_addition.append(global_parameters)
+                else:
+                    self.redudan_info_numb_basis_funcs.append([number_of_functions, len(coeffs), "Go Back a Iteration with"
+                                                                                                 "new factor"])
+                    number_of_functions -= 1
                 number_of_redum += 1
                 factor += 5
-                import sys
-                sys.exit()
-            elif best_local_value <= best_global_value:
+            eli
+            """
+            if number_of_functions != len(coeffs):
+                self.redudan_info_numb_basis_funcs.append([number_of_functions, len(coeffs)])
+            if best_local_value <= best_global_value:
                 best_global_value = best_local_value
                 global_parameters = self.get_optimization_routine(best_local_param)
                 self.store_errors(global_parameters)
@@ -137,7 +151,7 @@ class _GreedyStrategy(object):
             if backward_elim_funcs is not None:
                 global_parameters = backward_elim_funcs(best_local_param)
         print("parameters", storage_of_parameters_per_addition)
-        if self.exit_info != "Next Iteration Did Not Find THe Best Choice":
+        if self.exit_info is None: #"Next Iteration Did Not Find THe Best Choice":
             self.exit_info = "Exited Because Number of functions is equal to maximum allowed functions " + \
                          str(number_of_functions) + " < " + str(max_numb_of_funcs) + \
                          " or Cost function is less than some epsilon " + str(best_global_value) + " <= " + str(1e-5) +\

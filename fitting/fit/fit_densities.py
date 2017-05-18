@@ -142,7 +142,7 @@ def plot_error(errors, element_name, title, figure_name):
     plt.tight_layout()
     plt.subplots_adjust(top=0.90)
 
-    directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/fitting/results/" + element_name
+    directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/fitting/results_original/" + element_name
     if not os.path.exists(directory):
         os.makedirs(directory)
     plt.savefig(directory + "/" + figure_name + ".png")
@@ -176,10 +176,10 @@ def plot_model_densities(true_dens, model_dens, grid_pts, title, element_name,
     if additional_models_plots is not None:
         for i, model in enumerate(additional_models_plots):
             if i == 0:
-                ax.semilogy(grid_pts, model_dens, '-', lw=1, label="Gaussian Fitted Electron Density",
+                ax.semilogy(grid_pts, model, '-', lw=1, label="Gaussian Fitted Electron Density",
                         color=tableau20[7])
             else:
-                ax.semilogy(grid_pts, model_dens, '-', lw=1, color=tableau20[7])
+                ax.semilogy(grid_pts, model, '-', lw=1, color=tableau20[7])
     # plt.xlim(0, 25.0*0.5291772082999999)
     plt.xlim(0, 9)
     plt.ylim(ymin=1e-9)
@@ -189,7 +189,7 @@ def plot_model_densities(true_dens, model_dens, grid_pts, title, element_name,
     plt.title(title, fontweight='bold')
     plt.grid(color=tableau20[-2])
     plt.legend()
-    directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/fitting/results/" + element_name
+    directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/fitting/results_original/" + element_name
     if not os.path.exists(directory):
         os.makedirs(directory)
     plt.savefig(directory + "/" + figure_name + ".png")
@@ -351,7 +351,7 @@ def fit_radial_densities(element_name, atomic_number, grid=None, true_density=No
         grid.radii *= 0.5291772082999999
         model = greedy_mbis.mbis_obj.get_normalized_gaussian_density(params[:len(params)//2],
                                                                      params[len(params)//2:])
-        plot_model_densities(true_density, model, grid.radii,
+        plot_model_densities(greedy_mbis.mbis_obj.electron_density, model, grid.radii,
                              title="Electron Density Plot of " + full_names[element_name],
                              element_name=element_name,
                              figure_name="model_plot_using_" + method)
@@ -359,7 +359,7 @@ def fit_radial_densities(element_name, atomic_number, grid=None, true_density=No
         for p in params_it:
             c, e = p[:len(p)//2], p[len(p)//2:]
             models_it.append(greedy_mbis.mbis_obj.get_normalized_gaussian_density(c, e))
-        plot_model_densities(true_density, model, grid.radii,
+        plot_model_densities(greedy_mbis.mbis_obj.electron_density, model, grid.radii,
                              title="Electron Density Plot of " + full_names[element_name],
                              element_name=element_name,
                              figure_name="greedy_model_plot_using_" + method,
@@ -368,10 +368,10 @@ def fit_radial_densities(element_name, atomic_number, grid=None, true_density=No
                    figure_name="error_plot_using_" + method)
 
     if ioutput:
-        dir = os.path.dirname(__file__).rsplit('/', 2)[0] + '/fitting/results/' + element_name
+        dir = os.path.dirname(__file__).rsplit('/', 2)[0] + '/fitting/results_original/' + element_name
         file_object = open(dir + '/arguments_' + method + ".txt", "w+")
         file_object.write("Method Used " + method + "\n")
-        file_object.write("Number Of Basis FUnctions" + str(len(params)//2) + "\n")
+        file_object.write("Number Of Basis FUnctions: " + str(len(params)//2) + "\n")
         file_object.write("Final Parameters: " + str(params) + "\n")
         file_object.write("Iteration Parameters: " + str(params_it) + "\n")
         file_object.write(str(options) + "\n")
@@ -384,9 +384,19 @@ def fit_radial_densities(element_name, atomic_number, grid=None, true_density=No
     return params
 
 if __name__ == "__main__":
-    for i, ele in enumerate(["he", "li", "be", "b", "c", "n", "o", "f", "ne"]):
-        j = i + 2
-        fit_radial_densities(ele, j, method='greedy-mbis', options={'max_numb_of_funcs': 2},
-                             iplot=True, ioutput=True)
-        raise ValueError
+   #for i, ele in enumerate(["c"]):
+   #     j = 6
+   #     fit_radial_densities(ele, j, method='greedy-mbis', options={'max_numb_of_funcs': 30},
+   #                          iplot=True, ioutput=True)
+    params = np.load(os.path.dirname(__file__).rsplit('/', 2)[0] + '/fitting/results_original/be/parameters_greedy-mbis.npy')
+    grid = HortonGrid(1.0e-30, 25, 1000)
+    file_path = os.path.dirname(__file__).rsplit('/', 2)[0] + '/fitting/data/examples/' + "be".lower()
+    true_density = Atomic_Density(file_path, grid.radii).electron_density
+    m = TotalMBIS(atomic_number=4, electron_density=true_density, element_name="be", grid_obj=grid)
+    model = m.get_normalized_gaussian_density(params[:len(params)//2], params[len(params)//2:])
+    plt.semilogy(grid.radii, model)
+    plt.semilogy(grid.radii, true_density)
+    plt.show()
+
+
 
