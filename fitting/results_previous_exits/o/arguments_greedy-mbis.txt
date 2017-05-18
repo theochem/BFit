@@ -1,0 +1,7 @@
+Method Used greedy-mbis
+Number Of Basis FUnctions: 1
+Final Parameters: [ 8.          0.01976533]
+Iteration Parameters: [array([ 8.        ,  0.01976533])]
+{'max_numb_of_funcs': 30, 'backward_elim_funcs': None, 'factor': 2.0}
+Exit Information: Exited Because Number of functions is equal to maximum allowed functions 1 < 30 or Cost function is less than some epsilon 10000000000.0 <= 1e-05 or number of redudancies found in a row is more than 5, number of redudans are 0
+Redudandance Info: []

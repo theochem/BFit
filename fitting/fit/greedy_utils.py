@@ -96,10 +96,12 @@ class _GreedyStrategy(object):
         self.store_errors(global_parameters)
         # Should Be One
         number_of_functions = len(global_parameters) / numb_one_func_params
+        previous_global_value = 0
         best_global_value = 1e10
         storage_of_parameters_per_addition = [global_parameters]
         number_of_redum = 0; initial_factor = factor
-        while number_of_functions < max_numb_of_funcs - 1 and best_global_value >= 1e-5 and number_of_redum < 5:
+        while number_of_functions < max_numb_of_funcs - 1 and np.abs(best_global_value  - previous_global_value) >= 1e-5\
+                and number_of_redum < 5:
             choices_of_parameters = self.get_next_iteration_of_variables(factor, global_parameters)
             if callable(add_choice_funcs):
                 choices_of_parameters.append(add_choice_funcs(global_parameters))
@@ -117,7 +119,6 @@ class _GreedyStrategy(object):
             coeffs, exps = check_redundancies(global_parameters[:len(global_parameters)//2],
                                               global_parameters[len(global_parameters)//2:])
             #global_parameters = np.append(coeffs, exps)
-            """
             if number_of_functions != len(coeffs): # Redudancies Found
                 new_params = np.append(coeffs, exps)
                 redudan_obj = self.get_cost_function(new_params)
@@ -125,6 +126,7 @@ class _GreedyStrategy(object):
                     global_parameters = np.append(coeffs, exps)
                     self.redudan_info_numb_basis_funcs.append([number_of_functions, len(coeffs), "Gave Better Answer"])
                     number_of_functions = len(coeffs)
+                    previous_global_value = best_global_value
                     best_global_value = redudan_obj
                     self.store_errors(global_parameters)
                     storage_of_parameters_per_addition.append(global_parameters)
@@ -134,11 +136,8 @@ class _GreedyStrategy(object):
                     number_of_functions -= 1
                 number_of_redum += 1
                 factor += 5
-            eli
-            """
-            if number_of_functions != len(coeffs):
-                self.redudan_info_numb_basis_funcs.append([number_of_functions, len(coeffs)])
-            if best_local_value <= best_global_value:
+            elif best_local_value <= best_global_value:
+                previous_global_value = best_global_value
                 best_global_value = best_local_value
                 global_parameters = self.get_optimization_routine(best_local_param)
                 self.store_errors(global_parameters)
