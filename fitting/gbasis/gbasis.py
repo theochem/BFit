@@ -66,6 +66,7 @@ class UGBSBasis():
         # Loading the ugbs basis set
         #file_path = os.path.dirname(__file__).rsplit('/', 1)[0][:-7] + '/data/basis/ugbs.nwchem'
         file_path = os.getcwd()[:-4]  + '/data/basis/ugbs.nwchem'
+        file_path = "/work/tehrana/fitting/fitting/data/basis/ugbs.nwchem"
         basis_atom_map = load_gbasis_nwchem_format(file_path)
         # Make sure the given element exist in the loaded basis set
         if element.lower() not in basis_atom_map.keys():

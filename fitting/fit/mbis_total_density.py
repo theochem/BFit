@@ -281,6 +281,31 @@ class TotalMBIS(MBIS_ABC):
 
     def optimize_using_slsqp(self, parameters):
         from scipy.optimize import minimize
+
+        def get_derivative_coefficients(p):
+            derivatives = []
+            model = np.ma.asarray(self.get_normalized_gaussian_density(p[:len(p) // 2], p[len(p) // 2:]))
+            masked_ratio = self.masked_electron_density / model
+            for i in range(0, len(p)//2):
+                exp_i = i + len(p)//2
+                derivatives.append(self.grid_obj.integrate(masked_ratio * self.get_normalization_constant(p[exp_i]) *
+                                                           np.exp(-p[exp_i] * self.masked_grid_squared)))
+            return derivatives
+
+        def get_derivative_exps(p):
+            derivatives = []
+            model = np.ma.asarray(self.get_normalized_gaussian_density(p[:len(p) // 2], p[len(p) // 2:]))
+            masked_ratio = self.masked_electron_density / model
+            for i in range(0, len(p)//2):
+                exp_i = i + len(p)//2
+                masked_ratio *= p[i]
+                derivatives.append(self.grid_obj.integrate(masked_ratio * np.exp(-exp_i * self.masked_grid_squared) *
+                                                           ((3. * np.sqrt(p[exp_i] / np.pi) / (2. * np.pi)) -
+                                                             self.get_normalization_constant(p[exp_i] *
+                                                                                             self.masked_grid_squared))))
+            return derivatives
+        def get_deriv(p):
+            return get_derivative_coefficients(p) + get_derivative_exps(p)
         def constraint(x, *args):
             leng = len(x) // 2
             return np.sum(x[0:leng]) - self.atomic_number
@@ -290,10 +315,13 @@ class TotalMBIS(MBIS_ABC):
         bounds = np.array([(0.0, np.inf) for x in range(0, len(parameters))], dtype=np.float64)
         f_min_slsqp = minimize(self.get_obj_func_for_optimizing, x0=parameters, method="SLSQP",
                                               bounds=bounds, constraints=cons,
-                                              jac=False,  options={"maxiter": 100000, "disp":True})
+                                              jac=False,  options={"maxiter": 100000000, "disp":True, "factr":10.0,
+                                                                   "eps":1e-10})
 
         parameters = f_min_slsqp['x']
-        print(f_min_slsqp)
+        parameters[parameters < 1e-7] = 0.
+        print(f_min_slsqp, self.get_descriptors_of_model(
+            self.get_normalized_gaussian_density(parameters[:len(parameters) // 2], parameters[len(parameters) // 2:])))
         return parameters
 
 

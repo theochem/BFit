@@ -7,7 +7,7 @@ from fitting.density.slater_density.atomic_slater_density import Atomic_Density
 from fitting.density.density_model import DensityModel
 from fitting.fit.greedy_utils import GreedyMBIS, GreedyLeastSquares
 import matplotlib.pyplot as plt
-import horton
+#import horton
 import warnings
 import os
 from matplotlib import rc
@@ -142,7 +142,7 @@ def plot_error(errors, element_name, title, figure_name):
     plt.tight_layout()
     plt.subplots_adjust(top=0.90)
 
-    directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/fitting/results_previous_exits/" + element_name
+    directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/fitting/results_redudancies_two_lose_one/" + element_name
     if not os.path.exists(directory):
         os.makedirs(directory)
     plt.savefig(directory + "/" + figure_name + ".png")
@@ -189,7 +189,7 @@ def plot_model_densities(true_dens, model_dens, grid_pts, title, element_name,
     plt.title(title, fontweight='bold')
     plt.grid(color=tableau20[-2])
     plt.legend()
-    directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/fitting/results_previous_exits/" + element_name
+    directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/fitting/results_redudancies_two_lose_one/" + element_name
     if not os.path.exists(directory):
         os.makedirs(directory)
     plt.savefig(directory + "/" + figure_name + ".png")
@@ -272,7 +272,8 @@ def fit_radial_densities(element_name, atomic_number, grid=None, true_density=No
                   "n":"nitrogen", "o":"oxygen", "f":"fluoride", "ne":"neon"}
     element_name = element_name.lower()
     if grid is None:
-        grid = HortonGrid(1.0e-30, 25, 1000)
+        #grid = HortonGrid(1.0e-30, 25, 1000)
+        pass
 
     # Sets Grid array to become one of our grid objects
     if not isinstance(grid, (RadialGrid, HortonGrid)):
@@ -282,11 +283,13 @@ def fit_radial_densities(element_name, atomic_number, grid=None, true_density=No
     # Sets Default Density To Atomic Slater Density
     if true_density is None:
         file_path = os.path.dirname(__file__).rsplit('/', 2)[0] + '/fitting/data/examples/' + element_name.lower()
+        file_path = "/work/tehrana/fitting/fitting/data/examples/" + element_name.lower()
         true_density = Atomic_Density(file_path, grid.radii).electron_density
 
     # Sets Default Density Model to Gaussian Density
     if density_model is None:
         file_path = os.path.dirname(__file__).rsplit('/', 2)[0] + '/fitting/data/examples/' + element_name.lower()
+        file_path = "/work/tehrana/fitting/fitting/data/examples/" + element_name.lower()
         density_model = GaussianTotalBasisSet(element_name, grid.radii, electron_density=true_density,
                                               file_path=file_path)
 
@@ -335,7 +338,7 @@ def fit_radial_densities(element_name, atomic_number, grid=None, true_density=No
     elif method == "greedy-ls-sqs":
         pass
     elif method == "greedy-mbis":
-        greedy_mbis = GreedyMBIS(element_name, atomic_number, grid, true_density, splitting_func=get_next_possible_coeffs_and_exps)
+        greedy_mbis = GreedyMBIS(element_name, atomic_number, grid, true_density, splitting_func=pick_two_lose_one)
 
         if ioutput:
             params, params_it = greedy_mbis.run_greedy(ioutput=ioutput, **options)
@@ -368,7 +371,7 @@ def fit_radial_densities(element_name, atomic_number, grid=None, true_density=No
                    figure_name="error_plot_using_" + method)
 
     if ioutput:
-        dir = os.path.dirname(__file__).rsplit('/', 2)[0] + '/fitting/results_previous_exits/' + element_name
+        dir = os.path.dirname(__file__).rsplit('/', 2)[0] + '/fitting/results_redudancies_two_lose_one/' + element_name
         file_object = open(dir + '/arguments_' + method + ".txt", "w+")
         file_object.write("Method Used " + method + "\n")
         file_object.write("Number Of Basis FUnctions: " + str(len(params)//2) + "\n")
@@ -384,11 +387,13 @@ def fit_radial_densities(element_name, atomic_number, grid=None, true_density=No
     return params
 
 if __name__ == "__main__":
-   for i, ele in enumerate(["he", "li", "be", "b", "c", "n", "o", "f", "ne"]):
-        j = i + 2
-        fit_radial_densities(ele, j, method='greedy-mbis', options={'max_numb_of_funcs': 30},
-                             iplot=True, ioutput=True)
-
+   #for i, ele in enumerate(["he", "li", "be", "b", "c", "n", "o", "f", "ne"]):
+   #     j = i + 2
+   #     fit_radial_densities(ele, j, method='greedy-mbis', options={'max_numb_of_funcs': 30},
+   #                          iplot=True, ioutput=True)
+   grid = RadialGrid(4, 300, 400, [25, 50, 75])
+   fit_radial_densities("be", 4, method="greedy-mbis", grid=grid, options={'max_numb_of_funcs':30},
+                        iplot=True, ioutput=True)
 
 
 

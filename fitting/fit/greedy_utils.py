@@ -194,7 +194,9 @@ class GreedyMBIS(_GreedyStrategy):
     def get_optimization_routine(self, params, local=False):
         coeff_arr, exp_arr = params[:len(params)//2], params[len(params)//2:]
         if local:
+            return self.mbis_obj.optimize_using_slsqp(np.append(coeff_arr, exp_arr))
             return self.mbis_obj.run(0.1, 1e-2, coeff_arr, exp_arr, iprint=True)
+        return self.mbis_obj.optimize_using_slsqp(np.append(coeff_arr, exp_arr))
         return self.mbis_obj.run(self.threshold_coeff, self.threshold_exp, coeff_arr, exp_arr, iprint=True)
 
     def get_errors_from_model(self, params):
