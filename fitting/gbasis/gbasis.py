@@ -57,20 +57,21 @@ class UGBSBasis():
         '''
             **Arguments:**
 
-            element
-                A string representing the element for which the UGBS basis set is constructed.
+            _element
+                A string representing the _element for which the UGBS basis set is constructed.
 
         '''
         from fitting.gbasis.gbasis_nwchem import load_gbasis_nwchem_format
 
         # Loading the ugbs basis set
-        #file_path = os.path.dirname(__file__).rsplit('/', 1)[0][:-7] + '/data/basis/ugbs.nwchem'
-        file_path = os.getcwd()[:-4]  + '/data/basis/ugbs.nwchem'
-        file_path = "/work/tehrana/fitting/fitting/data/basis/ugbs.nwchem"
+        file_path = os.path.dirname(__file__).rsplit('/', 1)[0][:-7] + \
+                    '/fitting/data/basis/ugbs.nwchem'
+        #file_path = os.getcwd()[:-4]  + '/data/basis/ugbs.nwchem'
+        #file_path = "/work/tehrana/fitting/fitting/data/basis/ugbs.nwchem"
         basis_atom_map = load_gbasis_nwchem_format(file_path)
-        # Make sure the given element exist in the loaded basis set
+        # Make sure the given _element exist in the loaded basis set
         if element.lower() not in basis_atom_map.keys():
-            raise ValueError('element={0} does not exist in the basis set loaded from {1}'.format(element, file_path))
+            raise ValueError('_element={0} does not exist in the basis set loaded from {1}'.format(element, file_path))
         self.element = element.lower()
         self.basis = basis_atom_map[self.element]
         # Make sure that all contracted gaussian basis consist of only one primitive with coefficient one.
