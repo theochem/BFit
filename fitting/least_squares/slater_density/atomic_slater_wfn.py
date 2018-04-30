@@ -7,7 +7,7 @@ def load_slater_wfn(file_name):
        ** Arguments **
 
        file_name
-           The path to the Slater atomic density file.
+           The path to the Slater atomic least_squares file.
     '''
     def getNumberOfElectronsPerOrbital(string_configuration):
         """

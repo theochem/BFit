@@ -1,6 +1,6 @@
 import math
 import os
-from fitting.density.slater_density.atomic_slater_density import *
+from fitting.least_squares.slater_density.atomic_slater_density import *
 
 
 # TODO ADD TESTS FOR CORE
@@ -160,12 +160,12 @@ def test_phi_LCAO_Be_integrate():
     dens_1s = np.power(phi[:, 0], 2)
     dens_2s = np.power(phi[:, 1], 2)
     assert dens_1s.shape == dens_2s.shape == grid.shape
-    # integrate(r^2 * density(r)) using the composite trapezoidal rule.
+    # integrate_spher(r^2 * density(r)) using the composite trapezoidal rule.
     integrate_1s = np.trapz((grid**2) * dens_1s, grid)
     integrate_2s = np.trapz((grid**2) * dens_2s, grid)
     assert abs(integrate_1s - 1.0) < 1.e-4
     assert abs(integrate_2s - 1.0) < 1.e-4
-    # integrate(r^2 * density(r)) using the composite Simpsons rule.
+    # integrate_spher(r^2 * density(r)) using the composite Simpsons rule.
     import scipy
     integrate_1s = scipy.integrate.simps((grid**2) * dens_1s, grid)
     integrate_2s = scipy.integrate.simps((grid**2) * dens_2s, grid)
@@ -189,7 +189,7 @@ def test_phi_LCAO_Ne_integrate():
     dens_2p = np.power(np.ravel(phi_p), 2)
     assert dens_1s.shape == dens_2s.shape == grid.shape
     assert dens_2p.shape == grid.shape
-    # integrate(r^2 * density(r)) using the composite trapezoidal rule.
+    # integrate_spher(r^2 * density(r)) using the composite trapezoidal rule.
     assert abs(np.trapz(np.power(grid, 2) * dens_1s, grid) - 1.0) < 1.e-6
     assert abs(np.trapz(np.power(grid, 2) * dens_2s, grid) - 1.0) < 1.e-6
     assert abs(np.trapz(np.power(grid, 2) * dens_2p, grid) - 1.0) < 1.e-6
@@ -211,7 +211,7 @@ def test_phi_LCAO_C_integrate():
     dens_2p = np.power(np.ravel(phi_p), 2)
     assert dens_1s.shape == dens_2s.shape == grid.shape
     assert dens_2p.shape == grid.shape
-    # integrate(r^2 * density(r)) using the composite trapezoidal rule.
+    # integrate_spher(r^2 * density(r)) using the composite trapezoidal rule.
     assert abs(np.trapz(np.power(grid, 2) * dens_1s, grid) - 1.0) < 1.e-5
     assert abs(np.trapz(np.power(grid, 2) * dens_2s, grid) - 1.0) < 1.e-5
     assert abs(np.trapz(np.power(grid, 2) * dens_2p, grid) - 1.0) < 1.e-5
@@ -227,7 +227,7 @@ def test_atomic_density_Be():
     density = np.ravel(be.atomic_density())
     assert density.shape == grid.shape
     # check: integrating atomic density should result in the number of electrons.
-    # integrate(r^2 * density(r)) using the composite trapezoidal rule.
+    # integrate_spher(r^2 * density(r)) using the composite trapezoidal rule.
     assert abs(np.trapz(np.power(grid, 2) * density, grid) * 4. * np.pi - 4.0) < 1.e-3
 
 
@@ -241,7 +241,7 @@ def test_atomic_density_Ne():
     density = np.ravel(ne.atomic_density())
     assert density.shape == grid.shape
     # check: integrating atomic density should result in the number of electrons.
-    # integrate(r^2 * density(r)) using the composite trapezoidal rule.
+    # integrate_spher(r^2 * density(r)) using the composite trapezoidal rule.
     assert abs(np.trapz(np.power(grid, 2) * density, grid) * 4. * np.pi - 10.0) < 1.e-6
 
 
@@ -255,5 +255,5 @@ def test_atomic_density_C():
     density = np.ravel(c.atomic_density())
     assert density.shape == grid.shape
     # check: integrating atomic density should result in the number of electrons.
-    # integrate(r^2 * density(r)) using the composite trapezoidal rule.
+    # integrate_spher(r^2 * density(r)) using the composite trapezoidal rule.
     assert abs(np.trapz(np.power(grid, 2) * density, grid) * 4. * np.pi - 6.0) < 1.e-5

@@ -2,12 +2,12 @@ import scipy
 import scipy.integrate
 import scipy.misc
 
-from fitting.density.slater_density.atomic_slater_wfn import *
+from fitting.least_squares.slater_density.atomic_slater_wfn import *
 
 
 class Atomic_Density():
     """
-    Used to compute the atomic density of various elements
+    Used to compute the atomic least_squares of various elements
     from a composition of slater functions.
 
     Attributes
@@ -26,7 +26,7 @@ class Atomic_Density():
             basis_numbers.
 
     GRID : numpy column array
-        positive _grid points used to calculate electron density
+        positive _grid points used to calculate electron least_squares
 
     ALL_SLATOR_ORBITALS : dictionary - key:subshell value:numpy matrix
         Calculates slator orbitals of each subshell
@@ -45,9 +45,9 @@ class Atomic_Density():
     phi_matrix()
         Concatenates molecular orbital horizontally
     atomic_density()
-        Calculates atomic density
+        Calculates atomic least_squares
     atomic_density_core()
-        Calculates atomic density of both core and valence
+        Calculates atomic least_squares of both core and valence
 
 
     """
@@ -166,9 +166,9 @@ class Atomic_Density():
         """
         By Taking the occupation numbers and multiplying it
         by the corresponding absolute, squared phi to obtain
-        electron density(rho).
+        electron least_squares(rho).
 
-        :return: the electron density where row = number of point
+        :return: the electron least_squares where row = number of point
                  and column = 1
         """
         return np.ravel(np.dot(np.absolute(self.phi_matrix())**2, self.VALUES['orbitals_electron_array']))/(4. * np.pi)

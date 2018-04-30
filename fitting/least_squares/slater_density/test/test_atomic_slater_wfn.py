@@ -1,7 +1,7 @@
 import numpy as np
 import os
 
-from fitting.density.atomic_density.atomic_slater_wfn import load_slater_wfn
+from fitting.least_squares.atomic_density.atomic_slater_wfn import load_slater_wfn
 
 
 def test_parsing_slater_density_Be():
