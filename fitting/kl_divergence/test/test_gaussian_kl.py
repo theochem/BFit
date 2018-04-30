@@ -4,7 +4,7 @@ r"""Test file for 'fitting.divergence_fitting.gaussian_kl"""
 import numpy as np
 import numpy.testing as npt
 from scipy.integrate import simps, quad
-from fitting.divergence_fitting.gaussian_kl import GaussianKullbackLeibler
+from fitting.kl_divergence.gaussian_kl import GaussianKullbackLeibler
 from fitting.radial_grid.radial_grid import RadialGrid
 
 

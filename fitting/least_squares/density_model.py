@@ -17,14 +17,14 @@ __all__ = ["DensityModel"]
 
 class DensityModel(object):
     """
-    This is an abstract class for the gaussian density model
+    This is an abstract class for the gaussian least_squares model
     used for fitting slater densities.
 
     Primarily used to define the cost function/objective function and
     the residual which is being minimized through least squares.
     Additionally, contains tools to define different error measures,
     as well as UGBS exponents used to define proper initial guesses
-    for the Gaussian density model.
+    for the Gaussian least_squares model.
     """
     __metaclass__ = abc.ABCMeta
 
@@ -34,24 +34,28 @@ class DensityModel(object):
         Parameters
         ----------
         grid : np.ndarray
-        element : str
+               Contains the grid points for the density model.
+        element : str, optional
+                 The element that the slater densities are based on.
+                 Used if one want's to use UGBS parameters as initial guess.
         electron_density : np.ndarray
-
+                         Pre-defined electron density in case one doesn't want
+                         to use slater densities.
         Raises
         ------
         TypeError
             If an argument of an invalid type is used
 
         """
-        if element is not None and not isinstance(element, str):
-            raise TypeError("Element name should be string.")
+        if not isinstance(element, (type(None), str)):
+            raise TypeError("Element name should be string or none.")
         if not isinstance(grid, np.ndarray):
             raise TypeError("Grid should be a numpy array.")
         if electron_density is not None:
             if not isinstance(electron_density, np.ndarray):
-                raise TypeError("Electron density should be an array.")
+                raise TypeError("Electron least_squares should be an array.")
             if grid.shape != electron_density.shape:
-                raise ValueError("Electron density and _grid should be the same "
+                raise ValueError("Electron least_squares and _grid should be the same "
                                  "size.")
         self._element = element
         self._grid = np.ravel(np.copy(grid))
@@ -89,7 +93,7 @@ class DensityModel(object):
     def create_model(self):
         """
         """
-        raise NotImplementedError("Need to implement the density model")
+        raise NotImplementedError("Need to implement the least_squares model")
 
     @abc.abstractmethod
     def cost_function(self):
@@ -108,9 +112,8 @@ class DensityModel(object):
     def create_cofactor_matrix(self):
         pass
 
-    def calculate_residual(self, *args):
-        res = self._electron_density - self.create_model(*args)
-        return res
+    def get_residual(self, *args):
+        return self._electron_density - self.create_model(*args)
 
     """
     def calculate_residual_based_on_core(self, *args):
@@ -143,8 +146,8 @@ class DensityModel(object):
 
     def get_error_diffuse(self, true_model, approx_model):
         r"""
-        This error measures how good the mbis is between the approximate and
-        true density at long densities.
+        This error measures how good the kl_divergence is between the approximate and
+        true least_squares at long densities.
         # TODO: FIX THIS TO MAKE THE LATEX INLINE
         ..math::
             Given two functions, denoted f, g.
@@ -161,7 +164,7 @@ class DensityModel(object):
         Returns
         -------
         error : float
-                A positive real number that measures how good the mbis is.
+                A positive real number that measures how good the kl_divergence is.
         """
         abs_diff = np.absolute(np.ravel(true_model) - np.ravel(approx_model))
         error = np.trapz(y=self._grid**2 * abs_diff, x=self._grid)
@@ -200,7 +203,7 @@ class DensityModel(object):
         Used for Greedy I THINK
         Parameters
         ----------
-        p : int
+        p : float
 
         UGBS_exponents : array
 

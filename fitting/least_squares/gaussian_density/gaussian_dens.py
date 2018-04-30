@@ -7,6 +7,7 @@ while keeping exponents fixed or vice versa.
 Depends on the Atomic_Density class for defining the slater model.
 Primarily used for defining the least squares cost-function.
 """
+import os
 from fitting.least_squares.density_model import DensityModel
 from fitting.least_squares.slater_density.atomic_slater_density import Atomic_Density
 import numpy as np
@@ -23,7 +24,7 @@ class GaussianBasisSet(DensityModel):
     used for optimization routine like, slsqp, l-bfgs, and nnls, in the
     'fitting.least_squares.least_sqs'.
     """
-    def __init__(self, grid, elec_dens=None, element_name=None, file_path=None):
+    def __init__(self, grid, element_name=None, elec_dens=None, file_path=None):
         r"""
         Creates the class by providing formula to the DensityModel class.
 
@@ -32,27 +33,31 @@ class GaussianBasisSet(DensityModel):
         grid : np.ndarray
                Radial Grid points for the basis set.
 
+        element_name : string, optional
+                      Element that the density is modeled after.
+
         elec_dens : np.ndarray, optional
                     Electron Density to be fitted to. By default, it is the
                     slater densities where the parameters of the slater
                     densities is provided by the file path.
 
-        element_name : string, optional
-                      Element that the density is modeled after.
-
         file_path : string, optional
-                    File path to the slater files.
+                    File path to the slater files. If elec_dens is not provided,
+                    then default slater data files are used.
 
         """
-        if not isinstance(grid, np.ndarray):
-            raise TypeError("Grid should be a numpy array.")
+        if not isinstance(file_path, (type(None), str)):
+            raise TypeError("File path should be None or string.")
         if elec_dens is None:
-            if not isinstance(elec_dens, np.ndarray):
-                raise TypeError("Electron Density should be a numpy array.")
+            # If electron density is not provided.
             if file_path is None:
-                raise ValueError("File path is needed to slater coeff and"
-                                 "exponents is needed.")
-            elec_dens = Atomic_Density(file_path, grid)
+                # Check if slater file for the element is in the data folder.
+                file_path = os.getcwd() + "/fitting/data/examples/" + element_name
+                if not os.path.isfile(file_path):
+                    # If the slater file for the element don't exist.
+                    raise ValueError("File path for slater parameters is"
+                                     " needed for this element.")
+            elec_dens = Atomic_Density(file_path, grid).atomic_density()
         DensityModel.__init__(self, grid, element_name, elec_dens)
 
     def create_model(self, parameters, fixed_params=[], which_opti="b"):
@@ -92,9 +97,9 @@ class GaussianBasisSet(DensityModel):
             coeffs = np.copy(parameters)
             exps = fixed_params
         elif which_opti == "e":
-            exps = np.copy(parameters)
             coeffs = fixed_params
-        mat = np.exp(-exps * np.power(self.grid.T, 2.))
+            exps = np.copy(parameters)
+        mat = np.exp(-exps * np.power(self.grid.reshape(self.grid.size, 1), 2.))
         gauss_dens_grid = np.dot(mat, coeffs)
         return gauss_dens_grid
 
@@ -134,23 +139,48 @@ class GaussianBasisSet(DensityModel):
         residual_squared = np.power(res, 2.0)
         return np.sum(residual_squared)
 
-    def _deriv_wrt_coeffs(self, exps, f_func):
-        """Get Derivative of cost func. wrt to coefficients."""
-        derivative_coeff = []
-        for exp in exps:
-            g_function = -1.0 * np.exp(-1.0 * exp * self.grid ** 2)
-            derivative = f_func * np.ravel(g_function)
-            derivative_coeff.append(np.ravel(derivative))
+    def _deriv_wrt_coeffs(self, exps, res):
+        r"""
+        Get Derivative of cost func. wrt to coefficients of gaussian basis set.
+
+        Parameters
+        ----------
+        exps : np.ndarray
+               Exponents of the gaussian basis set.
+
+        res : np.ndarray
+              Residual factor that shows up from the chain rule.
+
+        Returns
+        -------
+        np.ndarray
+                  Derivative wrt to coefficients
+        """
+        cofac = self.create_cofactor_matrix(exps)
+        derivative_coeff = -res.dot(cofac)
         return derivative_coeff
 
-    def _deriv_wrt_exps(self, coeff, exps, f_func):
-        """Get Derivative of cost func. wrt to exponents."""
-        derivative_exp = []
-        for i, coeff in np.ndenumerate(coeff):
-            exponent = exps[i]
-            g_function = -coeff * self.grid ** 2 * np.exp(-1.0 * exponent * self.grid ** 2)
-            derivative = -f_func * np.ravel(g_function)
-            derivative_exp.append(np.ravel(derivative))
+    def _deriv_wrt_exps(self, coeff, exps, res):
+        r"""
+        Get Derivative of cost func. wrt to exponents of gaussian basis set.
+
+        Parameters
+        ----------
+        coeffs : np.ndarray
+                Coefficients of the gaussian basis set.
+        exps : np.ndarray
+               Exponents of the gaussian basis set.
+        res : np.ndarray
+              Residual factor that shows up from the chain rule.
+
+        Returns
+        -------
+        np.ndarray
+                  Derivative wrt to each exponents.
+        """
+        cofac = self.create_cofactor_matrix(exps)
+        residual_squared = res * self._grid**2.
+        derivative_exp = residual_squared.dot(cofac * coeff)
         return derivative_exp
 
     def derivative_of_cost_function(self, parameters, fixed_params=[], which_opti="b"):
@@ -185,24 +215,23 @@ class GaussianBasisSet(DensityModel):
                 Sum of the derivative.
         """
         residual = self.get_residual(parameters, fixed_params, which_opti)
+        f_function = 2.0 * residual
         if which_opti == "b":
             coeffs = parameters[:len(parameters)//2]
             exps = parameters[len(parameters)//2:]
-            f_function = 2.0 * residual
             deriv = self._deriv_wrt_coeffs(exps, f_function)
-            deriv = deriv + self._deriv_wrt_exps(coeffs, exps, f_function)
+            deriv = np.append(deriv,
+                              self._deriv_wrt_exps(coeffs, exps, f_function))
 
         elif which_opti == "c":
             exps = fixed_params
-            f_function = 2.0 * residual
             deriv = self._deriv_wrt_coeffs(exps, f_function)
 
         elif which_opti == "e":
             exps = np.copy(parameters)
             coeffs = fixed_params
-            f_function = 2.0 * residual
             deriv = self._deriv_wrt_exps(coeffs, exps, f_function)
-        return np.sum(deriv, axis=1)
+        return deriv
 
     def create_cofactor_matrix(self, exponents):
         r"""
@@ -222,5 +251,6 @@ class GaussianBasisSet(DensityModel):
                    A Matrix where rows are the points on the grid and columns
                    correspond to each gaussian basis function at that point.
         """
-        exponential = np.exp(-exponents * np.power(self._grid, 2.0))
+        g_col = self._grid.reshape((len(self._grid), 1))
+        exponential = np.exp(-exponents * np.power(g_col, 2.0))
         return exponential

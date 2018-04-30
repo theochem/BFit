@@ -1,1 +1,1 @@
-from fitting.radial_grid.radial_grid import *
+from fitting.radial_grid.radial_grid import ClenshawGrid, HortonGrid
