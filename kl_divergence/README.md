@@ -1,1 +1,0 @@
-# Minimal Basis Set Int. Stockholder
