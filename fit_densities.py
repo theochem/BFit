@@ -1,51 +1,59 @@
 r"""
+Unified interfaces for gaussian basis-set fitting algorithms.
 
+Functions
+---------
+fit_radial_densities : minimization of least squares or kullback-leibler div
+                       using either techniques or a greedy algorithm.
 """
 
 import os
 import warnings
 from fitting.least_squares.least_sqs import *
-from fitting.radial_grid.radial_grid import ClenshawGrid, HortonGrid
-from fitting.least_squares.gaussian_density.gaussian_dens import \
-    GaussianBasisSet
+from fitting.radial_grid.radial_grid import RadialGrid
+from fitting.radial_grid.clenshaw_curtis import ClenshawGrid
+from fitting.radial_grid.horton import HortonGrid
+from fitting.least_squares.gaussian_density.gaussian_dens import GaussianBasisSet
 from fitting.gbasis.gbasis import UGBSBasis
 from fitting.kl_divergence.gaussian_kl import GaussianKullbackLeibler
-from fitting.least_squares.slater_density.atomic_slater_density import \
-    Atomic_Density
+from fitting.least_squares.slater_density.atomic_slater_density import Atomic_Density
 from fitting.least_squares.density_model import DensityModel
 from fitting.greedy.greedy_kl import GreedyKL
 from fitting.utils.plotting_utils import plot_model_densities, plot_error
+from fitting.greedy.greedy_utils import pick_two_lose_one, get_next_choices
+from fitting.greedy.greedy_lq import GreedyLeastSquares
 
 
-__all__ = ["fit_radial_densities"]
+__all__ = ["fit_gaussian_densities"]
 
 
 def get_hydrogen_electron_density(grid, bohr_radius=1):
     return (1. / np.pi * (bohr_radius ** 3.)) * np.exp(-2. * grid / bohr_radius)
 
 
-def fit_radial_densities(element_name, atomic_number, grid=None, true_density=None,
-                         density_model=None, method="SLSQP", options=None,
-                         UGBS_type='S', ioutput=False, iplot=False):
+def fit_gaussian_densities(grid, element_name=None, true_model=None, inte_val=None, method="SLSQP",
+                           options=None, density_model=None, ioutput=False, iplot=False,
+                           iprint=False, UGBS_type='S'):
     """
-    Fits Radial Densities between different models.
+    Fits Gaussian Densities to a true model using variety of methods provided.
 
     Parameters
     ----------
-    element_name : str
-                  The element that is being fitted to.
-    atomic_number : int
-        atomic number of the element.
-
-    true_density : arr, optional
-        Electron Density to be fitted from
-
-    density_model : DensityModel, optional
-        This is where your model and cost function is stored for least squares.
-
     grid : arr or ClenshawGrid or RadialGrid or HortonGrid, optional
-        _grid evaulated
-        default is horton.
+          The radial grid points, if arr is provided it is stored as a
+          RadialGrid object.
+
+    element_name : str, optional
+                  The element that is being fitted to. If this is None, then
+                  the true_model must be specified.
+
+    true_model : arr, optional
+                 True model to be fitted from.
+
+    inte_val : int, optional
+               Integration of the true model with 4 pi x^2 over the entire space.
+               If it isn't specified, then it is estimated through the
+               trapezoidal method.
 
     method : str or callable, optional
         Type of solver.  Should be one of
@@ -58,6 +66,14 @@ def fit_radial_densities(element_name, atomic_number, grid=None, true_density=No
 
         If not given, chosen to be one of ``BFGS``, ``L-BFGS-B``, ``SLSQP``,
         depending if the problem has constraints or bounds.
+
+
+    density_model : DensityModel, optional
+        If one want's to provide their own model instead of our gaussian model.
+        Then a DensityModel class has to be provided, where your model and cost
+        function is stored for least squares. Note if done, then only
+        the methods 'nnls', 'slsqp', l-bfgs would work.
+
 
     options : dict, optional
         - 'slsqp' - {bounds=(0, np.inf), initial_guess=custom(see *)}
@@ -83,15 +99,18 @@ def fit_radial_densities(element_name, atomic_number, grid=None, true_density=No
     Returns
     -------
 
+
     Notes
     -----
+
 
     References
     ----------
 
+
     Examples
     --------
-
+    See examples folder.
     """
     if options is None:
         options = {}
@@ -100,100 +119,102 @@ def fit_radial_densities(element_name, atomic_number, grid=None, true_density=No
                   'b': "boron", "n": "nitrogen", "o": "oxygen", "f": "fluoride",
                   "ne": "neon"}
 
-    element_name = element_name.lower()
-    if grid is None:
-        #_grid = HortonGrid(1.0e-30, 25, 1000)
-        pass
+    if element_name is not None:
+        element_name = element_name.lower()
 
-    # Sets Grid array to become one of our _grid objects
-    if not isinstance(grid, (ClenshawGrid, HortonGrid)):
-        warnings.warn("Integration is done by multiplying least_squares by 4 pi radius squared", RuntimeWarning)
-        grid = ClenshawGrid(grid, None, None)
+    if isinstance(grid, np.ndarray):
+        grid = RadialGrid(grid)
 
-    # Sets Default Density To Atomic Slater Density
-    if true_density is None:
-        file_path = os.path.dirname(__file__).rsplit('/', 2)[0] + '/fitting/data/examples/' + element_name.lower()
-        true_density = Atomic_Density(file_path, grid.radii).electron_density
+    # Sets Default Density To Atomic Slater
+    current_file = os.path.abspath(os.path.dirname(__file__))
+    if true_model is None:
+        file_path = current_file + "/data/examples/" + element_name.lower()
+        true_model = Atomic_Density(file_path, grid=grid.radii).electron_density
 
     # Sets Default Density Model to Gaussian Density
     if density_model is None:
-        file_path = os.path.dirname(__file__).rsplit('/', 2)[0] + '/fitting/data/examples/' + element_name.lower()
-        density_model = GaussianBasisSet(element_name, grid.radii, elec_dens=true_density,
+        file_path = None
+        if element_name is not None:
+            slater_file_path = "/data/examples/" + element_name.lower()
+            file_path = os.path.join(current_file, slater_file_path)
+        density_model = GaussianBasisSet(grid.radii,
+                                         element_name=element_name,
+                                         elec_dens=true_model,
                                          file_path=file_path)
 
     # Exits If Custom Density Model is not inherited from density_model
-    assert isinstance(density_model, DensityModel), "Custom Density Model should be inherited from " \
-                                                    "DensityModel from density_model.py"
+    if not isinstance(density_model, DensityModel):
+        raise TypeError("Custom Density Model should be inherited from "
+                        "DensityModel from density_model.py")
 
     # Gives Warning if you wanted a custom density model to kl_divergence related procedures.
     if method in ["kl_divergence", "greedy-kl_divergence"] and density_model is not None:
         warnings.warn("Method %s does not use custom least_squares models. Rather it uses default "
                       "gaussian least_squares" % method, RuntimeWarning)
 
-    # Sets Initial Guess For Exponents to S-type UGBS and then uses NNLS to get coefficients as initial guess
     if method in ['slsqp', 'l-bfgs']:
-        options.setdefault('bounds', (0, np.inf))
-        ugbs_exps = UGBSBasis(element_name).exponents(UGBS_type)
-        cofactor_matrix = density_model.create_cofactor_matrix(ugbs_exps)
-        params = optimize_using_nnls(cofactor_matrix)
-        options.setdefault('initial_guess',
-                           np.append(params, UGBSBasis(element_name).exponents(UGBS_type)))
+        options.setdefault('initial_guess', options["initial_guess"])
 
     # Sets Exponents needed for NNLS to S-type UGBS
     if method == "nnls":
-        ugbs_exps = UGBSBasis(element_name).exponents(UGBS_type)
-        options.setdefault('initial_guess', ugbs_exps)
+        exps = UGBSBasis(element_name).exponents(UGBS_type)
+        options.setdefault('initial_guess', exps)
 
     # Set Default Arguments For Greedy
     if method in ['greedy-ls-sqs', 'greedy-kl_divergence']:
         options.setdefault('factor', 2.)
-        options.setdefault('max_numb_of_funcs', 30)
+        options.setdefault('max_numb_funcs', 30)
         options.setdefault('backward_elim_funcs', None)
-        #options.setdefault('splitting_func', get_next_choices)
-
+        s_func = get_next_choices
     if method == 'kl_divergence':
-        options.setdefault('threshold_coeff', 1e-3)
-        options.setdefault('threshold_exps', 1e-4)
-        options.setdefault('coeff_arr', options['coeff_arr'])
-        options.setdefault('exp_arr', options['exp_arr'])
+        options.setdefault('eps_coeff', 1e-3)
+        options.setdefault('eps_fparam', 1e-4)
+        options.setdefault('iprint', iprint)
+        options.setdefault('coeffs', options['coeffs'])
+        options.setdefault('fparams', options['fparams'])
 
+    # Method Controller
     if method == "slsqp":
         params = optimize_using_slsqp(density_model, **options)
     elif method == "l-bfgs":
         params = optimize_using_l_bfgs(density_model, **options)
     elif method == "nnls":
-        cofactor_matrix = density_model.create_cofactor_matrix(options['initial_guess'])
-        params = optimize_using_nnls(cofactor_matrix)
+        mat = density_model.create_cofactor_matrix(options['initial_guess'])
+        params = optimize_using_nnls(mat)
     elif method == "kl_divergence":
-        mbis_obj = GaussianKullbackLeibler(element_name, atomic_number, grid, true_density)
-        params = mbis_obj.__call__(**options)
+        fit_obj = GaussianKullbackLeibler(grid, true_model, inte_val)
+        result = fit_obj.run(**options)
+        params = result['x']
+        error = result['errors']
     elif method == "greedy-ls-sqs":
-        pass
-    elif method == "greedy-kl_divergence":
-        greedy_mbis = GreedyKL(element_name, atomic_number, grid, true_density,
-                               splitting_func=pick_two_lose_one)
+        fit_obj = GreedyLeastSquares(grid, true_model, inte_val=inte_val,
+                                     splitting_func=s_func)
         if ioutput:
-            params, params_it = greedy_mbis.__call__(ioutput=ioutput, **options)
-            error = greedy_mbis.errors
-            exit_info = greedy_mbis.exit_info
+            params, params_it = fit_obj.__call__(ioutput=ioutput, **options)
+            error = fit_obj.errors
+            exit_info = fit_obj.exit_info
         else:
-            params = greedy_mbis.__call__(ioutput=ioutput, **options)
+            params = fit_obj.__call__(ioutput=ioutput, **options)
+    elif method == "greedy-kl_divergence":
+        fit_obj = GreedyKL(grid, true_model, inte_val,
+                           splitting_func=s_func)
+        params, params_it, exit_info = fit_obj.__call__(ioutput=ioutput, **options)
+        error = fit_obj.err_arr
 
     if iplot:
         # Change Grid To Angstrom
-        grid.radii *= 0.5291772082999999
-        model = greedy_mbis.mbis_obj.get_model(params[:len(params) // 2],
-                                                                     params[len(params)//2:])
-        plot_model_densities(greedy_mbis.mbis_obj.electron_density, model, grid.radii,
-                             title="Electron Density Plot of " + full_names[element_name],
+        g = grid.radii.copy() * 0.5291772082999999
+        model = fit_obj.get_model(params)
+        plot_model_densities(fit_obj.true_model, model, g,
+                             title="Fitting Plot of " + full_names[element_name],
                              element_name=element_name,
                              figure_name="model_plot_using_" + method)
         models_it = []
         for p in params_it:
             c, e = p[:len(p)//2], p[len(p)//2:]
-            models_it.append(greedy_mbis.mbis_obj.get_model(c, e))
-        plot_model_densities(greedy_mbis.mbis_obj.electron_density, model, grid.radii,
-                             title="Electron Density Plot of " + full_names[element_name],
+            models_it.append(fit_obj.mbis_obj.get_model(c, e))
+        plot_model_densities(fit_obj.true_model, model, g,
+                             title="Fitting Plot of " + full_names[element_name],
                              element_name=element_name,
                              figure_name="greedy_model_plot_using_" + method,
                              additional_models_plots=models_it)
@@ -201,19 +222,19 @@ def fit_radial_densities(element_name, atomic_number, grid=None, true_density=No
                    figure_name="error_plot_using_" + method)
 
     if ioutput:
-        # dir = os.path.dirname(__file__).rsplit('/', 2)[0] + '/fitting/results_redudancies_two_lose_one/' + element_name
-        dir = "/work/tehrana/fitting/fitting/results_redudancies_two_lose_one/" + element_name
-        file_object = open(dir + '/arguments_' + method + ".txt", "w+")
+        dire = os.path.abspath(os.path.dirname(__file__))
+        file_object = open(dire + '/arguments_' + method + ".txt", "w+")
         file_object.write("Method Used " + method + "\n")
-        file_object.write("Number Of Basis FUnctions: " + str(len(params)//2) + "\n")
+        file_object.write("Number Of Basis FUnctions: " +
+                          str(len(params)//2) + "\n")
         file_object.write("Final Parameters: " + str(params) + "\n")
         file_object.write("Iteration Parameters: " + str(params_it) + "\n")
         file_object.write(str(options) + "\n")
         file_object.write("Exit Information: " + str(exit_info) + "\n")
-        file_object.write("Redudandance Info: " + str(greedy_mbis.redudan_info_numb_basis_funcs))
+        file_object.write("Redudandance Info: " +
+                          str(fit_obj.redudan_info_numb_basis_funcs))
         file_object.close()
-        np.save(dir + "/parameters_" + method + ".npy", params)
-        np.save(dir+"/parameters_" + method + "_iter.npy", params_it)
+        np.save(dire + "/parameters_" + method + ".npy", params)
+        np.save(dire + "/parameters_" + method + "_iter.npy", params_it)
 
     return params
-

@@ -63,11 +63,11 @@ class UGBSBasis():
                 A string representing the _element for which the UGBS basis set is constructed.
 
         '''
-        from gbasis.gbasis_nwchem import load_gbasis_nwchem_format
+        from fitting.gbasis.gbasis_nwchem import load_gbasis_nwchem_format
 
         # Loading the ugbs basis set
         file_path = os.path.dirname(__file__).rsplit('/', 1)[0][:-7] + \
-                    '/fitting/data/basis/ugbs.nwchem'
+                    '/data/basis/ugbs.nwchem'
         #file_path = os.getcwd()[:-4]  + '/data/basis/ugbs.nwchem'
         #file_path = "/work/tehrana/fitting/fitting/data/basis/ugbs.nwchem"
         basis_atom_map = load_gbasis_nwchem_format(file_path)

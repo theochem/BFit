@@ -24,7 +24,7 @@ def load_gbasis_nwchem_format(filename):
             A dictionary
 
     '''
-    from gbasis.gbasis import ContractedGaussianBasis
+    from fitting.gbasis.gbasis import ContractedGaussianBasis
 
     f = open(filename)
     basis_atom_map = {}

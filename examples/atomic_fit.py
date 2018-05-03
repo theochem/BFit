@@ -6,8 +6,8 @@ element name (here it is beryllium) rather than providing a slater density.
 The fit_densities handles the work of constructing a slater density for you.
 """
 
-from radial_grid_obj.clenshaw_curtis import ClenshawGrid
-from fit_densities import fit_radial_densities
+from radial_grid.clenshaw_curtis import ClenshawGrid
+from fit_densities import fit_gaussian_densities
 import numpy as np
 
 
@@ -25,10 +25,17 @@ coeff = np.array([1., 2., 3., 4., 5.])
 exps = np.array([1., 2., 3., 4., 5.])
 options = {"eps_coeff": 1e-5, "eps_fparam": 1e-6, "coeffs": coeff,
            "fparams": exps}
-opt_params = fit_radial_densities("be", atomic_number, grid=g_obj, method="kl_divergence",
-                                  options=options, iprint=True)
+opt_params = fit_gaussian_densities(grid=g_obj, element_name="be", inte_val=atomic_number,
+                                    method="kl_divergence", options=options, iprint=True)
 print("Updated Parameters:")
 coeffs = opt_params[:len(opt_params)//2]
 exps = opt_params[len(opt_params)//2:]
-print(coeffs)
-print(exps)
+
+
+def gaussian_density(c, e, g, norm=False):
+    exponential = np.exp(-e * g.reshape((len(g), 1))**2.)
+    if norm:
+        c *= (e / np.pi)**(3. / 2.)
+    return np.dot(exponential, c)
+
+

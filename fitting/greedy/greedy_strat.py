@@ -9,7 +9,7 @@ from fitting.greedy.greedy_utils import check_redundancies
 __all__ = ["GreedyStrategy"]
 
 
-class GreedyStrategy:
+class GreedyStrategy(object):
     r"""
 
     """
@@ -19,7 +19,7 @@ class GreedyStrategy:
         r"""
 
         """
-        self.errors = None
+        self.err_arr = []
         self.redudan_info = []
 
     @abstractmethod
@@ -44,11 +44,11 @@ class GreedyStrategy:
 
     def store_errors(self, params):
         err = self.get_errors_from_model(params)
-        if self.errors is None:
-            self.errors = [[x] for x in err]
+        if len(self.err_arr) == 0:
+            self.err_arr = [[x] for x in err]
         else:
             for i, x in enumerate(err):
-                self.errors[i].append(x)
+                self.err_arr[i].append(x)
 
     def _find_best_lparams(self, param_list):
         best_local_value = 1e10

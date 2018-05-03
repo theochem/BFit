@@ -1,8 +1,8 @@
 # FittingBasisSets
 
-FittingBasisSets is a python program that used to fit a convex sum of basis
+FittingBasisSets is a python program that is used to fit a convex sum of basis
 sets to any probability distribution. Primarily used for ab-intio quantum
-chemistry calculations with basis sets being gaussian.
+chemistry calculations with gaussian basis sets.
 
 
 # What it contains

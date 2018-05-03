@@ -23,7 +23,11 @@ class GreedyKL(GreedyStrategy):
         self.threshold_exp = eps_exp
         self.factor = factor
         self.successful = None
-        super(GreedyStrategy, self).__init__()
+        super(GreedyKL, self).__init__()
+
+    @property
+    def true_model(self):
+        return self.mbis_obj.true_model
 
     @property
     def inte_val(self):
@@ -35,7 +39,7 @@ class GreedyKL(GreedyStrategy):
 
     def get_model(self, params):
         return self.mbis_obj.get_model(params[:len(params)//2],
-                                       params[len(params)//2])
+                                       params[len(params)//2:])
 
     def get_cost_function(self, params):
         coeffs, exps = params[:len(params)//2], params[len(params)//2:]
@@ -55,8 +59,9 @@ class GreedyKL(GreedyStrategy):
     def get_optimization_routine(self, params, local=False):
         coeff_arr, exp_arr = params[:len(params)//2], params[len(params)//2:]
         if local:
-            return self.mbis_obj.run(0.1, 1e-2, coeff_arr, exp_arr, iprint=True)
-        return self.mbis_obj.run(self.threshold_coeff, self.threshold_exp, coeff_arr, exp_arr, iprint=True)
+            return self.mbis_obj.run(1e-2, 1e-3, coeff_arr, exp_arr, iprint=False)['x']
+        return self.mbis_obj.run(self.threshold_coeff, self.threshold_exp, coeff_arr, exp_arr,
+                                 iprint=False)['x']
 
     def get_errors_from_model(self, params):
         model = self.mbis_obj.get_model(params[:len(params) // 2],

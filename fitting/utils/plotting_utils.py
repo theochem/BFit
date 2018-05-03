@@ -30,7 +30,7 @@ def plot_model_densities(true_dens, model_dens, grid_pts, title, element_name,
                 color=(31/255., 119/255., 180/255.))
     if additional_models_plots is not None:
         for model in additional_models_plots:
-            ax.semilogy(grid_pts, model_dens, 'o-', lw=3, label="Gaussian Fitted Electron Density",
+            ax.semilogy(grid_pts, model_dens, 'o:', lw=3, label="Gaussian Fitted Electron Density",
                         color=tableau20[7])
     # plt.xlim(0, 25.0*0.5291772082999999)
     plt.xlim(0, 9)
@@ -41,7 +41,7 @@ def plot_model_densities(true_dens, model_dens, grid_pts, title, element_name,
     plt.title(title, fontweight='bold')
     plt.grid(color=tableau20[-2])
     plt.legend()
-    directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/fitting/results_redudancies_two/" + element_name
+    directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/results/"
     if not os.path.exists(directory):
         os.makedirs(directory)
     plt.savefig(directory + "/" + figure_name + ".png")
@@ -90,33 +90,36 @@ def plot_error(errors, element_name, title, figure_name):
     plt.tight_layout()
     plt.subplots_adjust(top=0.90)
 
-    directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/fitting/results_redudancies_two/" + element_name
+    directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/fitting/results/"
     if not os.path.exists(directory):
         os.makedirs(directory)
     plt.savefig(directory + "/" + figure_name + ".png")
-plt.close()
+    plt.close()
 
 
 def create_plots(self, integrate, error1, error2, obj_func):
+    directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/fitting/results/"
+    if not os.path.exists(directory):
+        os.makedirs(directory)
     plt.plot(integrate)
     plt.title("Integration of Model Using Trapz")
     plt.xlabel("Num of Iterations")
     plt.ylabel("Integration of Model Using Trapz")
-    plt.savefig(self.element_name + "_Integration_Trapz.png")
+    plt.savefig(directory + self.element_name + "_Integration_Trapz.png")
     plt.close()
 
     plt.semilogy(error1)
     plt.xlabel("Num of Iterations")
     plt.title("Goodness of Fit")
     plt.ylabel("Int |Model - True| dr")
-    plt.savefig(self.element_name + "_good_of_fit.png")
+    plt.savefig(directory + self.element_name + "_good_of_fit.png")
     plt.close()
 
     plt.semilogy(error2)
     plt.xlabel("Num of Iterations")
     plt.title("Goodness of Fit with r^2")
     plt.ylabel("Int |Model - True| r^2 dr")
-    plt.savefig(self.element_name + "_goodness_of_fit_r_squared.png")
+    plt.savefig(directory + self.element_name + "_goodness_of_fit_r_squared.png")
     plt.close()
 
     plt.semilogy(obj_func)
