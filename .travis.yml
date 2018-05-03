@@ -5,7 +5,7 @@ python:
     - 3.5
 
 install:
-    - pip install -r requirements.txt
+    - pip install -r numpy, scipy, nose, matplotlib
     - pip install pylint
     - pip install pycodestyle
     - python setup.py install
