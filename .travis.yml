@@ -5,15 +5,15 @@ python:
     - 3.5
 
 install:
-    - pip install -r numpy, scipy, nose, matplotlib
+    - pip install numpy scipy nose matplotlib
     - pip install pylint
     - pip install pycodestyle
-    - python setup.py install
 
 script:
     - nosetests --with-coverage --cover-package=fitting -v ./fitting/
-    - pylint saddle --errors-only
+    - pylint ./fitting/ --errors-only
     - pycodestyle ./fitting/ --max-line-length=100
+    - pydocstyle ./fitting/
 
 notifications:
   email: false
