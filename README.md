@@ -2,7 +2,8 @@ FittingBasisSets <a href='https://docs.python.org/3.5/'><img src='https://img.sh
 ===================
 
 FittingBasisSets is a python program that is used to fit a convex sum of 
-positive-definite basis functions to a probability distribution. Primarily used 
+positive, integrable basis functions to a probability distribution. Primarily 
+used 
 for ab-intio quantum chemistry calculations, where the basis functions of 
 interest are gaussian-exponential functions and the fitted probability 
 distribution is the electron density.
@@ -29,6 +30,8 @@ distribution is the electron density.
 
 * [Matplotlib](https://matplotlib.org/)
 
+* [Nosetests](http://nose.readthedocs.io/en/latest/)
+
 * [Horton](https://theochem.github.io/horton/2.1.0/index.html) (optional)
 
 ## Installation
@@ -43,9 +46,13 @@ One could also clone the github program,
 git clone https://github.com/Ali-Tehrani/fitting.git
 ```
 
-## Examples
-
 ## Running Tests 
+Run tests to see if it's installed properly,
+```python
+nosetests -v fitting
+```
+
+## Examples
 
 ## FAQ 
 ### How is this used in Quantum Chemistry?
