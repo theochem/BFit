@@ -48,8 +48,8 @@ class GreedyKL(GreedyStrategy):
 
     def get_best_one_function_solution(self):
         denom = self.grid_obj.integrate_spher(self.mbis_obj.ma_true_mod * np.power(
-            self.mbis_obj.masked_grid_squared, 2.))
-        exps = 3. * self.inte_val / (2. * 4. * np.pi *denom)
+                self.mbis_obj.masked_grid_squared, 2.))
+        exps = 3. * self.inte_val / (2. * 4. * np.pi * denom)
         return np.array([self.inte_val, exps])
 
     def get_next_iter_params(self, factor, params):

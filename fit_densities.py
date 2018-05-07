@@ -10,17 +10,14 @@ fit_radial_densities : minimization of least squares or kullback-leibler div
 import os
 import warnings
 from fitting.least_squares.least_sqs import *
-from fitting.radial_grid.radial_grid import RadialGrid
-from fitting.radial_grid.clenshaw_curtis import ClenshawGrid
-from fitting.radial_grid.horton import HortonGrid
+from fitting.radial_grid.general_grid import RadialGrid
 from fitting.least_squares.gaussian_density.gaussian_dens import GaussianBasisSet
-from fitting.gbasis.gbasis import UGBSBasis
 from fitting.kl_divergence.gaussian_kl import GaussianKullbackLeibler
 from fitting.least_squares.slater_density.atomic_slater_density import Atomic_Density
 from fitting.least_squares.density_model import DensityModel
 from fitting.greedy.greedy_kl import GreedyKL
 from fitting.utils.plotting_utils import plot_model_densities, plot_error
-from fitting.greedy.greedy_utils import pick_two_lose_one, get_next_choices
+from fitting.greedy.greedy_utils import get_next_choices
 from fitting.greedy.greedy_lq import GreedyLeastSquares
 
 
@@ -31,9 +28,9 @@ def get_hydrogen_electron_density(grid, bohr_radius=1):
     return (1. / np.pi * (bohr_radius ** 3.)) * np.exp(-2. * grid / bohr_radius)
 
 
-def fit_gaussian_densities(grid, element_name=None, true_model=None, inte_val=None, method="SLSQP",
-                           options=None, density_model=None, ioutput=False, iplot=False,
-                           iprint=False, UGBS_type='S'):
+def fit_gaussian_densities(grid, element_name=None, true_model=None, inte_val=None,
+                           method="kl-divergence", options=None, density_model=None,
+                           ioutput=False, iplot=False):
     """
     Fits Gaussian Densities to a true model using variety of methods provided.
 
@@ -88,10 +85,6 @@ def fit_gaussian_densities(grid, element_name=None, true_model=None, inte_val=No
         * initial guess is obtained by optimizing coefficients using NNLS using
         UGBS s-type exponents.
 
-    UGBS_Type : str, optional
-        default is 'S'
-        denotes which type of UGBS exponents to get.
-
     iplots : boolean, optional
 
     ioutput : boolean, optional
@@ -137,10 +130,8 @@ def fit_gaussian_densities(grid, element_name=None, true_model=None, inte_val=No
         if element_name is not None:
             slater_file_path = "/data/examples/" + element_name.lower()
             file_path = os.path.join(current_file, slater_file_path)
-        density_model = GaussianBasisSet(grid.radii,
-                                         element_name=element_name,
-                                         elec_dens=true_model,
-                                         file_path=file_path)
+        density_model = GaussianBasisSet(grid.radii, true_model=true_model,
+                                         element_name=element_name, file_path=file_path)
 
     # Exits If Custom Density Model is not inherited from density_model
     if not isinstance(density_model, DensityModel):
@@ -157,8 +148,7 @@ def fit_gaussian_densities(grid, element_name=None, true_model=None, inte_val=No
 
     # Sets Exponents needed for NNLS to S-type UGBS
     if method == "nnls":
-        exps = UGBSBasis(element_name).exponents(UGBS_type)
-        options.setdefault('initial_guess', exps)
+        options.setdefault('initial_guess', options['exps'])
 
     # Set Default Arguments For Greedy
     if method in ['greedy-ls-sqs', 'greedy-kl_divergence']:
@@ -169,7 +159,7 @@ def fit_gaussian_densities(grid, element_name=None, true_model=None, inte_val=No
     if method == 'kl_divergence':
         options.setdefault('eps_coeff', 1e-3)
         options.setdefault('eps_fparam', 1e-4)
-        options.setdefault('iprint', iprint)
+        options.setdefault('iprint', False)
         options.setdefault('coeffs', options['coeffs'])
         options.setdefault('fparams', options['fparams'])
 

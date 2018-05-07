@@ -6,7 +6,7 @@ import numpy as np
 
 def test_load_basis_nwchem_ugbs_h():
     # Test the ugbs basis set for all atoms
-    file_path = os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/basis/ugbs.nwchem'
+    file_path = os.getcwd() + '/data/basis/ugbs.nwchem'
     basis_atom_map = load_gbasis_nwchem_format(file_path)
     # check that all the 86 elements (H to Rn) are read in
     assert len(basis_atom_map) == 72
@@ -29,7 +29,7 @@ def test_load_basis_nwchem_ugbs_h():
 
 def test_load_basis_nwchem_ugbs_be():
     # Test the ugbs basis set for all atoms
-    file_path = os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/basis/ugbs.nwchem'
+    file_path = os.getcwd() + '/data/basis/ugbs.nwchem'
     basis_atom_map = load_gbasis_nwchem_format(file_path)
     # check that all the 86 elements (H to Rn) are read in
     assert len(basis_atom_map) == 72
@@ -52,7 +52,7 @@ def test_load_basis_nwchem_ugbs_be():
 
 def test_load_basis_nwchem_ugbs_ne():
     # Test the ugbs basis set for all atoms
-    file_path = os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/basis/ugbs.nwchem'
+    file_path = os.getcwd() + '/data/basis/ugbs.nwchem'
     basis_atom_map = load_gbasis_nwchem_format(file_path)
     # check that all the 86 elements (H to Rn) are read in
     assert len(basis_atom_map) == 72
@@ -86,7 +86,7 @@ def test_load_basis_nwchem_ugbs_ne():
 
 def test_load_basis_nwchem_ugbs_tc():
     # Test the ugbs basis set for all atoms
-    file_path = os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/basis/ugbs.nwchem'
+    file_path = os.getcwd() + '/data/basis/ugbs.nwchem'
     basis_atom_map = load_gbasis_nwchem_format(file_path)
     # check that all the 86 elements (H to Rn) are read in
     assert len(basis_atom_map) == 72

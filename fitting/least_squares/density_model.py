@@ -28,7 +28,7 @@ class DensityModel(object):
     """
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, grid, element=None, electron_density=None):
+    def __init__(self, grid, element=None, true_model=None):
         r"""
 
         Parameters
@@ -38,7 +38,7 @@ class DensityModel(object):
         element : str, optional
                  The element that the slater densities are based on.
                  Used if one want's to use UGBS parameters as initial guess.
-        electron_density : np.ndarray
+        true_model : np.ndarray
                          Pre-defined electron density in case one doesn't want
                          to use slater densities.
         Raises
@@ -51,15 +51,15 @@ class DensityModel(object):
             raise TypeError("Element name should be string or none.")
         if not isinstance(grid, np.ndarray):
             raise TypeError("Grid should be a numpy array.")
-        if electron_density is not None:
-            if not isinstance(electron_density, np.ndarray):
+        if true_model is not None:
+            if not isinstance(true_model, np.ndarray):
                 raise TypeError("Electron least_squares should be an array.")
-            if grid.shape != electron_density.shape:
+            if grid.shape != true_model.shape:
                 raise ValueError("Electron least_squares and _grid should be the same "
                                  "size.")
         self._element = element
         self._grid = np.ravel(np.copy(grid))
-        self._electron_density = np.ravel(electron_density)
+        self._true_model = np.ravel(true_model)
 
         if element is not None:
             self._element = element.lower()
@@ -78,8 +78,8 @@ class DensityModel(object):
         return self._grid
 
     @property
-    def electron_density(self):
-        return self._electron_density
+    def true_model(self):
+        return self._true_model
 
     @property
     def UGBS_s_exponents(self):
@@ -113,7 +113,7 @@ class DensityModel(object):
         pass
 
     def get_residual(self, *args):
-        return self._electron_density - self.create_model(*args)
+        return self._true_model - self.create_model(*args)
 
     """
     def calculate_residual_based_on_core(self, *args):

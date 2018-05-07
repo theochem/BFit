@@ -24,7 +24,7 @@ class GaussianBasisSet(DensityModel):
     used for optimization routine like, slsqp, l-bfgs, and nnls, in the
     'fitting.least_squares.least_sqs'.
     """
-    def __init__(self, grid, element_name=None, elec_dens=None, file_path=None):
+    def __init__(self, grid, true_model):
         r"""
         Creates the class by providing formula to the DensityModel class.
 
@@ -33,33 +33,17 @@ class GaussianBasisSet(DensityModel):
         grid : np.ndarray
                Radial Grid points for the basis set.
 
-        element_name : string, optional
-                      Element that the density is modeled after.
-
-        elec_dens : np.ndarray, optional
+        true_model : np.ndarray, optional
                     Electron Density to be fitted to. By default, it is the
                     slater densities where the parameters of the slater
                     densities is provided by the file path.
 
-        file_path : string, optional
-                    File path to the slater files. If elec_dens is not provided,
-                    then default slater data files are used.
-
         """
-        if not isinstance(file_path, (type(None), str)):
-            raise TypeError("File path should be None or string.")
-        if elec_dens is None:
-            # If electron density is not provided.
-            if file_path is None:
-                # Check if slater file for the element is in the data folder.
-                file_path = os.getcwd() + "/fitting/data/examples/" + element_name
-                if not os.path.isfile(file_path):
-                    # If the slater file for the element don't exist.
-                    raise ValueError("File path for slater parameters is"
-                                     " needed for this element.")
-            elec_dens = Atomic_Density(file_path, grid).atomic_density()
-        DensityModel.__init__(self, grid, element=element_name,
-                              electron_density=elec_dens)
+        if not isinstance(grid, np.ndarray):
+            raise TypeError("Grid should be a numpy array.")
+        if not isinstance(true_model, np.ndarray):
+            raise TypeError("True model should be a numpy array.")
+        DensityModel.__init__(self, grid, true_model=true_model)
 
     def create_model(self, parameters, fixed_params=[], which_opti="b"):
         r"""

@@ -12,12 +12,12 @@ __all__ = ["GreedyLeastSquares"]
 
 
 class GreedyLeastSquares(GreedyStrategy):
-    def __init__(self, grid_obj, true_model, inte_val=None,
-                 splitting_func=get_next_choices, factor=2, element_name=None):
-        self.gauss_obj = GaussianBasisSet(grid_obj.radii, elec_dens=true_model,
-                                          element_name=element_name)
+    def __init__(self, grid_obj, true_model, splitting_func=get_next_choices,
+                 factor=2):
+        self.gauss_obj = GaussianBasisSet(grid_obj.radii, true_model)
         self.grid_obj = grid_obj
         self.factor = factor
+        self.splitting_func = splitting_func
         super(GreedyStrategy, self).__init__()
 
     @property
@@ -90,8 +90,8 @@ class GreedyLeastSquares(GreedyStrategy):
         return best_found
 
     def get_next_iter_params(self, params):
-        return get_next_choices(self.factor, params[:len(params)//2],
-                                params[len(params)//2:])
+        return self.splitting_func(self.factor, params[:len(params)//2],
+                                    params[len(params)//2:])
 
     def get_optimization_routine(self, params):
         exps = params[len(params)//2:]

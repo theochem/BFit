@@ -1,8 +1,8 @@
 r"""
-    Contains the radial _grid class used to define the domain of the least_squares models and
-    to provide a function to integrate them. #TODO: Figure out What kind of Integration
+    Contains the radial_grid class used to define the domain of the least_squares models and
+    to provide a function to integrate them.
 
-    The properties we want for this _grid is to have
+    The properties we want for this grid is to have
     points that are dense near the core region and another _grid that is
     spreads out the points.
 
@@ -70,7 +70,6 @@ class RadialGrid(object):
         return 4. * np.pi * np.trapz(y=integrand, x=self.radii)
 
     def integrate(self, *args):
-        #TODO: I NEED TO TEST THIS. AND THE INTEGRATE SPHERICALLY AS I HTINK I MADE AN ERROR.
         total_arr = np.ma.asarray(np.ones(len(args[0])))
         for arr in args:
             total_arr *= arr

@@ -19,23 +19,14 @@ numb_pts = 200
 extra_pts = [25, 50, 75]
 g_obj = ClenshawGrid(atomic_number, numb_pts, numb_pts, extra_pts)
 
-# Arguments that it takes
-# Initial Guess
+# Arguments that Kullback-Leibler Divergence takes.
+# Initial Guess are:
 coeff = np.array([1., 2., 3., 4., 5.])
 exps = np.array([1., 2., 3., 4., 5.])
 options = {"eps_coeff": 1e-5, "eps_fparam": 1e-6, "coeffs": coeff,
-           "fparams": exps}
+           "fparams": exps, 'iprint': True}
 opt_params = fit_gaussian_densities(grid=g_obj, element_name="be", inte_val=atomic_number,
-                                    method="kl_divergence", options=options, iprint=True)
+                                    method="kl_divergence", options=options)
 print("Updated Parameters:")
 coeffs = opt_params[:len(opt_params)//2]
 exps = opt_params[len(opt_params)//2:]
-
-
-def gaussian_density(c, e, g, norm=False):
-    exponential = np.exp(-e * g.reshape((len(g), 1))**2.)
-    if norm:
-        c *= (e / np.pi)**(3. / 2.)
-    return np.dot(exponential, c)
-
-

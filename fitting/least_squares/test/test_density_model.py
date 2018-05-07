@@ -1,4 +1,3 @@
-
 """Test file for least_squares model."""
 
 from fitting.least_squares import DensityModel
@@ -37,7 +36,6 @@ def test_not_implemented():
     npt.assert_raises(NotImplementedError, d.create_model)
     npt.assert_raises(NotImplementedError,
                       d.derivative_of_cost_function)
-    npt.assert_raises(NotImplementedError, d.create_cofactor_matrix)
 
 
 def test_integration_model_trapz():
@@ -56,7 +54,7 @@ def test_diffuse_error():
     # Test if integration gives zero if they're the same
     grid = np.arange(0, 25, 0.25)
     fun_vals = np.exp(-grid**2)
-    dens_obj = DensityModel(grid, electron_density=fun_vals)
+    dens_obj = DensityModel(grid, true_model=fun_vals)
     actual_value = dens_obj.get_error_diffuse(fun_vals, fun_vals)
     assert actual_value < 1e-5
 
@@ -66,7 +64,7 @@ def test_integration_error():
     # Test if integration gives zero if they're the same
     grid = np.arange(0, 25, 0.25)
     fun_vals = np.exp(-grid ** 2)
-    dens_obj = DensityModel(grid, electron_density=fun_vals)
+    dens_obj = DensityModel(grid, true_model=fun_vals)
     actual_value = dens_obj.get_integration_error(fun_vals, fun_vals)
     assert actual_value < 1e-5
 
@@ -80,7 +78,7 @@ def test_residual_gives_error():
     r"""Test residual gives NotImplementedError for 'least_squares.DensityModel."""
     grid = np.arange(0, 25, 0.25)
     fun_vals = np.exp(-grid ** 2)
-    dens_obj = DensityModel(grid, electron_density=fun_vals)
+    dens_obj = DensityModel(grid, true_model=fun_vals)
     npt.assert_raises(NotImplementedError, dens_obj.get_residual)
 
 

@@ -1,7 +1,7 @@
 r"""
 
 """
-from fitting.radial_grid.radial_grid import RadialGrid
+from fitting.radial_grid.general_grid import RadialGrid
 from numbers import Real, Integral
 import numpy as np
 

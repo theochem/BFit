@@ -4,7 +4,8 @@ r"""Test file for 'fitting.mbis.mbis_abc'"""
 import numpy as np
 import numpy.testing as npt
 from fitting.kl_divergence.kull_leib_fitting import KullbackLeiblerFitting
-from fitting.radial_grid.radial_grid import ClenshawGrid, RadialGrid
+from fitting.radial_grid.general_grid import RadialGrid
+from fitting.radial_grid.clenshaw_curtis import ClenshawGrid
 
 __all__ = ["test_get_descriptors_of_model",
            "test_get_kullback_leibler",
@@ -16,7 +17,7 @@ __all__ = ["test_get_descriptors_of_model",
 
 
 def test_input_checks():
-    r"""Test input checks for 'fitting.kl_divergence.mbis_abc'."""
+    r"""Test input checks for 'fitting.kl_divergence.KullbackLeiblerFitting'."""
     g = ClenshawGrid(10, 2, 1)
     e = np.array(g.radii * 5.)
     npt.assert_raises(TypeError, KullbackLeiblerFitting, 10., e)
@@ -38,6 +39,17 @@ def test_input_checks():
     kl = KullbackLeiblerFitting(g, e, None)
     npt.assert_allclose(kl.inte_val, 2. * 4. * np.pi)
 
+
+def test_raise_not_implemented():
+    r"""Test for raising not implemented for KullbackLeiblerFitting class."""
+    g = np.arange(10.)
+    kl = KullbackLeiblerFitting(RadialGrid(g), g)
+    npt.assert_raises(NotImplementedError, kl.get_model)
+    npt.assert_raises(NotImplementedError, kl._update_func_params)
+    npt.assert_raises(NotImplementedError, kl._update_coeffs)
+    npt.assert_raises(NotImplementedError, kl._get_norm_constant)
+    npt.assert_raises(NotImplementedError, kl._get_deriv_coeffs(g, g))
+    npt.assert_raises(NotImplementedError, kl._get_deriv_fparams(g, g))
 
 def test_get_lagrange_multiplier():
     r"""Test the lagrange multiplier in KullbackLeiblerFitting."""

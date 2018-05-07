@@ -1,19 +1,14 @@
+r"""Test file for 'fitting.radial_grid.clenshaw_curtis'."""
 
-"""Test file for radial _grid."""
-
-from fitting.radial_grid import ClenshawGrid, HortonGrid
 import numpy as np
 import numpy.testing as npt
+from fitting.radial_grid.clenshaw_curtis import ClenshawGrid
 
-__all__ = [
-    "test_grid_is_clenshaw",
-    "test_grid_is_uniform",
-    "test_input_checks_horton_grid",
-    "test_input_checks_radial_grid",
-    "test_integration_on_grid"
-]
-
-np.random.seed(101010101)
+__all__ = ["test_integration_on_grid",
+           "test_input_checks_radial_grid",
+           "test_grid_is_clenshaw",
+           "test_grid_is_uniform"
+          ]
 
 
 def test_input_checks_radial_grid():
@@ -25,7 +20,8 @@ def test_input_checks_radial_grid():
     npt.assert_raises(TypeError, ClenshawGrid, 1, 1, 1.1, [])
     npt.assert_raises(ValueError, ClenshawGrid, 1, 1, -2, [])
     npt.assert_raises(TypeError, ClenshawGrid, 1, 1, 1, "not list")
-
+    cgrid = ClenshawGrid(5, 10, 10)
+    npt.assert_equal(cgrid.atomic_numb, 5)
 
 def test_grid_is_clenshaw():
     r"""Test that radial _grid returns a clenshaw _grid."""
@@ -72,20 +68,10 @@ def test_integration_on_grid():
     desired_val = 4. * np.pi * 0.443313
     assert np.abs(actual_value - desired_val) < 0.1
 
-
-def test_input_checks_horton_grid():
-    r"""Test input checks on horton _grid."""
-    npt.assert_raises(TypeError, HortonGrid, "not numb", 1, 1)
-    npt.assert_raises(TypeError, HortonGrid, 1, "not numb", 1)
-    npt.assert_raises(TypeError, HortonGrid, 1, 1, 2.1)
-    npt.assert_raises(ValueError, HortonGrid, 1, 1, -1)
-
-
-def test_integration_on_horton_grid():
-    r"""Test integration on horton _grid."""
-    numb_pts = 100
-    rad_obj = HortonGrid(0., 25, numb_pts)
-    arr = np.exp(-rad_obj.radii ** 2)
-    actual_value = rad_obj.integrate(arr)
+    # Test with masked values
+    arr = np.exp(-rad_obj.radii**2)
+    arr[arr < 1e-10] = np.inf
+    arr = np.ma.array(arr, mask=arr == np.inf)
+    actual_value = rad_obj.integrate_spher(arr, filled=True)
     desired_val = 4. * np.pi * 0.443313
     assert np.abs(actual_value - desired_val) < 0.1

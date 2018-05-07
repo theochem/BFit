@@ -5,7 +5,7 @@ import numpy as np
 import numpy.testing as npt
 from scipy.integrate import simps, quad
 from fitting.kl_divergence.gaussian_kl import GaussianKullbackLeibler
-from fitting.radial_grid.radial_grid import RadialGrid
+from fitting.radial_grid.general_grid import RadialGrid
 
 
 __all__ = ["test_get_integration_factor_coeffs",
@@ -209,3 +209,34 @@ def test_update_func_params():
     desired_answer2 = 3. * kl.inte_val / (2. * desired_answer_den)
     npt.assert_allclose(true_answer, [desired_answer1, desired_answer2],
                         rtol=1e-2)
+
+
+def test_update_errors():
+    r"""Test updating errors for kullback-leibler method."""
+    g = RadialGrid(np.arange(0., 10, 0.001))
+    e = np.exp(-g.radii)
+    kl = GaussianKullbackLeibler(g, e, inte_val=1.)
+    counter = 10
+
+    c = np.array([5.])
+    e = np.array([5.])
+    c_new = kl._update_errors(c, e, counter, False, False)
+    assert c_new == counter + 1
+
+
+def test_run():
+    r"""Test the optimization algorithm for gaussian kullback-leibler method."""
+    g = RadialGrid(np.arange(0., 10, 0.001))
+    e = (1 / np.pi)**1.5 * np.exp(-g.radii**2.)
+    kl = GaussianKullbackLeibler(g, e, inte_val=1.)
+
+    # Test One Basis Function
+    c = np.array([1.])
+
+    denom = np.trapz(y=g.radii**4. * e, x=g.radii)
+    exps = 3. / (2. * 4. * np.pi * denom)
+    params = kl.run(1e-3, 1e-3, c, np.array([exps]), iprint=True)
+    params_x = params["x"]
+    npt.assert_allclose(1., params_x)
+    assert np.abs(params["errors"][-1, 0] - 1.) < 1e-10
+    assert np.all(np.abs(params["errors"][-1][1:]) < 1e-10)

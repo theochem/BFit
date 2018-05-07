@@ -7,7 +7,7 @@ python:
 install:
     - pip install numpy scipy nose matplotlib
     - pip install pylint
-    - pip install pycodestyle
+    - pip install pycodestyle pydocstyle
 
 script:
     - nosetests --with-coverage --cover-package=fitting -v ./fitting/

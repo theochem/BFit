@@ -1,3 +1,3 @@
 from fitting.kl_divergence.kull_leib_fitting import KullbackLeiblerFitting
 from fitting.kl_divergence.gaussian_kl import GaussianKullbackLeibler
-from fitting.kl_divergence.valence_kl import ValenceMBIS
+from fitting.kl_divergence.valence_kl import GaussianValKL

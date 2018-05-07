@@ -1,14 +1,19 @@
+r"""
+
+"""
 import re
 import numpy as np
 
+
 def load_slater_wfn(file_name):
-    '''Return the data recorded in the atomic Slater wave-function file as a dictionary.
+    """
+    Return the data recorded in the atomic Slater wave-function file as a dictionary.
 
-       ** Arguments **
-
-       file_name
-           The path to the Slater atomic least_squares file.
-    '''
+    Parameters
+    ----------
+    file_name : str
+                The path to the Slater atomic file.
+    """
     def getNumberOfElectronsPerOrbital(string_configuration):
         """
         Gets the Occupation Number for all orbitals
@@ -84,7 +89,8 @@ def load_slater_wfn(file_name):
         next_line = f.readline()
         while len(next_line.strip()) == 0:
             next_line = f.readline()
-        energy = [float(f.readline().split()[2])] + [float(x) for x in (re.findall("[= -]\d+.\d+", f.readline()))[:-1]]
+        energy = [float(f.readline().split()[2])] + \
+                 [float(x) for x in (re.findall("[= -]\d+.\d+", f.readline()))[:-1]]
         #assert re.search(r'ORBITAL ENERGIES AND EXPANSION COEFFICIENTS', f.readline())
 
         orbitals = []
@@ -125,12 +131,11 @@ def load_slater_wfn(file_name):
             else:
                 line = f.readline()
 
-
     data = {'configuration': configuration ,
             'energy': energy,
             'orbitals': orbitals ,
             'orbitals_energy':
-            {key:np.asarray(value) for key,value in orbitals_energy.items() if value != []} ,
+            {key:np.asarray(value) for key,value in orbitals_energy.items() if value != []},
             'orbitals_cusp': orbitals_cusp,
             'orbitals_basis': orbitals_basis,
             'orbitals_exp':
@@ -144,5 +149,3 @@ def load_slater_wfn(file_name):
             }
 
     return data
-
-

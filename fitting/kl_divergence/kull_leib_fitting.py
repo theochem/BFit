@@ -15,7 +15,7 @@ import numpy as np
 import numpy.ma as ma
 from scipy.optimize import minimize
 from numbers import Real
-from fitting.radial_grid.radial_grid import RadialGrid
+from fitting.radial_grid.general_grid import RadialGrid
 from abc import ABCMeta, abstractmethod
 
 __all__ = ["KullbackLeiblerFitting"]
@@ -78,16 +78,18 @@ class KullbackLeiblerFitting:
     def _get_norm_constant(self):
         raise NotImplementedError()
 
-    def _update_errors(self, coeffs, exps, c, iprint, iplot, update_p=False):
+    def _update_errors(self, coeffs, exps, c, iprint, update_p=False):
         model = self.get_model(coeffs, exps)
         errors = self.get_descriptors_of_model(model)
         if iprint:
             if update_p:
-                print(c, "Update param", np.sum(coeffs), errors)
+                print(c + 1, "Update param", np.sum(coeffs), errors)
             else:
-                print(c, "Update Coeff ", np.sum(coeffs), errors)
-        if iplot:
-            self.errors_arr = np.hstack(self.errors_arr, errors)
+                print(c + 1, "Update Coeff ", np.sum(coeffs), errors)
+        if c == 0:
+            self.errors_arr = errors
+        else:
+            self.errors_arr = np.vstack((self.errors_arr, errors))
         return c + 1
 
     def run(self, eps_coeff, eps_fparam, coeffs, fparams, iprint=False, iplot=False):
@@ -102,25 +104,24 @@ class KullbackLeiblerFitting:
 
         """
         # Old Coeffs/Exps are initialized to allow while loop to hold initially.
-        coeffs_i1 = coeffs.copy()
-        fparams_i, fparams_i1 = 10. * fparams.copy(), fparams.copy()
-        self.errors_arr = np.array([0.] * 4)
+        coeffs_i1, coeffs_i = coeffs.copy(), 10. * coeffs.copy()
+        fparams_i1, fparams_i = fparams.copy(), 10. * fparams.copy()
+        self.errors_arr = np.array([] * 4)
         prev_func_val, curr_func_val = 1e6, 1e4
 
         counter = 0
         while np.any(np.abs(fparams_i1 - fparams_i) > eps_fparam) and \
-                        np.abs(prev_func_val - curr_func_val) > 1e-10:
+                     np.abs(prev_func_val - curr_func_val) > 1e-10:
 
-            coeffs_i1, coeffs_i = self._update_coeffs(coeffs_i1, fparams_i1)
             while np.any(np.abs(coeffs_i - coeffs_i1) > eps_coeff):
                 coeffs_i1, coeffs_i = self._update_coeffs(coeffs_i1, fparams_i1)
                 counter = self._update_errors(coeffs_i1, fparams_i1, counter,
                                               iprint, iplot)
 
             fparams_i1, fparams_i = self._update_exps(coeffs_i1, fparams_i1)
-            counter = self._update_errors(coeffs_i1, fparams_i1, counter, iprint, iplot,
-                                          update_p=True) + 1
-            prev_func_val, curr_func_val = curr_func_val, self.errors_arr[3]
+            counter = self._update_errors(coeffs_i1, fparams_i1, counter, iprint,
+                                          update_p=True)
+            prev_func_val, curr_func_val = curr_func_val, self.errors_arr[counter - 1, 3]
         return {"x": np.append(coeffs_i1, fparams_i1),
                 "iter": counter, "errors": self.errors_arr}
 
@@ -258,7 +259,7 @@ class KullbackLeiblerFitting:
         const = lambda x: np.sum(coeffs - self.inte_val)
         params = np.append(coeffs, fparams)
         bounds = np.array([(0.0, np.inf)] * len(params))
-        opts = {"maxiter":100000000, "disp":True, "factr":10.0, "eps":1e-10}
+        opts = {"maxiter": 100000000, "disp":True, "factr":10.0, "eps":1e-10}
         f_min_slsqp = minimize(self.get_kullback_leibler, x0=params,
                                method="SLSQP", bounds=bounds, constraints=const,
                                jac=True, options=opts)

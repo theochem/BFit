@@ -1,63 +1,67 @@
 import numpy as np
 import os
-
 from fitting.least_squares.slater_density.atomic_slater_wfn import load_slater_wfn
 
+__all__ = ["test_parsing_slater_density_ag",
+           "test_parsing_slater_density_be",
+           "test_parsing_slater_density_ne"]
 
-def test_parsing_slater_density_Be():
+
+def test_parsing_slater_density_be():
     # Load the Be file
-    file_path = os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/examples/be.slater'
+    file_path = os.getcwd() + '/data/examples/be.slater'
     be = load_slater_wfn(file_path)
 
     assert be['configuration'] == '1S(2)2S(2)'
-    assert be['energy'] == [-14.573023167, 14.573023130, -29.146046297 ]
+    assert be['energy'] == [14.57302313]
 
     # Check basis of S orbitals
     assert be['orbitals'] == ['1S', '2S']
-    assert be['orbitals_cusp']['S'] == [1.0001235, 0.9998774]  #turn into array
-    assert be['orbitals_energy']['S'] == [-4.7326699, -0.3092695] #turn into array
-    #assert len(be['orbitals_basis']) == 1  #uncomment when the structure of the class changes
+    assert np.all(be['orbitals_cusp']['S'] == [1.0001235, 0.9998774])  #turn into array
+    assert np.all(be['orbitals_energy']['S'] == [-4.7326699, -0.3092695]) #turn into array
     assert be['orbitals_basis']['S'] == ['1S', '1S', '1S', '1S', '1S', '1S', '2S', '1S']
-    #assert len(be['orbitals_cusp']) == 1  #uncomment when the structure of the class changes
     assert len(be['orbitals_occupation']) == 2
     assert be['orbitals_occupation']['1S'] == 2
     assert be['orbitals_occupation']['2S'] == 2
-    #assert be['orbitals_occupation'] == {'1S': 2, '2S': 2}   #dict is not ordered
     assert be['orbitals_electron_array'].shape == (2, 1)
     assert (be['orbitals_electron_array'] == np.array([[2], [2]])).all()   #rename this orbitals_occupation
     basis_numbers = np.array([[1], [1], [1], [1], [1], [1], [2], [1]])
     assert (be['basis_numbers']['S'] == basis_numbers).all()
 
     # Check exponents of S orbitals
-    exponents = np.array([12.683501, 8.105927, 5.152556, 3.472467, 2.349757, 1.406429, 0.821620, 0.786473])
+    exponents = np.array([12.683501, 8.105927, 5.152556, 3.472467, 2.349757,
+                          1.406429, 0.821620, 0.786473])
     assert (abs(be['orbitals_exp']['S'] - exponents.reshape(8, 1)) < 1.e-6).all()
 
     # Check coefficients of S orbitals
-    coeff_1s = np.array([-0.0024917, 0.0314015, 0.0849694, 0.8685562, 0.0315855, -0.0035284, -0.0004149, .0012299])
+    coeff_1s = np.array([-0.0024917, 0.0314015, 0.0849694, 0.8685562, 0.0315855,
+                         -0.0035284, -0.0004149, .0012299])
     assert be['orbitals_coeff']['1S'].shape == (8, 1)
     assert (abs(be['orbitals_coeff']['1S'] - coeff_1s.reshape(8, 1)) < 1.e-6).all()
-    coeff_2s = np.array([0.0004442, -0.0030990, -0.0367056, 0.0138910, -0.3598016, -0.2563459, 0.2434108, 1.1150995])
+    coeff_2s = np.array([0.0004442, -0.0030990, -0.0367056, 0.0138910, -0.3598016,
+                         -0.2563459, 0.2434108, 1.1150995])
     assert be['orbitals_coeff']['2S'].shape == (8, 1)
     assert (abs(be['orbitals_coeff']['2S'] - coeff_2s.reshape(8, 1)) < 1.e-6).all()
 
 
 def test_parsing_slater_density_ag():
     # Load the Ag file.
-    file_path = os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/examples/ag.slater'
+    file_path = os.getcwd() + '/data/examples/ag.slater'
     ag = load_slater_wfn(file_path)
 
     # Check configuration and energy.
     assert ag['configuration'] == 'K(2)L(8)M(18)4S(2)4P(6)5S(1)4D(10)'
-    assert ag['energy'] == [-5197.698467674, 5197.698468984, -10395.396936658]
+    assert ag['energy'] == [5197.698468984]
 
     # Check orbitals
     assert ag['orbitals'] == ['1S', '2S', '3S', '4S', '5S', '2P', '3P', '4P', '3D', '4D']
 
     # Check basis
-    assert ag['orbitals_basis']['P'] == ['2P', '3P', '3P', '2P', '3P', '3P', '3P', '3P', '2P', '2P', '2P']
+    assert ag['orbitals_basis']['P'] == ['2P', '3P', '3P', '2P', '3P', '3P', '3P',
+                                         '3P', '2P', '2P', '2P']
     assert ag['orbitals_cusp']['P'] == [1.0008130, 1.0008629, 0.9998751]
-    assert ag['orbitals_cusp']['D'] == [0.9991182, 1.0009214]
-    assert ag['orbitals_energy']['P'] == [-125.1815809, -21.9454343, -2.6768201]
+    assert np.all(ag['orbitals_cusp']['D'] == [0.9991182, 1.0009214])
+    assert np.all(ag['orbitals_energy']['P'] == [-125.1815809, -21.9454343, -2.6768201])
 
     # Check exponents of D orbitals
     exp_D = np.array([53.296212, 40.214567, 21.872645, 17.024065, 10.708021, 7.859216, 5.770205,
@@ -92,11 +96,11 @@ def test_parsing_slater_density_ag():
 
 def test_parsing_slater_density_ne():
     # Load the Ne file
-    file_path = os.path.dirname(__file__).rsplit('/', 2)[0] + '/data/examples/ne.slater'
+    file_path = os.getcwd() + '/data/examples/ne.slater'
     ne = load_slater_wfn(file_path)
 
     assert ne['configuration'] == "1S(2)2S(2)2P(6)"
-    assert ne['energy'] == [-128.547098079, 128.547098140, -257.094196219]
+    assert ne['energy'] == [128.547098140]
 
     # Check orbiral energy and cusp
     assert ne['orbitals_energy']['P'] == [-0.8504095]
