@@ -106,7 +106,7 @@ def load_slater_wfn(file_name):
         while len(next_line.strip()) == 0:
             next_line = f.readline()
         energy = [float(f.readline().split()[2])] + \
-                 [float(x) for x in (re.findall("[= -]\d+.\d+", f.readline()))[:-1]]
+                 [float(x) for x in (re.findall(r"[= -]\d+.\d+", f.readline()))[:-1]]
 
         orbitals = []
         orbitals_basis = {'S': [], 'P': [], 'D': [], "F": []}
@@ -117,7 +117,8 @@ def load_slater_wfn(file_name):
 
         line = f.readline()
         while line.strip() != "":
-            if re.search(r'  [S|P|D|F]  ', line): # If line has ___S___ or P or D where _ = " ".
+            # If line has ___S___ or P or D where _ = " ".
+            if re.search(r'  [S|P|D|F]  ', line):
                 # Get All The Orbitals
                 subshell = line.split()[0]
                 list_of_orbitals = line.split()[1:]

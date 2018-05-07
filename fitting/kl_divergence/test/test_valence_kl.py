@@ -141,7 +141,7 @@ def test_updating_coefficients():
     e = np.array([3., 4.])
     g_s = np.ma.array(g.radii ** 2)
     model = c[0] * (3 / np.pi) ** 1.5 * np.exp(-3 * g_s) + \
-            c[1] * (2. * 4**2.5 / (3. * np.pi**1.5)) * g_s * np.exp(-4 * g_s)
+        c[1] * (2. * 4**2.5 / (3. * np.pi**1.5)) * g_s * np.exp(-4 * g_s)
     npt.assert_allclose(kl.get_model(c, e), model)
 
     true_answer = kl._update_coeffs(c, e)[0]
@@ -169,7 +169,7 @@ def test_updating_exponents():
     e = np.array([3., 4.])
     g_s = np.ma.array(g.radii ** 2)
     model = c[0] * (3 / np.pi) ** 1.5 * np.exp(-3 * g_s) + \
-            c[1] * (2. * 4 ** 2.5 / (3. * np.pi ** 1.5)) * g_s * np.exp(-4 * g_s)
+        c[1] * (2. * 4 ** 2.5 / (3. * np.pi ** 1.5)) * g_s * np.exp(-4 * g_s)
     npt.assert_allclose(kl.get_model(c, e), model)
 
     true_answer = kl._update_exps(c, e)[0]

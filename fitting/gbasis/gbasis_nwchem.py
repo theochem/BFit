@@ -10,20 +10,23 @@ def fortran_float(s):
 
 
 def load_gbasis_nwchem_format(filename):
-    '''Load the atomic basis set(s) from a NWChem file containing the basis set for
-       one or more atoms.
+    """
+    Load the atomic basis set(s) from a NWChem file containing the basis set for
+    one or more atoms.
 
-        **Arguments:**
+    Parameters
+    ----------
 
-        filename
-            The path to the file containing the atomic basis set(s) in NWChem format.
-            This file contains the basis set for one or more atoms.
-            This file is usually obtained from https://bse.pnl.gov/bse/portal
+    filename
+        The path to the file containing the atomic basis set(s) in NWChem format.
+        This file contains the basis set for one or more atoms.
+        This file is usually obtained from https://bse.pnl.gov/bse/portal
 
-        **Returns:**
-            A dictionary
+    Returns
+    -------
+        A dictionary
 
-    '''
+    """
     from fitting.gbasis.gbasis import ContractedGaussianBasis
 
     f = open(filename)
@@ -42,7 +45,8 @@ def load_gbasis_nwchem_format(filename):
             assert len(words) == 2
             element = words[0].lower()
             shell_types = words[1].lower()
-            contracted_basis = [ContractedGaussianBasis(shell_type, [], []) for shell_type in shell_types]
+            contracted_basis = [ContractedGaussianBasis(shell_type, [], [])
+                                for shell_type in shell_types]
             basis = basis_atom_map.get(element)
             if basis is None:
                 # Add the new atom to the dictionary
