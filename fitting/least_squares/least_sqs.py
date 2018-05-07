@@ -18,7 +18,7 @@ def optimize_using_nnls_valence(true_val_dens, cofactor_matrix):
 
 
 def optimize_using_slsqp(density_model, initial_guess, bounds=None, *args):
-    if bounds == None:
+    if bounds is None:
         bounds = np.array([(0.0, np.inf) for x in range(0, len(initial_guess))], dtype=np.float64)
     f_min_slsqp = scipy.optimize.minimize(density_model.cost_function,
                                           x0=initial_guess,
@@ -30,7 +30,7 @@ def optimize_using_slsqp(density_model, initial_guess, bounds=None, *args):
 
 
 def optimize_using_l_bfgs(density_model, initial_guess, bounds=None, *args):
-    if bounds == None:
+    if bounds is None:
         bounds = np.array([(0.0, 1.7976931348623157e+308) for x in range(0, len(initial_guess))],
                           dtype=np.float64)
     f_min_l_bfgs_b = scipy.optimize.fmin_l_bfgs_b(density_model.cost_function,
@@ -41,9 +41,6 @@ def optimize_using_l_bfgs(density_model, initial_guess, bounds=None, *args):
                                                   maxiter=1500000,
                                                   factr=1e7,
                                                   args=args, pgtol=1e-5)
-
-    # if f_min_l_bfgs_b[2]['warnflag'] != 0:
-    #        print(f_min_l_bfgs_b[2]['task'])
 
     parameters = f_min_l_bfgs_b[0]
     return parameters

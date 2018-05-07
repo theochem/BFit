@@ -1,7 +1,13 @@
+r"""Test file for 'fitting.gbasis.gbasis_newchem'."""
 
 import os
 from fitting.gbasis.gbasis_nwchem import load_gbasis_nwchem_format, fortran_float
 import numpy as np
+
+__all__ = ["test_load_basis_nwchem_ugbs_be",
+           "test_load_basis_nwchem_ugbs_h",
+           "test_load_basis_nwchem_ugbs_ne",
+           "test_load_basis_nwchem_ugbs_tc"]
 
 
 def test_load_basis_nwchem_ugbs_h():
@@ -67,9 +73,10 @@ def test_load_basis_nwchem_ugbs_ne():
         if basis.shell_type == 's':
             type_s += 1
         elif basis.shell_type == 'p':
-            type_p +=1
+            type_p += 1
         else:
-            raise ValueError('Ne should only have only s and p type contracted gaussian basis. error={0}'.format(basis.shell_type))
+            raise ValueError('Ne should only have only s and p type contracted gaussian basis. '
+                             'error={0}'.format(basis.shell_type))
     assert type_s == 23
     assert type_p == 16
     # check exponent of a couple of contracted gaussian basis
@@ -101,11 +108,12 @@ def test_load_basis_nwchem_ugbs_tc():
         if basis.shell_type == 's':
             type_s += 1
         elif basis.shell_type == 'p':
-            type_p +=1
+            type_p += 1
         elif basis.shell_type == 'd':
-            type_d +=1
+            type_d += 1
         else:
-            raise ValueError('Tc should only have only s and p type contracted gaussian basis. error={0}'.format(basis.shell_type))
+            raise ValueError('Tc should only have only s and p type contracted gaussian basis. '
+                             'error={0}'.format(basis.shell_type))
     assert type_s == 32
     assert type_p == 22
     assert type_d == 17

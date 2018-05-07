@@ -35,7 +35,7 @@ def test_input_checks():
 
     # Test when Integration Value (inte_val) is None
     g = RadialGrid(np.arange(0., 26, 0.05))
-    e = np.exp(-g._radii)
+    e = np.exp(-g.radii)
     kl = KullbackLeiblerFitting(g, e, None)
     npt.assert_allclose(kl.inte_val, 2. * 4. * np.pi)
 
@@ -51,10 +51,11 @@ def test_raise_not_implemented():
     npt.assert_raises(NotImplementedError, kl._get_deriv_coeffs(g, g))
     npt.assert_raises(NotImplementedError, kl._get_deriv_fparams(g, g))
 
+
 def test_get_lagrange_multiplier():
     r"""Test the lagrange multiplier in KullbackLeiblerFitting."""
     g = RadialGrid(np.arange(0., 26, 0.05))
-    e = np.exp(-g._radii)
+    e = np.exp(-g.radii)
     kl = KullbackLeiblerFitting(g, e, inte_val=1.)
     npt.assert_allclose(kl.lagrange_multiplier, 2. * 4 * np.pi)
 

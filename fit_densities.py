@@ -13,7 +13,7 @@ from fitting.least_squares.least_sqs import *
 from fitting.radial_grid.general_grid import RadialGrid
 from fitting.least_squares.gaussian_density.gaussian_dens import GaussianBasisSet
 from fitting.kl_divergence.gaussian_kl import GaussianKullbackLeibler
-from fitting.least_squares.slater_density.atomic_slater_density import Atomic_Density
+from fitting.least_squares.slater_density.atomic_slater_density import AtomicDensity
 from fitting.least_squares.density_model import DensityModel
 from fitting.greedy.greedy_kl import GreedyKL
 from fitting.utils.plotting_utils import plot_model_densities, plot_error
@@ -122,7 +122,7 @@ def fit_gaussian_densities(grid, element_name=None, true_model=None, inte_val=No
     current_file = os.path.abspath(os.path.dirname(__file__))
     if true_model is None:
         file_path = current_file + "/data/examples/" + element_name.lower()
-        true_model = Atomic_Density(file_path, grid=grid.radii).electron_density
+        true_model = AtomicDensity(file_path, grid=grid.radii).electron_density
 
     # Sets Default Density Model to Gaussian Density
     if density_model is None:

@@ -17,6 +17,15 @@ class GreedyKL(GreedyStrategy):
     def __init__(self, grid_obj, true_model, inte_val,
                  splitting_func=get_next_choices, eps_coeff=1e-3, eps_exp=1e-4,
                  factor=2):
+        r"""
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """
         self.mbis_obj = GaussianKullbackLeibler(grid_obj, true_model, inte_val)
         self.splitting_func = splitting_func
         self.threshold_coeff = eps_coeff

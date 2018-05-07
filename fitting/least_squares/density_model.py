@@ -12,7 +12,7 @@ import numpy as np
 from fitting.gbasis.gbasis import UGBSBasis
 
 __all__ = ["DensityModel"]
-#TODO: Remove GBASIS and UGBS, because even tempered seems better.
+# TODO: Remove GBASIS and UGBS, because even tempered seems better.
 
 
 class DensityModel(object):
@@ -141,8 +141,7 @@ class DensityModel(object):
               Integration value of r^2 with approximate model over the _grid.
         """
         grid_squared = np.ravel(self._grid ** 2.)
-        int = np.trapz(y=grid_squared * approx_model, x=self._grid)
-        return int
+        return np.trapz(y=grid_squared * approx_model, x=self._grid)
 
     def get_error_diffuse(self, true_model, approx_model):
         r"""
@@ -212,7 +211,7 @@ class DensityModel(object):
         array
 
         """
-        max_ugbs= np.amax(UGBS_exponents)
+        max_ugbs = np.amax(UGBS_exponents)
         min_ugbs = np.amin(UGBS_exponents)
 
         def get_numb_gauss_funcs(p, max, min):

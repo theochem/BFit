@@ -76,9 +76,8 @@ class GreedyStrategy(object):
         factor0 = factor
 
         # Start the greedy algorithm
-        while numb_funcs < max_numb_funcs - 1 and \
-              np.abs(best_gval - prev_gval) >= 1e-5 and \
-              numb_redum < 5:
+        while numb_funcs < max_numb_funcs - 1 and np.abs(best_gval - prev_gval) >= 1e-5 and \
+                numb_redum < 5:
             choices_parameters = self.get_next_iter_params(factor, gparams)
             if callable(add_choice_funcs):
                 # When you want extra choices to be added.

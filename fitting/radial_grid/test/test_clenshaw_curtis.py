@@ -7,8 +7,7 @@ from fitting.radial_grid.clenshaw_curtis import ClenshawGrid
 __all__ = ["test_integration_on_grid",
            "test_input_checks_radial_grid",
            "test_grid_is_clenshaw",
-           "test_grid_is_uniform"
-          ]
+           "test_grid_is_uniform"]
 
 
 def test_input_checks_radial_grid():
@@ -22,6 +21,7 @@ def test_input_checks_radial_grid():
     npt.assert_raises(TypeError, ClenshawGrid, 1, 1, 1, "not list")
     cgrid = ClenshawGrid(5, 10, 10)
     npt.assert_equal(cgrid.atomic_numb, 5)
+
 
 def test_grid_is_clenshaw():
     r"""Test that radial _grid returns a clenshaw _grid."""

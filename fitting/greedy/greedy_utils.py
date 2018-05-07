@@ -6,12 +6,13 @@ only one parameters. E.g. e^(-x) or e^(-x^2) but not e^(-x - y).
 """
 import numpy as np
 
-__all__ = ["check_redundancies"]
+__all__ = ["check_redundancies", "get_two_next_choices", "get_next_choices",
+           "get_next_possible_coeffs_and_exps2"]
 
 
 def check_redundancies(coeffs, fparams, simi=1e-3):
     r"""
-    Checks if the fparams have similar values and groups them together.
+    Check if the fparams have similar values and groups them together.
 
     If any two function parameters have similar values, then one of the
     function parameters is removed, and the corresponding coefficient,
@@ -35,6 +36,7 @@ def check_redundancies(coeffs, fparams, simi=1e-3):
     (np.ndarray, np.ndarray)
                             New coefficients and new exponents, where close
                             values are grouped together.
+
     """
     new_coeffs = coeffs.copy()
     new_exps = fparams.copy()
@@ -65,7 +67,7 @@ def check_redundancies(coeffs, fparams, simi=1e-3):
 
 def get_next_choices(factor, coeffs, fparams, coeff_val=100.):
     r"""
-    Gets the next set of (n+1) fparams, used by the greedy-fitting algorithm.
+    Get the next set of (n+1) fparams, used by the greedy-fitting algorithm.
 
     Given a set of n fparams and n coeffs, this method gets the next (n+1)
     fparams by using the factor.
@@ -89,6 +91,7 @@ def get_next_choices(factor, coeffs, fparams, coeff_val=100.):
     -------
     list
         List of the next possible initial choices for greedy based on factor.
+
     """
     size = fparams.shape[0]
     all_choices = []
@@ -110,7 +113,7 @@ def get_next_choices(factor, coeffs, fparams, coeff_val=100.):
 
 def get_two_next_choices(factor, coeffs, fparams, coeff_val=100.):
     r"""
-    Returns a list of (n+2) set of initial guess for fparams for greedy.
+    Return a list of (n+2) set of initial guess for fparams for greedy.
 
     Assuming coeffs=[c1, c2 ,... ,cn] and fparams =[a1, a2, ..., an]. The
     next (n+2) choice is either a combination of a endpoint guess and a
@@ -133,6 +136,7 @@ def get_two_next_choices(factor, coeffs, fparams, coeff_val=100.):
     -------
     list
         List of the next possible initial choices for greedy based on factor.
+
     """
     size = len(fparams)
     choices_coeff = []
@@ -177,13 +181,13 @@ def get_next_possible_coeffs_and_exps2(factor, coeffs, exps, coeff_val=100.):
         if index[0] == size - 1:
             exponent_array = np.append(exps, np.array([exp * factor]))
             all_choices_of_exponents.append(exponent_array)
-            all_choices_of_coeffs.append(np.append(coeffs,np.array([coeff_val])))
+            all_choices_of_coeffs.append(np.append(coeffs, np.array([coeff_val])))
     return all_choices_of_coeffs, all_choices_of_exponents
 
 
 def pick_two_lose_one(factor, coeffs, exps, coeff_val=100.):
     r"""
-    Gets (n+1) choices by choosing (n+2) choices and losing one value each time.
+    Get (n+1) choices by choosing (n+2) choices and losing one value each time.
 
     Most accurate out of the other methods in this file but has returns
     a large number of possible (n+1) initial guesses for greedy-algorithm.
@@ -205,6 +209,7 @@ def pick_two_lose_one(factor, coeffs, exps, coeff_val=100.):
     -------
     list
         List of the next possible initial choices for greedy based on factor.
+
     """
     all_choices = []
     two_choices = get_two_next_choices(factor, coeffs, exps, coeff_val)

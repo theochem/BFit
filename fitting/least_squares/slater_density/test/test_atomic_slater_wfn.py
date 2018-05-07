@@ -1,3 +1,5 @@
+r"""Test file for fitting.fitting.least_squares.slater_density.atomic_slater_wfn."""
+
 import numpy as np
 import os
 from fitting.least_squares.slater_density.atomic_slater_wfn import load_slater_wfn
@@ -17,14 +19,14 @@ def test_parsing_slater_density_be():
 
     # Check basis of S orbitals
     assert be['orbitals'] == ['1S', '2S']
-    assert np.all(be['orbitals_cusp']['S'] == [1.0001235, 0.9998774])  #turn into array
-    assert np.all(be['orbitals_energy']['S'] == [-4.7326699, -0.3092695]) #turn into array
+    assert np.all(be['orbitals_cusp']['S'] == [1.0001235, 0.9998774])
+    assert np.all(be['orbitals_energy']['S'] == [-4.7326699, -0.3092695])
     assert be['orbitals_basis']['S'] == ['1S', '1S', '1S', '1S', '1S', '1S', '2S', '1S']
     assert len(be['orbitals_occupation']) == 2
     assert be['orbitals_occupation']['1S'] == 2
     assert be['orbitals_occupation']['2S'] == 2
     assert be['orbitals_electron_array'].shape == (2, 1)
-    assert (be['orbitals_electron_array'] == np.array([[2], [2]])).all()   #rename this orbitals_occupation
+    assert (be['orbitals_electron_array'] == np.array([[2], [2]])).all()
     basis_numbers = np.array([[1], [1], [1], [1], [1], [1], [2], [1]])
     assert (be['basis_numbers']['S'] == basis_numbers).all()
 
@@ -69,8 +71,8 @@ def test_parsing_slater_density_ag():
     assert (abs(ag['orbitals_exp']['D'] - exp_D.reshape(11, 1)) < 1.e-6).all()
 
     # Check coefficients of 3D orbital
-    coeff_3D = np.array([0.0006646, 0.0037211, -0.0072310, 0.1799224, 0.5205360, 0.3265622, 0.0373867,
-                         0.0007434, 0.0001743, -0.0000474, 0.0000083])
+    coeff_3D = np.array([0.0006646, 0.0037211, -0.0072310, 0.1799224, 0.5205360, 0.3265622,
+                         0.0373867, 0.0007434, 0.0001743, -0.0000474, 0.0000083])
     assert (abs(ag['orbitals_coeff']['3D'] - coeff_3D.reshape(11, 1)) < 1.e-6).all()
 
     # Check coefficients of 4D orbital

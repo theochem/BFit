@@ -111,7 +111,7 @@ class KullbackLeiblerFitting:
 
         counter = 0
         while np.any(np.abs(fparams_i1 - fparams_i) > eps_fparam) and \
-                     np.abs(prev_func_val - curr_func_val) > 1e-10:
+                np.abs(prev_func_val - curr_func_val) > 1e-10:
 
             while np.any(np.abs(coeffs_i - coeffs_i1) > eps_coeff):
                 coeffs_i1, coeffs_i = self._update_coeffs(coeffs_i1, fparams_i1)
@@ -256,10 +256,11 @@ class KullbackLeiblerFitting:
         pass
 
     def optimize_slsqp(self, coeffs, fparams):
-        const = lambda x: np.sum(coeffs - self.inte_val)
+        def const(_):
+            np.sum(coeffs - self.inte_val)
         params = np.append(coeffs, fparams)
         bounds = np.array([(0.0, np.inf)] * len(params))
-        opts = {"maxiter": 100000000, "disp":True, "factr":10.0, "eps":1e-10}
+        opts = {"maxiter": 100000000, "disp": True, "factr": 10.0, "eps": 1e-10}
         f_min_slsqp = minimize(self.get_kullback_leibler, x0=params,
                                method="SLSQP", bounds=bounds, constraints=const,
                                jac=True, options=opts)

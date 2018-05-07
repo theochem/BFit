@@ -8,10 +8,10 @@ import scipy.misc
 import numpy as np
 from fitting.least_squares.slater_density.atomic_slater_wfn import load_slater_wfn
 
-__all__ = ["Atomic_Density"]
+__all__ = ["AtomicDensity"]
 
 
-class Atomic_Density:
+class AtomicDensity:
     """
     Used to compute the atomic least_squares of various elements
     from a composition of slater functions.
@@ -46,7 +46,7 @@ class Atomic_Density:
         Calculates all slator orbital of each subshell inside a dictionary
     all_coeff_matrix(subshell)
         Calculates the coefficients of an atom based on its subshell
-    phi_LCAO(subshell)
+    phi_lcao(subshell)
         Calculate molecular orbital of a specific subshell
     phi_matrix()
         Concatenates molecular orbital horizontally
@@ -71,7 +71,7 @@ class Atomic_Density:
             self.ALL_SLATOR_ORBITALS = self.slator_dict()
             self.electron_density = self.atomic_density()
 
-    def slator_type_orbital(self, exponent, quantumNum, r):
+    def slator_type_orbital(self, exponent, quantum_num, r):
         """
         Computes the Slator Type Orbital equation.
 
@@ -79,7 +79,7 @@ class Atomic_Density:
         ----------
         exponent :
 
-        quantumNum : int
+        quantum_num : int
 
         r :
 
@@ -88,8 +88,9 @@ class Atomic_Density:
         arr
             Returns a number or an array depending on input values
         """
-        normalization = ((2 * exponent)**quantumNum) * np.sqrt((2 * exponent) / scipy.misc.factorial(2 * quantumNum))
-        pre_factor = np.transpose(r ** (np.ravel(quantumNum) - 1))
+        normalization = ((2 * exponent) ** quantum_num) * \
+            np.sqrt((2 * exponent) / scipy.misc.factorial(2 * quantum_num))
+        pre_factor = np.transpose(r ** (np.ravel(quantum_num) - 1))
         slater = pre_factor * (np.exp(-exponent * np.transpose(r)))
         slater *= normalization
         return slater
@@ -104,7 +105,7 @@ class Atomic_Density:
 
         :return: row = number of points, column = number of slater equations
         """
-        dict_orbital = {x[1]:0 for x in self.VALUES['orbitals'] }
+        dict_orbital = {x[1]: 0 for x in self.VALUES['orbitals']}
         for subshell in dict_orbital.keys():
             exponents = self.VALUES['orbitals_exp'][subshell]
             basis_numbers = self.VALUES['basis_numbers'][subshell]
@@ -130,17 +131,17 @@ class Atomic_Density:
                 orbitals of specified subshell.
         """
         counter = 0
-        array_coeffs = None
+        coeffs = None
 
         for key in [x for x in self.VALUES['orbitals'] if x[1] == subshell]:
             if counter == 0:
-                array_coeffs = self.VALUES['orbitals_coeff'][key]
+                coeffs = self.VALUES['orbitals_coeff'][key]
                 counter += 1
             else:
-                array_coeffs = np.concatenate((array_coeffs, self.VALUES['orbitals_coeff'][key]), axis=1)
-        return array_coeffs
+                coeffs = np.concatenate((coeffs, self.VALUES['orbitals_coeff'][key]), axis=1)
+        return coeffs
 
-    def phi_LCAO(self, subshell):
+    def phi_lcao(self, subshell):
         """
         Calculates phi/linear combination of atomic orbitals
         by the dot product of slator array (from slator_dict)
@@ -173,9 +174,9 @@ class Atomic_Density:
         for index, orbital in enumerate(list_orbitals):
             if orbital in self.VALUES['orbitals_exp'].keys():
                 if index == 0:
-                    phi_matrix = self.phi_LCAO(orbital)
+                    phi_matrix = self.phi_lcao(orbital)
                 else:
-                    phi_matrix = np.concatenate((phi_matrix, self.phi_LCAO(orbital)), axis=1)
+                    phi_matrix = np.concatenate((phi_matrix, self.phi_lcao(orbital)), axis=1)
         return phi_matrix
 
     def atomic_density(self):
@@ -203,7 +204,7 @@ class Atomic_Density:
             the _element
             :return: Energy Of Homo
             """
-            #initilize the energy from first value from the list
+            # Initilize the energy from first value from the list.
             energy_homo = self.VALUES['orbitals_energy']['S'][0]
             for orbital, list_energy in self.VALUES['orbitals_energy'].items():
                 max_of_list = np.max(list_energy)

@@ -41,10 +41,10 @@ class GreedyLeastSquares(GreedyStrategy):
         e = 2.0 * np.sum(weight * np.power(self.grid_obj.radii, 4))
         f = 2.0 * np.sum(weight * np.power(self.grid_obj.radii, 2) *
                          np.log(self.true_model))
-        A = (b * f - c * e) / (b * d - a * e)
-        B = (a * f - c * d) / (a * e - b * d)
-        coefficient = np.exp(A)
-        exponent = - B
+        big_a = (b * f - c * e) / (b * d - a * e)
+        big_b = (a * f - c * d) / (a * e - b * d)
+        coefficient = np.exp(big_a)
+        exponent = - big_b
         return np.array([coefficient, exponent])
 
     def get_best_one_function_solution(self):
@@ -91,7 +91,7 @@ class GreedyLeastSquares(GreedyStrategy):
 
     def get_next_iter_params(self, params):
         return self.splitting_func(self.factor, params[:len(params)//2],
-                                    params[len(params)//2:])
+                                   params[len(params)//2:])
 
     def get_optimization_routine(self, params):
         exps = params[len(params)//2:]

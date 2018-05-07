@@ -139,7 +139,7 @@ def test_derivative_coefficient():
     dens = obj.true_model
 
     residual = 2. * np.array([dens[0] - np.exp(-3) - 2. * np.exp(-4),
-                               dens[1] - np.exp(-12) - 2. * np.exp(-16)])
+                              dens[1] - np.exp(-12) - 2. * np.exp(-16)])
     actual_answer = obj._deriv_wrt_coeffs(exps, residual)
     desired_answer = [residual[0] * -np.exp(-3) + residual[1] * -np.exp(-12),
                       residual[0] * -np.exp(-4) + residual[1] * -np.exp(-16)]
@@ -157,9 +157,9 @@ def test_derivative_exponents():
     den = obj.true_model
     c = 2. * (den - gaussian_func([1., 2.], [3., 4.], grid))
     deriv_e1 = c[0] * coeff[0] * np.exp(-exps[0]) + \
-               c[1] * coeff[0] * 4 * np.exp(-exps[0] * 4)
+        c[1] * coeff[0] * 4 * np.exp(-exps[0] * 4)
     deriv_e2 = c[0] * coeff[1] * np.exp(-exps[1]) + \
-               c[1] * coeff[1] * 4 * np.exp(-exps[1] * 4)
+        c[1] * coeff[1] * 4 * np.exp(-exps[1] * 4)
     npt.assert_allclose(actual_answer, [np.sum(deriv_e1), np.sum(deriv_e2)])
 
 
@@ -182,7 +182,7 @@ def test_derivative_cost_function():
     deriv_c2 = c * np.exp(-exps[1] * grid**2.)
     npt.assert_allclose(actual_answer, [np.sum(deriv_c), np.sum(deriv_c2)])
 
-    #Test with Scipy
+    # Test with Scipy
     grid = np.array([5.0])
     exponents = np.array([0., 1., 2., 3., 4.])
     coefficient = np.array([5.0, 3.0, 2.0, 2.44, 5.6])

@@ -1,3 +1,5 @@
+r"""Contain plotting utility functions for fit_densities file."""
+
 import matplotlib.pyplot as plt
 import os
 
@@ -45,7 +47,6 @@ def plot_model_densities(true_dens, model_dens, grid_pts, title, element_name,
     if not os.path.exists(directory):
         os.makedirs(directory)
     plt.savefig(directory + "/" + figure_name + ".png")
-    #plt.show()
     plt.close()
 
 
@@ -73,17 +74,21 @@ def plot_error(errors, element_name, title, figure_name):
             axarr[x, y].get_xaxis().tick_bottom()
             axarr[x, y].get_yaxis().tick_left()
     # xrange(1, len(errors[2]) + 1, 2)
-    axarr[0, 0].plot([1] + [x + x - 1  for x in range(2, len(errors[2]) + 1)], errors[0], 'o-', color=tableau20[0])
+    axarr[0, 0].plot([1] + [x + x - 1 for x in range(2, len(errors[2]) + 1)], errors[0], 'o-',
+                     color=tableau20[0])
     axarr[0, 0].set_title('Integrated Fitted Density Model')
     axarr[0, 0].set_ylabel(r'$\int \rho^o(r) 4 \pi r^2 dr$')
-    axarr[0, 1].semilogy([1] + [x + x - 1  for x in range(2, len(errors[2]) + 1)], errors[1], 'o-', color=tableau20[0])
+    axarr[0, 1].semilogy([1] + [x + x - 1 for x in range(2, len(errors[2]) + 1)], errors[1], 'o-',
+                         color=tableau20[0])
     axarr[0, 1].set_title('Absolute Difference In Models')
     axarr[0, 1].set_ylabel(r'$\int |\rho(r) - \rho^o(r)| dr$')
-    axarr[1, 0].semilogy([1] + [x + x - 1  for x in range(2, len(errors[2]) + 1)], errors[2], 'o-', color=tableau20[0])
+    axarr[1, 0].semilogy([1] + [x + x - 1 for x in range(2, len(errors[2]) + 1)], errors[2], 'o-',
+                         color=tableau20[0])
     axarr[1, 0].set_title("Absolute Difference Times Radius Squared")
     axarr[1, 0].set_xlabel("Number of Functions")
     axarr[1, 0].set_ylabel(r'$\int |\rho(r) - \rho^o(r)| r^2 dr$')
-    axarr[1, 1].semilogy([1] + [x + x - 1  for x in range(2, len(errors[2]) + 1)],errors[3], 'o-', color=tableau20[0])
+    axarr[1, 1].semilogy([1] + [x + x - 1 for x in range(2, len(errors[2]) + 1)], errors[3], 'o-',
+                         color=tableau20[0])
     axarr[1, 1].set_title('Kullback-Leiger Function Value')
     axarr[1, 1].set_ylabel(r'$\int \rho(r) \frac{\rho(r)}{\rho^o(r)} 4 \pi r^2 dr$')
     axarr[1, 1].set_xlabel("Number of Functions")

@@ -13,72 +13,88 @@ def load_slater_wfn(file_name):
     ----------
     file_name : str
                 The path to the Slater atomic file.
+
     """
-    def getNumberOfElectronsPerOrbital(string_configuration):
+    def get_number_of_electrons_per_orbital(string_configuration):
         """
         Gets the Occupation Number for all orbitals
         of an _element returing an dictionary
-        :param elementFile:
-        :return: a dict containing the number and orbital
+        Parameters
+        ----------
+        string_configuration : str
+
+        Returns
+        --------
+        dict
+            a dict containing the number and orbital
+
         """
-        electronConfigList = string_configuration
+        electron_config_list = string_configuration
 
         shells = ["K", "L", "M", "N"]
 
-        myDic = {}
-        listOrbitals = [str(x) + "S" for x in range(1,8)] + [str(x) + "P" for x in range(2,8)] + [str(x) + "D" for x in range(3,8)] + [str(x) + "F" for x in range(4,8)]
-        for list in listOrbitals:
-            myDic[list] = 0 #initilize all atomic orbitals to zero electrons
+        out = {}
+        orbitals = [str(x) + "S" for x in range(1, 8)] + [str(x) + "P" for x in range(2, 8)] + \
+                   [str(x) + "D" for x in range(3, 8)] + [str(x) + "F" for x in range(4, 8)]
+        for orb in orbitals:
+            # Initialize all atomic orbitals to zero electrons
+            out[orb] = 0
 
         for x in shells:
-            if x in electronConfigList :
+            if x in electron_config_list:
                 if x == "K":
-                    myDic["1S"] = 2
+                    out["1S"] = 2
                 elif x == "L":
-                    myDic["2S"] = 2; myDic["2P"] = 6
+                    out["2S"] = 2
+                    out["2P"] = 6
                 elif x == "M":
-                    myDic["3S"] = 2; myDic["3P"] = 6; myDic["3D"] = 10
-                elif x== "N":
-                    myDic["4S"] = 2; myDic["4P"] = 6; myDic["4D"] = 10; myDic["4F"] = 14
+                    out["3S"] = 2
+                    out["3P"] = 6
+                    out["3D"] = 10
+                elif x == "N":
+                    out["4S"] = 2
+                    out["4P"] = 6
+                    out["4D"] = 10
+                    out["4F"] = 14
 
-        for x in listOrbitals:
-            if x in electronConfigList :
-                index = electronConfigList .index(x)
-                orbital = (electronConfigList [index: index + 2])
+        for x in orbitals:
+            if x in electron_config_list:
+                index = electron_config_list.index(x)
+                orbital = (electron_config_list[index: index + 2])
 
                 if orbital[1] == "D" or orbital[1] == "F":
-                    numElectrons = (re.sub('[(){}<>,]', "", electronConfigList.split(orbital)[1]))
-                    myDic[orbital] = int(numElectrons)
+                    num_electrons = re.sub('[(){}<>,]', "", electron_config_list.split(orbital)[1])
+                    out[orbital] = int(num_electrons)
                 else:
-                    myDic[ orbital] = int(  electronConfigList [index + 3: index + 4]  )
+                    out[orbital] = int(electron_config_list[index + 3: index + 4])
 
-        return {key:value for key,value in myDic.items() if value != 0}
+        return {key: value for key, value in out.items() if value != 0}
 
-    def getColumn(Torbital):
+    def get_column(t_orbital):
         """
-        The Columns get screwed over sine s orbitals start with one while p orbitals start at energy 2
+        The Columns get screwed over sine s orbitals start with one while p orbitals start at energy
         Therefore this corrects the error in order to retrieve correct column
-        :param Torbital: orbital i.e. "1S" or "2P" or "3D"
+        :param t_orbital: orbital i.e. "1S" or "2P" or "3D"
         :return:
         """
-        if Torbital[1] == "S":
-            return int(Torbital[0]) + 1
-        elif Torbital[1] == "P":
-            return int(Torbital[0])
-        elif Torbital[1] == "D":
-            return int(Torbital[0]) - 1
+        if t_orbital[1] == "S":
+            return int(t_orbital[0]) + 1
+        elif t_orbital[1] == "P":
+            return int(t_orbital[0])
+        elif t_orbital[1] == "D":
+            return int(t_orbital[0]) - 1
 
-    def getArrayOfElectrons(dict):
+    def get_array_of_electrons(d):
         """
         Computes The Number Of Electrons in Each Orbital As An Array
         i.e. be = [[2], [2]] 2 electrons in 1S and 2S
-        :param dict:
+        :param d:
         :return: column vector of number of electrons in each orbital
         """
-        array = np.empty((len(dict.keys()), 1))
+        array = np.empty((len(d.keys()), 1))
         row = 0
         for orbital in orbitals:
-            array[row, 0] = dict[orbital]
+            array[row, 0] = d[orbital]
             row += 1
         return array
 
@@ -91,34 +107,32 @@ def load_slater_wfn(file_name):
             next_line = f.readline()
         energy = [float(f.readline().split()[2])] + \
                  [float(x) for x in (re.findall("[= -]\d+.\d+", f.readline()))[:-1]]
-        #assert re.search(r'ORBITAL ENERGIES AND EXPANSION COEFFICIENTS', f.readline())
 
         orbitals = []
-        orbitals_basis = {'S':[], 'P':[], 'D':[], "F":[]}
-        orbitals_cusp = {'S':0, 'P':0, 'D':0, "F":0}
-        orbitals_energy = {'S':[], 'P':[], 'D':[], "F":[]}
-        orbitals_exp = {'S':[], 'P':[], 'D':[], "F":[]}
+        orbitals_basis = {'S': [], 'P': [], 'D': [], "F": []}
+        orbitals_cusp = {'S': 0, 'P': 0, 'D': 0, "F": 0}
+        orbitals_energy = {'S': [], 'P': [], 'D': [], "F": []}
+        orbitals_exp = {'S': [], 'P': [], 'D': [], "F": []}
         orbitals_coeff = {}
 
         line = f.readline()
         while line.strip() != "":
-            if re.search(r'  [S|P|D|F]  ', line): #if line has ___S___ or P or D where _ = " ".
-                #Get All The Orbitals
+            if re.search(r'  [S|P|D|F]  ', line): # If line has ___S___ or P or D where _ = " ".
+                # Get All The Orbitals
                 subshell = line.split()[0]
                 list_of_orbitals = line.split()[1:]
                 orbitals += list_of_orbitals
                 for x in list_of_orbitals:
-                    orbitals_coeff[x] = []   #initilize orbitals inside coefficient dictionary
+                    orbitals_coeff[x] = []   # Initilize orbitals inside coefficient dictionary
 
-                #Get Energy, Cusp Levels
+                # Get Energy, Cusp Levels
                 line = f.readline()
                 orbitals_energy[subshell] = [float(x) for x in line.split()[1:]]
                 line = f.readline()
                 orbitals_cusp[subshell] = [float(x) for x in line.split()[1:]]
                 line = f.readline()
 
-
-                #Get Exponents, Coefficients, Orbital Basis
+                # Get Exponents, Coefficients, Orbital Basis
                 while re.match(r'\A^\d' + subshell, line.lstrip()):
 
                     list_words = line.split()
@@ -126,26 +140,30 @@ def load_slater_wfn(file_name):
                     orbitals_basis[subshell] += [list_words[0]]
 
                     for x in list_of_orbitals:
-                        orbitals_coeff[x] += [float(list_words[getColumn(x)])]
+                        orbitals_coeff[x] += [float(list_words[get_column(x)])]
                     line = f.readline()
             else:
                 line = f.readline()
 
-    data = {'configuration': configuration ,
+    data = {'configuration': configuration,
             'energy': energy,
-            'orbitals': orbitals ,
+            'orbitals': orbitals,
             'orbitals_energy':
-            {key:np.asarray(value) for key,value in orbitals_energy.items() if value != []},
+            {key: np.asarray(value) for key, value in orbitals_energy.items() if value != []},
             'orbitals_cusp': orbitals_cusp,
             'orbitals_basis': orbitals_basis,
             'orbitals_exp':
-            {key:np.asarray(value).reshape(len(value), 1) for key,value in orbitals_exp.items() if value != []},
+            {key: np.asarray(value).reshape(len(value), 1) for key, value in orbitals_exp.items()
+             if value != []},
             'orbitals_coeff':
-            {key:np.asarray(value).reshape(len(value), 1) for key,value in orbitals_coeff.items() if value != []},
-            'orbitals_occupation': getNumberOfElectronsPerOrbital(configuration),
-            'orbitals_electron_array': getArrayOfElectrons(getNumberOfElectronsPerOrbital(configuration)),
-            'basis_numbers' :
-            {key:np.asarray([[int(x[0])] for x in value]) for key,value in orbitals_basis.items() if len(value) != 0}
+            {key: np.asarray(value).reshape(len(value), 1)
+             for key, value in orbitals_coeff.items() if value != []},
+            'orbitals_occupation': get_number_of_electrons_per_orbital(configuration),
+            'orbitals_electron_array':
+                get_array_of_electrons(get_number_of_electrons_per_orbital(configuration)),
+            'basis_numbers':
+            {key: np.asarray([[int(x[0])] for x in value])
+             for key, value in orbitals_basis.items() if len(value) != 0}
             }
 
     return data

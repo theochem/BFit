@@ -1,6 +1,7 @@
 r"""
 
 """
+
 from fitting.radial_grid.general_grid import RadialGrid
 from numbers import Real, Integral
 import numpy as np
@@ -36,6 +37,6 @@ class HortonGrid(RadialGrid):
         total_arr = np.ma.asarray(np.ones(len(args[0])))
         for arr in args:
             total_arr *= arr
-        #if self._filled:
+        # if self._filled:
         #    total_arr = np.ma.filled(total_arr, 0.)
         return self.radial_grid.integrate(total_arr)

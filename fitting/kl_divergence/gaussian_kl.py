@@ -108,7 +108,7 @@ class GaussianKullbackLeibler(KullbackLeiblerFitting):
                 new_exps[i] = 3. * self._lagrange_multiplier
             else:
                 new_exps[i] = 3. * self.get_inte_factor(exp_arr[i], masked_normed_gaussian)
-            integration = self.get_inte_factor(exp_arr[i], masked_normed_gaussian, upt_exponent=True)
+            integration = self.get_inte_factor(exp_arr[i], masked_normed_gaussian, True)
             new_exps[i] /= (2. * integration)
         return new_exps
 

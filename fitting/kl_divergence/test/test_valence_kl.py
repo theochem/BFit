@@ -84,7 +84,7 @@ def test_get_integration_factor_coeffs():
     e = np.array([3., 4.])
     g_s = g.radii**2.
     model = c[0] * (3 / np.pi)**1.5 * np.exp(-3 * g_s) + \
-            c[1] * 2. * 4**(5. / 2.) / (3. * np.pi**1.5) * g_s * np.exp(-4 * g_s)
+        c[1] * 2. * 4**(5. / 2.) / (3. * np.pi**1.5) * g_s * np.exp(-4 * g_s)
     model[model < 1e-20] = 1e-20
     # Testing  Non-Valence Coefficients
     true_answer = kl.get_inte_factor(e[0], model, False, val=False)
@@ -111,7 +111,7 @@ def test_get_integration_factor_exps():
     e = np.array([3., 4.])
     g_s = g.radii ** 2.
     model = c[0] * (3 / np.pi) ** 1.5 * np.exp(-3 * g_s) + \
-            c[1] * 2. * (4 ** (5. / 2.) / (3. * np.pi ** 1.5)) * g_s * np.exp(-4 * g_s)
+        c[1] * 2. * (4 ** (5. / 2.) / (3. * np.pi ** 1.5)) * g_s * np.exp(-4 * g_s)
     model[model < 1e-20] = 1e-20
 
     # Testing Non-Valence Exponents
@@ -123,7 +123,7 @@ def test_get_integration_factor_exps():
 
     # Testing Valence Exponents
     true_answer = kl.get_inte_factor(e[1], model, True, True)
-    integrand = np.ma.array(m * np.exp(-4 * g_s) * g_s * g_s * g_s/ model)
+    integrand = np.ma.array(m * np.exp(-4 * g_s) * g_s * g_s * g_s / model)
     desired_ans = trapz(integrand, x=g.radii)
     desired_ans *= (2 * 4.**2.5 / (3 * np.pi**1.5)) * 4. * np.pi
     npt.assert_allclose(true_answer, desired_ans, rtol=1e-3)
