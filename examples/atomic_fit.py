@@ -6,7 +6,7 @@ element name (here it is beryllium) rather than providing a slater density.
 The fit_densities handles the work of constructing a slater density for you.
 """
 
-from radial_grid.clenshaw_curtis import ClenshawGrid
+from fitting.radial_grid.clenshaw_curtis import ClenshawGrid
 from fit_densities import fit_gaussian_densities
 import numpy as np
 
