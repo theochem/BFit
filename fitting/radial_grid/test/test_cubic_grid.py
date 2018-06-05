@@ -86,6 +86,6 @@ def test_integration_cubic_grid():
     step_size = 0.01
     cubic_obj = CubicGrid(smallest_pt, largest_pt, step_size)
     integrand = np.array([1.] * cubic_obj.grid.shape[0])
-    true_answer = cubic_obj.integrate(integrand)
+    true_answer = cubic_obj.integrate_spher(integrand)
     desired_answer = 0.25**3 * 1.
     npt.assert_allclose(true_answer, desired_answer, rtol=1e-2, atol=1e-1)
