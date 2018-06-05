@@ -22,7 +22,9 @@ r"""File contains algorithms responsible for fitting a molecular density to gaus
 
 import numpy as np
 import numpy.ma as ma
+from numbers import Real
 from fitting.kl_divergence.kull_leib_fitting import KullbackLeiblerFitting
+from fitting.radial_grid.cubic_grid import CubicGrid
 
 __all__ = ["MolecularFitting"]
 
@@ -48,6 +50,24 @@ class MolecularFitting(KullbackLeiblerFitting):
             The number of gaussian parameters for each atom stored in a list.
             
         """
+        if not isinstance(grid_obj, CubicGrid):
+            raise TypeError("Grid object should be of type CubicGrid.")
+        if not isinstance(dens_val, np.ndarray):
+            raise TypeError("Density values should be a numpy array.")
+        if not isinstance(inte_val, Real):
+            raise TypeError("Integration Value should be a number.")
+        if not isinstance(mol_coords, np.ndarray):
+            raise TypeError("Molecule Coordinates should be a numpy array.")
+        if not isinstance(number_of_params, list):
+            raise TypeError("Number of parameters should be a list.")
+        if not mol_coords.ndim == 2.:
+            raise ValueError("Molecular Coordinates should be a two dimensional array.")
+        if not mol_coords.shape[1] == 3:
+            raise ValueError("Molecule Coordinates should be three dimensional.")
+        if not len(number_of_params) == mol_coords.shape[0]:
+            raise ValueError("Length of number of parameters should match molecular coordinates.")
+        if not dens_val.ndim == 1:
+            raise ValueError("Density values should be one dimensional.")
         self.mol_coords = mol_coords
         self.number_of_params = number_of_params
         super(MolecularFitting, self).__init__(grid_obj, dens_val, inte_val)
@@ -76,7 +96,7 @@ class MolecularFitting(KullbackLeiblerFitting):
 
     def get_model(self, coeffs, fparams):
         r"""
-        This gets the gaussian molecular density situated at each atom's coordinates.
+        Returns the gaussian molecular density situated at each atom's coordinates.
 
         Parameters
         ----------
