@@ -20,7 +20,7 @@
 # ---
 r"""
     Contains the radial_grid class used to define the domain of the least_squares models and
-    to provide a function to integrate them.
+    to provide a function to integrate_spher them.
 
     The properties we want for this grid is to have
     points that are dense near the core region and another _grid that is
