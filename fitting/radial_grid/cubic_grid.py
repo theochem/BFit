@@ -33,6 +33,8 @@ class CubicGrid(RadialGrid):
             raise TypeError("Largest point should be a number.")
         if not isinstance(step_size, Real):
             raise TypeError("Step-size should be a number.")
+        if not largest_pt > smallest_pt:
+            raise ValueError("Largest point should be greater than smallest pointt.")
         if not step_size > 0.:
             raise ValueError("Step-size should be positive, non-zero.")
         self.step = step_size
