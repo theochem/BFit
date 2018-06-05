@@ -139,7 +139,7 @@ class MolecularFitting(KullbackLeiblerFitting):
         integrand = ratio * np.ma.asarray(np.exp(-exponent * grid_squared))
         if upt_exponent:
             integrand = integrand * grid_squared
-        return self._get_norm_constant(exponent) * self.grid_obj.integrate(integrand)
+        return self._get_norm_constant(exponent) * self.grid_obj.integrate_spher(integrand)
 
     def get_mol_coord(self, index):
         r"""
