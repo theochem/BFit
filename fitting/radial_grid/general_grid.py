@@ -88,9 +88,3 @@ class RadialGrid(object):
             total_arr = np.ma.filled(total_arr, 0.)
         integrand = total_arr * np.power(self.radii, 2.)
         return 4. * np.pi * np.trapz(y=integrand, x=self.radii)
-
-    def integrate(self, *args):
-        total_arr = np.ma.asarray(np.ones(len(args[0])))
-        for arr in args:
-            total_arr *= arr
-        return np.trapz(y=total_arr, x=self.radii)
