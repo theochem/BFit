@@ -63,7 +63,7 @@ class GaussianBasisSet(DensityModel):
             raise TypeError("Grid should be a numpy array.")
         if not isinstance(true_model, np.ndarray):
             raise TypeError("True model should be a numpy array.")
-        DensityModel.__init__(grid, true_model)
+        super(GaussianBasisSet, self).__init__(grid, true_model)
 
     def create_model(self, parameters, fixed_params=[], which_opti="b"):
         r"""
