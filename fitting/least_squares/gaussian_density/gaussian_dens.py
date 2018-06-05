@@ -53,7 +53,7 @@ class GaussianBasisSet(DensityModel):
         grid : np.ndarray
                Radial Grid points for the basis set.
 
-        true_model : np.ndarray, optional
+        true_model : np.ndarray
                     Electron Density to be fitted to. By default, it is the
                     slater densities where the parameters of the slater
                     densities is provided by the file path.
@@ -63,7 +63,7 @@ class GaussianBasisSet(DensityModel):
             raise TypeError("Grid should be a numpy array.")
         if not isinstance(true_model, np.ndarray):
             raise TypeError("True model should be a numpy array.")
-        DensityModel.__init__(self, grid, true_model=true_model)
+        DensityModel.__init__(grid, true_model)
 
     def create_model(self, parameters, fixed_params=[], which_opti="b"):
         r"""
