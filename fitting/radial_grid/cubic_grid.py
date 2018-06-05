@@ -45,7 +45,10 @@ class CubicGrid:
     def grid(self):
         return self._grid
 
-    def integrate(self, *args):
+    def __len__(self):
+        return self._grid.shape[0]
+
+    def integrate_spher(self, *args):
         total_arr = np.ma.asarray(np.ones(len(args[0])))
         for arr in args:
             total_arr *= arr
