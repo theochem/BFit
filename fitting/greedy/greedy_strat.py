@@ -55,7 +55,7 @@ class GreedyStrategy(object):
         raise NotImplementedError()
 
     @abstractmethod
-    def get_optimization_routine(self, *args, local=False):
+    def get_optimization_routine(self, local=False, *args):
         raise NotImplementedError()
 
     @abstractmethod

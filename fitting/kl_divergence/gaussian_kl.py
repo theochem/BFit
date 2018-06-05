@@ -94,7 +94,7 @@ class GaussianKullbackLeibler(KullbackLeiblerFitting):
         integrand = ratio * np.ma.asarray(np.exp(-exponent * grid_squared))
         if upt_exponent:
             integrand = integrand * self.masked_grid_squared
-        return self._get_norm_constant(exponent) * self.grid_obj.integrate_spher(integrand)
+        return self._get_norm_constant(exponent) * self.grid_obj.integrate_spher(False, integrand)
 
     def _update_coeffs_gauss(self, coeff_arr, exp_arr):
         r"""

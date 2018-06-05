@@ -58,7 +58,7 @@ class RadialGrid(object):
     def radii(self):
         return self._radii
 
-    def integrate_spher(self, *args, filled=False):
+    def integrate_spher(self, filled=False, *args):
         r"""
         Integrates a _grid on the radii points in a spherical
         format.

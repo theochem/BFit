@@ -75,7 +75,7 @@ class GaussianValKL(KullbackLeiblerFitting):
             integrand *= self.masked_grid_squared
         if upt_exponents:
             integrand *= self.masked_grid_squared
-        return const * self.grid_obj.integrate_spher(integrand)
+        return const * self.grid_obj.integrate_spher(False, integrand)
 
     def _update_coeffs_gauss(self, coeffs, fparams):
         gaussian_model = self.get_model(coeffs, fparams)

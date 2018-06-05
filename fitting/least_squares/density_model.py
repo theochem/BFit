@@ -27,7 +27,7 @@ It also contains standard error measures to be used when fitting to get a sense
 of how good the fit is.
 """
 
-import abc
+
 import numpy as np
 
 __all__ = ["DensityModel"]
@@ -44,7 +44,6 @@ class DensityModel(object):
     as well as UGBS exponents used to define proper initial guesses
     for the Gaussian least_squares model.
     """
-    __metaclass__ = abc.ABCMeta
 
     def __init__(self, grid, true_model=None):
         r"""
@@ -84,34 +83,22 @@ class DensityModel(object):
     def true_model(self):
         return self._true_model
 
-    @property
-    def UGBS_s_exponents(self):
-        return self._UGBS_s_exponents
-
-    @property
-    def UGBS_p_exponents(self):
-        return self._UGBS_p_exponents
-
-    @abc.abstractmethod
     def create_model(self):
         """
         """
         raise NotImplementedError("Need to implement the least_squares model")
 
-    @abc.abstractmethod
     def cost_function(self):
         """
         """
         raise NotImplementedError("Need to implement the cost function")
 
-    @abc.abstractmethod
     def derivative_of_cost_function(self):
         """
         """
         raise NotImplementedError("Need to Implement the derivative of cost "
                                   "function")
 
-    @abc.abstractmethod
     def create_cofactor_matrix(self):
         pass
 

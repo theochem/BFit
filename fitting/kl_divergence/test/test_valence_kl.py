@@ -90,7 +90,7 @@ def test_get_model():
     true_answer = kl.get_model(c, e)
     g_s = g.radii**2.
     desired_answer = (3 / np.pi)**1.5 * np.exp(-3 * g_s) + \
-                     (4 * 4**(5 / 2) / (3 * np.pi**1.5)) * g_s * np.exp(-4. * g_s)
+                     (4 * 4**(5. / 2) / (3 * np.pi**1.5)) * g_s * np.exp(-4. * g_s)
     npt.assert_allclose(true_answer, desired_answer)
 
 
