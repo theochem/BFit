@@ -19,6 +19,7 @@
 #
 # ---
 import numpy as np
+from numbers import Real
 from fitting.radial_grid.general_grid import RadialGrid
 
 __all__ = ["CubicGrid"]
@@ -26,6 +27,14 @@ __all__ = ["CubicGrid"]
 
 class CubicGrid(RadialGrid):
     def __init__(self, smallest_pt, largest_pt, step_size):
+        if not isinstance(smallest_pt, Real):
+            raise TypeError("Smallest point should be a number.")
+        if not isinstance(largest_pt, Real):
+            raise TypeError("Largest point should be a number.")
+        if not isinstance(step_size, Real):
+            raise TypeError("Step-size should be a number.")
+        if not step_size > 0.:
+            raise ValueError("Step-size should be positive, non-zero.")
         self.step = step_size
         grid = CubicGrid.make_cubic_grid(smallest_pt, largest_pt, step_size)
         super(CubicGrid, self).__init__(grid)
