@@ -139,7 +139,7 @@ def test_residual():
     npt.assert_allclose(actual_answer, desired_answer)
 
     grid = np.array([1., 2.], dtype=np.double)
-    true_model = np.exp(-grid)
+    true_model = np.exp(-grid, true_model)
     p = np.array([1., 2., 3., 4.], dtype=np.double)
     obj = GaussianBasisSet(grid, true_model)
     actual_answer = obj.get_residual(p)
@@ -171,10 +171,10 @@ def test_derivative_exponents():
     grid = np.array([1., 2.], dtype=np.double)
     coeff = np.array([1., 2.])
     exps = np.array([3., 4.])
-    obj = GaussianBasisSet(grid, np.exp(-grid))
+    den = np.exp(-grid)
+    obj = GaussianBasisSet(grid, den)
     actual_answer = obj.derivative_of_cost_function(exps, coeff, which_opti='e')
 
-    den = obj.true_model
     c = 2. * (den - gaussian_func([1., 2.], [3., 4.], grid))
     deriv_e1 = c[0] * coeff[0] * np.exp(-exps[0]) + \
         c[1] * coeff[0] * 4 * np.exp(-exps[0] * 4)
@@ -187,13 +187,12 @@ def test_derivative_cost_function():
     r"""Test derivaitve of cost function for GaussianBasisSet."""
     # Test With Array WRT TO ONLY COEFFICIENT
     grid = np.array([1., 2.], dtype=np.double)
-    p = np.array([1., 2., 3., 4.], dtype=np.double)
     coeff = np.array([1., 2.])
     exps = np.array([3., 4.])
-    obj = GaussianBasisSet(grid, np.exp(-grid))
+    den = np.exp(-grid)
+    obj = GaussianBasisSet(grid, den)
     actual_answer = obj.derivative_of_cost_function(coeff, exps, which_opti='c')
 
-    den = obj.true_model
     c = -2. * (den - gaussian_func([1., 2.], [3., 4.], grid))
     npt.assert_almost_equal(c[0], -2 * (den[0] - np.exp(-3) - 2. * np.exp(-4)))
     npt.assert_almost_equal(c[1], -2 * (den[1] - np.exp(-12) - 2. * np.exp(-16)))
@@ -206,8 +205,9 @@ def test_derivative_cost_function():
     grid = np.array([5.0])
     exponents = np.array([0., 1., 2., 3., 4.])
     coefficient = np.array([5.0, 3.0, 2.0, 2.44, 5.6])
+    den = np.exp(-grid)
     parameters = np.append(coefficient, exponents)
-    model_object = GaussianBasisSet(grid, np.exp(-grid))
+    model_object = GaussianBasisSet(grid, den)
     approximation = scipy.optimize.approx_fprime(parameters,
                                                  model_object.cost_function,
                                                  1e-5, 5)

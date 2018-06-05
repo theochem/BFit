@@ -41,17 +41,13 @@ def test_inputs_density_model():
     e = np.array([50., 100.])
     npt.assert_raises(TypeError, DensityModel, g, 10.)
     npt.assert_raises(TypeError, DensityModel, 10., "s")
-    npt.assert_raises(TypeError, DensityModel, g, "s", 10.)
-    npt.assert_raises(ValueError, DensityModel, g, "s", e)
-    assert DensityModel(g).element is None
-    dens_obj = DensityModel(g, "S")
+    dens_obj = DensityModel(g)
     npt.assert_equal(dens_obj.grid, g)
-    assert dens_obj.element == "s"
 
 
 def test_not_implemented():
     r"""Tests for not implemeneted for least_squares."""
-    d = DensityModel(np.array([5.]), "S")
+    d = DensityModel(np.array([5.]))
     npt.assert_raises(NotImplementedError, d.cost_function)
     npt.assert_raises(NotImplementedError, d.create_model)
     npt.assert_raises(NotImplementedError,
@@ -100,8 +96,3 @@ def test_residual_gives_error():
     fun_vals = np.exp(-grid ** 2)
     dens_obj = DensityModel(grid, true_model=fun_vals)
     npt.assert_raises(NotImplementedError, dens_obj.get_residual)
-
-
-def test_generation_ugbs_exponents():
-    r""""""
-    pass

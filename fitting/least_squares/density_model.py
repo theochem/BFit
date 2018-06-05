@@ -29,10 +29,8 @@ of how good the fit is.
 
 import abc
 import numpy as np
-from fitting.gbasis.gbasis import UGBSBasis
 
 __all__ = ["DensityModel"]
-# TODO: Remove GBASIS and UGBS, because even tempered seems better.
 
 
 class DensityModel(object):
@@ -48,7 +46,7 @@ class DensityModel(object):
     """
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, grid, element=None, true_model=None):
+    def __init__(self, grid, true_model=None):
         r"""
 
         Parameters
@@ -67,8 +65,6 @@ class DensityModel(object):
             If an argument of an invalid type is used
 
         """
-        if not isinstance(element, (type(None), str)):
-            raise TypeError("Element name should be string or none.")
         if not isinstance(grid, np.ndarray):
             raise TypeError("Grid should be a numpy array.")
         if true_model is not None:
@@ -77,21 +73,8 @@ class DensityModel(object):
             if grid.shape != true_model.shape:
                 raise ValueError("Electron least_squares and _grid should be the same "
                                  "size.")
-        self._element = element
         self._grid = np.ravel(np.copy(grid))
         self._true_model = np.ravel(true_model)
-
-        if element is not None:
-            self._element = element.lower()
-            gbasis = UGBSBasis(element)
-            self._UGBS_s_exponents = 2.0 * gbasis.exponents('s')
-            self._UGBS_p_exponents = 2.0 * gbasis.exponents('p')
-            if self._UGBS_p_exponents.size == 0.0:
-                self._UGBS_p_exponents = np.copy(self._UGBS_s_exponents)
-
-    @property
-    def element(self):
-        return self._element
 
     @property
     def grid(self):
