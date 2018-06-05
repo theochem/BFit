@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# An basis-set curve-fitting optimization package.
+# A basis-set curve-fitting optimization package.
 # Copyright (C) 2018 The FittingBasisSets Development Team.
 #
 # This file is part of FittingBasisSets.
