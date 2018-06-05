@@ -63,3 +63,7 @@ class CubicGrid:
                 for z in grid_1d:
                     grid.append([x, y, z])
         return np.array(grid)
+
+    def integrate_3d_space(self, *args):
+        # Same as Integrating Normally.
+        return self.integrate(*args)
