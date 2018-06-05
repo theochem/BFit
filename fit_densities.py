@@ -29,6 +29,7 @@ fit_radial_densities : minimization of least squares or kullback-leibler div
 
 import os
 import warnings
+import numpy as np
 from fitting.least_squares.least_sqs import *
 from fitting.radial_grid.general_grid import RadialGrid
 from fitting.least_squares.gaussian_density.gaussian_dens import GaussianBasisSet
@@ -150,8 +151,7 @@ def fit_gaussian_densities(grid, element_name=None, true_model=None, inte_val=No
         if element_name is not None:
             slater_file_path = "/data/examples/" + element_name.lower()
             file_path = os.path.join(current_file, slater_file_path)
-        density_model = GaussianBasisSet(grid.radii, true_model=true_model,
-                                         element_name=element_name, file_path=file_path)
+        density_model = GaussianBasisSet(grid.radii, true_model=true_model)
 
     # Exits If Custom Density Model is not inherited from density_model
     if not isinstance(density_model, DensityModel):
