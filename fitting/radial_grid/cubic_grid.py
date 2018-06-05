@@ -25,7 +25,7 @@ from fitting.radial_grid.general_grid import RadialGrid
 __all__ = ["CubicGrid"]
 
 
-class CubicGrid(RadialGrid):
+class CubicGrid:
     def __init__(self, smallest_pt, largest_pt, step_size):
         if not isinstance(smallest_pt, Real):
             raise TypeError("Smallest point should be a number.")
@@ -39,7 +39,11 @@ class CubicGrid(RadialGrid):
             raise ValueError("Step-size should be positive, non-zero.")
         self.step = step_size
         grid = CubicGrid.make_cubic_grid(smallest_pt, largest_pt, step_size)
-        super(CubicGrid, self).__init__(grid)
+        self._grid = grid
+
+    @property
+    def grid(self):
+        return self._grid
 
     def integrate(self, *args):
         total_arr = np.ma.asarray(np.ones(len(args[0])))
