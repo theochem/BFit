@@ -25,5 +25,4 @@ from fitting.grid import *
 from fitting.density import *
 from fitting.greedy import *
 from fitting.kl_divergence import *
-from fitting.least_squares import *
 from fitting.utils import *

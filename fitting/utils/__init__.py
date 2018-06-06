@@ -22,4 +22,5 @@
 
 
 from fitting.utils.io import *
+from fitting.utils.optimize import *
 from fitting.utils.plotting_utils import *
