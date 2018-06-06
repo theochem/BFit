@@ -19,4 +19,3 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-from fitting.least_squares.gaussian_density.gaussian_dens import GaussianBasisSet
