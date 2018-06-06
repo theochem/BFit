@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# An basis-set curve-fitting optimization package.
+# FittingBasisSets is a basis-set curve-fitting optimization package.
+#
 # Copyright (C) 2018 The FittingBasisSets Development Team.
 #
 # This file is part of FittingBasisSets.
@@ -94,7 +95,7 @@ class GaussianKullbackLeibler(KullbackLeiblerFitting):
         integrand = ratio * np.ma.asarray(np.exp(-exponent * grid_squared))
         if upt_exponent:
             integrand = integrand * self.masked_grid_squared
-        return self._get_norm_constant(exponent) * self.grid_obj.integrate_spher(integrand)
+        return self._get_norm_constant(exponent) * self.grid_obj.integrate_spher(False, integrand)
 
     def _update_coeffs_gauss(self, coeff_arr, exp_arr):
         r"""

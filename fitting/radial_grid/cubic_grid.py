@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# A basis-set curve-fitting optimization package.
+# FittingBasisSets is a basis-set curve-fitting optimization package.
+#
 # Copyright (C) 2018 The FittingBasisSets Development Team.
 #
 # This file is part of FittingBasisSets.
@@ -48,7 +49,7 @@ class CubicGrid:
     def __len__(self):
         return self._grid.shape[0]
 
-    def integrate_spher(self, *args):
+    def integrate_spher(self, filled=False, *args):
         total_arr = np.ma.asarray(np.ones(len(args[0])))
         for arr in args:
             total_arr *= arr

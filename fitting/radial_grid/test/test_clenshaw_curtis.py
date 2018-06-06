@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# An basis-set curve-fitting optimization package.
+# FittingBasisSets is a basis-set curve-fitting optimization package.
+#
 # Copyright (C) 2018 The FittingBasisSets Development Team.
 #
 # This file is part of FittingBasisSets.
@@ -65,7 +66,7 @@ def test_grid_is_uniform():
     r"""Test that radial _grid returns a uniform _grid."""
     numb_pts = 10
     actual_pts = ClenshawGrid.uniform_grid(numb_pts)
-    desired_pts = [x / numb_pts for x in range(0, 100 * numb_pts)]
+    desired_pts = [float(x) / numb_pts for x in range(0, 100 * numb_pts)]
     npt.assert_allclose(actual_pts, desired_pts)
 
 
@@ -75,7 +76,7 @@ def test_integration_on_grid():
     numb_pts = 100
     rad_obj = ClenshawGrid(10, numb_pts, numb_pts)
     arr = np.exp(-rad_obj.radii**2)
-    actual_value = rad_obj.integrate_spher(arr)
+    actual_value = rad_obj.integrate_spher(False, arr)
     desired_val = 4. * np.pi * 0.443313
     assert np.abs(actual_value - desired_val) < 0.1
 
@@ -84,7 +85,7 @@ def test_integration_on_grid():
     rad_obj = ClenshawGrid(10, numb_pts, numb_pts, filled=True)
     arr = np.exp(-rad_obj.radii ** 2)
     arr[np.random.randint(5)] = np.nan
-    actual_value = rad_obj.integrate_spher(arr)
+    actual_value = rad_obj.integrate_spher(False, arr)
     desired_val = 4. * np.pi * 0.443313
     assert np.abs(actual_value - desired_val) < 0.1
 
@@ -92,6 +93,6 @@ def test_integration_on_grid():
     arr = np.exp(-rad_obj.radii**2)
     arr[arr < 1e-10] = np.inf
     arr = np.ma.array(arr, mask=arr == np.inf)
-    actual_value = rad_obj.integrate_spher(arr, filled=True)
+    actual_value = rad_obj.integrate_spher(True, arr)
     desired_val = 4. * np.pi * 0.443313
     assert np.abs(actual_value - desired_val) < 0.1

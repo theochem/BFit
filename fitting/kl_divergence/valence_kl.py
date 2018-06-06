@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# An basis-set curve-fitting optimization package.
+# FittingBasisSets is a basis-set curve-fitting optimization package.
+#
 # Copyright (C) 2018 The FittingBasisSets Development Team.
 #
 # This file is part of FittingBasisSets.
@@ -51,8 +52,7 @@ class GaussianValKL(KullbackLeiblerFitting):
     def get_norm_coeffs(self, coeffs, fparams):
         n = len(fparams)
         norm_coeff = self._get_norm_constant(fparams[:n - self.numb_val])
-        norm_coeff_val = self._get_norm_constant(fparams[self.numb_val:],
-                                                 val=True)
+        norm_coeff_val = self._get_norm_constant(fparams[self.numb_val:], val=True)
         return coeffs * np.append(norm_coeff, norm_coeff_val)
 
     def get_model(self, coeffs, fparams):
@@ -75,7 +75,7 @@ class GaussianValKL(KullbackLeiblerFitting):
             integrand *= self.masked_grid_squared
         if upt_exponents:
             integrand *= self.masked_grid_squared
-        return const * self.grid_obj.integrate_spher(integrand)
+        return const * self.grid_obj.integrate_spher(False, integrand)
 
     def _update_coeffs_gauss(self, coeffs, fparams):
         gaussian_model = self.get_model(coeffs, fparams)

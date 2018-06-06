@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# An basis-set curve-fitting optimization package.
+# FittingBasisSets is a basis-set curve-fitting optimization package.
+#
 # Copyright (C) 2018 The FittingBasisSets Development Team.
 #
 # This file is part of FittingBasisSets.
@@ -58,7 +59,7 @@ class RadialGrid(object):
     def radii(self):
         return self._radii
 
-    def integrate_spher(self, *args, filled=False):
+    def integrate_spher(self, filled=False, *args):
         r"""
         Integrates a _grid on the radii points in a spherical
         format.

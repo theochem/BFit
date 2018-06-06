@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# An basis-set curve-fitting optimization package.
+# FittingBasisSets is a basis-set curve-fitting optimization package.
+#
 # Copyright (C) 2018 The FittingBasisSets Development Team.
 #
 # This file is part of FittingBasisSets.
@@ -86,6 +87,6 @@ def test_integration_cubic_grid():
     step_size = 0.01
     cubic_obj = CubicGrid(smallest_pt, largest_pt, step_size)
     integrand = np.array([1.] * cubic_obj.grid.shape[0])
-    true_answer = cubic_obj.integrate_spher(integrand)
+    true_answer = cubic_obj.integrate_spher(False, integrand)
     desired_answer = 0.25**3 * 1.
     npt.assert_allclose(true_answer, desired_answer, rtol=1e-2, atol=1e-1)

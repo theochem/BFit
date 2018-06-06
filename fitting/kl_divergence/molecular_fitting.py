@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# A basis-set curve-fitting optimization package.
+# FittingBasisSets is a basis-set curve-fitting optimization package.
+#
 # Copyright (C) 2018 The FittingBasisSets Development Team.
 #
 # This file is part of FittingBasisSets.
@@ -36,19 +37,19 @@ class MolecularFitting(KullbackLeiblerFitting):
         ----------
         grid_obj : CubicGrid
             This is the grid object responsible for holding the grid points and integrating.
-        
+
         dens_val : np.ndarray(shape=(1, N))
             Holds the molecular density values, where N is the number of points.
-        
+
         inte_val : float
             The integration of the molecular density over the entire space.
-        
+
         mol_coords : np.ndarray(shape=(M, 3))
             The coordinates of each atom position where M is the number of atoms.
-        
-        number_of_params : list(shape=(1, M)) 
+
+        number_of_params : list(shape=(1, M))
             The number of gaussian parameters for each atom stored in a list.
-            
+
         """
         if not isinstance(grid_obj, CubicGrid):
             raise TypeError("Grid object should be of type CubicGrid.")
@@ -159,7 +160,7 @@ class MolecularFitting(KullbackLeiblerFitting):
         integrand = ratio * np.ma.asarray(np.exp(-exponent * grid_squared))
         if upt_exponent:
             integrand = integrand * grid_squared
-        return self._get_norm_constant(exponent) * self.grid_obj.integrate_spher(integrand)
+        return self._get_norm_constant(exponent) * self.grid_obj.integrate_spher(False, integrand)
 
     def get_mol_coord(self, index):
         r"""

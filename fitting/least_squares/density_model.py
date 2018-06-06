@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# An basis-set curve-fitting optimization package.
+# FittingBasisSets is a basis-set curve-fitting optimization package.
+#
 # Copyright (C) 2018 The FittingBasisSets Development Team.
 #
 # This file is part of FittingBasisSets.
@@ -27,7 +28,7 @@ It also contains standard error measures to be used when fitting to get a sense
 of how good the fit is.
 """
 
-import abc
+
 import numpy as np
 
 __all__ = ["DensityModel"]
@@ -44,7 +45,6 @@ class DensityModel(object):
     as well as UGBS exponents used to define proper initial guesses
     for the Gaussian least_squares model.
     """
-    __metaclass__ = abc.ABCMeta
 
     def __init__(self, grid, true_model=None):
         r"""
@@ -84,49 +84,27 @@ class DensityModel(object):
     def true_model(self):
         return self._true_model
 
-    @property
-    def UGBS_s_exponents(self):
-        return self._UGBS_s_exponents
-
-    @property
-    def UGBS_p_exponents(self):
-        return self._UGBS_p_exponents
-
-    @abc.abstractmethod
     def create_model(self):
         """
         """
         raise NotImplementedError("Need to implement the least_squares model")
 
-    @abc.abstractmethod
     def cost_function(self):
         """
         """
         raise NotImplementedError("Need to implement the cost function")
 
-    @abc.abstractmethod
     def derivative_of_cost_function(self):
         """
         """
         raise NotImplementedError("Need to Implement the derivative of cost "
                                   "function")
 
-    @abc.abstractmethod
     def create_cofactor_matrix(self):
         pass
 
     def get_residual(self, *args):
         return self._true_model - self.create_model(*args)
-
-    """
-    def calculate_residual_based_on_core(self, *args):
-        residual = np.ravel(self.electron_density_core) - self.density_model.create_model(*args)
-        return residual
-
-    def calculate_residual_based_on_valence(self, *args):
-        residual = np.ravel(self.electron_density_valence) - self.density_model.create_model(*args)
-        return residual
-    """
 
     def integrate_model_trapz(self, approx_model):
         r"""
@@ -197,34 +175,3 @@ class DensityModel(object):
         integrate_approx_model = self.integrate_model_trapz(approx_model)
         diff_model = integrate_true_model - integrate_approx_model
         return np.absolute(diff_model)
-
-    def generation_of_UGBS_exponents(self, p, UGBS_exponents):
-        r"""
-        #TODO: Implement Proper Documentation for This.
-        Generates Universal Gaussian Basis Sets (UGBS) exponents.
-        Used for Greedy I THINK
-        Parameters
-        ----------
-        p : float
-
-        UGBS_exponents : array
-
-        Returns
-        -------
-        array
-
-        """
-        max_ugbs = np.amax(UGBS_exponents)
-        min_ugbs = np.amin(UGBS_exponents)
-
-        def get_numb_gauss_funcs(p, max, min):
-            num_of_basis_functions = np.log(2 * max / min) / np.log(p)
-            return num_of_basis_functions
-
-        numb_basis_funcs = int(get_numb_gauss_funcs(p, max_ugbs, min_ugbs))
-        new_gauss_exps = np.array([min_ugbs])
-        for n in range(1, numb_basis_funcs + 1):
-            next_exponent = min_ugbs * np.power(p, n)
-            new_gauss_exps = np.append(new_gauss_exps, next_exponent)
-
-        return new_gauss_exps

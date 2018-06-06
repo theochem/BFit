@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# An basis-set curve-fitting optimization package.
+# FittingBasisSets is a basis-set curve-fitting optimization package.
+#
 # Copyright (C) 2018 The FittingBasisSets Development Team.
 #
 # This file is part of FittingBasisSets.
@@ -104,7 +105,7 @@ class ClenshawGrid(RadialGrid):
         """
         assert type(numb_pts) is int, "Grid points is not an integer"
         interval = np.arange(0, numb_pts)
-        factor = 1 / (2 * self._atomic_numb)
+        factor = 1. / (2 * self._atomic_numb)
         core_grid = factor * (1 - np.cos(np.pi * interval / (2 * numb_pts)))
         return core_grid
 
@@ -163,4 +164,4 @@ class ClenshawGrid(RadialGrid):
 
     @staticmethod
     def uniform_grid(number_of_points):
-        return np.arange(100, step=1/number_of_points)
+        return np.arange(100, step=1./number_of_points)

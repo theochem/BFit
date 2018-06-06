@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# An basis-set curve-fitting optimization package.
+# FittingBasisSets is a basis-set curve-fitting optimization package.
+#
 # Copyright (C) 2018 The FittingBasisSets Development Team.
 #
 # This file is part of FittingBasisSets.
@@ -37,16 +38,15 @@ from scipy.optimize import minimize
 from numbers import Real
 from fitting.radial_grid.general_grid import RadialGrid
 from fitting.radial_grid.cubic_grid import CubicGrid
-from abc import ABCMeta, abstractmethod
+
 
 __all__ = ["KullbackLeiblerFitting"]
 
 
-class KullbackLeiblerFitting:
+class KullbackLeiblerFitting(object):
     r"""
 
     """
-    __metaclass__ = ABCMeta
 
     def __init__(self, grid_obj, true_model, inte_val=None):
         r"""
@@ -61,8 +61,7 @@ class KullbackLeiblerFitting:
         if inte_val is not None and inte_val <= 0.:
             raise ValueError("Integration value should be positive.")
         if not isinstance(grid_obj, (RadialGrid, CubicGrid)):
-            raise TypeError("Grid Object should be "
-                            "'fitting.radial_grid.radial_grid'.")
+            raise TypeError("Grid Object should be 'fitting.radial_grid.radial_grid'.")
         if not isinstance(true_model, np.ndarray):
             raise TypeError("Electron Density should be a numpy array.")
         self.grid_obj = grid_obj
@@ -70,7 +69,7 @@ class KullbackLeiblerFitting:
         self.ma_true_mod = ma.array(true_model)
         self.inte_val = inte_val
         if inte_val is None:
-            self.inte_val = grid_obj.integrate_spher(true_model)
+            self.inte_val = grid_obj.integrate_spher(False, true_model)
         # Various methods relay on masked values due to division of small numbers.
         self._lagrange_multiplier = self.get_lagrange_multiplier()
         if self._lagrange_multiplier == 0.:
@@ -83,19 +82,15 @@ class KullbackLeiblerFitting:
     def lagrange_multiplier(self):
         return self._lagrange_multiplier
 
-    @abstractmethod
     def get_model(self, *args):
         raise NotImplementedError()
 
-    @abstractmethod
     def _update_coeffs(self):
         raise NotImplementedError()
 
-    @abstractmethod
     def _update_func_params(self):
         raise NotImplementedError()
 
-    @abstractmethod
     def _get_norm_constant(self):
         raise NotImplementedError()
 
@@ -151,7 +146,7 @@ class KullbackLeiblerFitting:
 
         :return:
         """
-        return self.grid_obj.integrate_spher(self.true_model) / self.inte_val
+        return self.grid_obj.integrate_spher(False, self.true_model) / self.inte_val
 
     def get_norm_consts(self, exp_arr):
         r"""
@@ -189,7 +184,7 @@ class KullbackLeiblerFitting:
         """
         div_model = np.divide(self.ma_true_mod, ma.array(model))
         log_ratio_models = np.log(div_model)
-        return self.grid_obj.integrate_spher(self.ma_true_mod * log_ratio_models)
+        return self.grid_obj.integrate_spher(False, self.ma_true_mod * log_ratio_models)
 
     def integrate_model_spherically(self, model):
         r"""
@@ -207,7 +202,7 @@ class KullbackLeiblerFitting:
         np.ndarray
                   Integration of the weighted model over the reals
         """
-        return self.grid_obj.integrate_spher(model)
+        return self.grid_obj.integrate_spher(False, model)
 
     def goodness_of_fit_grid_squared(self, model):
         r"""
@@ -227,7 +222,7 @@ class KullbackLeiblerFitting:
               An error measure on how good the fit is.
         """
         absolute_diff = np.abs(model - self.true_model)
-        return self.grid_obj.integrate_spher(absolute_diff) / (4 * np.pi)
+        return self.grid_obj.integrate_spher(False, absolute_diff) / (4 * np.pi)
 
     def goodness_of_fit(self, model):
         r"""
@@ -268,11 +263,9 @@ class KullbackLeiblerFitting:
                 self.goodness_of_fit_grid_squared(model),
                 self.get_kullback_leibler(model)]
 
-    @abstractmethod
     def _get_deriv_coeffs(self, coeffs, fparams):
         pass
 
-    @abstractmethod
     def _get_deriv_fparams(self, coeffs, fparams):
         pass
 

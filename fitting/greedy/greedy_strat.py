@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# An basis-set curve-fitting optimization package.
+# FittingBasisSets is a basis-set curve-fitting optimization package.
+#
 # Copyright (C) 2018 The FittingBasisSets Development Team.
 #
 # This file is part of FittingBasisSets.
@@ -55,7 +56,7 @@ class GreedyStrategy(object):
         raise NotImplementedError()
 
     @abstractmethod
-    def get_optimization_routine(self, *args, local=False):
+    def get_optimization_routine(self, local=False, *args):
         raise NotImplementedError()
 
     @abstractmethod
