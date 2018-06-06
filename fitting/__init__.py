@@ -19,8 +19,10 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
+
+
+from fitting.grid import *
 from fitting.greedy import *
 from fitting.kl_divergence import *
 from fitting.least_squares import *
-from fitting.radial_grid import *
 from fitting.utils import *

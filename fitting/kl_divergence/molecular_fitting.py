@@ -25,7 +25,7 @@ import numpy as np
 import numpy.ma as ma
 from numbers import Real
 from fitting.kl_divergence.kull_leib_fitting import KullbackLeiblerFitting
-from fitting.radial_grid.cubic_grid import CubicGrid
+from fitting.grid import CubicGrid
 
 __all__ = ["MolecularFitting"]
 

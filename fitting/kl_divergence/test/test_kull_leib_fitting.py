@@ -25,8 +25,8 @@ r"""Test file for 'fitting.mbis.mbis_abc'"""
 import numpy as np
 import numpy.testing as npt
 from fitting.kl_divergence.kull_leib_fitting import KullbackLeiblerFitting
-from fitting.radial_grid.general_grid import RadialGrid
-from fitting.radial_grid.clenshaw_curtis import ClenshawGrid
+from fitting.grid import BaseRadialGrid, ClenshawRadialGrid
+
 
 __all__ = ["test_get_descriptors_of_model",
            "test_get_kullback_leibler",
@@ -39,7 +39,7 @@ __all__ = ["test_get_descriptors_of_model",
 
 def test_input_checks():
     r"""Test input checks for 'fitting.kl_divergence.KullbackLeiblerFitting'."""
-    g = ClenshawGrid(10, 2, 1)
+    g = ClenshawRadialGrid(10, 2, 1)
     e = np.array(g.radii * 5.)
     npt.assert_raises(TypeError, KullbackLeiblerFitting, 10., e)
     npt.assert_raises(TypeError, KullbackLeiblerFitting, g, 10.)
@@ -48,14 +48,14 @@ def test_input_checks():
     npt.assert_raises(ValueError, KullbackLeiblerFitting, g, e, 0.)
 
     # Test that lagrange multiplier gives zero or nan.
-    g = RadialGrid(np.arange(0., 10.))
+    g = BaseRadialGrid(np.arange(0., 10.))
     e = np.exp(-g.radii)
     npt.assert_raises(RuntimeError, KullbackLeiblerFitting, g, e, np.nan)
     e = np.zeros(10)
     npt.assert_raises(RuntimeError, KullbackLeiblerFitting, g, e, 1)
 
     # Test when Integration Value (inte_val) is None
-    g = RadialGrid(np.arange(0., 26, 0.05))
+    g = BaseRadialGrid(np.arange(0., 26, 0.05))
     e = np.exp(-g.radii)
     kl = KullbackLeiblerFitting(g, e, None)
     npt.assert_allclose(kl.inte_val, 2. * 4. * np.pi)
@@ -64,7 +64,7 @@ def test_input_checks():
 def test_raise_not_implemented():
     r"""Test for raising not implemented for KullbackLeiblerFitting class."""
     g = np.arange(10.)
-    kl = KullbackLeiblerFitting(RadialGrid(g), g)
+    kl = KullbackLeiblerFitting(BaseRadialGrid(g), g)
     npt.assert_raises(NotImplementedError, kl.get_model)
     npt.assert_raises(NotImplementedError, kl._update_func_params)
     npt.assert_raises(NotImplementedError, kl._update_coeffs)
@@ -75,7 +75,7 @@ def test_raise_not_implemented():
 
 def test_get_lagrange_multiplier():
     r"""Test the lagrange multiplier in KullbackLeiblerFitting."""
-    g = RadialGrid(np.arange(0., 26, 0.05))
+    g = BaseRadialGrid(np.arange(0., 26, 0.05))
     e = np.exp(-g.radii)
     kl = KullbackLeiblerFitting(g, e, inte_val=1.)
     npt.assert_allclose(kl.lagrange_multiplier, 2. * 4 * np.pi)
@@ -83,7 +83,7 @@ def test_get_lagrange_multiplier():
 
 def test_integration_spherical():
     r"""Test integration of model in KullbackLeiblerFitting."""
-    g = RadialGrid(np.arange(0., 26, 0.01))
+    g = BaseRadialGrid(np.arange(0., 26, 0.01))
     e = np.exp(-g.radii)
     kl = KullbackLeiblerFitting(g, e, inte_val=1.)
     true_answer = kl.integrate_model_spherically(e)
@@ -92,7 +92,7 @@ def test_integration_spherical():
 
 def test_goodness_of_fit():
     r"""Test goodness of fit."""
-    g = RadialGrid(np.arange(0., 10, 0.01))
+    g = BaseRadialGrid(np.arange(0., 10, 0.01))
     e = np.exp(-g.radii)
     kl = KullbackLeiblerFitting(g, e, inte_val=1.)
     model = np.exp(-g.radii**2.)
@@ -102,7 +102,7 @@ def test_goodness_of_fit():
 
 def test_goodness_of_fit_squared():
     r"""Test goodness of fit squared."""
-    g = RadialGrid(np.arange(0., 10, 0.01))
+    g = BaseRadialGrid(np.arange(0., 10, 0.01))
     e = np.exp(-g.radii)
     kl = KullbackLeiblerFitting(g, e, inte_val=1.)
     model = np.exp(-g.radii ** 2.)
@@ -113,7 +113,7 @@ def test_goodness_of_fit_squared():
 def test_get_kullback_leibler():
     r"""Test kullback leibler formula."""
     # Test same probabiltiy distribution
-    g = RadialGrid(np.arange(0., 26, 0.01))
+    g = BaseRadialGrid(np.arange(0., 26, 0.01))
     e = np.exp(-g.radii**2.)
     kl = KullbackLeiblerFitting(g, e)
     true_answer = kl.get_kullback_leibler(e)
@@ -128,7 +128,7 @@ def test_get_kullback_leibler():
 
 def test_get_descriptors_of_model():
     r"""Test get descriptors of model."""
-    g = RadialGrid(np.arange(0., 10, 0.001))
+    g = BaseRadialGrid(np.arange(0., 10, 0.001))
     e = np.exp(-g.radii)
     kl = KullbackLeiblerFitting(g, e, inte_val=1.)
     model = np.exp(-g.radii**2.)

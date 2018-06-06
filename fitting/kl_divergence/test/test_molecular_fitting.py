@@ -24,7 +24,7 @@ r"""Test file for 'fitting.kl_divergence.molecular_fitting'."""
 
 import numpy as np
 import numpy.testing as npt
-from fitting.radial_grid.cubic_grid import CubicGrid
+from fitting.grid import CubicGrid
 from fitting.kl_divergence.molecular_fitting import MolecularFitting
 
 __all__ = []
