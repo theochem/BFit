@@ -21,9 +21,12 @@
 # ---
 """Test file for least_squares model."""
 
-from fitting.least_squares import DensityModel
+
 import numpy as np
 import numpy.testing as npt
+
+from fitting.model import DensityModel
+
 
 __all__ = [
     "test_residual_gives_error",

@@ -20,4 +20,3 @@
 #
 # ---
 from fitting.least_squares.gaussian_density.gaussian_dens import GaussianBasisSet
-from fitting.least_squares.density_model import DensityModel

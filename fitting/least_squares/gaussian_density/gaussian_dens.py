@@ -33,7 +33,7 @@ Primarily used for defining the least squares cost-function.
 import os
 import numpy as np
 
-from fitting.least_squares.density_model import DensityModel
+from fitting.model import DensityModel
 
 
 __all__ = ["GaussianBasisSet"]
