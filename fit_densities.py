@@ -31,12 +31,11 @@ fit_radial_densities : minimization of least squares or kullback-leibler div
 import os
 import warnings
 import numpy as np
-from fitting.least_squares.least_sqs import *
-from fitting.radial_grid.general_grid import RadialGrid
-from fitting.least_squares.gaussian_density.gaussian_dens import GaussianBasisSet
+
+from fitting.grid import BaseRadialGrid
 from fitting.kl_divergence.gaussian_kl import GaussianKullbackLeibler
-from fitting.least_squares.slater_density.atomic_slater_density import AtomicDensity
-from fitting.least_squares.density_model import DensityModel
+from fitting.density import AtomicDensity
+from fitting.model import DensityModel, GaussianBasisSet
 from fitting.greedy.greedy_kl import GreedyKL
 from fitting.utils.plotting_utils import plot_model_densities, plot_error
 from fitting.greedy.greedy_utils import get_next_choices
@@ -58,9 +57,9 @@ def fit_gaussian_densities(grid, element_name=None, true_model=None, inte_val=No
 
     Parameters
     ----------
-    grid : arr or ClenshawGrid or RadialGrid or HortonGrid, optional
+    grid : arr or ClenshawGrid or BaseRadialGrid or HortonGrid, optional
           The radial grid points, if arr is provided it is stored as a
-          RadialGrid object.
+          BaseRadialGrid object.
 
     element_name : str, optional
                   The element that is being fitted to. If this is None, then
@@ -138,7 +137,7 @@ def fit_gaussian_densities(grid, element_name=None, true_model=None, inte_val=No
         element_name = element_name.lower()
 
     if isinstance(grid, np.ndarray):
-        grid = RadialGrid(grid)
+        grid = BaseRadialGrid(grid)
 
     # Sets Default Density To Atomic Slater
     current_file = os.path.abspath(os.path.dirname(__file__))
