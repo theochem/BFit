@@ -15,7 +15,7 @@ true_model = AtomicDensity("./data/examples/be.slater", grid).electron_density
 integration_value = 4.
 
 # Define your weights.
-weights = grid_obj.radii**4. / (4. * np.pi * grid_obj.radii**4)
+weights = 1. / (4. * np.pi * grid_obj.radii**2.)
 
 # Define initial guess.
 coeffs = np.array([4. / 10.] * 10)
