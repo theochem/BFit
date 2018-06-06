@@ -60,8 +60,7 @@ class KullbackLeiblerFitting(object):
         if inte_val is not None and inte_val <= 0.:
             raise ValueError("Integration value should be positive.")
         if not isinstance(grid_obj, (RadialGrid, CubicGrid)):
-            raise TypeError("Grid Object should be "
-                            "'fitting.radial_grid.radial_grid'.")
+            raise TypeError("Grid Object should be 'fitting.radial_grid.radial_grid'.")
         if not isinstance(true_model, np.ndarray):
             raise TypeError("Electron Density should be a numpy array.")
         self.grid_obj = grid_obj

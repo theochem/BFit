@@ -36,19 +36,19 @@ class MolecularFitting(KullbackLeiblerFitting):
         ----------
         grid_obj : CubicGrid
             This is the grid object responsible for holding the grid points and integrating.
-        
+
         dens_val : np.ndarray(shape=(1, N))
             Holds the molecular density values, where N is the number of points.
-        
+
         inte_val : float
             The integration of the molecular density over the entire space.
-        
+
         mol_coords : np.ndarray(shape=(M, 3))
             The coordinates of each atom position where M is the number of atoms.
-        
-        number_of_params : list(shape=(1, M)) 
+
+        number_of_params : list(shape=(1, M))
             The number of gaussian parameters for each atom stored in a list.
-            
+
         """
         if not isinstance(grid_obj, CubicGrid):
             raise TypeError("Grid object should be of type CubicGrid.")

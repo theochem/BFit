@@ -105,16 +105,6 @@ class DensityModel(object):
     def get_residual(self, *args):
         return self._true_model - self.create_model(*args)
 
-    """
-    def calculate_residual_based_on_core(self, *args):
-        residual = np.ravel(self.electron_density_core) - self.density_model.create_model(*args)
-        return residual
-
-    def calculate_residual_based_on_valence(self, *args):
-        residual = np.ravel(self.electron_density_valence) - self.density_model.create_model(*args)
-        return residual
-    """
-
     def integrate_model_trapz(self, approx_model):
         r"""
         Integrates the approximate model with an added r^2 over [0, inf),
@@ -184,34 +174,3 @@ class DensityModel(object):
         integrate_approx_model = self.integrate_model_trapz(approx_model)
         diff_model = integrate_true_model - integrate_approx_model
         return np.absolute(diff_model)
-
-    def generation_of_UGBS_exponents(self, p, UGBS_exponents):
-        r"""
-        #TODO: Implement Proper Documentation for This.
-        Generates Universal Gaussian Basis Sets (UGBS) exponents.
-        Used for Greedy I THINK
-        Parameters
-        ----------
-        p : float
-
-        UGBS_exponents : array
-
-        Returns
-        -------
-        array
-
-        """
-        max_ugbs = np.amax(UGBS_exponents)
-        min_ugbs = np.amin(UGBS_exponents)
-
-        def get_numb_gauss_funcs(p, max, min):
-            num_of_basis_functions = np.log(2 * max / min) / np.log(p)
-            return num_of_basis_functions
-
-        numb_basis_funcs = int(get_numb_gauss_funcs(p, max_ugbs, min_ugbs))
-        new_gauss_exps = np.array([min_ugbs])
-        for n in range(1, numb_basis_funcs + 1):
-            next_exponent = min_ugbs * np.power(p, n)
-            new_gauss_exps = np.append(new_gauss_exps, next_exponent)
-
-        return new_gauss_exps

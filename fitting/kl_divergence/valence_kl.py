@@ -51,8 +51,7 @@ class GaussianValKL(KullbackLeiblerFitting):
     def get_norm_coeffs(self, coeffs, fparams):
         n = len(fparams)
         norm_coeff = self._get_norm_constant(fparams[:n - self.numb_val])
-        norm_coeff_val = self._get_norm_constant(fparams[self.numb_val:],
-                                                 val=True)
+        norm_coeff_val = self._get_norm_constant(fparams[self.numb_val:], val=True)
         return coeffs * np.append(norm_coeff, norm_coeff_val)
 
     def get_model(self, coeffs, fparams):
