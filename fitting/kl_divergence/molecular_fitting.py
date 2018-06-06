@@ -252,12 +252,5 @@ class MolecularFitting(KullbackLeiblerFitting):
             else:
                 new_exps[i] = 3. * self.get_inte_factor(exp_arr[i], masked_normed_gaussian, mol)
             integration = self.get_inte_factor(exp_arr[i], masked_normed_gaussian, mol, True)
-
             new_exps[i] /= (2. * integration)
         return new_exps
-
-    def _get_deriv_coeffs(self, coeffs, fparams):
-        pass
-
-    def _get_deriv_fparams(self, coeffs, fparams):
-        pass

@@ -43,7 +43,7 @@ class GaussianKullbackLeibler(KullbackLeiblerFitting):
     r"""
 
     """
-    def __init__(self, grid_obj, true_model, inte_val=None):
+    def __init__(self, grid_obj, true_model, inte_val=None, weights=None):
         r"""
 
         Parameters
@@ -51,7 +51,7 @@ class GaussianKullbackLeibler(KullbackLeiblerFitting):
 
 
         """
-        super(GaussianKullbackLeibler, self).__init__(grid_obj, true_model, inte_val)
+        super(GaussianKullbackLeibler, self).__init__(grid_obj, true_model, inte_val, weights)
         self.grid_points = ma.asarray(np.reshape(grid_obj.radii, (len(grid_obj.radii), 1)))
         # TODO: Seems like I don't need this attribute
         self.masked_grid_squared = ma.asarray(np.power(self.grid_obj.radii, 2.))
@@ -91,7 +91,7 @@ class GaussianKullbackLeibler(KullbackLeiblerFitting):
         Returns
         -------
         """
-        ratio = self.ma_true_mod / masked_normed_gaussian
+        ratio = self.weights * self.ma_true_mod / masked_normed_gaussian
         grid_squared = self.grid_obj.radii**2.
         integrand = ratio * np.ma.asarray(np.exp(-exponent * grid_squared))
         if upt_exponent:
@@ -155,7 +155,7 @@ class GaussianValKL(KullbackLeiblerFitting):
 
     def _get_norm_constant(self, fparam, val=False):
         if val:
-            return 2. * (fparam ** (5. / 2)) / (3 * (np.pi ** 1.5))
+            return 2. * (fparam ** (5. / 2)) / (3. * (np.pi ** 1.5))
         return (fparam / np.pi) ** (3. / 2.)
 
     def get_norm_coeffs(self, coeffs, fparams):

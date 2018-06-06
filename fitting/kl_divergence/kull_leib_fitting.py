@@ -46,7 +46,7 @@ class KullbackLeiblerFitting(object):
 
     """
 
-    def __init__(self, grid_obj, true_model, inte_val=None):
+    def __init__(self, grid_obj, true_model, inte_val=None, weights=None):
         r"""
 
         Parameters
@@ -56,6 +56,8 @@ class KullbackLeiblerFitting(object):
         """
         if not isinstance(inte_val, (type(None), Real)):
             raise TypeError("Integration Value should be an integer.")
+        if not isinstance(weights, (type(None), np.ndarray)):
+            raise TypeError("Weights should be none or a numpy array.")
         if inte_val is not None and inte_val <= 0.:
             raise ValueError("Integration value should be positive.")
         if not isinstance(grid_obj, (BaseRadialGrid, CubicGrid)):
@@ -68,6 +70,8 @@ class KullbackLeiblerFitting(object):
         self.inte_val = inte_val
         if inte_val is None:
             self.inte_val = grid_obj.integrate_spher(False, true_model)
+        if weights is None:
+            self.weights = np.ones(len(true_model))
         # Various methods relay on masked values due to division of small numbers.
         self._lagrange_multiplier = self.get_lagrange_multiplier()
         if self._lagrange_multiplier == 0.:
@@ -152,7 +156,7 @@ class KullbackLeiblerFitting(object):
 
         :return:
         """
-        return self.grid_obj.integrate_spher(False, self.true_model) / self.inte_val
+        return self.grid_obj.integrate_spher(False, self.true_model * self.weights) / self.inte_val
 
     def get_norm_consts(self, exp_arr):
         r"""
@@ -189,7 +193,7 @@ class KullbackLeiblerFitting(object):
                   Kullback Leibler fomula
         """
         div_model = np.divide(self.ma_true_mod, ma.array(model))
-        log_ratio_models = np.log(div_model)
+        log_ratio_models = self.weights * np.log(div_model)
         return self.grid_obj.integrate_spher(False, self.ma_true_mod * log_ratio_models)
 
     def integrate_model_spherically(self, model):
