@@ -90,8 +90,7 @@ class GreedyStrategy(object):
         self.store_errors(gparams)
         exit_info = ""
         numb_funcs = len(gparams) / numb_one_func_params
-        prev_gval = 0
-        best_gval = 1e10
+        prev_gval, best_gval = 0, 1e10
         params_iter = [gparams]
         numb_redum = 0
         factor0 = factor
@@ -117,8 +116,7 @@ class GreedyStrategy(object):
                 # If Removing Redundancies gave a better answer.
                 if redudan_obj < best_gval:
                     gparams = np.append(coeffs, fparams)
-                    self.redudan_info.append([numb_funcs, len(coeffs),
-                                              "Gave Better Answer"])
+                    self.redudan_info.append([numb_funcs, len(coeffs), "Gave Better Answer"])
                     numb_funcs = len(coeffs)
                     prev_gval, best_gval = best_gval, redudan_obj
                     self.store_errors(gparams)
@@ -130,7 +128,7 @@ class GreedyStrategy(object):
                 numb_redum += 1
                 factor += 5
 
-            # Best local choice is best so far.
+            # Local choice is best so far.
             elif best_lval <= best_gval:
                 prev_gval, best_gval = best_gval, best_lval
                 gparams = self.get_optimization_routine(best_lparam, local=False)
@@ -147,18 +145,16 @@ class GreedyStrategy(object):
 
         # "Next Iteration Did Not Find THe Best Choice":
         if exit_info is None:
-            exit_info = self._final_exit_info(numb_funcs, max_numb_funcs,
-                                              best_gval, prev_gval, numb_redum)
+            exit_info = self._final_exit_info(numb_funcs, max_numb_funcs, best_gval, prev_gval, 
+                                              numb_redum)
         return gparams, params_iter, exit_info
 
     def _final_exit_info(self, num_func, max_func, best_val, prev_gval, redum):
         if not num_func < max_func - 1:
-            exit_info = "Max number of functions reached,  " + \
-                             str(num_func)
+            exit_info = "Max number of functions reached,  " + str(num_func)
         elif not np.abs(best_val - prev_gval) >= 1e-5:
             exit_info = "Cost function is less than some epsilon " + \
                              str(best_val - prev_gval) + " <= " + str(1e-5)
         elif not redum < 5:
-            exit_info = " Number of redudancies " + str(redum) + \
-                             " found in a row is more than 5, "
+            exit_info = " Number of redudancies " + str(redum) + " found in a row is more than 5, "
         return exit_info

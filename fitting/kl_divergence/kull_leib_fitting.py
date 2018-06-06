@@ -71,7 +71,8 @@ class KullbackLeiblerFitting(object):
         if inte_val is None:
             self.inte_val = grid_obj.integrate_spher(False, true_model)
         if weights is None:
-            self.weights = np.ones(len(true_model))
+            weights = np.ones(len(true_model))
+        self.weights = weights
         # Various methods relay on masked values due to division of small numbers.
         self._lagrange_multiplier = self.get_lagrange_multiplier()
         if self._lagrange_multiplier == 0.:
@@ -134,7 +135,7 @@ class KullbackLeiblerFitting(object):
 
         counter = 0
         while np.any(np.abs(fparams_i1 - fparams_i) > eps_fparam) and \
-                np.abs(prev_func_val - curr_func_val) > 1e-10:
+                np.abs(prev_func_val - curr_func_val) > 1e-8:
 
             # One iteration to update coefficients
             coeffs_i1, coeffs_i = self._replace_coeffs(coeffs_i1, fparams_i1)
