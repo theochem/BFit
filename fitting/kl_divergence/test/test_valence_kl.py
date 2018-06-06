@@ -19,13 +19,13 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-r"""Test file for 'fitting.kl_divergence.valence_kl'."""
+r"""Test file for 'fitting.kl_divergence.gaussian_kl:GaussianValKL'."""
 
 import numpy as np
 import numpy.testing as npt
 from scipy.integrate import trapz, simps
 from fitting.grid import BaseRadialGrid
-from fitting.kl_divergence.valence_kl import GaussianValKL
+from fitting.kl_divergence.gaussian_kl import GaussianValKL
 
 __all__ = ["test_get_integration_factor_exps",
            "test_get_model",
