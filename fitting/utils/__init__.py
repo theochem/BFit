@@ -19,4 +19,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-from fitting.utils import plotting_utils
+
+
+from fitting.utils.io import *
+from fitting.utils.plotting_utils import *

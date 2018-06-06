@@ -22,6 +22,8 @@
 r"""
 
 """
+
+
 import re
 import numpy as np
 
@@ -33,8 +35,7 @@ def load_slater_wfn(file_name):
     Parameters
     ----------
     file_name : str
-                The path to the Slater atomic file.
-
+        The path to the Slater atomic file.
     """
     def get_number_of_electrons_per_orbital(string_configuration):
         """

@@ -28,10 +28,13 @@ while keeping exponents fixed or vice versa.
 Depends on the Atomic_Density class for defining the slater model.
 Primarily used for defining the least squares cost-function.
 """
+
+
 import os
-from fitting.least_squares.density_model import DensityModel
-from fitting.least_squares.slater_density.atomic_slater_density import AtomicDensity
 import numpy as np
+
+from fitting.least_squares.density_model import DensityModel
+
 
 __all__ = ["GaussianBasisSet"]
 
