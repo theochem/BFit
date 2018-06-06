@@ -24,7 +24,7 @@ r"""
 """
 
 from fitting.greedy.greedy_strat import GreedyStrategy
-from fitting.greedy.greedy_utils import get_next_choices
+from fitting.utils.greedy_utils import get_next_choices
 from fitting.model import GaussianBasisSet
 from fitting.utils.optimize import optimize_using_nnls, optimize_using_slsqp
 import numpy as np

@@ -25,7 +25,7 @@ r"""
 
 from abc import ABCMeta, abstractmethod
 import numpy as np
-from fitting.greedy.greedy_utils import check_redundancies
+from fitting.utils.greedy_utils import check_redundancies
 
 __all__ = ["GreedyStrategy"]
 

@@ -34,7 +34,6 @@ have to inherit from KullbackLeibler class.
 from __future__ import division
 import numpy as np
 import numpy.ma as ma
-from scipy.optimize import minimize
 from numbers import Real
 from fitting.grid import BaseRadialGrid, CubicGrid
 

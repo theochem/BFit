@@ -24,7 +24,7 @@ r"""
 """
 
 from fitting.kl_divergence.gaussian_kl import GaussianKullbackLeibler
-from fitting.greedy.greedy_utils import get_next_choices
+from fitting.utils.greedy_utils import get_next_choices
 from fitting.greedy.greedy_strat import GreedyStrategy
 import numpy as np
 
