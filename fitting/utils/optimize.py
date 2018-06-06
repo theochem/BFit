@@ -19,11 +19,15 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-import numpy as np
+
+
 import scipy
+import numpy as np
+
 
 __all__ = ["optimize_using_slsqp", "optimize_using_nnls", "optimize_using_l_bfgs",
            "optimize_using_nnls_valence"]
+
 
 def optimize_using_nnls(true_dens, cofactor_matrix):
     b_vector = np.copy(true_dens)

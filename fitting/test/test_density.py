@@ -24,7 +24,7 @@ r"""Test file for fitting.least_squares.slater_density.atomic_slater_density."""
 import math
 import os
 import numpy as np
-from fitting.least_squares.slater_density.atomic_slater_density import *
+from fitting.density import AtomicDensity
 
 
 __all__ = ["test_all_coeff_matrix_be",

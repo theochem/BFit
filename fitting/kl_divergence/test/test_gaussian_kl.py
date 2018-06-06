@@ -25,7 +25,8 @@ import numpy as np
 import numpy.testing as npt
 from scipy.integrate import simps, quad
 from fitting.kl_divergence.gaussian_kl import GaussianKullbackLeibler
-from fitting.radial_grid.general_grid import RadialGrid
+from fitting.grid import BaseRadialGrid
+
 
 __all__ = ["test_get_integration_factor_coeffs",
            "test_get_integration_factor_exps",
@@ -37,7 +38,7 @@ __all__ = ["test_get_integration_factor_coeffs",
 
 
 def test_normalized_constant():
-    g = RadialGrid(np.arange(0., 10.))
+    g = BaseRadialGrid(np.arange(0., 10.))
     e = np.array(g.radii * 5.)
     kl = GaussianKullbackLeibler(g, e)
     exps = np.array([5., 2., 3.])
@@ -50,7 +51,7 @@ def test_normalized_constant():
 def test_get_normalized_coefficients():
     coeff = np.array([5., 2., 3., 50.])
     exps = np.array([10., 3., 2., 1.])
-    g = RadialGrid(np.arange(0., 10.))
+    g = BaseRadialGrid(np.arange(0., 10.))
     e = np.array(g.radii * 5.)
     kl = GaussianKullbackLeibler(g, e)
     true_answer = kl.get_norm_coeffs(coeff, exps)
@@ -64,7 +65,7 @@ def test_get_normalized_coefficients():
 def test_get_model():
     coeff = np.array([5., 2., 3., 50.])
     expon = np.array([10., 3., 2., 1.])
-    g = RadialGrid(np.arange(0., 10.))
+    g = BaseRadialGrid(np.arange(0., 10.))
     e = np.array(g.radii * 5.)
     kl = GaussianKullbackLeibler(g, e)
     true_answer = kl.get_model(coeff, expon)
@@ -81,7 +82,7 @@ def test_get_integration_factor_coeffs():
     r"""Test getting the integration factor for coefficients."""
     c = np.array([5., 2.])
     e = np.array([10., 3.])
-    g = RadialGrid(np.arange(0., 25, 1e-4))
+    g = BaseRadialGrid(np.arange(0., 25, 1e-4))
     e2 = np.exp(-g.radii)
     kl = GaussianKullbackLeibler(g, e2)
 
@@ -127,7 +128,7 @@ def test_get_integration_factor_exps():
     coeff = np.array([5., 3.])
     exps = np.array([10., 8])
     grid = np.arange(0., 5, 1e-3)
-    grid_obj = RadialGrid(grid)
+    grid_obj = BaseRadialGrid(grid)
     tmod = np.exp(-grid)
     kl = GaussianKullbackLeibler(grid_obj, tmod, inte_val=1)
 
@@ -165,7 +166,7 @@ def test_get_integration_factor_exps():
 def test_update_coeff():
     c = np.array([5., 2.])
     e = np.array([10., 3.])
-    g = RadialGrid(np.arange(0., 9, 0.001))
+    g = BaseRadialGrid(np.arange(0., 9, 0.001))
     e2 = np.exp(-g.radii)
     kl = GaussianKullbackLeibler(g, e2, inte_val=5.)
 
@@ -190,7 +191,7 @@ def test_update_coeff():
 def test_update_func_params():
     c = np.array([5., 2.])
     e = np.array([10., 3.])
-    g = RadialGrid(np.arange(0., 13, 0.001))
+    g = BaseRadialGrid(np.arange(0., 13, 0.001))
     e2 = np.exp(-g.radii)
     kl = GaussianKullbackLeibler(g, e2, inte_val=5.)
 
@@ -234,7 +235,7 @@ def test_update_func_params():
 
 def test_update_errors():
     r"""Test updating errors for kullback-leibler method."""
-    g = RadialGrid(np.arange(0., 10, 0.001))
+    g = BaseRadialGrid(np.arange(0., 10, 0.001))
     e = np.exp(-g.radii)
     kl = GaussianKullbackLeibler(g, e, inte_val=1.)
     counter = 10
@@ -247,7 +248,7 @@ def test_update_errors():
 
 def test_run():
     r"""Test the optimization algorithm for gaussian kullback-leibler method."""
-    g = RadialGrid(np.arange(0., 10, 0.001))
+    g = BaseRadialGrid(np.arange(0., 10, 0.001))
     e = (1 / np.pi) ** 1.5 * np.exp(-g.radii ** 2.)
     kl = GaussianKullbackLeibler(g, e, inte_val=1.)
 

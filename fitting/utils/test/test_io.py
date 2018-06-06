@@ -19,11 +19,13 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-r"""Test file for fitting.fitting.least_squares.slater_density.atomic_slater_wfn."""
 
-import numpy as np
+
 import os
-from fitting.least_squares.slater_density.atomic_slater_wfn import load_slater_wfn
+import numpy as np
+
+from fitting.utils import load_slater_wfn
+
 
 __all__ = ["test_parsing_slater_density_ag",
            "test_parsing_slater_density_be",

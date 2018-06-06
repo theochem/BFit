@@ -23,16 +23,18 @@ r"""
 
 """
 
+
 import scipy
 import scipy.integrate
 import scipy.misc
 import numpy as np
-from fitting.least_squares.slater_density.atomic_slater_wfn import load_slater_wfn
+from fitting.utils.io import load_slater_wfn
+
 
 __all__ = ["AtomicDensity"]
 
 
-class AtomicDensity:
+class AtomicDensity(object):
     """
     Used to compute the atomic least_squares of various elements
     from a composition of slater functions.

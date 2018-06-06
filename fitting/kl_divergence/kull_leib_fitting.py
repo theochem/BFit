@@ -36,8 +36,7 @@ import numpy as np
 import numpy.ma as ma
 from scipy.optimize import minimize
 from numbers import Real
-from fitting.radial_grid.general_grid import RadialGrid
-from fitting.radial_grid.cubic_grid import CubicGrid
+from fitting.grid import BaseRadialGrid, CubicGrid
 
 
 __all__ = ["KullbackLeiblerFitting"]
@@ -60,7 +59,7 @@ class KullbackLeiblerFitting(object):
             raise TypeError("Integration Value should be an integer.")
         if inte_val is not None and inte_val <= 0.:
             raise ValueError("Integration value should be positive.")
-        if not isinstance(grid_obj, (RadialGrid, CubicGrid)):
+        if not isinstance(grid_obj, (BaseRadialGrid, CubicGrid)):
             raise TypeError("Grid Object should be 'fitting.radial_grid.radial_grid'.")
         if not isinstance(true_model, np.ndarray):
             raise TypeError("Electron Density should be a numpy array.")

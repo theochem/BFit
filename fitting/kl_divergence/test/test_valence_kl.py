@@ -24,7 +24,7 @@ r"""Test file for 'fitting.kl_divergence.valence_kl'."""
 import numpy as np
 import numpy.testing as npt
 from scipy.integrate import trapz, simps
-from fitting.radial_grid.general_grid import RadialGrid
+from fitting.grid import BaseRadialGrid
 from fitting.kl_divergence.valence_kl import GaussianValKL
 
 __all__ = ["test_get_integration_factor_exps",
@@ -39,7 +39,7 @@ __all__ = ["test_get_integration_factor_exps",
 
 def test_input_valence():
     r"""Test inputs for 'fitting.kl_divergence.valence_kl.GaussianValKL'."""
-    g = RadialGrid(np.arange(5))
+    g = BaseRadialGrid(np.arange(5))
     e = g.radii**2
     i = 5.
     npt.assert_raises(TypeError, GaussianValKL, "notarray", e)
@@ -51,7 +51,7 @@ def test_input_valence():
 
 def test_get_norm_constant():
     r"""Test normalization constants for valence kullback-leibler."""
-    g = RadialGrid(np.arange(0., 5, 0.001))
+    g = BaseRadialGrid(np.arange(0., 5, 0.001))
     kl = GaussianValKL(g, 3. * np.exp(-5 * g.radii**2.), 5., 1)
     # Test non-valence
     e = 5.
@@ -71,7 +71,7 @@ def test_get_norm_constant():
 
 def test_get_norm_coeffs():
     r"""Test getting normalization constants for a list of coefficients."""
-    g = RadialGrid(np.arange(0., 5, 0.001))
+    g = BaseRadialGrid(np.arange(0., 5, 0.001))
     kl = GaussianValKL(g, 3. * np.exp(-5 * g.radii ** 2.), 5., 1)
 
     c = np.array([1., 2])
@@ -83,7 +83,7 @@ def test_get_norm_coeffs():
 
 def test_get_model():
     r"""Test getting the model for 'fitting.kl_divergence.valence_kl'."""
-    g = RadialGrid(np.arange(2))
+    g = BaseRadialGrid(np.arange(2))
     kl = GaussianValKL(g, g.radii, inte_val=1., numb_val=1)
 
     c = np.array([1., 2.])
@@ -97,7 +97,7 @@ def test_get_model():
 
 def test_get_integration_factor_coeffs():
     r"""Test coeffs integration factor for 'fitting.kl_divergence.valence_kl'."""
-    g = RadialGrid(np.arange(0., 25, 0.0001))
+    g = BaseRadialGrid(np.arange(0., 25, 0.0001))
     m = np.exp(-g.radii)
     kl = GaussianValKL(g, m, inte_val=1., numb_val=1)
 
@@ -124,7 +124,7 @@ def test_get_integration_factor_coeffs():
 
 def test_get_integration_factor_exps():
     r"""Test exponent integration factor for 'fitting.kl_divergence.valence_kl'."""
-    g = RadialGrid(np.arange(0., 25, 0.0001))
+    g = BaseRadialGrid(np.arange(0., 25, 0.0001))
     m = np.exp(-g.radii)
     kl = GaussianValKL(g, m, inte_val=1., numb_val=1)
 
@@ -152,7 +152,7 @@ def test_get_integration_factor_exps():
 
 def test_updating_coefficients():
     r"""Test updating coeffs for 'fitting.kl_divergence.valence_kl'."""
-    g = RadialGrid(np.arange(0., 25, 0.0001))
+    g = BaseRadialGrid(np.arange(0., 25, 0.0001))
     m = np.exp(-g.radii)
     integration = simps(m * g.radii**2. * 4. * np.pi, g.radii)
     kl = GaussianValKL(g, m, inte_val=integration, numb_val=1)
@@ -180,7 +180,7 @@ def test_updating_coefficients():
 
 def test_updating_exponents():
     r"""Test updating exponents for 'fitting.kl_divergence.valence_kl'."""
-    g = RadialGrid(np.arange(0., 25, 0.0001))
+    g = BaseRadialGrid(np.arange(0., 25, 0.0001))
     m = np.exp(-g.radii)
     integration = simps(m * g.radii ** 2. * 4. * np.pi, g.radii)
     kl = GaussianValKL(g, m, inte_val=integration, numb_val=1)
