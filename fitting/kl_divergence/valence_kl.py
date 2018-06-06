@@ -77,7 +77,7 @@ class GaussianValKL(KullbackLeiblerFitting):
             integrand *= self.masked_grid_squared
         return const * self.grid_obj.integrate_spher(False, integrand)
 
-    def _update_coeffs_gauss(self, coeffs, fparams):
+    def _update_coeffs(self, coeffs, fparams):
         gaussian_model = self.get_model(coeffs, fparams)
         new_coeff = coeffs.copy()
         val = False
@@ -88,7 +88,7 @@ class GaussianValKL(KullbackLeiblerFitting):
             new_coeff[i] /= self.lagrange_multiplier
         return new_coeff
 
-    def _update_func_params(self, coeffs, fparams):
+    def _update_fparams(self, coeffs, fparams):
         gaussian_model = self.get_model(coeffs, fparams)
         new_exps = fparams.copy()
         val = False
@@ -102,11 +102,3 @@ class GaussianValKL(KullbackLeiblerFitting):
             integration = self.get_inte_factor(fparams[i], gaussian_model, True, val)
             new_exps[i] *= (fac / integration)
         return new_exps
-
-    def _update_coeffs(self, coeff_arr, exp_arr):
-        new_coeff = self._update_coeffs_gauss(coeff_arr, exp_arr)
-        return new_coeff, coeff_arr
-
-    def _update_exps(self, coeff_arr, exp_arr):
-        new_exps = self._update_func_params(coeff_arr, exp_arr)
-        return new_exps, exp_arr

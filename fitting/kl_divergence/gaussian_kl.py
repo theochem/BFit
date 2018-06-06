@@ -97,7 +97,7 @@ class GaussianKullbackLeibler(KullbackLeiblerFitting):
             integrand = integrand * self.masked_grid_squared
         return self._get_norm_constant(exponent) * self.grid_obj.integrate_spher(False, integrand)
 
-    def _update_coeffs_gauss(self, coeff_arr, exp_arr):
+    def _update_coeffs(self, coeff_arr, exp_arr):
         r"""
 
         Parameters
@@ -112,7 +112,7 @@ class GaussianKullbackLeibler(KullbackLeiblerFitting):
             new_coeff[i] *= self.get_inte_factor(exp_arr[i], gaussian)
         return new_coeff / self.lagrange_multiplier
 
-    def _update_func_params(self, coeff_arr, exp_arr, with_convergence=True):
+    def _update_fparams(self, coeff_arr, exp_arr, with_convergence=True):
         r"""
 
         Parameters
@@ -135,14 +135,6 @@ class GaussianKullbackLeibler(KullbackLeiblerFitting):
 
     def _get_norm_constant(self, exponent):
         return (exponent / np.pi) ** (3./2.)
-
-    def _update_coeffs(self, coeff_arr, exp_arr):
-        new_coeff = self._update_coeffs_gauss(coeff_arr, exp_arr)
-        return new_coeff, coeff_arr
-
-    def _update_exps(self, coeff_arr, exp_arr):
-        new_exps = self._update_func_params(coeff_arr, exp_arr)
-        return new_exps, exp_arr
 
     def _get_deriv_coeffs(self, coeffs, fparams):
         pass

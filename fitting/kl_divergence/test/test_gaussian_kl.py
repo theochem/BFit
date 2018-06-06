@@ -199,7 +199,7 @@ def test_update_func_params():
         c[1] * (e[1] / np.pi) ** (3. / 2.) * np.exp(-e[1] * g.radii ** 2.)
     model = np.ma.array(model)
     # Assume without convergence
-    true_answer = kl._update_func_params(c, e, False)
+    true_answer = kl._update_fparams(c, e, False)
 
     # Find Numerator of integration factor
     integrand = e2 * np.exp(-e[0] * g.radii ** 2.) * g.radii ** 2. / model
@@ -226,7 +226,7 @@ def test_update_func_params():
     npt.assert_allclose(true_answer, [desired_answer1, desired_answer2])
 
     # Assume With Convergence
-    true_answer = kl._update_func_params(c, e, True)
+    true_answer = kl._update_fparams(c, e, True)
     desired_answer1 = 3. * kl.inte_val / (2. * desired_answer_den1)
     desired_answer2 = 3. * kl.inte_val / (2. * desired_answer_den)
     npt.assert_allclose(true_answer, [desired_answer1, desired_answer2],

@@ -66,7 +66,7 @@ def test_raise_not_implemented():
     g = np.arange(10.)
     kl = KullbackLeiblerFitting(BaseRadialGrid(g), g)
     npt.assert_raises(NotImplementedError, kl.get_model)
-    npt.assert_raises(NotImplementedError, kl._update_func_params)
+    npt.assert_raises(NotImplementedError, kl._update_fparams)
     npt.assert_raises(NotImplementedError, kl._update_coeffs)
     npt.assert_raises(NotImplementedError, kl._get_norm_constant)
     npt.assert_raises(NotImplementedError, kl._get_deriv_coeffs(g, g))
