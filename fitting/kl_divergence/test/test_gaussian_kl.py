@@ -172,7 +172,7 @@ def test_update_coeff():
 
     model = c[0] * (e[0] / np.pi) ** (3. / 2.) * np.exp(-e[0] * g.radii ** 2.) + \
         c[1] * (e[1] / np.pi) ** (3. / 2.) * np.exp(-e[1] * g.radii ** 2.)
-    true_answer = kl._update_coeffs_gauss(c, e)
+    true_answer = kl._update_coeffs(c, e)
 
     desired_ans = c.copy()
     integrand = e2 * np.exp(-e[0] * g.radii ** 2.) * g.radii ** 2. / model

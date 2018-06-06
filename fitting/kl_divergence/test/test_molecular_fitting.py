@@ -107,7 +107,7 @@ def test_updating_coeffs():
     dens_obj = MolecularFitting(grid, dens_val, inte_val, mol_coord, numb_of_params)
     c = np.array([1., 2.])
     e = np.array([3., 4.])
-    true_answer = dens_obj._update_coeffs(c, e)
+    true_answer = dens_obj._replace_coeffs(c, e)
 
     radial_1 = np.sum((grid.grid - mol_coord[0])**2., axis=1)
     radial_2 = np.sum((grid.grid - mol_coord[1])**2., axis=1)
@@ -133,7 +133,7 @@ def test_updating_exponents():
     dens_obj = MolecularFitting(grid, dens_val, inte_val, mol_coord, numb_of_params)
     c = np.array([1., 2.])
     e = np.array([3., 4.])
-    true_answer = dens_obj._update_fparams(c, e, with_convergence=False)
+    true_answer = dens_obj._update_fparams(c, e, False)
 
     radial_1 = np.sum((grid.grid - mol_coord[0]) ** 2., axis=1)
     radial_2 = np.sum((grid.grid - mol_coord[1]) ** 2., axis=1)

@@ -165,7 +165,7 @@ def test_updating_coefficients():
         c[1] * (2. * 4**2.5 / (3. * np.pi**1.5)) * g_s * np.exp(-4 * g_s)
     npt.assert_allclose(kl.get_model(c, e), model)
 
-    true_answer = kl._update_coeffs(c, e)[0]
+    true_answer = kl._update_coeffs(c, e)
     ratio = np.ma.array(m) / np.ma.array(model)
     integrand = np.ma.array(ratio * np.exp(-3 * g_s) * 4. * np.pi * g_s)
     desired_ans = simps(integrand, g.radii) * (3. / np.pi)**1.5
@@ -193,7 +193,7 @@ def test_updating_exponents():
         c[1] * (2. * 4 ** 2.5 / (3. * np.pi ** 1.5)) * g_s * np.exp(-4 * g_s)
     npt.assert_allclose(kl.get_model(c, e), model)
 
-    true_answer = kl._update_exps(c, e)[0]
+    true_answer = kl._update_fparams(c, e)
     ratio = np.ma.array(m) / np.ma.array(model)
     integrand = np.ma.array(ratio * np.exp(-3 * g_s) * 4. * np.pi * g_s)
     desired_answer = 3. * simps(integrand, g.radii)

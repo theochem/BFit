@@ -81,7 +81,7 @@ class KullbackLeiblerFitting(object):
     def lagrange_multiplier(self):
         return self._lagrange_multiplier
 
-    def get_model(self):
+    def get_model(self, coeffs, fparams):
         raise NotImplementedError()
 
     def _update_coeffs(self):
@@ -92,7 +92,7 @@ class KullbackLeiblerFitting(object):
 
     def _get_norm_constant(self):
         raise NotImplementedError()
-
+    
     def _update_errors(self, coeffs, exps, c, iprint, update_p=False):
         model = self.get_model(coeffs, exps)
         errors = self.get_descriptors_of_model(model)
@@ -269,20 +269,30 @@ class KullbackLeiblerFitting(object):
                 self.goodness_of_fit(model),
                 self.goodness_of_fit_grid_squared(model),
                 self.get_kullback_leibler(model)]
+    
+    def cost_function(self, params):
+        r"""
+        Get the kullback-leibler formula which is ought to be minimized.
 
-    def _get_deriv_coeffs(self, coeffs, fparams):
+        Used for optimization via SLSQP in the 'fitting.utils.optimize.py' File.
+
+        Parameters
+        ----------
+        params : np.ndarray
+            Coefficients and Function parameters appended together.
+        """
+        model = self.get_model(params[:len(params)//2], params[len(params)//2:])
+        return self.get_kullback_leibler(model)
+    
+    def derivative_of_cost_function(self, params):
+        r"""
+        Get the Derivative of the kullback-leibler formula wrt each parameter.
+
+        Used for optimization via SLSQP in the 'fitting.utils.optimize.py' File.
+
+        Parameters
+        ----------
+        params : np.ndarray
+            Coefficients and Function parameters appended together.
+        """
         pass
-
-    def _get_deriv_fparams(self, coeffs, fparams):
-        pass
-
-    def optimize_slsqp(self, coeffs, fparams):
-        def const(_):
-            np.sum(coeffs - self.inte_val)
-        params = np.append(coeffs, fparams)
-        bounds = np.array([(0.0, np.inf)] * len(params))
-        opts = {"maxiter": 100000000, "disp": True, "factr": 10.0, "eps": 1e-10}
-        f_min_slsqp = minimize(self.get_kullback_leibler, x0=params,
-                               method="SLSQP", bounds=bounds, constraints=const,
-                               jac=True, options=opts)
-        return f_min_slsqp

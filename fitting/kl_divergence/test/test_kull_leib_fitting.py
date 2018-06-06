@@ -65,12 +65,10 @@ def test_raise_not_implemented():
     r"""Test for raising not implemented for KullbackLeiblerFitting class."""
     g = np.arange(10.)
     kl = KullbackLeiblerFitting(BaseRadialGrid(g), g)
-    npt.assert_raises(NotImplementedError, kl.get_model)
+    npt.assert_raises(NotImplementedError, kl.get_model, g, g)
     npt.assert_raises(NotImplementedError, kl._update_fparams)
     npt.assert_raises(NotImplementedError, kl._update_coeffs)
     npt.assert_raises(NotImplementedError, kl._get_norm_constant)
-    npt.assert_raises(NotImplementedError, kl._get_deriv_coeffs(g, g))
-    npt.assert_raises(NotImplementedError, kl._get_deriv_fparams(g, g))
 
 
 def test_get_lagrange_multiplier():

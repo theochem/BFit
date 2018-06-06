@@ -23,7 +23,7 @@
 
 import scipy
 import numpy as np
-
+from fitting.kl_divergence.kull_leib_fitting import KullbackLeiblerFitting
 
 __all__ = ["optimize_using_slsqp", "optimize_using_nnls", "optimize_using_l_bfgs",
            "optimize_using_nnls_valence"]
@@ -45,13 +45,19 @@ def optimize_using_nnls_valence(true_val_dens, cofactor_matrix):
 
 
 def optimize_using_slsqp(density_model, initial_guess, bounds=None, *args):
+    const = None
+    if isinstance(density_model, KullbackLeiblerFitting):
+        const = {"eq": np.sum(initial_guess - density_model.inte_val)}
+
     if bounds is None:
-        bounds = np.array([(0.0, np.inf) for x in range(0, len(initial_guess))], dtype=np.float64)
+        bounds = np.array([(0.0, np.inf)] * len(initial_guess))
+    opts = {"maxiter": 100000000, "disp": True, "eps": 1e-10}
     f_min_slsqp = scipy.optimize.minimize(density_model.cost_function,
                                           x0=initial_guess,
                                           method="SLSQP",
                                           bounds=bounds, args=(args),
-                                          jac=density_model.derivative_of_cost_function)
+                                          jac=density_model.derivative_of_cost_function,
+                                          constraint=const, options=opts)
     parameters = f_min_slsqp['x']
     return parameters
 
