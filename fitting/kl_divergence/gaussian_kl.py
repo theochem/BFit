@@ -177,7 +177,7 @@ class GaussianValKL(KullbackLeiblerFitting):
         return s_gaussian_model + p_gaussian_model
 
     def get_inte_factor(self, exponent, masked_normed_gaussian, upt_exponents=False, val=False):
-        ratio = self.ma_true_mod / masked_normed_gaussian
+        ratio = self.weights * self.ma_true_mod / masked_normed_gaussian
         integrand = ratio * np.exp(-exponent * self.masked_grid_squared)
         const = self._get_norm_constant(exponent, val=val)
         if val:
