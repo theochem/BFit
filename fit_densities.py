@@ -38,7 +38,7 @@ from fitting.density import AtomicDensity
 from fitting.model import DensityModel, GaussianBasisSet
 from fitting.greedy.greedy_kl import GreedyKL
 from fitting.utils.plotting_utils import plot_model_densities, plot_error
-from fitting.greedy.greedy_utils import get_next_choices
+from fitting.utils.greedy_utils import get_next_choices
 from fitting.greedy.greedy_lq import GreedyLeastSquares
 
 

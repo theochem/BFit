@@ -187,7 +187,7 @@ class MolecularFitting(KullbackLeiblerFitting):
         assert found != -1.
         return self.mol_coords[found]
 
-    def _update_coeffs_gauss(self, coeff_arr, exp_arr):
+    def _update_coeffs(self, coeff_arr, exp_arr):
         r"""
         Update a list of gaussian coefficients, using the fixed-point iteration method.
 
@@ -218,7 +218,7 @@ class MolecularFitting(KullbackLeiblerFitting):
         """
         return (exponent / np.pi) ** (3./2.)
 
-    def _update_func_params(self, coeff_arr, exp_arr, with_convergence=True):
+    def _update_fparams(self, coeff_arr, exp_arr, with_convergence=True):
         r"""
         Updates the function parameters based on the fixed point iteration method.
 
@@ -252,20 +252,5 @@ class MolecularFitting(KullbackLeiblerFitting):
             else:
                 new_exps[i] = 3. * self.get_inte_factor(exp_arr[i], masked_normed_gaussian, mol)
             integration = self.get_inte_factor(exp_arr[i], masked_normed_gaussian, mol, True)
-
             new_exps[i] /= (2. * integration)
         return new_exps
-
-    def _update_coeffs(self, coeff_arr, exp_arr):
-        new_coeff = self._update_coeffs_gauss(coeff_arr, exp_arr)
-        return new_coeff, coeff_arr
-
-    def _update_exps(self, coeff_arr, exp_arr):
-        new_exps = self._update_func_params(coeff_arr, exp_arr)
-        return new_exps, exp_arr
-
-    def _get_deriv_coeffs(self, coeffs, fparams):
-        pass
-
-    def _get_deriv_fparams(self, coeffs, fparams):
-        pass

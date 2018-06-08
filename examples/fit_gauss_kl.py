@@ -2,14 +2,14 @@ r"""
 Example showing how to fit to any distribution using kullback-leibler divergence.
 """
 
-from radial_grid.radial_grid import RadialGrid
+from fitting.grid import BaseRadialGrid
 from fit_densities import fit_gaussian_densities
 import numpy as np
 import matplotlib.pyplot as plt
 
 # Specifying a uniform grid.
 grid = np.arange(0., 6, 0.25)
-grid_obj = RadialGrid(grid)
+grid_obj = BaseRadialGrid(grid)
 
 # Model An Arbritary Probability Density
 true_model = np.exp(-3 * grid)

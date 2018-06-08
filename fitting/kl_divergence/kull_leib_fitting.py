@@ -34,7 +34,6 @@ have to inherit from KullbackLeibler class.
 from __future__ import division
 import numpy as np
 import numpy.ma as ma
-from scipy.optimize import minimize
 from numbers import Real
 from fitting.grid import BaseRadialGrid, CubicGrid
 
@@ -47,7 +46,7 @@ class KullbackLeiblerFitting(object):
 
     """
 
-    def __init__(self, grid_obj, true_model, inte_val=None):
+    def __init__(self, grid_obj, true_model, inte_val=None, weights=None):
         r"""
 
         Parameters
@@ -57,6 +56,8 @@ class KullbackLeiblerFitting(object):
         """
         if not isinstance(inte_val, (type(None), Real)):
             raise TypeError("Integration Value should be an integer.")
+        if not isinstance(weights, (type(None), np.ndarray)):
+            raise TypeError("Weights should be none or a numpy array.")
         if inte_val is not None and inte_val <= 0.:
             raise ValueError("Integration value should be positive.")
         if not isinstance(grid_obj, (BaseRadialGrid, CubicGrid)):
@@ -69,43 +70,51 @@ class KullbackLeiblerFitting(object):
         self.inte_val = inte_val
         if inte_val is None:
             self.inte_val = grid_obj.integrate_spher(False, true_model)
+        if weights is None:
+            weights = np.ones(len(true_model))
+        self.weights = weights
         # Various methods relay on masked values due to division of small numbers.
         self._lagrange_multiplier = self.get_lagrange_multiplier()
         if self._lagrange_multiplier == 0.:
             raise RuntimeError("Lagrange multiplier cannot be zero.")
         if np.isnan(self._lagrange_multiplier):
             raise RuntimeError("Lagrange multiplier cannot be nan.")
-        self.errors_arr = np.array([0.] * 4)
+        self.errors_arr = []
 
     @property
     def lagrange_multiplier(self):
         return self._lagrange_multiplier
 
-    def get_model(self, *args):
+    def get_model(self, coeffs, fparams):
         raise NotImplementedError()
 
     def _update_coeffs(self):
         raise NotImplementedError()
 
-    def _update_func_params(self):
+    def _update_fparams(self):
         raise NotImplementedError()
 
     def _get_norm_constant(self):
         raise NotImplementedError()
-
+    
     def _update_errors(self, coeffs, exps, c, iprint, update_p=False):
         model = self.get_model(coeffs, exps)
         errors = self.get_descriptors_of_model(model)
         if iprint:
             if update_p:
-                print(c + 1, "Update param", np.sum(coeffs), errors)
+                print(c + 1, "Update F-param", np.sum(coeffs), errors)
             else:
                 print(c + 1, "Update Coeff ", np.sum(coeffs), errors)
-        if c == 0:
-            self.errors_arr = errors
-        else:
-            self.errors_arr = np.vstack((self.errors_arr, errors))
+        self.errors_arr.append(errors)
         return c + 1
+
+    def _replace_coeffs(self, coeff_arr, exp_arr):
+        new_coeff = self._update_coeffs(coeff_arr, exp_arr)
+        return new_coeff, coeff_arr
+
+    def _replace_fparams(self, coeff_arr, exp_arr):
+        new_exps = self._update_fparams(coeff_arr, exp_arr)
+        return new_exps, exp_arr
 
     def run(self, eps_coeff, eps_fparam, coeffs, fparams, iprint=False, iplot=False):
         r"""
@@ -121,31 +130,34 @@ class KullbackLeiblerFitting(object):
         # Old Coeffs/Exps are initialized to allow while loop to hold initially.
         coeffs_i1, coeffs_i = coeffs.copy(), 10. * coeffs.copy()
         fparams_i1, fparams_i = fparams.copy(), 10. * fparams.copy()
-        self.errors_arr = np.array([] * 4)
+        self.errors_arr = []
         prev_func_val, curr_func_val = 1e6, 1e4
 
         counter = 0
         while np.any(np.abs(fparams_i1 - fparams_i) > eps_fparam) and \
-                np.abs(prev_func_val - curr_func_val) > 1e-10:
+                np.abs(prev_func_val - curr_func_val) > 1e-8:
+
+            # One iteration to update coefficients
+            coeffs_i1, coeffs_i = self._replace_coeffs(coeffs_i1, fparams_i1)
+            counter = self._update_errors(coeffs_i1, fparams_i1, counter, iprint, iplot)
 
             while np.any(np.abs(coeffs_i - coeffs_i1) > eps_coeff):
-                coeffs_i1, coeffs_i = self._update_coeffs(coeffs_i1, fparams_i1)
-                counter = self._update_errors(coeffs_i1, fparams_i1, counter,
-                                              iprint, iplot)
+                coeffs_i1, coeffs_i = self._replace_coeffs(coeffs_i1, fparams_i1)
+                counter = self._update_errors(coeffs_i1, fparams_i1, counter, iprint, iplot)
 
-            fparams_i1, fparams_i = self._update_exps(coeffs_i1, fparams_i1)
-            counter = self._update_errors(coeffs_i1, fparams_i1, counter, iprint,
-                                          update_p=True)
-            prev_func_val, curr_func_val = curr_func_val, self.errors_arr[counter - 1, 3]
-        return {"x": np.append(coeffs_i1, fparams_i1),
-                "iter": counter, "errors": self.errors_arr}
+            fparams_i1, fparams_i = self._replace_fparams(coeffs_i1, fparams_i1)
+            counter = self._update_errors(coeffs_i1, fparams_i1, counter, iprint, update_p=True)
+            prev_func_val, curr_func_val = curr_func_val, self.errors_arr[counter - 1][3]
+
+        return {"x": np.append(coeffs_i1, fparams_i1), "iter": counter,
+                "errors": np.array(self.errors_arr)}
 
     def get_lagrange_multiplier(self):
         r"""
 
         :return:
         """
-        return self.grid_obj.integrate_spher(False, self.true_model) / self.inte_val
+        return self.grid_obj.integrate_spher(False, self.true_model * self.weights) / self.inte_val
 
     def get_norm_consts(self, exp_arr):
         r"""
@@ -182,7 +194,7 @@ class KullbackLeiblerFitting(object):
                   Kullback Leibler fomula
         """
         div_model = np.divide(self.ma_true_mod, ma.array(model))
-        log_ratio_models = np.log(div_model)
+        log_ratio_models = self.weights * np.log(div_model)
         return self.grid_obj.integrate_spher(False, self.ma_true_mod * log_ratio_models)
 
     def integrate_model_spherically(self, model):
@@ -261,20 +273,30 @@ class KullbackLeiblerFitting(object):
                 self.goodness_of_fit(model),
                 self.goodness_of_fit_grid_squared(model),
                 self.get_kullback_leibler(model)]
+    
+    def cost_function(self, params):
+        r"""
+        Get the kullback-leibler formula which is ought to be minimized.
 
-    def _get_deriv_coeffs(self, coeffs, fparams):
+        Used for optimization via SLSQP in the 'fitting.utils.optimize.py' File.
+
+        Parameters
+        ----------
+        params : np.ndarray
+            Coefficients and Function parameters appended together.
+        """
+        model = self.get_model(params[:len(params)//2], params[len(params)//2:])
+        return self.get_kullback_leibler(model)
+    
+    def derivative_of_cost_function(self, params):
+        r"""
+        Get the Derivative of the kullback-leibler formula wrt each parameter.
+
+        Used for optimization via SLSQP in the 'fitting.utils.optimize.py' File.
+
+        Parameters
+        ----------
+        params : np.ndarray
+            Coefficients and Function parameters appended together.
+        """
         pass
-
-    def _get_deriv_fparams(self, coeffs, fparams):
-        pass
-
-    def optimize_slsqp(self, coeffs, fparams):
-        def const(_):
-            np.sum(coeffs - self.inte_val)
-        params = np.append(coeffs, fparams)
-        bounds = np.array([(0.0, np.inf)] * len(params))
-        opts = {"maxiter": 100000000, "disp": True, "factr": 10.0, "eps": 1e-10}
-        f_min_slsqp = minimize(self.get_kullback_leibler, x0=params,
-                               method="SLSQP", bounds=bounds, constraints=const,
-                               jac=True, options=opts)
-        return f_min_slsqp
