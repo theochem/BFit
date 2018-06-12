@@ -57,7 +57,7 @@ def optimize_using_slsqp(density_model, initial_guess, bounds=None, *args):
                                           method="SLSQP",
                                           bounds=bounds, args=(args),
                                           jac=density_model.derivative_of_cost_function,
-                                          constraint=const, options=opts)
+                                          constraints=const, options=opts)
     parameters = f_min_slsqp['x']
     return parameters
 

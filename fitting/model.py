@@ -215,14 +215,14 @@ class GaussianBasisSet(DensityModel):
 
         Parameters
         ----------
-        parameters : np.ndarray or list
+        parameters : np.ndarray
                      Parameters to be optimized. Depends on which_opti.
                      if which_opti is:
                      - 'b' contains both coefficients and exponents, resp.
                      - 'c' contains coefficients to be optimized.
                      - 'e' contains exponents to be optimized.
 
-        fixed_params : np.ndarray or list
+        fixed_params : np.ndarray
                      Used when which_opti is 'c' or 'e'. In any case, it contains
                      the parameters that are considered fixed.
 

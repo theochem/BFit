@@ -96,7 +96,7 @@ class KullbackLeiblerFitting(object):
 
     def _get_norm_constant(self):
         raise NotImplementedError()
-    
+
     def _update_errors(self, coeffs, exps, c, iprint, update_p=False):
         model = self.get_model(coeffs, exps)
         errors = self.get_descriptors_of_model(model)
@@ -273,7 +273,7 @@ class KullbackLeiblerFitting(object):
                 self.goodness_of_fit(model),
                 self.goodness_of_fit_grid_squared(model),
                 self.get_kullback_leibler(model)]
-    
+
     def cost_function(self, params):
         r"""
         Get the kullback-leibler formula which is ought to be minimized.
@@ -287,7 +287,7 @@ class KullbackLeiblerFitting(object):
         """
         model = self.get_model(params[:len(params)//2], params[len(params)//2:])
         return self.get_kullback_leibler(model)
-    
+
     def derivative_of_cost_function(self, params):
         r"""
         Get the Derivative of the kullback-leibler formula wrt each parameter.

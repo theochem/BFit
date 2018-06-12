@@ -95,7 +95,7 @@ class UniformRadialGrid(BaseRadialGrid):
 
 
 class ClenshawRadialGrid(BaseRadialGrid):
-    """
+    r"""
     Constructs a clenshaw-curtis _grid and provides a function to integrate_spher over
     the entire space. #TODO:DifferentKind of Integration
 
@@ -121,7 +121,7 @@ class ClenshawRadialGrid(BaseRadialGrid):
     """
 
     def __init__(self, atomic_number, numb_core_pts, numb_diffuse_pts, extra_list=[], filled=False):
-        """
+        r"""
         Parameters
         ----------
         atomic_number : int
@@ -236,7 +236,7 @@ class ClenshawRadialGrid(BaseRadialGrid):
 
 
 class CubicGrid(object):
-    """Cubic Grid Class."""
+    r"""Cubic Grid Class."""
 
     def __init__(self, smallest_pt, largest_pt, step_size):
         """

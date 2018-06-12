@@ -35,7 +35,7 @@ def test_input_checks():
     true_a = CubicGrid(0., 1., 0.5)
     true_b = np.sum(true_a.grid, axis=1)
     true_c = 5.
-    true_d = np.array([[1., 1., 1.], [2., 2., 2.], [3., 3., 3.], [4., 4. ,4.]])
+    true_d = np.array([[1., 1., 1.], [2., 2., 2.], [3., 3., 3.], [4., 4., 4.]])
     true_e = [5, 2, 3, 5]
     stri = "string"
     npt.assert_raises(TypeError, MolecularFitting, stri, true_b, true_c, true_d, true_e)
@@ -75,7 +75,7 @@ def test_get_model():
     c2 = c[1] * (e[1] / np.pi)**(3. / 2.)
     c3 = c[2] * (e[2] / np.pi)**(3. / 2.)
     desired_answer = c1 * np.exp(-4. * radial_1) + c2 * np.exp(-5. * radial_2) + \
-                     c3 * np.exp(-6. * radial_2)
+        c3 * np.exp(-6. * radial_2)
     npt.assert_allclose(true_answer, desired_answer)
 
 
@@ -111,15 +111,15 @@ def test_updating_coeffs():
 
     radial_1 = np.sum((grid.grid - mol_coord[0])**2., axis=1)
     radial_2 = np.sum((grid.grid - mol_coord[1])**2., axis=1)
-    promol= c[0] * (e[0] / np.pi)**1.5 * np.exp(-e[0] * radial_1) + \
-            c[1] * (e[1] / np.pi)**1.5 * np.exp(-e[1] * radial_2)
+    promol = c[0] * (e[0] / np.pi)**1.5 * np.exp(-e[0] * radial_1) + \
+        c[1] * (e[1] / np.pi)**1.5 * np.exp(-e[1] * radial_2)
 
     new_c = np.array([1., 2.])
     ratio = dens_val / promol
-    new_c[0] *= 0.1**3. * (e[0] / np.pi)**1.5 * np.sum(ratio * np.exp(-e[0] * radial_1)) \
-                / dens_obj.lagrange_multiplier
-    new_c[1] *= 0.1**3. * (e[1] / np.pi)**1.5 *np.sum(ratio * np.exp(-e[1] * radial_2)) \
-                / dens_obj.lagrange_multiplier
+    new_c[0] *= 0.1**3. * (e[0] / np.pi)**1.5 * np.sum(ratio * np.exp(-e[0] * radial_1)) / \
+        dens_obj.lagrange_multiplier
+    new_c[1] *= 0.1**3. * (e[1] / np.pi)**1.5 * np.sum(ratio * np.exp(-e[1] * radial_2)) / \
+        dens_obj.lagrange_multiplier
     npt.assert_array_almost_equal(true_answer, np.array([new_c, c]))
 
 
@@ -138,7 +138,7 @@ def test_updating_exponents():
     radial_1 = np.sum((grid.grid - mol_coord[0]) ** 2., axis=1)
     radial_2 = np.sum((grid.grid - mol_coord[1]) ** 2., axis=1)
     promol = c[0] * (e[0] / np.pi) ** 1.5 * np.exp(-e[0] * radial_1) + \
-             c[1] * (e[1] / np.pi) ** 1.5 * np.exp(-e[1] * radial_2)
+        c[1] * (e[1] / np.pi) ** 1.5 * np.exp(-e[1] * radial_2)
 
     desired_ans = np.array([0., 0.])
     ratio = dens_val / promol
