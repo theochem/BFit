@@ -128,14 +128,14 @@ class YourOwnBasisSet(KullbackLeiblerFitting):
         ...
         
     def _get_norm_constant(self, coeffs, fparams):
-        Return normalization constant for one basis set.
+        Return normalization constant for one basis function.
         ...
 ```
-Afterwards, you need to run it,
+Afterwards, you'll need to run it,
 ```python
 obj = YourOwnBasisSet(your parameters)
 new_params = obj.run()
-print(new_params)
+print("Updated Parameters ", new_params)
 ```
 
 ## More Info

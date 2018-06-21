@@ -4,6 +4,10 @@ regarding the coefficients and exponents of the slater basis
 set for a specified atom.
 
 
+Note: In order to obtain the slater densities for the corresponding atom,
+one must create a [AtomicFit](fitting/density.py) object with the
+specified file path (./data/be.slater) and grid points.
+
 These were obtained from the paper,
 
 
