@@ -113,7 +113,9 @@ class AtomicDensity(object):
         if file_name[-2:] == "/h":
             self.electron_density = self.get_hydrogen_wave_func()
         else:
-            self.VALUES = load_slater_wfn(file_name)
+            data = load_slater_wfn(file_name)
+            for key, value in data.items():
+                setattr(self, key, value)
             self.ALL_SLATOR_ORBITALS = self.slator_dict()
             self.electron_density = self.atomic_density()
 
@@ -151,10 +153,10 @@ class AtomicDensity(object):
 
         :return: row = number of points, column = number of slater equations
         """
-        dict_orbital = {x[1]: 0 for x in self.VALUES['orbitals']}
+        dict_orbital = {x[1]: 0 for x in self.orbitals}
         for subshell in dict_orbital.keys():
-            exponents = self.VALUES['orbitals_exp'][subshell]
-            basis_numbers = self.VALUES['basis_numbers'][subshell]
+            exponents = self.orbitals_exp[subshell]
+            basis_numbers = self.basis_numbers[subshell]
             slater = self.slator_type_orbital(exponents, basis_numbers, self.GRID)
             dict_orbital[subshell] = np.transpose(slater)
 
@@ -180,12 +182,12 @@ class AtomicDensity(object):
         counter = 0
         coeffs = None
 
-        for key in [x for x in self.VALUES['orbitals'] if x[1] == subshell]:
+        for key in [x for x in self.orbitals if x[1] == subshell]:
             if counter == 0:
-                coeffs = self.VALUES['orbitals_coeff'][key]
+                coeffs = self.orbitals_coeff[key]
                 counter += 1
             else:
-                coeffs = np.concatenate((coeffs, self.VALUES['orbitals_coeff'][key]), axis=1)
+                coeffs = np.concatenate((coeffs, self.orbitals_coeff[key]), axis=1)
         return coeffs
 
     def phi_lcao(self, subshell):
@@ -219,7 +221,7 @@ class AtomicDensity(object):
 
         phi_matrix = 0
         for index, orbital in enumerate(list_orbitals):
-            if orbital in self.VALUES['orbitals_exp'].keys():
+            if orbital in self.orbitals_exp.keys():
                 if index == 0:
                     phi_matrix = self.phi_lcao(orbital)
                 else:
@@ -235,7 +237,7 @@ class AtomicDensity(object):
         :return: the electron least_squares where row = number of point
                  and column = 1
         """
-        dot = np.dot(np.absolute(self.phi_matrix())**2, self.VALUES['orbitals_electron_array'])
+        dot = np.dot(np.absolute(self.phi_matrix())**2, self.orbitals_electron_array)
         return np.ravel(dot) / (4. * np.pi)
 
     def atomic_density_core_valence(self):
@@ -254,8 +256,8 @@ class AtomicDensity(object):
 
             """
             # Initilize the energy from first value from the list.
-            energy_homo = self.VALUES['orbitals_energy']['S'][0]
-            for orbital, list_energy in self.VALUES['orbitals_energy'].items():
+            energy_homo = self.orbitals_energy['S'][0]
+            for orbital, list_energy in self.orbitals_energy.items():
                 max_of_list = np.max(list_energy)
                 if max_of_list > energy_homo:
                     energy_homo = max_of_list
@@ -275,8 +277,8 @@ class AtomicDensity(object):
             """
             joined_array = np.array([])
             for orbital in ['S', 'P', 'D', 'F']:
-                if orbital in self.VALUES['orbitals_energy']:
-                    orbital_energy = self.VALUES['orbitals_energy'][orbital]
+                if orbital in self.orbitals_energy:
+                    orbital_energy = self.orbitals_energy[orbital]
                     joined_array = np.hstack([joined_array, orbital_energy])
             return joined_array
 
@@ -289,6 +291,6 @@ class AtomicDensity(object):
         absolute_squared_val = np.exp((-1) * np.absolute(energy_difference**2))
         valence = absolute_squared_val * np.absolute(phi_matrix)**2
 
-        return(np.dot(core, self.VALUES['orbitals_electron_array']),
-               np.dot(valence, self.VALUES['orbitals_electron_array']))
+        return(np.dot(core, self.orbitals_electron_array),
+               np.dot(valence, self.orbitals_electron_array))
 
