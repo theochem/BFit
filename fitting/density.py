@@ -292,7 +292,3 @@ class AtomicDensity(object):
         return(np.dot(core, self.VALUES['orbitals_electron_array']),
                np.dot(valence, self.VALUES['orbitals_electron_array']))
 
-    def integrate_total_density_using_trapz(self):
-        integrand = np.ravel(np.power(self.GRID, 2.0)) * np.ravel(self.electron_density)
-        integrate = np.trapz(y=integrand, x=np.ravel(self.GRID))
-        return 4. * np.pi * integrate

@@ -303,8 +303,6 @@ def test_atomic_density_ne():
     # check: integrating atomic density should result in the number of electrons.
     # integrate_spher(r^2 * density(r)) using the composite trapezoidal rule.
     assert abs(np.trapz(np.power(grid, 2) * density, grid) * 4. * np.pi - 10.0) < 1.e-6
-    true_answer = ne.integrate_total_density_using_trapz()
-    assert abs(true_answer - 10.) < 1e-6
 
 
 def test_atomic_density_c():
