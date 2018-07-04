@@ -19,13 +19,18 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-r"""
+r"""Module responsible for reading and storing information from '.slater' files.
+
+Functions
+---------
+load_slater_wfn : Function for reading and returning information from '.slater' files.
 
 """
 
-
 import re
 import numpy as np
+
+__all__ = ["load_slater_wfn"]
 
 
 def load_slater_wfn(file_name):
@@ -36,6 +41,7 @@ def load_slater_wfn(file_name):
     ----------
     file_name : str
         The path to the Slater atomic file.
+    
     """
     def get_number_of_electrons_per_orbital(string_configuration):
         """
@@ -96,8 +102,15 @@ def load_slater_wfn(file_name):
         """
         The Columns get screwed over sine s orbitals start with one while p orbitals start at energy
         Therefore this corrects the error in order to retrieve correct column
-        :param t_orbital: orbital i.e. "1S" or "2P" or "3D"
-        :return:
+        
+        Parameters
+        ----------
+        t_orbital : str
+            orbital i.e. "1S" or "2P" or "3D"
+        
+        Returns
+        -------
+        
         """
         if t_orbital[1] == "S":
             return int(t_orbital[0]) + 1
@@ -110,8 +123,15 @@ def load_slater_wfn(file_name):
         """
         Computes The Number Of Electrons in Each Orbital As An Array
         i.e. be = [[2], [2]] 2 electrons in 1S and 2S
-        :param d:
-        :return: column vector of number of electrons in each orbital
+        Parameters
+        ----------
+        d :
+        
+        Returns
+        -------
+        
+            column vector of number of electrons in each orbital
+        
         """
         array = np.empty((len(d.keys()), 1))
         row = 0
