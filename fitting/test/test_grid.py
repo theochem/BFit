@@ -98,7 +98,7 @@ def test_integration_on_grid():
 
     # Test with singularities.
     numb_pts = 100
-    rad_obj = ClenshawRadialGrid(10, numb_pts, numb_pts, filled=True)
+    rad_obj = ClenshawRadialGrid(10, numb_pts, numb_pts)
     arr = np.exp(-rad_obj.radii ** 2)
     arr[np.random.randint(5)] = np.nan
     actual_value = rad_obj.integrate_spher(False, arr)
