@@ -123,42 +123,6 @@ class AtomicDensity(object):
         slater *= normalization
         return np.transpose(slater)
 
-    def all_coeff_matrix(self, subshell):
-        """
-        This Groups all of the coefficients based on the subshell.
-        This is then used to multiply by the specific slator array from the
-        slator_dict function, in order to obtain a phi array.
-
-        Parameters
-        -----------
-        subshell :
-                 this is either S or P or D Or F
-
-        Returns
-        -------
-        list :
-            an array where row = number of coefficients per orbital and column = number of
-            orbitals of specified subshell.
-        """
-        coeffs = [self.orbitals_coeff[orb] for orb in self.orbitals if orb[1] == subshell]
-        coeffs = np.concatenate(coeffs, axis=1)
-        return coeffs
-
-    def phi_lcao(self, subshell, points):
-        """
-        Calculates phi/linear combination of atomic orbitals
-        by the dot product of slator array (from slator_dict)
-        and coeff array (from all_coeff_matrix(subshell)) for
-        a specific subshell. Hence, to obtain all of the
-        phi equations for the specific _element it must be
-        repeated for each subshell (S & P & D & F).
-
-        :return: array where row = number of points and column = number of phi/orbitals.
-                For example, beryllium will have row = # of points and column = 2 (1S and 2S)
-        """
-        exps, basis = self.orbitals_exp[subshell], self.basis_numbers[subshell]
-        return np.dot(self.slater_orbital(exps, basis, points), self.all_coeff_matrix(subshell))
-
     def phi_matrix(self, points):
         """
         Connects phi equations into an array, horizontally.
@@ -172,8 +136,13 @@ class AtomicDensity(object):
              for each orbital is connected together, horizontally.
              row = number of points and col = each phi equation for each orbital
         """
-        phi_matrix = [self.phi_lcao(orb, points) for orb in self.orbitals_exp.keys()]
-        phi_matrix = np.concatenate(phi_matrix, axis=1)
+        # compute orbital composed of a linear combination of Slater
+        phi_matrix = np.zeros((len(points), len(self.orbitals)))
+        for index, orbital in enumerate(self.orbitals):
+            subshell = orbital[1]
+            exps, number = self.orbitals_exp[subshell], self.basis_numbers[subshell]
+            slater = self.slater_orbital(exps, number, points)
+            phi_matrix[:, index] = np.dot(slater, self.orbitals_coeff[orbital]).ravel()
         return phi_matrix
 
     def atomic_density(self, points):
