@@ -61,9 +61,6 @@ class AtomicDensity(object):
             orbitals_electron_array,
             basis_numbers.
 
-    GRID : numpy column array
-        positive _grid points used to calculate electron least_squares.
-
     Methods
     -------
     slator_type_orbital(exponent, quantumNum, r)
@@ -85,33 +82,25 @@ class AtomicDensity(object):
         Calculates atomic least_squares of both core and valence.
 
     """
-    def __init__(self, file_name, grid):
+    def __init__(self, file_name):
         r"""
 
         Parameters
         ----------
         file_name : str
             File path to the .slater file. Primarily located in ./data/ folder.
-
-        grid : np.ndarray
-            Grid Object.
-
         """
         if not isinstance(file_name, str):
             raise TypeError("File name should be a string.")
-        if not isinstance(grid, (list, np.ndarray)):
-            raise TypeError("Grid should be a list or numpy array.")
-        self.row_grid = np.ravel(grid)
-        self.GRID = np.reshape(np.ravel(grid), (len(grid), 1))
+
         if file_name[-2:] == "/h":
             self.electron_density = self.get_hydrogen_wave_func()
         else:
             data = load_slater_wfn(file_name)
             for key, value in data.items():
                 setattr(self, key, value)
-            self.electron_density = self.atomic_density()
 
-    def slator_type_orbital(self, exponent, quantum_num):
+    def slator_type_orbital(self, exponent, quantum_num, points):
         """
         Computes the Slator Type Orbital equation.
 
@@ -129,8 +118,8 @@ class AtomicDensity(object):
             Returns a number or an array depending on input values
         """
         normalization = ((2 * exponent) ** quantum_num) * np.sqrt((2 * exponent) / scipy.misc.factorial(2 * quantum_num))
-        pre_factor = np.transpose(self.GRID ** (np.ravel(quantum_num) - 1))
-        slater = pre_factor * (np.exp(-exponent * np.transpose(self.GRID)))
+        pre_factor = np.transpose(points ** (np.ravel(quantum_num) - 1))
+        slater = pre_factor * (np.exp(-exponent * np.transpose(points)))
         slater *= normalization
         return np.transpose(slater)
 
@@ -155,7 +144,7 @@ class AtomicDensity(object):
         coeffs = np.concatenate(coeffs, axis=1)
         return coeffs
 
-    def phi_lcao(self, subshell):
+    def phi_lcao(self, subshell, points):
         """
         Calculates phi/linear combination of atomic orbitals
         by the dot product of slator array (from slator_dict)
@@ -168,9 +157,9 @@ class AtomicDensity(object):
                 For example, beryllium will have row = # of points and column = 2 (1S and 2S)
         """
         exps, basis = self.orbitals_exp[subshell], self.basis_numbers[subshell]
-        return np.dot(self.slator_type_orbital(exps, basis), self.all_coeff_matrix(subshell))
+        return np.dot(self.slator_type_orbital(exps, basis, points), self.all_coeff_matrix(subshell))
 
-    def phi_matrix(self):
+    def phi_matrix(self, points):
         """
         Connects phi equations into an array, horizontally.
         For Example, for beryllium [phi(1S), phi(2S)] is the array.
@@ -183,11 +172,11 @@ class AtomicDensity(object):
              for each orbital is connected together, horizontally.
              row = number of points and col = each phi equation for each orbital
         """
-        phi_matrix = [self.phi_lcao(orb) for orb in self.orbitals_exp.keys()]
+        phi_matrix = [self.phi_lcao(orb, points) for orb in self.orbitals_exp.keys()]
         phi_matrix = np.concatenate(phi_matrix, axis=1)
         return phi_matrix
 
-    def atomic_density(self):
+    def atomic_density(self, points):
         """
         By Taking the occupation numbers and multiplying it
         by the corresponding absolute, squared phi to obtain
@@ -196,7 +185,7 @@ class AtomicDensity(object):
         :return: the electron least_squares where row = number of point
                  and column = 1
         """
-        dot = np.dot(self.phi_matrix()**2, self.orbitals_electron_array)
+        dot = np.dot(self.phi_matrix(points)**2, self.orbitals_electron_array)
         return np.ravel(dot) / (4. * np.pi)
 
     def atomic_density_core_valence(self):
