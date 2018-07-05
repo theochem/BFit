@@ -64,17 +64,10 @@ class AtomicDensity(object):
     GRID : numpy column array
         positive _grid points used to calculate electron least_squares.
 
-    ALL_SLATOR_ORBITALS : dictionary - key:subshell value:numpy matrix
-        Calculates slator orbitals of each subshell.
-
-
     Methods
     -------
     slator_type_orbital(exponent, quantumNum, r)
-        Calculates the slator orbital based on its equation.
-
-    slator_dict()
-        Calculates all slator orbital of each subshell inside a dictionary.
+        Calculates the slator orbital based on its equation
 
     all_coeff_matrix(subshell)
         Calculates the coefficients of an atom based on its subshell.
@@ -116,10 +109,9 @@ class AtomicDensity(object):
             data = load_slater_wfn(file_name)
             for key, value in data.items():
                 setattr(self, key, value)
-            self.ALL_SLATOR_ORBITALS = self.slator_dict()
             self.electron_density = self.atomic_density()
 
-    def slator_type_orbital(self, exponent, quantum_num, r):
+    def slator_type_orbital(self, exponent, quantum_num):
         """
         Computes the Slator Type Orbital equation.
 
@@ -136,31 +128,11 @@ class AtomicDensity(object):
         arr
             Returns a number or an array depending on input values
         """
-        normalization = ((2 * exponent) ** quantum_num) * \
-            np.sqrt((2 * exponent) / scipy.misc.factorial(2 * quantum_num))
-        pre_factor = np.transpose(r ** (np.ravel(quantum_num) - 1))
-        slater = pre_factor * (np.exp(-exponent * np.transpose(r)))
+        normalization = ((2 * exponent) ** quantum_num) * np.sqrt((2 * exponent) / scipy.misc.factorial(2 * quantum_num))
+        pre_factor = np.transpose(self.GRID ** (np.ravel(quantum_num) - 1))
+        slater = pre_factor * (np.exp(-exponent * np.transpose(self.GRID)))
         slater *= normalization
-        return slater
-
-    def slator_dict(self):
-        """
-        Groups Each Slater Equations Based On The SubShell inside an dictionary.
-        This is then used to multiply by coefficient array to obtain all phi equations
-        for that subshell. Hence each subshell will have their own slator matrix
-        and their own coefficient matrix, dot product between them will obtain
-        the phi equations(MO) for that subshell.
-
-        :return: row = number of points, column = number of slater equations
-        """
-        dict_orbital = {x[1]: 0 for x in self.orbitals}
-        for subshell in dict_orbital.keys():
-            exponents = self.orbitals_exp[subshell]
-            basis_numbers = self.basis_numbers[subshell]
-            slater = self.slator_type_orbital(exponents, basis_numbers, self.GRID)
-            dict_orbital[subshell] = np.transpose(slater)
-
-        return dict_orbital
+        return np.transpose(slater)
 
     def all_coeff_matrix(self, subshell):
         """
@@ -179,15 +151,8 @@ class AtomicDensity(object):
             an array where row = number of coefficients per orbital and column = number of
             orbitals of specified subshell.
         """
-        counter = 0
-        coeffs = None
-
-        for key in [x for x in self.orbitals if x[1] == subshell]:
-            if counter == 0:
-                coeffs = self.orbitals_coeff[key]
-                counter += 1
-            else:
-                coeffs = np.concatenate((coeffs, self.orbitals_coeff[key]), axis=1)
+        coeffs = [self.orbitals_coeff[orb] for orb in self.orbitals if orb[1] == subshell]
+        coeffs = np.concatenate(coeffs, axis=1)
         return coeffs
 
     def phi_lcao(self, subshell):
@@ -202,7 +167,8 @@ class AtomicDensity(object):
         :return: array where row = number of points and column = number of phi/orbitals.
                 For example, beryllium will have row = # of points and column = 2 (1S and 2S)
         """
-        return np.dot(self.ALL_SLATOR_ORBITALS[subshell], self.all_coeff_matrix(subshell))
+        exps, basis = self.orbitals_exp[subshell], self.basis_numbers[subshell]
+        return np.dot(self.slator_type_orbital(exps, basis), self.all_coeff_matrix(subshell))
 
     def phi_matrix(self):
         """
@@ -217,15 +183,8 @@ class AtomicDensity(object):
              for each orbital is connected together, horizontally.
              row = number of points and col = each phi equation for each orbital
         """
-        list_orbitals = ['S', 'P', 'D', 'F']
-
-        phi_matrix = 0
-        for index, orbital in enumerate(list_orbitals):
-            if orbital in self.orbitals_exp.keys():
-                if index == 0:
-                    phi_matrix = self.phi_lcao(orbital)
-                else:
-                    phi_matrix = np.concatenate((phi_matrix, self.phi_lcao(orbital)), axis=1)
+        phi_matrix = [self.phi_lcao(orb) for orb in self.orbitals_exp.keys()]
+        phi_matrix = np.concatenate(phi_matrix, axis=1)
         return phi_matrix
 
     def atomic_density(self):
@@ -237,7 +196,7 @@ class AtomicDensity(object):
         :return: the electron least_squares where row = number of point
                  and column = 1
         """
-        dot = np.dot(np.absolute(self.phi_matrix())**2, self.orbitals_electron_array)
+        dot = np.dot(self.phi_matrix()**2, self.orbitals_electron_array)
         return np.ravel(dot) / (4. * np.pi)
 
     def atomic_density_core_valence(self):
@@ -293,4 +252,3 @@ class AtomicDensity(object):
 
         return(np.dot(core, self.orbitals_electron_array),
                np.dot(valence, self.orbitals_electron_array))
-
