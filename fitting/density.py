@@ -19,7 +19,15 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-r"""
+r"""Module responsible for constructing the atomic density composed of slater functions.
+
+This module is used to compute the atomic densities, core densities and valence densities for some
+atom. Need to specify it with a .slater file.
+
+Classes
+-------
+AtomicDensity : Given a file path to a slater file and grid points, Can construct an atomic,
+                core, or valence densities composed of slater basis functions.
 
 """
 
@@ -36,8 +44,7 @@ __all__ = ["AtomicDensity"]
 
 class AtomicDensity(object):
     """
-    Used to compute the atomic least_squares of various elements
-    from a composition of slater functions.
+    Used to compute the atomic density of some element from a composition of slater functions.
 
     Parameters
     ----------
@@ -55,32 +62,48 @@ class AtomicDensity(object):
             basis_numbers.
 
     GRID : numpy column array
-        positive _grid points used to calculate electron least_squares
+        positive _grid points used to calculate electron least_squares.
 
     ALL_SLATOR_ORBITALS : dictionary - key:subshell value:numpy matrix
-        Calculates slator orbitals of each subshell
+        Calculates slator orbitals of each subshell.
 
 
     Methods
     -------
     slator_type_orbital(exponent, quantumNum, r)
-        Calculates the slator orbital based on its equation
-    slator_dict()
-        Calculates all slator orbital of each subshell inside a dictionary
-    all_coeff_matrix(subshell)
-        Calculates the coefficients of an atom based on its subshell
-    phi_lcao(subshell)
-        Calculate molecular orbital of a specific subshell
-    phi_matrix()
-        Concatenates molecular orbital horizontally
-    atomic_density()
-        Calculates atomic least_squares
-    atomic_density_core()
-        Calculates atomic least_squares of both core and valence
+        Calculates the slator orbital based on its equation.
 
+    slator_dict()
+        Calculates all slator orbital of each subshell inside a dictionary.
+
+    all_coeff_matrix(subshell)
+        Calculates the coefficients of an atom based on its subshell.
+
+    phi_lcao(subshell)
+        Calculate molecular orbital of a specific subshell.
+
+    phi_matrix()
+        Concatenates molecular orbital horizontally.
+
+    atomic_density()
+        Calculates atomic least_squares.
+
+    atomic_density_core()
+        Calculates atomic least_squares of both core and valence.
 
     """
     def __init__(self, file_name, grid):
+        r"""
+
+        Parameters
+        ----------
+        file_name : str
+            File path to the .slater file. Primarily located in ./data/ folder.
+
+        grid : np.ndarray
+            Grid Object.
+
+        """
         if not isinstance(file_name, str):
             raise TypeError("File name should be a string.")
         if not isinstance(grid, (list, np.ndarray)):
@@ -150,8 +173,9 @@ class AtomicDensity(object):
 
         Returns
         -------
-                an array where row = number of coefficients per orbital and column = number of
-                orbitals of specified subshell.
+        list :
+            an array where row = number of coefficients per orbital and column = number of
+            orbitals of specified subshell.
         """
         counter = 0
         coeffs = None
@@ -216,16 +240,18 @@ class AtomicDensity(object):
 
     def atomic_density_core_valence(self):
         """
-        Calculates Atomic Density for
-        core and valence electrons.
-        :return:
-        """
+        Calculates Atomic Density for core and valence electrons.
 
+        """
         def energy_homo():
             """
-            A helper function that finds the HOMO energy of
-            the _element
-            :return: Energy Of Homo
+            A helper function that finds the HOMO energy of the element
+
+            Returns
+            --------
+            float
+                Energy Of Homo
+
             """
             # Initilize the energy from first value from the list.
             energy_homo = self.VALUES['orbitals_energy']['S'][0]
@@ -239,9 +265,13 @@ class AtomicDensity(object):
 
         def join_energy():
             """
-            A helper function to join all of the energy
-            levels into one array
-            :return:
+            A helper function to join all of the energy levels into one array
+
+            Returns
+            -------
+            list
+                All energy levels in one list.
+
             """
             joined_array = np.array([])
             for orbital in ['S', 'P', 'D', 'F']:

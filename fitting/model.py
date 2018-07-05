@@ -19,13 +19,19 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-r"""
-This file designates how to define your model (e.g. gaussian basis set) to
-fit to slater densities using the least squares optimization.
+r"""Module for Least Squares Fitting.
 
-Hence the DensityModel is the abstract class for all models.
-It also contains standard error measures to be used when fitting to get a sense
-of how good the fit is.
+This file designates how to define your model (e.g. gaussian basis set) to fit to a probability
+distribution using the least squares objective function.
+
+Classes
+--------
+Density Model :  is the abstract class for all models. It also contains standard error measures
+                 to be used when fitting to get a sense of how good the fit is.
+
+GaussianBasisSet : A child class of Density Model. Responsible for fitting gaussian basis sets,
+                   via least-squares.
+
 """
 
 
@@ -37,14 +43,34 @@ __all__ = ["DensityModel", "GaussianBasisSet"]
 
 class DensityModel(object):
     """
-    This is an abstract class for the gaussian least_squares model
-    used for fitting slater densities.
+    An abstract class for the least squares model used for fitting any probability distribution.
 
-    Primarily used to define the cost function/objective function and
-    the residual which is being minimized through least squares.
-    Additionally, contains tools to define different error measures,
-    as well as UGBS exponents used to define proper initial guesses
-    for the Gaussian least_squares model.
+    Primarily used to define the cost function/objective function and the residual which is being
+    minimized through least squares.
+
+    Additionally, contains tools to define different error measures.
+
+    Attributes
+    ----------
+    grid : np.ndarray
+        Grid Points where the 'true_model' is being defined on.
+
+    true_model : np.ndarray
+        The probability distribution that is being fitted to, defined on the 'grid'.
+
+    Methods
+    -------
+    create_model(): Abstract method for defining the approximate model composed of your basis set
+                    of interest.
+
+    cost_function(): Abstract method for defining the least-squares objective function.
+
+    derivative_of_cost_function(): Abstract method for defining the derivative of hte cost
+                                   function with respect to each parameter. Used for optimization.
+
+    create_cofactor_matrix(): Create the cofactor matrix used for NNLS optimization ie optimizing
+                              the coefficients of the basis functions.
+
     """
 
     def __init__(self, grid, true_model=None):
@@ -54,6 +80,7 @@ class DensityModel(object):
         ----------
         grid : np.ndarray
                Contains the grid points for the density model.
+
         element : str, optional
                  The element that the slater densities are based on.
                  Used if one want's to use UGBS parameters as initial guess.
@@ -86,18 +113,12 @@ class DensityModel(object):
         return self._true_model
 
     def create_model(self):
-        """
-        """
         raise NotImplementedError("Need to implement the least_squares model")
 
     def cost_function(self):
-        """
-        """
         raise NotImplementedError("Need to implement the cost function")
 
     def derivative_of_cost_function(self):
-        """
-        """
         raise NotImplementedError("Need to Implement the derivative of cost "
                                   "function")
 
@@ -109,8 +130,8 @@ class DensityModel(object):
 
     def integrate_model_trapz(self, approx_model):
         r"""
-        Integrates the approximate model with an added r^2 over [0, inf),
-        using the trapezoidal method.
+        Integrates the approximate model with an added r^2 over [0, inf), using the trapezoidal
+        method.
 
         Parameters
         ----------
@@ -129,7 +150,7 @@ class DensityModel(object):
         r"""
         This error measures how good the kl_divergence is between the approximate and
         true least_squares at long densities.
-        # TODO: FIX THIS TO MAKE THE LATEX INLINE
+
         ..math::
             Given two functions, denoted f, g.
             The error is given as \int r^2 |f(r) - g(r)|dr
@@ -146,6 +167,7 @@ class DensityModel(object):
         -------
         error : float
                 A positive real number that measures how good the kl_divergence is.
+
         """
         abs_diff = np.absolute(np.ravel(true_model) - np.ravel(approx_model))
         error = np.trapz(y=self._grid**2 * abs_diff, x=self._grid)
@@ -171,6 +193,7 @@ class DensityModel(object):
         -------
         error : float
                 Measures the difference in integration of the two models.
+
         """
         integrate_true_model = self.integrate_model_trapz(true_model)
         integrate_approx_model = self.integrate_model_trapz(approx_model)
@@ -186,6 +209,28 @@ class GaussianBasisSet(DensityModel):
     In addition, the cost-function is provided with it's derivative to be
     used for optimization routine like, slsqp, l-bfgs, and nnls, in the
     'fitting.least_squares.least_sqs'.
+
+    Attributes
+    ----------
+    grid : np.ndarray
+        Grid Points where the 'true_model' is being defined on.
+
+    true_model : np.ndarray
+        The probability distribution that is being fitted to, defined on the 'grid'.
+
+    Methods
+    -------
+    create_model(parameters) : Computes the gaussian promolecular density based on the parameters.
+
+    cost_function() : Computes the sum of squares of residuals based on the 'create_model' and
+                      'true_model'.
+
+    derivative_of_cost_function() : Computes the derivative of the 'cost_function'.
+
+    create_cofactor_matrix() : Create the cofactor matrix used for NNLS optimization ie optimizing
+                              the coefficients of the basis functions. Matrix of exponential
+                              functions.
+
     """
     def __init__(self, grid, true_model):
         r"""
@@ -215,14 +260,14 @@ class GaussianBasisSet(DensityModel):
 
         Parameters
         ----------
-        parameters : np.ndarray or list
+        parameters : np.ndarray
                      Parameters to be optimized. Depends on which_opti.
                      if which_opti is:
                      - 'b' contains both coefficients and exponents, resp.
                      - 'c' contains coefficients to be optimized.
                      - 'e' contains exponents to be optimized.
 
-        fixed_params : np.ndarray or list
+        fixed_params : np.ndarray
                      Used when which_opti is 'c' or 'e'. In any case, it contains
                      the parameters that are considered fixed.
 
@@ -255,7 +300,7 @@ class GaussianBasisSet(DensityModel):
         r"""
         The least squares formula between the true electron density and
         our gaussian model.
-        #TODO: Add InLine Comments Here
+
         It is the sum over the radial grid points, where you take the difference
         squared between the true elctron density, , and gaussian density.
         ..math::
@@ -282,6 +327,9 @@ class GaussianBasisSet(DensityModel):
 
         Returns
         -------
+        float
+            Computes the sum of squares of residuals over the grid points.
+
         """
         res = self.get_residual(parameters, fixed_params, which_opti)
         residual_squared = np.power(res, 2.0)
@@ -303,6 +351,7 @@ class GaussianBasisSet(DensityModel):
         -------
         np.ndarray
                   Derivative wrt to coefficients
+
         """
         cofac = self.create_cofactor_matrix(exps)
         derivative_coeff = -res.dot(cofac)
@@ -325,6 +374,7 @@ class GaussianBasisSet(DensityModel):
         -------
         np.ndarray
                   Derivative wrt to each exponents.
+
         """
         cofac = self.create_cofactor_matrix(exps)
         residual_squared = res * self._grid**2.
@@ -361,6 +411,7 @@ class GaussianBasisSet(DensityModel):
         -------
         deriv : np.ndarray
                 Sum of the derivative.
+
         """
         residual = self.get_residual(parameters, fixed_params, which_opti)
         f_function = 2.0 * residual
@@ -393,11 +444,13 @@ class GaussianBasisSet(DensityModel):
         ----------
         exponents : np.ndarray
                     List holding the exponents for each gaussian function.
+
         Returns
         -------
         cofactor : np.ndarray
                    A Matrix where rows are the points on the grid and columns
                    correspond to each gaussian basis function at that point.
+
         """
         g_col = self._grid.reshape((len(self._grid), 1))
         exponential = np.exp(-exponents * np.power(g_col, 2.0))

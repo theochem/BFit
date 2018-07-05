@@ -102,12 +102,16 @@ def get_next_choices(factor, coeffs, fparams, coeff_val=100.):
     ----------
     factor : float
              Number used to give two choices by multiplying each end point.
+    
     coeffs : np.ndarray
              Coefficients of the basis functions.
+    
     fparams : np.ndarray
               Function parameters.
+    
     coeff_val : float
                 Number used to fill in the coefficient value for each guess.
+    
     Returns
     -------
     list
@@ -147,12 +151,16 @@ def get_two_next_choices(factor, coeffs, fparams, coeff_val=100.):
     ----------
     factor : float
              Number used to give two choices by multiplying each end point.
+    
     coeffs : np.ndarray
              Coefficients of the basis functions.
+    
     fparams : np.ndarray
               Function parameters.
+    
     coeff_val : float
                 Number used to fill in the coefficient value for each guess.
+    
     Returns
     -------
     list
@@ -220,12 +228,16 @@ def pick_two_lose_one(factor, coeffs, exps, coeff_val=100.):
     ----------
     factor : float
              Number used to give two choices by multiplying each end point.
+    
     coeffs : np.ndarray
              Coefficients of the basis functions.
+    
     fparams : np.ndarray
               Function parameters.
+    
     coeff_val : float
                 Number used to fill in the coefficient value for each guess.
+    
     Returns
     -------
     list

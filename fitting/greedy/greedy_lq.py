@@ -43,11 +43,7 @@ class GreedyLeastSquares(GreedyStrategy):
 
     @property
     def true_model(self):
-        return self.gauss_obj.electron_density
-
-    @property
-    def ugbs(self):
-        return self.gauss_obj.UGBS_s_exponents
+        return self.gauss_obj._true_model
 
     def get_cost_function(self, params):
         self.gauss_obj.cost_function(params)

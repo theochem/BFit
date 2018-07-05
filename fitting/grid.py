@@ -19,7 +19,24 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-"""The Grid Module."""
+"""The Grid Module.
+
+This module holds the classes responsible for storing and creating the grid points,
+and the different ways of integrating it with any function.
+
+Classes
+-------
+- BaseRadialGrid : Abstract base class for a Radial Grid Object.
+
+- UniformRadialGrid : Radial grids that are composed of uniform (equally-spaced) points. Used for
+                      Atomic Fitting.
+
+- ClenshawRadialGrid : Radial grid that are composed via Clenshaw-curtis style grids. Used for
+                       Atomic Fitting.
+
+- CubicGrid : Three-dimensional Grid class to be used for Molecular Fitting.
+
+"""
 
 
 import numpy as np
@@ -27,15 +44,30 @@ import numpy as np
 from numbers import Real, Integral
 
 
-__all__ = ["BaseRadialGrid", "ClenshawRadialGrid", "CubicGrid"]
+__all__ = ["BaseRadialGrid", "ClenshawRadialGrid", "UniformRadialGrid", "CubicGrid"]
 
 
 class BaseRadialGrid(object):
-    """Base atom-centered radial grid."""
+    r"""Base atom-centered radial grid.
+
+    Used as a template for how to construct a Grid Object.
+
+    Attributes
+    ----------
+    radii : np.ndarray
+        Holds the radial grid points inside a one-dimensional numpy array.
+
+    Methods
+    -------
+    integrate_spher(filled=False, integrand)
+        Integrate the one-dimensional integrand via spherical coordinates.
+
+    integrate(integrand=np.ndarray)
+        Integrate the integrand via trapezoidal rule defined on the radial grid points.
+
+    """
 
     def __init__(self, radii):
-        """
-        """
         if not isinstance(radii, np.ndarray) or radii.ndim != 1:
             raise TypeError("Argument radii should be one dimensional numpy array.")
         self._radii = np.ravel(radii)
@@ -66,6 +98,7 @@ class BaseRadialGrid(object):
         -------
         float
             Integration value
+
         """
         total_arr = np.ma.asarray(np.ones(len(args[0])))
         for arr in args:
@@ -76,7 +109,24 @@ class BaseRadialGrid(object):
         return 4. * np.pi * np.trapz(y=integrand, x=self.radii)
 
     def integrate(self, *args):
-        """
+        r"""Compute trapezoidal integration of a given function on the radial grid points.
+
+        ..math::
+            \int f(r) dr
+
+        where :math:'f(r)' is what is being integrated.
+
+        Parameters
+        ----------
+        *args :
+              Arguments of arrays to be multiplied together
+              before integrating.
+
+        Returns
+        -------
+        float
+            Integration value
+
         """
         total_arr = np.ma.asarray(np.ones(len(args[0])))
         for arr in args:
@@ -85,26 +135,49 @@ class BaseRadialGrid(object):
 
 
 class UniformRadialGrid(BaseRadialGrid):
-    """ """
+    """Grid class for uniform/equally-space grid points.
+
+    Attributes
+    ----------
+    radii : np.ndarray
+        Holds the equally-spaced radial grid points inside a one-dimensional numpy array.
+
+    Methods
+    -------
+    integrate_spher(filled=False, integrand)
+        Integrate the one-dimensional integrand via spherical coordinates.
+
+    integrate(integrand=np.ndarray)
+        Integrate the integrand via trapezoidal rule defined on the uniform radial grid points.
+
+    """
 
     def __init__(self, number_points, max_radii=100.):
         """
+        Creates a equally-spaced grid points from [0, 'max_radii'] of length 'number_points'.
+
+        Parameters
+        ----------
+        number_points : int
+            The number of points that you want between zero and 'max_radii', including the
+            endpoints.
+
+        max_radii : float, optional
+            The farthest point that is being defined on the grid points.
+
         """
         grid = np.arange(max_radii, step=1./number_points)
         super(UniformRadialGrid, self).__init__(grid)
 
 
 class ClenshawRadialGrid(BaseRadialGrid):
-    """
-    Constructs a clenshaw-curtis _grid and provides a function to integrate_spher over
-    the entire space. #TODO:DifferentKind of Integration
+    r"""Constructs a Clenshaw-curtis grid.
 
-    This _grid is used to concentrate more points near the origin/nucleus and
-    add sparse points further away.
+    This grid is used to concentrate more points near the origin/core regions and add sparse
+    points further away.
 
-    The properties we want for this grid is to have
-    points that are dense near the core region and another _grid that is
-    spreads out the points.
+    The properties we want for this grid is to have points that are dense near the core region
+    and another grid that is spreads out the points.
 
     This is constructed as follows:
 
@@ -118,22 +191,34 @@ class ClenshawRadialGrid(BaseRadialGrid):
     Extra points are added to ensure better accuracy,
         r_p &=[50, 75, 100].
 
+    Attributes
+    ----------
+    atomic_numb : int
+        The atomic number of the atom that you want to be modelled.
+
+    radii : np.ndarray
+        Holds the radial grid points inside a one-dimensional numpy array, defined by the rule
+        above.
+
     """
 
-    def __init__(self, atomic_number, numb_core_pts, numb_diffuse_pts, extra_list=[], filled=False):
-        """
+    def __init__(self, atomic_number, numb_core_pts, numb_diffuse_pts, extra_list=[]):
+        r"""Based on the atomic number and number of points, construct a specialized grid for atoms.
+
         Parameters
         ----------
         atomic_number : int
             Atomic number of the atom for which the grid is generated.
+
         numb_core_pts : int
-            The number of points near the origin/nucleus.
+            The number of points near the origin/core region.
+
         numb_diffuse_pts : int
-            The number of points far from the origin/nucleus.
+            The number of points far from the origin/core region.
+
         extra_list : list
             Additional points to be added to the grid.
-        filled : bool
-            Used for integration #TODO:Clarrify This
+
         """
         if not isinstance(atomic_number, Integral):
             raise TypeError("atomic number should be an integer.")
@@ -153,7 +238,6 @@ class ClenshawRadialGrid(BaseRadialGrid):
         self._atomic_numb = atomic_number
         grid = self._grid_points(numb_core_pts, numb_diffuse_pts, extra_list)
         super(ClenshawRadialGrid, self).__init__(grid)
-        self._filled = filled
 
     @property
     def atomic_numb(self):
@@ -161,8 +245,8 @@ class ClenshawRadialGrid(BaseRadialGrid):
 
     def _get_core_points(self, numb_pts):
         r"""
-        Concentrates points on the radial _grid on [0, inf)
-        near the origin for better accuracy.
+        Concentrates points on the radial _grid on [0, inf) near the origin for better accuracy.
+
         More specifically it is:
         ..math::
             r_p = \frac{1}[2Z} (1 - cos(\frac{\pi p}{2N})) for p=0,1...N-1,
@@ -177,6 +261,7 @@ class ClenshawRadialGrid(BaseRadialGrid):
         -------
         array
             Numpy array holding the core points on [0, inf)
+
         """
         assert type(numb_pts) is int, "Grid points is not an integer"
         factor = 1. / (2 * self._atomic_numb)
@@ -195,7 +280,7 @@ class ClenshawRadialGrid(BaseRadialGrid):
         Parameters
         ----------
         numb_pts : int
-            Number of diffuse points on the _grid.
+            Number of diffuse points on the grid.
 
         Returns
         -------
@@ -208,9 +293,10 @@ class ClenshawRadialGrid(BaseRadialGrid):
 
     def _grid_points(self, numb_core_pts, numb_diffuse_pts, extra_list=()):
         r"""
-        Returns _grid points on the radial _grid, ie [0, inf),
-        based on the clenshaw curtis _grid, where points are
-        concentrated near the origin.
+        Returns grid points on the radial _grid,
+
+        Constructs a grid on [0, inf), based on the clenshaw curtis grid, where points are
+        concentrated near the core regions.
 
         Parameters
         ----------
@@ -225,6 +311,7 @@ class ClenshawRadialGrid(BaseRadialGrid):
         -------
         array
             Numpy array holding both core and diffuse points.
+
         """
         core_points = self._get_core_points(numb_core_pts)
         # [1:] is used to remove the extra zero in diffuse _grid
@@ -236,10 +323,42 @@ class ClenshawRadialGrid(BaseRadialGrid):
 
 
 class CubicGrid(object):
-    """Cubic Grid Class."""
+    r"""Cubic Grid Class.
+
+    This class is responsible for working with MolecularFitting class in
+    'fitting.kl_divergence.molecular_fitting'. This class is not a radial grid because it is in
+    three dimensions.
+
+    Attributes
+    ----------
+    grid : np.ndarray(shape=(N, 3))
+        Constructs a three-dimensional uniform/equally-spaced grid with 'N' points.
+
+    step : float
+        Step-size of the grid in one direction. Note the steo-size in the x,y,z directions are all
+        the same.
+
+    Methods
+    -------
+    integrate_spher(integrand)
+        Integrates the integrand in three dimensions via the Riemann sum. Note the sphericall is
+        included for simplicity with working in the KullbackLeibler class.
+
+    """
 
     def __init__(self, smallest_pt, largest_pt, step_size):
         """
+        Parameters
+        ----------
+        smallest_pt : float
+            The smallest point in the xyz direction in the 3D- grid.
+
+        largest_pt : float
+            The largest point in each xyz direction in the 3D-grid.
+
+        step_size : float
+            The step-size between any two points in the xyz direction.
+
         """
         if not isinstance(smallest_pt, Real):
             raise TypeError("Smallest point should be a number.")
@@ -263,6 +382,23 @@ class CubicGrid(object):
         return self._grid.shape[0]
 
     def integrate_spher(self, filled=False, *args):
+        r"""Integrates a function on the 3D-grid based on Riemann sums.
+
+        Parameters
+        ----------
+        integrand : np.ndarray
+            The function points that is being integrated with the same number of points as the
+            grid.
+
+        filled : bool
+            Ignore.
+
+        Returns
+        -------
+        float :
+            Integrates the function in three dimensions.
+
+        """
         total_arr = np.ma.asarray(np.ones(len(args[0])))
         for arr in args:
             total_arr *= arr
@@ -270,6 +406,25 @@ class CubicGrid(object):
 
     @staticmethod
     def make_cubic_grid(smallest_pt, largest_pt, step_size):
+        r"""Constructs the cubic grid.
+
+        Parameters
+        ----------
+        smallest_pt : float
+            The smallest point in the xyz direction in the 3D- grid.
+
+        largest_pt : float
+            The largest point in each xyz direction in the 3D-grid.
+
+        step_size : float
+            The step-size between any two points in the xyz direction.
+
+        Returns
+        -------
+        np.ndarray(shape=(N, 3))
+            Where N is the number of points between 'smallest_pt' and 'largest_pt'.
+
+        """
         grid = []
         grid_1d = np.arange(smallest_pt, largest_pt + step_size, step_size)
         for x in grid_1d:
