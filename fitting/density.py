@@ -63,7 +63,7 @@ class AtomicDensity(object):
 
     Methods
     -------
-    slator_type_orbital(exponent, quantumNum, r)
+    slater_orbital(exponent, quantumNum, r)
         Calculates the slator orbital based on its equation
 
     all_coeff_matrix(subshell)
@@ -100,7 +100,7 @@ class AtomicDensity(object):
             for key, value in data.items():
                 setattr(self, key, value)
 
-    def slator_type_orbital(self, exponent, quantum_num, points):
+    def slater_orbital(self, exponent, number, points):
         """
         Computes the Slator Type Orbital equation.
 
@@ -117,8 +117,8 @@ class AtomicDensity(object):
         arr
             Returns a number or an array depending on input values
         """
-        normalization = ((2 * exponent) ** quantum_num) * np.sqrt((2 * exponent) / scipy.misc.factorial(2 * quantum_num))
-        pre_factor = np.transpose(points ** (np.ravel(quantum_num) - 1))
+        normalization = (2 * exponent)**number * np.sqrt((2 * exponent) / scipy.misc.factorial(2 * number))
+        pre_factor = np.transpose(points ** (np.ravel(number) - 1))
         slater = pre_factor * (np.exp(-exponent * np.transpose(points)))
         slater *= normalization
         return np.transpose(slater)
@@ -157,7 +157,7 @@ class AtomicDensity(object):
                 For example, beryllium will have row = # of points and column = 2 (1S and 2S)
         """
         exps, basis = self.orbitals_exp[subshell], self.basis_numbers[subshell]
-        return np.dot(self.slator_type_orbital(exps, basis, points), self.all_coeff_matrix(subshell))
+        return np.dot(self.slater_orbital(exps, basis, points), self.all_coeff_matrix(subshell))
 
     def phi_matrix(self, points):
         """
@@ -185,7 +185,7 @@ class AtomicDensity(object):
         :return: the electron least_squares where row = number of point
                  and column = 1
         """
-        dot = np.dot(self.phi_matrix(points)**2, self.orbitals_electron_array)
+        dot = np.dot(self.phi_matrix(points)**2, self.orbitals_occupation)
         return np.ravel(dot) / (4. * np.pi)
 
     def atomic_density_core_valence(self):

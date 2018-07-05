@@ -66,13 +66,13 @@ def test_slater_type_orbital_be():
     file_path = os.getcwd() + '/data/examples/be.slater'
     # using one _grid point at 1.0
     be = AtomicDensity(file_path)
-    calculated = be.slator_type_orbital(np.array([[12.683501]]), np.array([[1]]), np.array([[1]]))
+    calculated = be.slater_orbital(np.array([[12.683501]]), np.array([[1]]), np.array([[1]]))
     expected = (2. * 12.683501)**1 * math.sqrt((2 * 12.683501) /
                                                math.factorial(2 * 1)) * 1**0 * math.exp(-12.683501)
     assert abs(calculated - expected) < 1.e-6
 
     be = AtomicDensity(file_path)
-    calculated = be.slator_type_orbital(np.array([[0.821620]]), np.array([[2]]), np.array([[2]]))
+    calculated = be.slater_orbital(np.array([[0.821620]]), np.array([[2]]), np.array([[2]]))
     expected = (2. * 0.821620)**2 * math.sqrt((2 * 0.821620) /
                                               math.factorial(2 * 2)) * 2**1 * np.exp(-0.821620 * 2)
     assert abs(calculated - expected) < 1.e-6
@@ -83,7 +83,7 @@ def test_slater_type_orbital_be():
     # rows are the slator_Type orbital, where each column represents each point in the _grid
 
     be = AtomicDensity(file_path)
-    calculated = be.slator_type_orbital(exp__array, quantum__array, grid)
+    calculated = be.slater_orbital(exp__array, quantum__array, grid)
     expected1 = [(2 * 12.683501)**1 * math.sqrt((2 * 12.683501) / math.factorial(2 * 1)) * 1**0 *
                  math.exp(-12.683501 * 1),
                  (2 * 12.683501)**1 * math.sqrt((2 * 12.683501) / math.factorial(2 * 1)) * 2**0 *

@@ -46,10 +46,7 @@ def test_parsing_slater_density_be():
     assert np.all(be['orbitals_energy']['S'] == [-4.7326699, -0.3092695])
     assert be['orbitals_basis']['S'] == ['1S', '1S', '1S', '1S', '1S', '1S', '2S', '1S']
     assert len(be['orbitals_occupation']) == 2
-    assert be['orbitals_occupation']['1S'] == 2
-    assert be['orbitals_occupation']['2S'] == 2
-    assert be['orbitals_electron_array'].shape == (2, 1)
-    assert (be['orbitals_electron_array'] == np.array([[2], [2]])).all()
+    assert (be['orbitals_occupation'] == np.array([[2], [2]])).all()
     basis_numbers = np.array([[1], [1], [1], [1], [1], [1], [2], [1]])
     assert (be['basis_numbers']['S'] == basis_numbers).all()
 
@@ -105,18 +102,7 @@ def test_parsing_slater_density_ag():
 
     # Check occupation numbers
     assert len(ag['orbitals_occupation']) == 10
-    assert ag['orbitals_occupation']['1S'] == 2
-    assert ag['orbitals_occupation']['2S'] == 2
-    assert ag['orbitals_occupation']['3S'] == 2
-    assert ag['orbitals_occupation']['4S'] == 2
-    assert ag['orbitals_occupation']['5S'] == 1
-    assert ag['orbitals_occupation']['2P'] == 6
-    assert ag['orbitals_occupation']['3P'] == 6
-    assert ag['orbitals_occupation']['4P'] == 6
-    assert ag['orbitals_occupation']['3D'] == 10
-    assert ag['orbitals_occupation']['4D'] == 10
-    occ = np.array([2, 2, 2, 2, 1, 6, 6, 6, 10, 10])
-    assert (ag['orbitals_electron_array'] == occ.reshape(10, 1)).all()
+    assert (ag['orbitals_occupation'] == np.array([2, 2, 2, 2, 1, 6, 6, 6, 10, 10]).reshape(10, 1)).all()
 
 
 def test_parsing_slater_density_ne():

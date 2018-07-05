@@ -41,7 +41,7 @@ def load_slater_wfn(file_name):
     ----------
     file_name : str
         The path to the Slater atomic file.
-    
+
     """
     def get_number_of_electrons_per_orbital(string_configuration):
         """
@@ -102,15 +102,15 @@ def load_slater_wfn(file_name):
         """
         The Columns get screwed over sine s orbitals start with one while p orbitals start at energy
         Therefore this corrects the error in order to retrieve correct column
-        
+
         Parameters
         ----------
         t_orbital : str
             orbital i.e. "1S" or "2P" or "3D"
-        
+
         Returns
         -------
-        
+
         """
         if t_orbital[1] == "S":
             return int(t_orbital[0]) + 1
@@ -118,27 +118,6 @@ def load_slater_wfn(file_name):
             return int(t_orbital[0])
         elif t_orbital[1] == "D":
             return int(t_orbital[0]) - 1
-
-    def get_array_of_electrons(d):
-        """
-        Computes The Number Of Electrons in Each Orbital As An Array
-        i.e. be = [[2], [2]] 2 electrons in 1S and 2S
-        Parameters
-        ----------
-        d :
-        
-        Returns
-        -------
-        
-            column vector of number of electrons in each orbital
-        
-        """
-        array = np.empty((len(d.keys()), 1))
-        row = 0
-        for orbital in orbitals:
-            array[row, 0] = d[orbital]
-            row += 1
-        return array
 
     with open(file_name, "r") as f:
         line = f.readline()
@@ -201,9 +180,7 @@ def load_slater_wfn(file_name):
             'orbitals_coeff':
             {key: np.asarray(value).reshape(len(value), 1)
              for key, value in orbitals_coeff.items() if value != []},
-            'orbitals_occupation': get_number_of_electrons_per_orbital(configuration),
-            'orbitals_electron_array':
-                get_array_of_electrons(get_number_of_electrons_per_orbital(configuration)),
+            'orbitals_occupation': np.array([get_number_of_electrons_per_orbital(configuration)[k] for k in orbitals])[:, None],
             'basis_numbers':
             {key: np.asarray([[int(x[0])] for x in value])
              for key, value in orbitals_basis.items() if len(value) != 0}
