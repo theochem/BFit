@@ -19,10 +19,9 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-r"""Module responsible for constructing the atomic density composed of slater functions.
+r"""Density Module.
 
-This module is used to compute the atomic densities, core densities and valence densities for some
-atom. Need to specify it with a .slater file.
+This module computes atomic densities from Slater-type orbital basis.
 """
 
 
@@ -56,24 +55,29 @@ class AtomicDensity(object):
             for key, value in data.items():
                 setattr(self, key, value)
 
-    def slater_orbital(self, exponent, number, points):
-        """
-        Computes the Slator Type Orbital equation.
+    @staticmethod
+    def slater_orbital(exponent, number, points):
+        r"""Compute the Slater-type orbitals on the given points.
+
+        .. math::
 
         Parameters
         ----------
-        exponent :
-
-        quantum_num : int
-
-        r :
+        exponent : ndarray, (M, 1)
+            The zeta exponents of Slater orbitals.
+        number : ndarray, (M, 1)
+            The principle quantum numbers of Slater orbitals.
+        points : ndarray, (N,)
+            The radial grid points.
 
         Returns
         -------
-        arr
-            Returns a number or an array depending on input values
+        slater : ndarray, (N, M)
+            The Slater-type orbitals evaluated on the grid points.
         """
-        # compute norm & prefactor
+        if points.ndim != 1:
+            raise ValueError("The argument point should be a 1D array.")
+        # compute norm & pre-factor
         norm = np.power(2. * exponent, number) * np.sqrt((2. * exponent) / factorial(2. * number))
         pref = np.power(points, number - 1).T
         # compute slater function
@@ -81,17 +85,20 @@ class AtomicDensity(object):
         return slater
 
     def phi_matrix(self, points):
-        """
-        Connects phi equations into an array, horizontally.
-        For Example, for beryllium [phi(1S), phi(2S)] is the array.
-        E.G. Carbon [phi(1S), phi(2S), phi(2P)].
+        r"""Compute the linear combination of Slater-type atomic orbitals on the given points.
+
+        .. math::
+
+        Parameters
+        ----------
+        points : ndarray, (N,)
+            The radial grid points.
 
         Returns
         -------
-        arr
-             array where all of the phi equations
-             for each orbital is connected together, horizontally.
-             row = number of points and col = each phi equation for each orbital
+        phi_matrix : ndarray, (N, K)
+            The linear combination of Slater-type orbitals evaluated on the grid points, where K is
+            the number os orbitals.
         """
         # compute orbital composed of a linear combination of Slater
         phi_matrix = np.zeros((len(points), len(self.orbitals)))
@@ -102,11 +109,21 @@ class AtomicDensity(object):
         return phi_matrix
 
     def atomic_density(self, points, mode="total"):
-        """Compute atomic density on the given 1D grid points array.
+        r"""Compute atomic density on the given points.
+
+        .. math::
 
         Parameters
         ----------
-        points
+        points : ndarray, (N,)
+            The radial grid points.
+        mode : str
+            The type of atomic density, which can be "total", "valence" or "code".
+
+        Returns
+        -------
+        dens : ndarray, (N,)
+            The atomic density on the grid points.
         """
         if mode not in ["total", "valence", "core"]:
             raise ValueError("Argument mode not recognized!")
