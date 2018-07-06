@@ -27,13 +27,14 @@ load_slater_wfn : Function for reading and returning information from '.slater' 
 
 """
 
+import os
 import re
 import numpy as np
 
 __all__ = ["load_slater_wfn"]
 
 
-def load_slater_wfn(file_name):
+def load_slater_wfn(element):
     """
     Return the data recorded in the atomic Slater wave-function file as a dictionary.
 
@@ -41,8 +42,10 @@ def load_slater_wfn(file_name):
     ----------
     file_name : str
         The path to the Slater atomic file.
-    
+
     """
+    file_name = os.path.join(os.path.dirname(__file__) + "/data/examples/%s.slater" % element.lower())
+
     def get_number_of_electrons_per_orbital(string_configuration):
         """
         Gets the Occupation Number for all orbitals
@@ -102,15 +105,15 @@ def load_slater_wfn(file_name):
         """
         The Columns get screwed over sine s orbitals start with one while p orbitals start at energy
         Therefore this corrects the error in order to retrieve correct column
-        
+
         Parameters
         ----------
         t_orbital : str
             orbital i.e. "1S" or "2P" or "3D"
-        
+
         Returns
         -------
-        
+
         """
         if t_orbital[1] == "S":
             return int(t_orbital[0]) + 1
@@ -118,27 +121,6 @@ def load_slater_wfn(file_name):
             return int(t_orbital[0])
         elif t_orbital[1] == "D":
             return int(t_orbital[0]) - 1
-
-    def get_array_of_electrons(d):
-        """
-        Computes The Number Of Electrons in Each Orbital As An Array
-        i.e. be = [[2], [2]] 2 electrons in 1S and 2S
-        Parameters
-        ----------
-        d :
-        
-        Returns
-        -------
-        
-            column vector of number of electrons in each orbital
-        
-        """
-        array = np.empty((len(d.keys()), 1))
-        row = 0
-        for orbital in orbitals:
-            array[row, 0] = d[orbital]
-            row += 1
-        return array
 
     with open(file_name, "r") as f:
         line = f.readline()
@@ -152,8 +134,8 @@ def load_slater_wfn(file_name):
 
         orbitals = []
         orbitals_basis = {'S': [], 'P': [], 'D': [], "F": []}
-        orbitals_cusp = {'S': 0, 'P': 0, 'D': 0, "F": 0}
-        orbitals_energy = {'S': [], 'P': [], 'D': [], "F": []}
+        orbitals_cusp = []
+        orbitals_energy = []
         orbitals_exp = {'S': [], 'P': [], 'D': [], "F": []}
         orbitals_coeff = {}
 
@@ -170,9 +152,9 @@ def load_slater_wfn(file_name):
 
                 # Get Energy, Cusp Levels
                 line = f.readline()
-                orbitals_energy[subshell] = [float(x) for x in line.split()[1:]]
+                orbitals_energy.extend([float(x) for x in line.split()[1:]])
                 line = f.readline()
-                orbitals_cusp[subshell] = [float(x) for x in line.split()[1:]]
+                orbitals_cusp.extend([float(x) for x in line.split()[1:]])
                 line = f.readline()
 
                 # Get Exponents, Coefficients, Orbital Basis
@@ -191,9 +173,8 @@ def load_slater_wfn(file_name):
     data = {'configuration': configuration,
             'energy': energy,
             'orbitals': orbitals,
-            'orbitals_energy':
-            {key: np.asarray(value) for key, value in orbitals_energy.items() if value != []},
-            'orbitals_cusp': orbitals_cusp,
+            'orbitals_energy': np.array(orbitals_energy)[:, None],
+            'orbitals_cusp': np.array(orbitals_cusp)[:, None],
             'orbitals_basis': orbitals_basis,
             'orbitals_exp':
             {key: np.asarray(value).reshape(len(value), 1) for key, value in orbitals_exp.items()
@@ -201,9 +182,7 @@ def load_slater_wfn(file_name):
             'orbitals_coeff':
             {key: np.asarray(value).reshape(len(value), 1)
              for key, value in orbitals_coeff.items() if value != []},
-            'orbitals_occupation': get_number_of_electrons_per_orbital(configuration),
-            'orbitals_electron_array':
-                get_array_of_electrons(get_number_of_electrons_per_orbital(configuration)),
+            'orbitals_occupation': np.array([get_number_of_electrons_per_orbital(configuration)[k] for k in orbitals])[:, None],
             'basis_numbers':
             {key: np.asarray([[int(x[0])] for x in value])
              for key, value in orbitals_basis.items() if len(value) != 0}

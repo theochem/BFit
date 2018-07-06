@@ -34,22 +34,18 @@ __all__ = ["test_parsing_slater_density_ag",
 
 def test_parsing_slater_density_be():
     # Load the Be file
-    file_path = os.getcwd() + '/data/examples/be.slater'
-    be = load_slater_wfn(file_path)
+    be = load_slater_wfn("be")
 
     assert be['configuration'] == '1S(2)2S(2)'
     assert be['energy'] == [14.57302313]
 
     # Check basis of S orbitals
     assert be['orbitals'] == ['1S', '2S']
-    assert np.all(be['orbitals_cusp']['S'] == [1.0001235, 0.9998774])
-    assert np.all(be['orbitals_energy']['S'] == [-4.7326699, -0.3092695])
+    assert np.all(abs(be['orbitals_cusp'] - np.array([1.0001235, 0.9998774])[:, None]) < 1.e-6)
+    assert np.all(abs(be['orbitals_energy'] - np.array([-4.7326699, -0.3092695])[:, None]) < 1.e-6)
     assert be['orbitals_basis']['S'] == ['1S', '1S', '1S', '1S', '1S', '1S', '2S', '1S']
     assert len(be['orbitals_occupation']) == 2
-    assert be['orbitals_occupation']['1S'] == 2
-    assert be['orbitals_occupation']['2S'] == 2
-    assert be['orbitals_electron_array'].shape == (2, 1)
-    assert (be['orbitals_electron_array'] == np.array([[2], [2]])).all()
+    assert (be['orbitals_occupation'] == np.array([[2], [2]])).all()
     basis_numbers = np.array([[1], [1], [1], [1], [1], [1], [2], [1]])
     assert (be['basis_numbers']['S'] == basis_numbers).all()
 
@@ -71,8 +67,7 @@ def test_parsing_slater_density_be():
 
 def test_parsing_slater_density_ag():
     # Load the Ag file.
-    file_path = os.getcwd() + '/data/examples/ag.slater'
-    ag = load_slater_wfn(file_path)
+    ag = load_slater_wfn("ag")
 
     # Check configuration and energy.
     assert ag['configuration'] == 'K(2)L(8)M(18)4S(2)4P(6)5S(1)4D(10)'
@@ -84,9 +79,12 @@ def test_parsing_slater_density_ag():
     # Check basis
     assert ag['orbitals_basis']['P'] == ['2P', '3P', '3P', '2P', '3P', '3P', '3P',
                                          '3P', '2P', '2P', '2P']
-    assert ag['orbitals_cusp']['P'] == [1.0008130, 1.0008629, 0.9998751]
-    assert np.all(ag['orbitals_cusp']['D'] == [0.9991182, 1.0009214])
-    assert np.all(ag['orbitals_energy']['P'] == [-125.1815809, -21.9454343, -2.6768201])
+    cusp = np.array([1.0002457, 1.0000318, 1.0004188, 1.0004755, 1.0007044,
+                     1.0008130, 1.0008629, 0.9998751, 0.9991182, 1.0009214])[:, None]
+    energy = np.array([-913.8355964, -134.8784068, -25.9178242, -4.0014988, -0.2199797,
+                       -125.1815809, -21.9454343, -2.6768201, -14.6782003, -0.5374007])[:, None]
+    assert (abs(ag['orbitals_cusp'] - cusp) < 1.e-6).all()
+    assert (abs(ag['orbitals_energy'] - energy) < 1.e-6).all()
 
     # Check exponents of D orbitals
     exp_D = np.array([53.296212, 40.214567, 21.872645, 17.024065, 10.708021, 7.859216, 5.770205,
@@ -105,31 +103,19 @@ def test_parsing_slater_density_ag():
 
     # Check occupation numbers
     assert len(ag['orbitals_occupation']) == 10
-    assert ag['orbitals_occupation']['1S'] == 2
-    assert ag['orbitals_occupation']['2S'] == 2
-    assert ag['orbitals_occupation']['3S'] == 2
-    assert ag['orbitals_occupation']['4S'] == 2
-    assert ag['orbitals_occupation']['5S'] == 1
-    assert ag['orbitals_occupation']['2P'] == 6
-    assert ag['orbitals_occupation']['3P'] == 6
-    assert ag['orbitals_occupation']['4P'] == 6
-    assert ag['orbitals_occupation']['3D'] == 10
-    assert ag['orbitals_occupation']['4D'] == 10
-    occ = np.array([2, 2, 2, 2, 1, 6, 6, 6, 10, 10])
-    assert (ag['orbitals_electron_array'] == occ.reshape(10, 1)).all()
+    assert (ag['orbitals_occupation'] == np.array([2, 2, 2, 2, 1, 6, 6, 6, 10, 10]).reshape(10, 1)).all()
 
 
 def test_parsing_slater_density_ne():
     # Load the Ne file
-    file_path = os.getcwd() + '/data/examples/ne.slater'
-    ne = load_slater_wfn(file_path)
+    ne = load_slater_wfn("ne")
 
     assert ne['configuration'] == "1S(2)2S(2)2P(6)"
     assert ne['energy'] == [128.547098140]
 
     # Check orbiral energy and cusp
-    assert ne['orbitals_energy']['P'] == [-0.8504095]
-    assert ne['orbitals_cusp']['P'] == [1.0000509]
+    assert (abs(ne['orbitals_energy'] - np.array([-32.7724425, -1.9303907, -0.8504095])[:, None]) < 1.e-6).all()
+    assert (abs(ne['orbitals_cusp'] - np.array([1.0000603, 0.9996584, 1.0000509])[:, None]) < 1.e-6).all()
 
     # Check basis
     assert ne['orbitals_basis']['P'] == ['3P', '2P', '3P', '2P', '2P', '2P', '2P']
