@@ -143,7 +143,7 @@ def fit_gaussian_densities(grid, element_name=None, true_model=None, inte_val=No
     current_file = os.path.abspath(os.path.dirname(__file__))
     if true_model is None:
         file_path = current_file + "/data/examples/" + element_name.lower()
-        true_model = AtomicDensity(file_path, grid=grid.radii).electron_density
+        true_model = AtomicDensity(element_name.lower()).atomic_density(grid.radii)
 
     # Sets Default Density Model to Gaussian Density
     if density_model is None:
