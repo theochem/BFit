@@ -34,8 +34,7 @@ __all__ = ["test_parsing_slater_density_ag",
 
 def test_parsing_slater_density_be():
     # Load the Be file
-    file_path = os.getcwd() + '/data/examples/be.slater'
-    be = load_slater_wfn(file_path)
+    be = load_slater_wfn("be")
 
     assert be['configuration'] == '1S(2)2S(2)'
     assert be['energy'] == [14.57302313]
@@ -68,8 +67,7 @@ def test_parsing_slater_density_be():
 
 def test_parsing_slater_density_ag():
     # Load the Ag file.
-    file_path = os.getcwd() + '/data/examples/ag.slater'
-    ag = load_slater_wfn(file_path)
+    ag = load_slater_wfn("ag")
 
     # Check configuration and energy.
     assert ag['configuration'] == 'K(2)L(8)M(18)4S(2)4P(6)5S(1)4D(10)'
@@ -110,8 +108,7 @@ def test_parsing_slater_density_ag():
 
 def test_parsing_slater_density_ne():
     # Load the Ne file
-    file_path = os.getcwd() + '/data/examples/ne.slater'
-    ne = load_slater_wfn(file_path)
+    ne = load_slater_wfn("ne")
 
     assert ne['configuration'] == "1S(2)2S(2)2P(6)"
     assert ne['energy'] == [128.547098140]

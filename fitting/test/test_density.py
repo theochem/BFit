@@ -21,7 +21,6 @@
 # ---
 
 
-import os
 import numpy as np
 
 from numpy.testing import assert_equal, assert_almost_equal
@@ -38,7 +37,7 @@ def slater(e, n, r):
 
 def test_slater_type_orbital_be():
     # load Be atomic wave function
-    be = AtomicDensity(os.getcwd() + '/data/examples/be.slater')
+    be = AtomicDensity("Be")
     # check values of a single orbital at r=1.0
     orbital = be.slater_orbital(np.array([[12.683501]]), np.array([[1]]), np.array([1]))
     assert_almost_equal(orbital, slater(12.683501, 1, 1.0), decimal=6)
@@ -55,7 +54,7 @@ def test_slater_type_orbital_be():
 
 def test_coeff_matrix_be():
     # load Be atomic wave function
-    be = AtomicDensity(os.getcwd() + '/data/examples/be.slater')
+    be = AtomicDensity("be")
     # using one _grid point at 1.0
     coeff_1s = np.array([-0.0024917, 0.0314015, 0.0849694, 0.8685562,
                          0.0315855, -0.0035284, -0.0004149, .0012299])[:, None]
@@ -67,7 +66,7 @@ def test_coeff_matrix_be():
 
 def test_phi_lcao_be():
     # load Be atomic wave function
-    be = AtomicDensity(os.getcwd() + '/data/examples/be.slater')
+    be = AtomicDensity("BE")
     # check the values of the phi_matrix at point 1.0
     phi_matrix = be.phi_matrix(np.array([1]))
     # compute expected value of 1S
@@ -92,7 +91,7 @@ def test_phi_lcao_be():
 
 def test_orbitals_function_be():
     # load Be atomic wave function
-    be = AtomicDensity(os.getcwd() + '/data/examples/be.slater')
+    be = AtomicDensity("bE")
     # check the values of the phi_matrix at point 1.0
     phi_matrix = be.phi_matrix(np.array([1]))
     # compute expected value of 1S
@@ -112,7 +111,7 @@ def test_orbitals_function_be():
 
 def test_orbitals_norm_be():
     # load Be atomic wave function
-    be = AtomicDensity(os.getcwd() + '/data/examples/be.slater')
+    be = AtomicDensity("be")
     # compute orbital density on an equally distant grid
     grid = np.arange(0.0, 15.0, 0.0001)
     dens = be.phi_matrix(grid)**2
@@ -125,7 +124,7 @@ def test_orbitals_norm_be():
 
 def test_orbitals_norm_ne():
     # load Ne atomic wave function
-    ne = AtomicDensity(os.getcwd() + '/data/examples/ne.slater')
+    ne = AtomicDensity("ne")
     # compute orbital density on an equally distant grid
     grid = np.arange(0.0, 10.0, 0.0001)
     dens = ne.phi_matrix(grid)**2
@@ -139,7 +138,7 @@ def test_orbitals_norm_ne():
 
 def test_orbitals_norm_c():
     # load C atomic wave function
-    c = AtomicDensity(os.getcwd() + '/data/examples/c.slater')
+    c = AtomicDensity("c")
     # compute orbital density on an equally distant grid
     grid = np.arange(0.0, 15.0, 0.0001)
     dens = c.phi_matrix(grid)**2
@@ -153,7 +152,7 @@ def test_orbitals_norm_c():
 
 def test_atomic_density_be():
     # load Be atomic wave function
-    be = AtomicDensity(os.getcwd() + '/data/examples/be.slater')
+    be = AtomicDensity("be")
     # compute density on an equally distant grid
     grid = np.arange(0.0, 15.0, 0.0001)
     dens = be.atomic_density(grid, mode="total")
@@ -171,7 +170,7 @@ def test_atomic_density_be():
 
 def test_atomic_density_ne():
     # load Ne atomic wave function
-    ne = AtomicDensity(os.getcwd() + '/data/examples/ne.slater')
+    ne = AtomicDensity("ne")
     # compute density on an equally distant grid
     grid = np.arange(0.0, 10.0, 0.0001)
     dens = ne.atomic_density(grid, mode="total")
@@ -189,7 +188,7 @@ def test_atomic_density_ne():
 
 def test_atomic_density_c():
     # load C atomic wave function
-    c = AtomicDensity(os.getcwd() + '/data/examples/c.slater')
+    c = AtomicDensity("c")
     # compute density on an equally distant grid
     grid = np.arange(0.0, 15.0, 0.0001)
     dens = c.atomic_density(grid, mode="total")

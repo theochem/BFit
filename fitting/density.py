@@ -23,19 +23,13 @@ r"""Module responsible for constructing the atomic density composed of slater fu
 
 This module is used to compute the atomic densities, core densities and valence densities for some
 atom. Need to specify it with a .slater file.
-
-Classes
--------
-AtomicDensity : Given a file path to a slater file and grid points, Can construct an atomic,
-                core, or valence densities composed of slater basis functions.
-
 """
 
 
-import scipy
-import scipy.integrate
-from scipy.misc import factorial
 import numpy as np
+
+from scipy.misc import factorial
+
 from fitting.utils.io import load_slater_wfn
 
 
@@ -43,60 +37,22 @@ __all__ = ["AtomicDensity"]
 
 
 class AtomicDensity(object):
-    """
-    Used to compute the atomic density of some element from a composition of slater functions.
+    """Atomic Density Class."""
 
-    Parameters
-    ----------
-    VALUES : dictionary
-        Contains information about the elements:
-            configuration,
-            energy, orbitals,
-            orbitals_energy
-            orbitals_cusp,
-            orbitals_basis,
-            orbitals_exp,
-            orbitals_coeff,
-            orbitals_occupation,
-            orbitals_electron_array,
-            basis_numbers.
-
-    Methods
-    -------
-    slater_orbital(exponent, quantumNum, r)
-        Calculates the slator orbital based on its equation
-
-    all_coeff_matrix(subshell)
-        Calculates the coefficients of an atom based on its subshell.
-
-    phi_lcao(subshell)
-        Calculate molecular orbital of a specific subshell.
-
-    phi_matrix()
-        Concatenates molecular orbital horizontally.
-
-    atomic_density()
-        Calculates atomic least_squares.
-
-    atomic_density_core()
-        Calculates atomic least_squares of both core and valence.
-
-    """
-    def __init__(self, file_name):
+    def __init__(self, element):
         r"""
-
         Parameters
         ----------
-        file_name : str
-            File path to the .slater file. Primarily located in ./data/ folder.
+        element : str
+            Symbol of element.
         """
-        if not isinstance(file_name, str):
-            raise TypeError("File name should be a string.")
+        if not isinstance(element, str) or not element.isalpha():
+            raise TypeError("The element argument should be all letters string.")
 
-        if file_name[-2:] == "/h":
-            self.electron_density = self.get_hydrogen_wave_func()
+        if element.lower() == "h":
+            raise NotImplementedError
         else:
-            data = load_slater_wfn(file_name)
+            data = load_slater_wfn(element)
             for key, value in data.items():
                 setattr(self, key, value)
 

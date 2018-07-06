@@ -27,13 +27,14 @@ load_slater_wfn : Function for reading and returning information from '.slater' 
 
 """
 
+import os
 import re
 import numpy as np
 
 __all__ = ["load_slater_wfn"]
 
 
-def load_slater_wfn(file_name):
+def load_slater_wfn(element):
     """
     Return the data recorded in the atomic Slater wave-function file as a dictionary.
 
@@ -43,6 +44,8 @@ def load_slater_wfn(file_name):
         The path to the Slater atomic file.
 
     """
+    file_name = os.path.join(os.path.dirname(__file__) + "/data/examples/%s.slater" % element.lower())
+
     def get_number_of_electrons_per_orbital(string_configuration):
         """
         Gets the Occupation Number for all orbitals
