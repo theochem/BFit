@@ -34,7 +34,7 @@ AtomicDensity : Given a file path to a slater file and grid points, Can construc
 
 import scipy
 import scipy.integrate
-import scipy.misc
+from scipy.misc import factorial
 import numpy as np
 from fitting.utils.io import load_slater_wfn
 
@@ -117,11 +117,12 @@ class AtomicDensity(object):
         arr
             Returns a number or an array depending on input values
         """
-        normalization = (2 * exponent)**number * np.sqrt((2 * exponent) / scipy.misc.factorial(2 * number))
-        pre_factor = np.transpose(points ** (np.ravel(number) - 1))
-        slater = pre_factor * (np.exp(-exponent * np.transpose(points)))
-        slater *= normalization
-        return np.transpose(slater)
+        # compute norm & prefactor
+        norm = np.power(2. * exponent, number) * np.sqrt((2. * exponent) / factorial(2. * number))
+        pref = np.power(points, number - 1).T
+        # compute slater function
+        slater = norm.T * pref * np.exp(-exponent * points).T
+        return slater
 
     def phi_matrix(self, points):
         """
@@ -139,8 +140,7 @@ class AtomicDensity(object):
         # compute orbital composed of a linear combination of Slater
         phi_matrix = np.zeros((len(points), len(self.orbitals)))
         for index, orbital in enumerate(self.orbitals):
-            subshell = orbital[1]
-            exps, number = self.orbitals_exp[subshell], self.basis_numbers[subshell]
+            exps, number = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
             slater = self.slater_orbital(exps, number, points)
             phi_matrix[:, index] = np.dot(slater, self.orbitals_coeff[orbital]).ravel()
         return phi_matrix
