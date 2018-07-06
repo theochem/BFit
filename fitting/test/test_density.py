@@ -19,274 +19,187 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-r"""Test file for fitting.least_squares.slater_density.atomic_slater_density."""
 
-import math
+
 import os
 import numpy as np
+
+from numpy.testing import assert_equal, assert_almost_equal
+
 from fitting.density import AtomicDensity
 
 
-__all__ = ["test_all_coeff_matrix_be",
-           "test_atomic_density_be",
-           "test_atomic_density_c",
-           "test_atomic_density_ne",
-           "test_phi_lcao_be",
-           "test_phi_lcao_be_2",
-           "test_phi_lcao_be_integrate",
-           "test_phi_lcao_c_integrate",
-           "test_phi_lcao_ne_integrate",
-           "test_phi_matrix_be",
-           "test_slater_dict_be",
-           "test_slater_dict_be_2",
-           "test_slater_type_orbital_be"]
-
-
-# TODO ADD TESTS FOR CORE
-# TODO ADD TESTS FOR VALENCE
-def slater_function(exponent, n, r):
-    """Calculates the normalized slater function at a given point.
-
-    ** Arguments **
-
-        exponent    a float or int representing the exponent of the slater function
-        n           a float or int representing the natural number
-        r           a float or int representing the distance of the electron from the nucleus.
-    """
-    assert isinstance(exponent, int) or isinstance(exponent, float)
-    assert isinstance(n, int) or isinstance(n, float)
-    assert isinstance(r, int) or isinstance(r, float)
-    normalization = np.power(2. * exponent, n) * math.sqrt(2. * exponent / math.factorial(2*n))
-    slater_orbital = np.power(r, n-1) * math.exp(-exponent * r)
-    return normalization * slater_orbital
+def slater(e, n, r):
+    """Calculates single normalized slater function at a given point."""
+    norm = np.power(2. * e, n) * np.sqrt(2. * e / np.math.factorial(2. * n))
+    slater = norm * np.power(r, n - 1) * np.exp(-e * r)
+    return slater
 
 
 def test_slater_type_orbital_be():
-    # load the Be file
-    file_path = os.getcwd() + '/data/examples/be.slater'
+    # load Be atomic wave function
+    be = AtomicDensity(os.getcwd() + '/data/examples/be.slater')
+    # check values of a single orbital at r=1.0
+    orbital = be.slater_orbital(np.array([[12.683501]]), np.array([[1]]), np.array([1]))
+    assert_almost_equal(orbital, slater(12.683501, 1, 1.0), decimal=6)
+    # check values of a single orbital at r=2.0
+    orbital = be.slater_orbital(np.array([[0.821620]]), np.array([[2]]), np.array([2]))
+    assert_almost_equal(orbital, slater(0.821620, 2, 2.0), decimal=6)
+    # check value of tow orbitals at r=1.0 & r=2.0
+    exps, nums = np.array([[12.683501], [0.821620]]), np.array([[1], [2]])
+    orbitals = be.slater_orbital(exps, nums, np.array([1., 2.]))
+    expected = np.array([[slater(exps[0, 0], nums[0, 0], 1.), slater(exps[1, 0], nums[1, 0], 1.)],
+                         [slater(exps[0, 0], nums[0, 0], 2.), slater(exps[1, 0], nums[1, 0], 2.)]])
+    assert_almost_equal(orbitals, expected, decimal=6)
+
+
+def test_coeff_matrix_be():
+    # load Be atomic wave function
+    be = AtomicDensity(os.getcwd() + '/data/examples/be.slater')
     # using one _grid point at 1.0
-    be = AtomicDensity(file_path)
-    calculated = be.slater_orbital(np.array([[12.683501]]), np.array([[1]]), np.array([1]))
-    expected = (2. * 12.683501)**1 * math.sqrt((2 * 12.683501) /
-                                               math.factorial(2 * 1)) * 1**0 * math.exp(-12.683501)
-    assert abs(calculated - expected) < 1.e-6
-
-    be = AtomicDensity(file_path)
-    calculated = be.slater_orbital(np.array([[0.821620]]), np.array([[2]]), np.array([2]))
-    expected = (2. * 0.821620)**2 * math.sqrt((2 * 0.821620) /
-                                              math.factorial(2 * 2)) * 2**1 * np.exp(-0.821620 * 2)
-    assert abs(calculated - expected) < 1.e-6
-    # using two _grid points at 1.0 and 2.0
-    exp__array = np.array([[12.683501], [0.821620]])
-    quantum__array = np.array([[1], [2]])
-    grid = np.array([1, 2])
-    # rows are the slator_Type orbital, where each column represents each point in the _grid
-
-    calculated = be.slater_orbital(exp__array, quantum__array, grid)
-    expected1 = [(2 * 12.683501)**1 * math.sqrt((2 * 12.683501) / math.factorial(2 * 1)) * 1**0 *
-                 math.exp(-12.683501 * 1),
-                 (2 * 12.683501)**1 * math.sqrt((2 * 12.683501) / math.factorial(2 * 1)) * 2**0 *
-                 math.exp(-12.683501 * 2)]
-    expected2 = [(2 * 0.821620)**2 * math.sqrt((2 * 0.821620) / math.factorial(2 * 2)) * (1**1) *
-                 math.exp(-0.821620 * 1),
-                 (2 * 0.821620)**2 * math.sqrt((2 * 0.821620) / math.factorial(2 * 2)) * (2**1) *
-                 math.exp(-0.821620 * 2)]
-    # every row corresponds to one exponent evaluated on all _grid points
-    expected = np.array([expected1, expected2]).T
-    assert (abs(calculated - expected) < 1.e-6).all()
-
-
-def test_all_coeff_matrix_be():
-    # load the Be file
-    file_path = os.getcwd() + '/data/examples/be.slater'
-    # using one _grid point at 1.0
-    be = AtomicDensity(file_path)
-    coeff_1s = np.array([-0.0024917, 0.0314015, 0.0849694, 0.8685562, 0.0315855,
-                         -0.0035284, -0.0004149, .0012299])
-    coeff_2s = np.array([0.0004442, -0.0030990, -0.0367056, 0.0138910, -0.3598016,
-                         -0.2563459, 0.2434108, 1.1150995])
-    assert (abs(be.orbitals_coeff["1S"] - coeff_1s.reshape(8, 1)) < 1.e-6).all()
-    assert (abs(be.orbitals_coeff["2S"] - coeff_2s.reshape(8, 1)) < 1.e-6).all()
+    coeff_1s = np.array([-0.0024917, 0.0314015, 0.0849694, 0.8685562,
+                         0.0315855, -0.0035284, -0.0004149, .0012299])[:, None]
+    coeff_2s = np.array([0.0004442, -0.0030990, -0.0367056, 0.0138910,
+                         -0.3598016, -0.2563459, 0.2434108, 1.1150995])[:, None]
+    assert_almost_equal(be.orbitals_coeff["1S"], coeff_1s, decimal=6)
+    assert_almost_equal(be.orbitals_coeff["2S"], coeff_2s, decimal=6)
 
 
 def test_phi_lcao_be():
-    # load the Be file
-    file_path = os.getcwd() + '/data/examples/be.slater'
-    # using one _grid point at 1.0
-    be = AtomicDensity(file_path)
-    phi = be.phi_matrix(np.array([1]))
-    assert phi.shape == (1, 2)
-    r = 1
-    lcao1s = slater_function(12.683501, 1, r)*-0.0024917 + slater_function(8.105927, 1, r)*0.0314015
-    lcao1s += slater_function(5.152556, 1, r)*0.0849694 + slater_function(3.472467, 1, r)*0.8685562
-    lcao1s += slater_function(2.349757, 1, r)*0.0315855 + slater_function(1.406429, 1, r)*-0.0035284
-    lcao1s += slater_function(0.821620, 2, r)*-0.0004149 + slater_function(0.786473, 1, r)*0.0012299
-
-    lcao2s = slater_function(12.683501, 1, r)*0.0004442 + slater_function(8.105927, 1, r)*-0.0030990
-    lcao2s += slater_function(5.152556, 1, r)*-0.0367056 + slater_function(3.472467, 1, r)*0.0138910
-    lcao2s += slater_function(2.349757, 1, r)*-0.3598016 - slater_function(1.406429, 1, r)*0.2563459
-    lcao2s += slater_function(0.821620, 2, r)*0.2434108 + slater_function(0.786473, 1, r)*1.1150995
-
-    assert abs(phi[(0, 0)] - lcao1s) < 1.e-6
-    assert abs(phi[(0, 1)] - lcao2s) < 1.e-6
-
-    phi = be.phi_matrix(np.array([1., 2., 3.]))
-    assert phi.shape == (3, 2)
-    assert abs(phi[(0, 0)] - lcao1s) < 1.e-6
-    assert abs(phi[(0, 1)] - lcao2s) < 1.e-6
-
-
-def test_phi_matrix_be():
-    # load the Be file
-    file_path = os.getcwd() + '/data/examples/be.slater'
-    # using one _grid point at 1.0
-    be = AtomicDensity(file_path)
-    # check the values of the phi_matrix
+    # load Be atomic wave function
+    be = AtomicDensity(os.getcwd() + '/data/examples/be.slater')
+    # check the values of the phi_matrix at point 1.0
     phi_matrix = be.phi_matrix(np.array([1]))
-    assert phi_matrix.shape == (1, 2)
-    r = 1.0
-    phi1S = slater_function(12.683501, 1, r) * -0.0024917 + \
-        slater_function(8.105927, 1, r) * 0.0314015
-    phi1S += slater_function(5.152556, 1, r) * 0.0849694 + \
-        slater_function(3.472467, 1, r) * 0.8685562
-    phi1S += slater_function(2.349757, 1, r) * 0.0315855 + \
-        slater_function(1.406429, 1, r) * -0.0035284
-    phi1S += slater_function(0.821620, 2, r) * -0.0004149 + \
-        slater_function(0.786473, 1, r) * 0.00122991
-
-    phi2S = slater_function(12.683501, 1, r) * 0.0004442 + \
-        slater_function(8.105927, 1, r) * -0.0030990
-    phi2S += slater_function(5.152556, 1, r) * -0.0367056 + \
-        slater_function(3.472467, 1, r) * 0.0138910
-    phi2S += slater_function(2.349757, 1, r) * -0.3598016 + \
-        slater_function(1.406429, 1, r) * -0.2563459
-    phi2S += slater_function(0.821620, 2, r) * 0.2434108 + \
-        slater_function(0.786473, 1, r) * 1.1150995
-    expected = np.concatenate((np.array([phi1S]), np.array([phi2S])))
-    assert (abs(phi_matrix - expected) < 1.e-6).all()
+    # compute expected value of 1S
+    phi1S = slater(12.683501, 1, 1) * -0.0024917 + slater(8.105927, 1, 1) * 0.0314015
+    phi1S += slater(5.152556, 1, 1) * 0.0849694 + slater(3.472467, 1, 1) * 0.8685562
+    phi1S += slater(2.349757, 1, 1) * 0.0315855 + slater(1.406429, 1, 1) * -0.0035284
+    phi1S += slater(0.821620, 2, 1) * -0.0004149 + slater(0.786473, 1, 1) * 0.0012299
+    # compute expected value of 2S
+    phi2S = slater(12.683501, 1, 1) * 0.0004442 + slater(8.105927, 1, 1) * -0.0030990
+    phi2S += slater(5.152556, 1, 1) * -0.0367056 + slater(3.472467, 1, 1) * 0.0138910
+    phi2S += slater(2.349757, 1, 1) * -0.3598016 - slater(1.406429, 1, 1) * 0.2563459
+    phi2S += slater(0.821620, 2, 1) * 0.2434108 + slater(0.786473, 1, 1) * 1.1150995
+    # check shape & orbital values
+    assert_equal(phi_matrix.shape, (1, 2))
+    assert_almost_equal(phi_matrix, np.array([[phi1S, phi2S]]), decimal=6)
+    # check the values of the phi_matrix at point 1.0, 2.0, 3.0
+    phi_matrix = be.phi_matrix(np.array([1., 2., 3.]))
+    # check shape & orbital values
+    assert_equal(phi_matrix.shape, (3, 2))
+    assert_almost_equal(phi_matrix[0, :], np.array([phi1S, phi2S]), decimal=6)
 
 
-def test_phi_lcao_be_integrate():
-    # load the Be file
-    file_path = os.getcwd() + '/data/examples/be.slater'
-    # placing 100,000 equally distant points from 0.0 to 10.0 for accurate integration
+def test_orbitals_function_be():
+    # load Be atomic wave function
+    be = AtomicDensity(os.getcwd() + '/data/examples/be.slater')
+    # check the values of the phi_matrix at point 1.0
+    phi_matrix = be.phi_matrix(np.array([1]))
+    # compute expected value of 1S
+    phi1S = slater(12.683501, 1, 1.) * -0.0024917 + slater(8.105927, 1, 1.) * 0.0314015
+    phi1S += slater(5.152556, 1, 1.) * 0.0849694 + slater(3.472467, 1, 1.) * 0.8685562
+    phi1S += slater(2.349757, 1, 1.) * 0.0315855 + slater(1.406429, 1, 1.) * -0.0035284
+    phi1S += slater(0.821620, 2, 1.) * -0.0004149 + slater(0.786473, 1, 1.) * 0.00122991
+    # compute expected value of 2S
+    phi2S = slater(12.683501, 1, 1.) * 0.0004442 + slater(8.105927, 1, 1.) * -0.0030990
+    phi2S += slater(5.152556, 1, 1.) * -0.0367056 + slater(3.472467, 1, 1.) * 0.0138910
+    phi2S += slater(2.349757, 1, 1.) * -0.3598016 + slater(1.406429, 1, 1.) * -0.2563459
+    phi2S += slater(0.821620, 2, 1.) * 0.2434108 + slater(0.786473, 1, 1.) * 1.1150995
+    # check shape & orbital values
+    assert_equal(phi_matrix.shape, (1, 2))
+    assert_almost_equal(phi_matrix, np.array([[phi1S, phi2S]]), decimal=6)
+
+
+def test_orbitals_norm_be():
+    # load Be atomic wave function
+    be = AtomicDensity(os.getcwd() + '/data/examples/be.slater')
+    # compute orbital density on an equally distant grid
+    grid = np.arange(0.0, 15.0, 0.0001)
+    dens = be.phi_matrix(grid)**2
+    # check shape
+    assert_equal(dens.shape, (grid.size, 2))
+    # check orbital normalization
+    assert_almost_equal(np.trapz(grid**2 * dens[:, 0], grid), 1.0, decimal=6)
+    assert_almost_equal(np.trapz(grid**2 * dens[:, 1], grid), 1.0, decimal=6)
+
+
+def test_orbitals_norm_ne():
+    # load Ne atomic wave function
+    ne = AtomicDensity(os.getcwd() + '/data/examples/ne.slater')
+    # compute orbital density on an equally distant grid
     grid = np.arange(0.0, 10.0, 0.0001)
-    be = AtomicDensity(file_path)
-    phi = be.phi_matrix(grid)
-    assert phi.shape == (len(grid), 2)
-    # check: integrating the density of each orbital should result in one
-    dens_1s = np.power(phi[:, 0], 2)
-    dens_2s = np.power(phi[:, 1], 2)
-    assert dens_1s.shape == dens_2s.shape == grid.shape
-    # integrate_spher(r^2 * density(r)) using the composite trapezoidal rule.
-    integrate_1s = np.trapz((grid**2) * dens_1s, grid)
-    integrate_2s = np.trapz((grid**2) * dens_2s, grid)
-    assert abs(integrate_1s - 1.0) < 1.e-4
-    assert abs(integrate_2s - 1.0) < 1.e-4
-    # integrate_spher(r^2 * density(r)) using the composite Simpsons rule.
-    import scipy
-    integrate_1s = scipy.integrate.simps((grid**2) * dens_1s, grid)
-    integrate_2s = scipy.integrate.simps((grid**2) * dens_2s, grid)
-    assert abs(integrate_1s - 1.0) < 1.e-4
-    assert abs(integrate_2s - 1.0) < 1.e-4
+    dens = ne.phi_matrix(grid)**2
+    # check shape
+    assert_equal(dens.shape, (grid.size, 3))
+    # check orbital normalization
+    assert_almost_equal(np.trapz(grid**2 * dens[:, 0], grid), 1.0, decimal=6)
+    assert_almost_equal(np.trapz(grid**2 * dens[:, 1], grid), 1.0, decimal=6)
+    assert_almost_equal(np.trapz(grid**2 * dens[:, 2], grid), 1.0, decimal=6)
 
 
-def test_phi_lcao_ne_integrate():
-    # load the Ne file
-    file_path = os.getcwd() + '/data/examples/ne.slater'
-    # placing 100,000 eqully distant points from 0.0 to 10.0 for accurate integration
-    grid = np.arange(0.0, 10.0, 0.0001)
-    ne = AtomicDensity(file_path)
-    phi = ne.phi_matrix(grid)
-    phi_s, phi_p = phi[:, :2], phi[:, 2].reshape(len(grid), 1)
-    assert phi_s.shape == (len(grid), 2)
-    assert phi_p.shape == (len(grid), 1)
-    # check: integrating the density of each orbital should result in one
-    dens_1s = np.power(phi_s[:, 0], 2)
-    dens_2s = np.power(phi_s[:, 1], 2)
-    dens_2p = np.power(np.ravel(phi_p), 2)
-    assert dens_1s.shape == dens_2s.shape == grid.shape
-    assert dens_2p.shape == grid.shape
-    # integrate_spher(r^2 * density(r)) using the composite trapezoidal rule.
-    assert abs(np.trapz(np.power(grid, 2) * dens_1s, grid) - 1.0) < 1.e-6
-    assert abs(np.trapz(np.power(grid, 2) * dens_2s, grid) - 1.0) < 1.e-6
-    assert abs(np.trapz(np.power(grid, 2) * dens_2p, grid) - 1.0) < 1.e-6
-
-
-def test_phi_lcao_c_integrate():
-    # load the C file
-    file_path = os.getcwd() + '/data/examples/c.slater'
-    # placing 100,000 eqully distant points from 0.0 to 10.0 for accurate integration
-    grid = np.arange(0.0, 10.0, 0.0001)
-    c = AtomicDensity(file_path)
-    phi = c.phi_matrix(grid)
-    phi_s, phi_p = phi[:, :2], phi[:, 2].reshape(len(grid), 1)
-    assert phi_s.shape == (len(grid), 2)
-    assert phi_p.shape == (len(grid), 1)
-    # check: integrating the density of each orbital should result in one
-    dens_1s = np.power(phi_s[:, 0], 2)
-    dens_2s = np.power(phi_s[:, 1], 2)
-    dens_2p = np.power(np.ravel(phi_p), 2)
-    assert dens_1s.shape == dens_2s.shape == grid.shape
-    assert dens_2p.shape == grid.shape
-    # integrate_spher(r^2 * density(r)) using the composite trapezoidal rule.
-    assert abs(np.trapz(np.power(grid, 2) * dens_1s, grid) - 1.0) < 1.e-5
-    assert abs(np.trapz(np.power(grid, 2) * dens_2s, grid) - 1.0) < 1.e-5
-    assert abs(np.trapz(np.power(grid, 2) * dens_2p, grid) - 1.0) < 1.e-5
+def test_orbitals_norm_c():
+    # load C atomic wave function
+    c = AtomicDensity(os.getcwd() + '/data/examples/c.slater')
+    # compute orbital density on an equally distant grid
+    grid = np.arange(0.0, 15.0, 0.0001)
+    dens = c.phi_matrix(grid)**2
+    # check shape
+    assert_equal(dens.shape, (grid.size, 3))
+    # check orbital normalization
+    assert_almost_equal(np.trapz(grid**2 * dens[:, 0], grid), 1.0, decimal=6)
+    assert_almost_equal(np.trapz(grid**2 * dens[:, 1], grid), 1.0, decimal=6)
+    assert_almost_equal(np.trapz(grid**2 * dens[:, 2], grid), 1.0, decimal=6)
 
 
 def test_atomic_density_be():
-    # load the Be file
-    file_path = os.getcwd() + '/data/examples/be.slater'
-    # placing 100,000 eqully distant points from 0.0 to 10.0 for accurate integration
-    grid = np.arange(0.0, 10.0, 0.0001)
-    be = AtomicDensity(file_path)
-    # get the density and flatten the array
-    density = be.atomic_density(grid)
-    assert density.shape == grid.shape
-    # check: integrating atomic density should result in the number of electrons.
-    # integrate_spher(r^2 * density(r)) using the composite trapezoidal rule.
-    assert abs(np.trapz(np.power(grid, 2) * density, grid) * 4. * np.pi - 4.0) < 1.e-3
-
-    # check core + valence density
+    # load Be atomic wave function
+    be = AtomicDensity(os.getcwd() + '/data/examples/be.slater')
+    # compute density on an equally distant grid
+    grid = np.arange(0.0, 15.0, 0.0001)
+    dens = be.atomic_density(grid, mode="total")
     core = be.atomic_density(grid, mode="core")
     valn = be.atomic_density(grid, mode="valence")
-    assert (abs(density - core - valn) < 1.e-6).all()
+    # check shape
+    assert_equal(dens.shape, grid.shape)
+    assert_equal(core.shape, grid.shape)
+    assert_equal(valn.shape, grid.shape)
+    # check dens = core + valence
+    assert_almost_equal(dens, core + valn, decimal=6)
+    # check number of electrons
+    assert_almost_equal(4 * np.pi * np.trapz(grid**2 * dens, grid), 4.0, decimal=6)
 
 
 def test_atomic_density_ne():
-    # load the Ne file
-    file_path = os.getcwd() + '/data/examples/ne.slater'
-    # placing 100,000 eqully distant points from 0.0 to 10.0 for accurate integration
+    # load Ne atomic wave function
+    ne = AtomicDensity(os.getcwd() + '/data/examples/ne.slater')
+    # compute density on an equally distant grid
     grid = np.arange(0.0, 10.0, 0.0001)
-    ne = AtomicDensity(file_path)
-    # get the density and flatten the array
-    density = ne.atomic_density(grid)
-    assert density.shape == grid.shape
-    # check: integrating atomic density should result in the number of electrons.
-    # integrate_spher(r^2 * density(r)) using the composite trapezoidal rule.
-    assert abs(np.trapz(np.power(grid, 2) * density, grid) * 4. * np.pi - 10.0) < 1.e-6
-
-    # check core + valence density
+    dens = ne.atomic_density(grid, mode="total")
     core = ne.atomic_density(grid, mode="core")
     valn = ne.atomic_density(grid, mode="valence")
-    assert (abs(density - core - valn) < 1.e-6).all()
+    # check shape
+    assert_equal(dens.shape, grid.shape)
+    assert_equal(core.shape, grid.shape)
+    assert_equal(valn.shape, grid.shape)
+    # check dens = core + valence
+    assert_almost_equal(dens, core + valn, decimal=6)
+    # check number of electrons
+    assert_almost_equal(4 * np.pi * np.trapz(grid**2 * dens, grid), 10.0, decimal=6)
 
 
 def test_atomic_density_c():
-    # load the C file
-    file_path = os.getcwd() + '/data/examples/c.slater'
-    # placing 100,000 eqully distant points from 0.0 to 10.0 for accurate integration
-    grid = np.arange(0.0, 10.0, 0.0001)
-    c = AtomicDensity(file_path)
-    # get the density and flatten the array
-    density = c.atomic_density(grid)
-    assert density.shape == grid.shape
-    # check: integrating atomic density should result in the number of electrons.
-    # integrate_spher(r^2 * density(r)) using the composite trapezoidal rule.
-    assert abs(np.trapz(np.power(grid, 2) * density, grid) * 4. * np.pi - 6.0) < 1.e-5
-
-    # check core + valence density
+    # load C atomic wave function
+    c = AtomicDensity(os.getcwd() + '/data/examples/c.slater')
+    # compute density on an equally distant grid
+    grid = np.arange(0.0, 15.0, 0.0001)
+    dens = c.atomic_density(grid, mode="total")
     core = c.atomic_density(grid, mode="core")
     valn = c.atomic_density(grid, mode="valence")
-    assert (abs(density - core - valn) < 1.e-6).all()
+    # check shape
+    assert_equal(dens.shape, grid.shape)
+    assert_equal(core.shape, grid.shape)
+    assert_equal(valn.shape, grid.shape)
+    # check dens = core + valence
+    assert_almost_equal(dens, core + valn, decimal=6)
+    # check number of electrons
+    assert_almost_equal(4 * np.pi * np.trapz(grid**2 * dens, grid), 6.0, decimal=6)
