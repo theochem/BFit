@@ -145,68 +145,24 @@ class AtomicDensity(object):
             phi_matrix[:, index] = np.dot(slater, self.orbitals_coeff[orbital]).ravel()
         return phi_matrix
 
-    def atomic_density(self, points):
+    def atomic_density(self, points, mode="total"):
+        """Compute atomic density on the given 1D grid points array.
+
+        Parameters
+        ----------
+        points
         """
-        By Taking the occupation numbers and multiplying it
-        by the corresponding absolute, squared phi to obtain
-        electron least_squares(rho).
+        if mode not in ["total", "valence", "core"]:
+            raise ValueError("Argument mode not recognized!")
 
-        :return: the electron least_squares where row = number of point
-                 and column = 1
-        """
-        dot = np.dot(self.phi_matrix(points)**2, self.orbitals_occupation)
-        return np.ravel(dot) / (4. * np.pi)
-
-    def atomic_density_core_valence(self):
-        """
-        Calculates Atomic Density for core and valence electrons.
-
-        """
-        def energy_homo():
-            """
-            A helper function that finds the HOMO energy of the element
-
-            Returns
-            --------
-            float
-                Energy Of Homo
-
-            """
-            # Initilize the energy from first value from the list.
-            energy_homo = self.orbitals_energy['S'][0]
-            for orbital, list_energy in self.orbitals_energy.items():
-                max_of_list = np.max(list_energy)
-                if max_of_list > energy_homo:
-                    energy_homo = max_of_list
-            return energy_homo
-
-        energy_homo = energy_homo()
-
-        def join_energy():
-            """
-            A helper function to join all of the energy levels into one array
-
-            Returns
-            -------
-            list
-                All energy levels in one list.
-
-            """
-            joined_array = np.array([])
-            for orbital in ['S', 'P', 'D', 'F']:
-                if orbital in self.orbitals_energy:
-                    orbital_energy = self.orbitals_energy[orbital]
-                    joined_array = np.hstack([joined_array, orbital_energy])
-            return joined_array
-
-        phi_matrix = self.phi_matrix()
-        energy_difference = join_energy() - energy_homo
-
-        absolute_squared = 1 - np.exp((-1) * np.absolute(energy_difference**2))
-        core = absolute_squared * np.absolute(phi_matrix)**2
-
-        absolute_squared_val = np.exp((-1) * np.absolute(energy_difference**2))
-        valence = absolute_squared_val * np.absolute(phi_matrix)**2
-
-        return(np.dot(core, self.orbitals_electron_array),
-               np.dot(valence, self.orbitals_electron_array))
+        # compute orbital occupation numbers
+        orb_occs = self.orbitals_occupation
+        if mode == "valence":
+            orb_homo = self.orbitals_energy[len(self.orbitals_occupation) - 1]
+            orb_occs = orb_occs * np.exp(-(self.orbitals_energy - orb_homo)**2)
+        elif mode == "core":
+            orb_homo = self.orbitals_energy[len(self.orbitals_occupation) - 1]
+            orb_occs = orb_occs * (1. - np.exp(-(self.orbitals_energy - orb_homo)**2))
+        # compute density
+        dens = np.dot(self.phi_matrix(points)**2, orb_occs).ravel() / (4 * np.pi)
+        return dens

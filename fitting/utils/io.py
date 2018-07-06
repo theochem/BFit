@@ -131,8 +131,8 @@ def load_slater_wfn(file_name):
 
         orbitals = []
         orbitals_basis = {'S': [], 'P': [], 'D': [], "F": []}
-        orbitals_cusp = {'S': 0, 'P': 0, 'D': 0, "F": 0}
-        orbitals_energy = {'S': [], 'P': [], 'D': [], "F": []}
+        orbitals_cusp = []
+        orbitals_energy = []
         orbitals_exp = {'S': [], 'P': [], 'D': [], "F": []}
         orbitals_coeff = {}
 
@@ -149,9 +149,9 @@ def load_slater_wfn(file_name):
 
                 # Get Energy, Cusp Levels
                 line = f.readline()
-                orbitals_energy[subshell] = [float(x) for x in line.split()[1:]]
+                orbitals_energy.extend([float(x) for x in line.split()[1:]])
                 line = f.readline()
-                orbitals_cusp[subshell] = [float(x) for x in line.split()[1:]]
+                orbitals_cusp.extend([float(x) for x in line.split()[1:]])
                 line = f.readline()
 
                 # Get Exponents, Coefficients, Orbital Basis
@@ -170,9 +170,8 @@ def load_slater_wfn(file_name):
     data = {'configuration': configuration,
             'energy': energy,
             'orbitals': orbitals,
-            'orbitals_energy':
-            {key: np.asarray(value) for key, value in orbitals_energy.items() if value != []},
-            'orbitals_cusp': orbitals_cusp,
+            'orbitals_energy': np.array(orbitals_energy)[:, None],
+            'orbitals_cusp': np.array(orbitals_cusp)[:, None],
             'orbitals_basis': orbitals_basis,
             'orbitals_exp':
             {key: np.asarray(value).reshape(len(value), 1) for key, value in orbitals_exp.items()

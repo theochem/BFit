@@ -248,6 +248,11 @@ def test_atomic_density_be():
     # integrate_spher(r^2 * density(r)) using the composite trapezoidal rule.
     assert abs(np.trapz(np.power(grid, 2) * density, grid) * 4. * np.pi - 4.0) < 1.e-3
 
+    # check core + valence density
+    core = be.atomic_density(grid, mode="core")
+    valn = be.atomic_density(grid, mode="valence")
+    assert (abs(density - core - valn) < 1.e-6).all()
+
 
 def test_atomic_density_ne():
     # load the Ne file
@@ -262,6 +267,11 @@ def test_atomic_density_ne():
     # integrate_spher(r^2 * density(r)) using the composite trapezoidal rule.
     assert abs(np.trapz(np.power(grid, 2) * density, grid) * 4. * np.pi - 10.0) < 1.e-6
 
+    # check core + valence density
+    core = ne.atomic_density(grid, mode="core")
+    valn = ne.atomic_density(grid, mode="valence")
+    assert (abs(density - core - valn) < 1.e-6).all()
+
 
 def test_atomic_density_c():
     # load the C file
@@ -275,3 +285,8 @@ def test_atomic_density_c():
     # check: integrating atomic density should result in the number of electrons.
     # integrate_spher(r^2 * density(r)) using the composite trapezoidal rule.
     assert abs(np.trapz(np.power(grid, 2) * density, grid) * 4. * np.pi - 6.0) < 1.e-5
+
+    # check core + valence density
+    core = c.atomic_density(grid, mode="core")
+    valn = c.atomic_density(grid, mode="valence")
+    assert (abs(density - core - valn) < 1.e-6).all()
