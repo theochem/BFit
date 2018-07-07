@@ -23,185 +23,16 @@ r"""Module for Least Squares Fitting.
 
 This file designates how to define your model (e.g. gaussian basis set) to fit to a probability
 distribution using the least squares objective function.
-
-Classes
---------
-Density Model :  is the abstract class for all models. It also contains standard error measures
-                 to be used when fitting to get a sense of how good the fit is.
-
-GaussianBasisSet : A child class of Density Model. Responsible for fitting gaussian basis sets,
-                   via least-squares.
-
 """
 
 
 import numpy as np
 
 
-__all__ = ["DensityModel", "GaussianBasisSet"]
+__all__ = ["GaussianModel"]
 
 
-class DensityModel(object):
-    """
-    An abstract class for the least squares model used for fitting any probability distribution.
-
-    Primarily used to define the cost function/objective function and the residual which is being
-    minimized through least squares.
-
-    Additionally, contains tools to define different error measures.
-
-    Attributes
-    ----------
-    grid : np.ndarray
-        Grid Points where the 'true_model' is being defined on.
-
-    true_model : np.ndarray
-        The probability distribution that is being fitted to, defined on the 'grid'.
-
-    Methods
-    -------
-    create_model(): Abstract method for defining the approximate model composed of your basis set
-                    of interest.
-
-    cost_function(): Abstract method for defining the least-squares objective function.
-
-    derivative_of_cost_function(): Abstract method for defining the derivative of hte cost
-                                   function with respect to each parameter. Used for optimization.
-
-    create_cofactor_matrix(): Create the cofactor matrix used for NNLS optimization ie optimizing
-                              the coefficients of the basis functions.
-
-    """
-
-    def __init__(self, grid, true_model=None):
-        r"""
-
-        Parameters
-        ----------
-        grid : np.ndarray
-               Contains the grid points for the density model.
-
-        element : str, optional
-                 The element that the slater densities are based on.
-                 Used if one want's to use UGBS parameters as initial guess.
-        true_model : np.ndarray
-                         Pre-defined electron density in case one doesn't want
-                         to use slater densities.
-        Raises
-        ------
-        TypeError
-            If an argument of an invalid type is used
-
-        """
-        if not isinstance(grid, np.ndarray):
-            raise TypeError("Grid should be a numpy array.")
-        if true_model is not None:
-            if not isinstance(true_model, np.ndarray):
-                raise TypeError("Electron least_squares should be an array.")
-            if grid.shape != true_model.shape:
-                raise ValueError("Electron least_squares and _grid should be the same "
-                                 "size.")
-        self._grid = np.ravel(np.copy(grid))
-        self._true_model = np.ravel(true_model)
-
-    @property
-    def grid(self):
-        return self._grid
-
-    @property
-    def true_model(self):
-        return self._true_model
-
-    def create_model(self):
-        raise NotImplementedError("Need to implement the least_squares model")
-
-    def cost_function(self):
-        raise NotImplementedError("Need to implement the cost function")
-
-    def derivative_of_cost_function(self):
-        raise NotImplementedError("Need to Implement the derivative of cost "
-                                  "function")
-
-    def create_cofactor_matrix(self):
-        pass
-
-    def get_residual(self, *args):
-        return self._true_model - self.create_model(*args)
-
-    def integrate_model_trapz(self, approx_model):
-        r"""
-        Integrates the approximate model with an added r^2 over [0, inf), using the trapezoidal
-        method.
-
-        Parameters
-        ----------
-        approx_model : np.ndarray
-                       The model obtained from fitting.
-
-        Returns
-        -------
-        int : float
-              Integration value of r^2 with approximate model over the _grid.
-        """
-        grid_squared = np.ravel(self._grid ** 2.)
-        return np.trapz(y=grid_squared * approx_model, x=self._grid)
-
-    def get_error_diffuse(self, true_model, approx_model):
-        r"""
-        This error measures how good the kl_divergence is between the approximate and
-        true least_squares at long densities.
-
-        ..math::
-            Given two functions, denoted f, g.
-            The error is given as \int r^2 |f(r) - g(r)|dr
-
-        Parameters
-        ----------
-        true_model : np.ndarray
-                     The true model that is being fitted.
-
-        approx_model : np.ndarray
-                       The model obtained from fitting.
-
-        Returns
-        -------
-        error : float
-                A positive real number that measures how good the kl_divergence is.
-
-        """
-        abs_diff = np.absolute(np.ravel(true_model) - np.ravel(approx_model))
-        error = np.trapz(y=self._grid**2 * abs_diff, x=self._grid)
-        return error
-
-    def get_integration_error(self, true_model, approx_model):
-        r"""
-        This error measures the difference in integration of the two models.
-
-        ..math::
-            Given two functions, denoted f, g.
-            The error is given as |\int r^2f(r)dr - \int r^2g(r)dr|.
-
-        Parameters
-        ----------
-        true_model : np.ndarray
-                     The true model that is being fitted.
-
-        approx_model : np.ndarray
-                       The model obtained from fitting.
-
-        Returns
-        -------
-        error : float
-                Measures the difference in integration of the two models.
-
-        """
-        integrate_true_model = self.integrate_model_trapz(true_model)
-        integrate_approx_model = self.integrate_model_trapz(approx_model)
-        diff_model = integrate_true_model - integrate_approx_model
-        return np.absolute(diff_model)
-
-
-class GaussianBasisSet(DensityModel):
+class GaussianModel(object):
     r"""
     Defines Gaussian Basis Set with least squares formula for optimization.
 
@@ -249,9 +80,25 @@ class GaussianBasisSet(DensityModel):
         """
         if not isinstance(grid, np.ndarray):
             raise TypeError("Grid should be a numpy array.")
-        if not isinstance(true_model, np.ndarray):
-            raise TypeError("True model should be a numpy array.")
-        super(GaussianBasisSet, self).__init__(grid, true_model)
+        if true_model is not None:
+            if not isinstance(true_model, np.ndarray):
+                raise TypeError("Electron least_squares should be an array.")
+            if grid.shape != true_model.shape:
+                raise ValueError("Electron least_squares and _grid should be the same "
+                                 "size.")
+        self._grid = np.ravel(np.copy(grid))
+        self._true_model = np.ravel(true_model)
+
+    @property
+    def grid(self):
+        return self._grid
+
+    @property
+    def true_model(self):
+        return self._true_model
+
+    def get_residual(self, *args):
+        return self._true_model - self.create_model(*args)
 
     def create_model(self, parameters, fixed_params=[], which_opti="b"):
         r"""

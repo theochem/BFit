@@ -19,95 +19,25 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-"""Test file for least_squares model."""
 
 
 import numpy as np
 import scipy.optimize
 import numpy.testing as npt
 
-from fitting.model import DensityModel, GaussianBasisSet
+from fitting.model import GaussianModel
 
 
-__all__ = [
-    "test_residual_gives_error",
-    "test_diffuse_error",
-    "test_generation_ugbs_exponents",
-    "test_inputs_density_model",
-    "test_integration_error",
-    "test_integration_model_trapz",
-    "test_not_implemented"
-]
-
-
-def test_inputs_density_model():
+def test_raises_gaussian_model():
     r"""Test to check inputs for 'least_squares.DensityModel'."""
     g = np.array([50.])
     e = np.array([50., 100.])
-    npt.assert_raises(TypeError, DensityModel, g, 10.)
-    npt.assert_raises(TypeError, DensityModel, 10., "s")
-    dens_obj = DensityModel(g)
-    npt.assert_equal(dens_obj.grid, g)
+    npt.assert_raises(TypeError, GaussianModel, g, 10.)
+    npt.assert_raises(TypeError, GaussianModel, 10., "s")
 
-
-def test_not_implemented():
-    r"""Tests for not implemeneted for least_squares."""
-    d = DensityModel(np.array([5.]))
-    npt.assert_raises(NotImplementedError, d.cost_function)
-    npt.assert_raises(NotImplementedError, d.create_model)
-    npt.assert_raises(NotImplementedError,
-                      d.derivative_of_cost_function)
-
-
-def test_integration_model_trapz():
-    r"""Test integration method for 'least_squares.DensityModel'."""
-    # Test integration of r^2 e^(-r^2) dr
-    grid = np.arange(0, 25, 0.25)
-    dens_obj = DensityModel(grid)
-    func_vals = np.exp(-grid**2)
-    actual_value = dens_obj.integrate_model_trapz(func_vals)
-    desired_val = 0.443313
-    assert np.abs(actual_value - desired_val) < 0.1
-
-
-def test_diffuse_error():
-    r"""Test error measure for 'least_squares.DensityModel.'"""
-    # Test if integration gives zero if they're the same
-    grid = np.arange(0, 25, 0.25)
-    fun_vals = np.exp(-grid**2)
-    dens_obj = DensityModel(grid, true_model=fun_vals)
-    actual_value = dens_obj.get_error_diffuse(fun_vals, fun_vals)
-    assert actual_value < 1e-5
-
-
-def test_integration_error():
-    r"""Test integration error measure for 'least_squares.DensityModel.'"""
-    # Test if integration gives zero if they're the same
-    grid = np.arange(0, 25, 0.25)
-    fun_vals = np.exp(-grid ** 2)
-    dens_obj = DensityModel(grid, true_model=fun_vals)
-    actual_value = dens_obj.get_integration_error(fun_vals, fun_vals)
-    assert actual_value < 1e-5
-
-    # Test linearity of integration
-    fun_vals2 = 5. * np.exp(-grid**2.)
-    actual_value2 = dens_obj.get_integration_error(fun_vals, fun_vals2)
-    assert actual_value2 - 5. * 0.443313 < 1e-3
-
-
-def test_residual_gives_error():
-    r"""Test residual gives NotImplementedError for 'least_squares.DensityModel."""
-    grid = np.arange(0, 25, 0.25)
-    fun_vals = np.exp(-grid ** 2)
-    dens_obj = DensityModel(grid, true_model=fun_vals)
-    npt.assert_raises(NotImplementedError, dens_obj.get_residual)
-
-
-def test_input():
-    r"""Test inputs for gaussian basis set class."""
     g = np.array([50., 50.])
-    npt.assert_raises(TypeError, GaussianBasisSet, 10, g)
-    npt.assert_raises(TypeError, GaussianBasisSet, g, 10.)
+    npt.assert_raises(TypeError, GaussianModel, 10, g)
+    npt.assert_raises(TypeError, GaussianModel, g, 10.)
 
 
 def gaussian_func(c, exps, grid):
@@ -116,7 +46,7 @@ def gaussian_func(c, exps, grid):
 
 
 def test_create_model():
-    r"""Test create_model in GaussianBasisSet class."""
+    r"""Test create_model in GaussianModel class."""
     # Test one point only
     exponent = 2.0
     coeff = 3.
@@ -126,14 +56,14 @@ def test_create_model():
     grid = np.array([1.0])
     true_model = np.exp(-grid)
 
-    model_object = GaussianBasisSet(grid, true_model)
+    model_object = GaussianModel(grid, true_model)
     model = model_object.create_model(parameters)
     assert np.abs(exponential - model) < 1e-13
 
     # Multiple Value Test with multiple coefficients and exponents.
     grid = np.arange(1, 6)
     true_model = np.exp(-grid)
-    model_object = GaussianBasisSet(grid, true_model)
+    model_object = GaussianModel(grid, true_model)
     parameters = np.array([2, 2, 2, 4, 5, 1, 2, 3, 4, 5])
     model = model_object.create_model(parameters)
     actual_answer = gaussian_func(parameters[:len(parameters)//2],
@@ -163,7 +93,7 @@ def test_create_model():
 
 
 def test_cost_function():
-    r"""Test cost_function in GaussianBasisSet class."""
+    r"""Test cost_function in GaussianModel class."""
     # Test at one point wrt to slater density
     grid = 3.0
     coeff = 4.0
@@ -174,7 +104,7 @@ def test_cost_function():
     grid = np.array([3.0])
     true_model = np.exp(-grid)
 
-    model_object = GaussianBasisSet(grid, true_model)
+    model_object = GaussianModel(grid, true_model)
     electron_density = model_object.true_model
     desired_answer = (electron_density - model)**2
     actual_answer = model_object.cost_function(parameters, 1)
@@ -183,7 +113,7 @@ def test_cost_function():
     # Test with multiply points
     grid = np.arange(1., 3.)
     true_model = np.exp(-grid)
-    model_object = GaussianBasisSet(grid, true_model)
+    model_object = GaussianModel(grid, true_model)
     parameters = np.array([1.0, 2.0, 3.0, 4.0])
     actual_answer = model_object.cost_function(parameters)
     calc_value = np.array([1.0 * np.exp(-3.0 * 1.0**2) + 2.0 * np.exp(-4.0 * 1.0**2),
@@ -193,10 +123,10 @@ def test_cost_function():
 
 
 def test_residual():
-    r"""Test residual function for GaussianBasisSet."""
+    r"""Test residual function for GaussianModel."""
     grid = np.array([1., 2.])
     true_model = np.exp(-grid)
-    obj = GaussianBasisSet(grid, true_model)
+    obj = GaussianModel(grid, true_model)
     parameters = np.array([1., 2., 3., 4.])
     actual_answer = obj.get_residual(parameters)
     a = np.exp(-3) + 2. * np.exp(-4)
@@ -208,7 +138,7 @@ def test_residual():
     grid = np.array([1., 2.], dtype=np.double)
     true_model = np.exp(-grid, true_model)
     p = np.array([1., 2., 3., 4.], dtype=np.double)
-    obj = GaussianBasisSet(grid, true_model)
+    obj = GaussianModel(grid, true_model)
     actual_answer = obj.get_residual(p)
 
     den = obj.true_model.copy()
@@ -222,7 +152,7 @@ def test_derivative_coefficient():
     grid = np.array([1., 2.], dtype=np.double)
     exps = np.array([3., 4.])
     true_dens = np.exp(-grid)
-    obj = GaussianBasisSet(grid, true_dens)
+    obj = GaussianModel(grid, true_dens)
     dens = obj.true_model
 
     residual = 2. * np.array([dens[0] - np.exp(-3) - 2. * np.exp(-4),
@@ -239,7 +169,7 @@ def test_derivative_exponents():
     coeff = np.array([1., 2.])
     exps = np.array([3., 4.])
     den = np.exp(-grid)
-    obj = GaussianBasisSet(grid, den)
+    obj = GaussianModel(grid, den)
     actual_answer = obj.derivative_of_cost_function(exps, coeff, which_opti='e')
 
     c = 2. * (den - gaussian_func([1., 2.], [3., 4.], grid))
@@ -251,13 +181,13 @@ def test_derivative_exponents():
 
 
 def test_derivative_cost_function():
-    r"""Test derivaitve of cost function for GaussianBasisSet."""
+    r"""Test derivaitve of cost function for GaussianModel."""
     # Test With Array WRT TO ONLY COEFFICIENT
     grid = np.array([1., 2.], dtype=np.double)
     coeff = np.array([1., 2.])
     exps = np.array([3., 4.])
     den = np.exp(-grid)
-    obj = GaussianBasisSet(grid, den)
+    obj = GaussianModel(grid, den)
     actual_answer = obj.derivative_of_cost_function(coeff, exps, which_opti='c')
 
     c = -2. * (den - gaussian_func([1., 2.], [3., 4.], grid))
@@ -274,7 +204,7 @@ def test_derivative_cost_function():
     coefficient = np.array([5.0, 3.0, 2.0, 2.44, 5.6])
     den = np.exp(-grid)
     parameters = np.append(coefficient, exponents)
-    model_object = GaussianBasisSet(grid, den)
+    model_object = GaussianModel(grid, den)
     approximation = scipy.optimize.approx_fprime(parameters,
                                                  model_object.cost_function,
                                                  1e-5, 5)
