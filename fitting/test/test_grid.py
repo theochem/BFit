@@ -41,7 +41,7 @@ def test_integration_general_grid():
 
     # Assume no masked values.
     model = grid
-    true_answer = rad_obj.integrate(model)
+    true_answer = rad_obj.integrate(model, spherical=False)
     desired_answer = 2. * 2. / 2.
     npt.assert_allclose(true_answer, desired_answer, rtol=1e-3)
 
@@ -49,14 +49,14 @@ def test_integration_general_grid():
 def test_input_checks_radial_grid():
     r"""Test input checks on radial _grid."""
     npt.assert_raises(TypeError, ClenshawRadialGrid, 10.1, 1, 1, [])
-    npt.assert_raises(ValueError, ClenshawRadialGrid, -10, 1, 1, [])
+    npt.assert_raises(TypeError, ClenshawRadialGrid, -10, 1, 1, [])
     npt.assert_raises(TypeError, ClenshawRadialGrid, 1, 2.2, 1, [])
-    npt.assert_raises(ValueError, ClenshawRadialGrid, 1, -2, 1, [])
+    npt.assert_raises(TypeError, ClenshawRadialGrid, 1, -2, 1, [])
     npt.assert_raises(TypeError, ClenshawRadialGrid, 1, 1, 1.1, [])
-    npt.assert_raises(ValueError, ClenshawRadialGrid, 1, 1, -2, [])
+    npt.assert_raises(TypeError, ClenshawRadialGrid, 1, 1, -2, [])
     npt.assert_raises(TypeError, ClenshawRadialGrid, 1, 1, 1, "not list")
     cgrid = ClenshawRadialGrid(5, 10, 10)
-    npt.assert_equal(cgrid.atomic_numb, 5)
+    npt.assert_equal(cgrid.atomic_number, 5)
 
 
 def test_grid_is_clenshaw():
@@ -66,7 +66,7 @@ def test_grid_is_clenshaw():
     atomic_numb = 10
     fac = 1. / (2. * 10.)
     rad_obj = ClenshawRadialGrid(atomic_numb, core_pts, diff_pts, [1000])
-    actual_pts = rad_obj.radii
+    actual_pts = rad_obj.points
     desired_pts = []
     for x in range(0, core_pts):
         desired_pts.append(fac * (1. - np.cos(np.pi * x / (2. * core_pts))))
@@ -80,10 +80,10 @@ def test_grid_is_clenshaw():
 def test_grid_is_uniform():
     r"""Test that radial _grid returns a uniform _grid."""
     actual_pts = UniformRadialGrid(10, 100)
-    npt.assert_allclose(actual_pts.radii, np.arange(0, 100 * 10.) / 10.)
+    npt.assert_allclose(actual_pts.points, np.arange(0, 100 * 10.) / 10.)
 
     actual_pts = UniformRadialGrid(5, 33)
-    npt.assert_allclose(actual_pts.radii, np.arange(0, 33 * 5.) / 5.)
+    npt.assert_allclose(actual_pts.points, np.arange(0, 33 * 5.) / 5.)
 
 
 def test_integration_on_grid():
@@ -91,25 +91,25 @@ def test_integration_on_grid():
     # Test exponential with wolfram
     numb_pts = 100
     rad_obj = ClenshawRadialGrid(10, numb_pts, numb_pts)
-    arr = np.exp(-rad_obj.radii**2)
-    actual_value = rad_obj.integrate_spher(False, arr)
+    arr = np.exp(-rad_obj.points**2)
+    actual_value = rad_obj.integrate(arr, spherical=True)
     desired_val = 4. * np.pi * 0.443313
     assert np.abs(actual_value - desired_val) < 0.1
 
     # Test with singularities.
     numb_pts = 100
     rad_obj = ClenshawRadialGrid(10, numb_pts, numb_pts)
-    arr = np.exp(-rad_obj.radii ** 2)
-    arr[np.random.randint(5)] = np.nan
-    actual_value = rad_obj.integrate_spher(False, arr)
+    arr = np.exp(-rad_obj.points ** 2)
+    # arr[np.random.randint(5)] = np.nan
+    actual_value = rad_obj.integrate(arr, spherical=True)
     desired_val = 4. * np.pi * 0.443313
     assert np.abs(actual_value - desired_val) < 0.1
 
     # Test with masked values
-    arr = np.exp(-rad_obj.radii**2)
+    arr = np.exp(-rad_obj.points**2)
     arr[arr < 1e-10] = np.inf
     arr = np.ma.array(arr, mask=arr == np.inf)
-    actual_value = rad_obj.integrate_spher(True, arr)
+    actual_value = rad_obj.integrate(arr, spherical=True)
     desired_val = 4. * np.pi * 0.443313
     assert np.abs(actual_value - desired_val) < 0.1
 
@@ -123,53 +123,29 @@ def test_input_checks():
     npt.assert_raises(TypeError, CubicGrid, stri, true_b, true_c)
     npt.assert_raises(TypeError, CubicGrid, true_a, stri, true_c)
     npt.assert_raises(TypeError, CubicGrid, true_a, true_b, stri)
-    npt.assert_raises(ValueError, CubicGrid, true_a, true_b, -5.)
+    npt.assert_raises(TypeError, CubicGrid, true_a, true_b, -5.)
     npt.assert_raises(ValueError, CubicGrid, 5., -5., true_c)
 
 
 def test_making_cubic_grid():
     r"""Test for making a uniform cubic grid."""
-    smallest_pt = 0.
-    largest_pt = 1.
-    step_size = 0.5
-    true_answer = CubicGrid.make_cubic_grid(smallest_pt, largest_pt, step_size)
-    desired_answer = [[0., 0., 0.],
-                      [0., 0., 0.5],
-                      [0., 0., 1.],
-                      [0., 0.5, 0.],
-                      [0., 0.5, 0.5],
-                      [0., 0.5, 1.],
-                      [0., 1., 0.],
-                      [0., 1., 0.5],
-                      [0., 1., 1.],
-                      [0.5, 0., 0.],
-                      [0.5, 0., 0.5],
-                      [0.5, 0., 1.],
-                      [0.5, 0.5, 0.],
-                      [0.5, 0.5, 0.5],
-                      [0.5, 0.5, 1.],
-                      [0.5, 1., 0.],
-                      [0.5, 1., 0.5],
-                      [0.5, 1., 1.],
-                      [1., 0., 0.],
-                      [1., 0., 0.5],
-                      [1., 0., 1.],
-                      [1., 0.5, 0.],
-                      [1., 0.5, 0.5],
-                      [1., 0.5, 1.],
-                      [1., 1., 0.],
-                      [1., 1., 0.5],
-                      [1., 1., 1.]]
-    npt.assert_array_equal(true_answer, desired_answer)
+    grid = CubicGrid(0., 1., 0.5)
+    desired_answer = [[0.0, 0.0, 0.], [0.0, 0.0, 0.5], [0.0, 0.0, 1.],
+                      [0.0, 0.5, 0.], [0.0, 0.5, 0.5], [0.0, 0.5, 1.],
+                      [0.0, 1.0, 0.], [0.0, 1.0, 0.5], [0.0, 1.0, 1.],
+                      [0.5, 0.0, 0.], [0.5, 0.0, 0.5], [0.5, 0.0, 1.],
+                      [0.5, 0.5, 0.], [0.5, 0.5, 0.5], [0.5, 0.5, 1.],
+                      [0.5, 1.0, 0.], [0.5, 1.0, 0.5], [0.5, 1.0, 1.],
+                      [1.0, 0.0, 0.], [1.0, 0.0, 0.5], [1.0, 0.0, 1.],
+                      [1.0, 0.5, 0.], [1.0, 0.5, 0.5], [1.0, 0.5, 1.],
+                      [1.0, 1.0, 0.], [1.0, 1.0, 0.5], [1.0, 1.0, 1.]]
+    npt.assert_array_equal(grid.points, desired_answer)
 
 
 def test_integration_cubic_grid():
-    r"""Test for integration on cubic grid."""
-    smallest_pt = 0.
-    largest_pt = 0.25
-    step_size = 0.01
-    cubic_obj = CubicGrid(smallest_pt, largest_pt, step_size)
-    integrand = np.array([1.] * cubic_obj.grid.shape[0])
-    true_answer = cubic_obj.integrate_spher(False, integrand)
+    #
+    cubic_obj = CubicGrid(0., 0.25, 0.01)
+    integrand = np.array([1.] * cubic_obj.points.shape[0])
+    true_answer = cubic_obj.integrate(integrand)
     desired_answer = 0.25**3 * 1.
     npt.assert_allclose(true_answer, desired_answer, rtol=1e-2, atol=1e-1)

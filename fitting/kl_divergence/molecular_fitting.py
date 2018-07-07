@@ -122,7 +122,7 @@ class MolecularFitting(KullbackLeiblerFitting):
             exp1 = fparams[i1: numb + i1]
 
             radius = np.zeros(len(self.grid_obj))
-            radius += np.sum((self.grid_obj.grid - self.mol_coords[j])**2., axis=1)
+            radius += np.sum((self.grid_obj.points - self.mol_coords[j])**2., axis=1)
 
             exponential = np.exp(-exp1 * radius.reshape((len(self.grid_obj), 1)))
             model += exponential.dot(coeff)
@@ -156,11 +156,11 @@ class MolecularFitting(KullbackLeiblerFitting):
 
         """
         ratio = self.ma_true_mod / masked_normed_gaussian
-        grid_squared = np.sum((self.grid_obj.grid - mol_coord)**2., axis=1)
+        grid_squared = np.sum((self.grid_obj.points - mol_coord)**2., axis=1)
         integrand = ratio * np.ma.asarray(np.exp(-exponent * grid_squared))
         if upt_exponent:
             integrand = integrand * grid_squared
-        return self._get_norm_constant(exponent) * self.grid_obj.integrate_spher(False, integrand)
+        return self._get_norm_constant(exponent) * self.grid_obj.integrate(integrand)
 
     def get_mol_coord(self, index):
         r"""

@@ -52,9 +52,9 @@ class GaussianKullbackLeibler(KullbackLeiblerFitting):
 
         """
         super(GaussianKullbackLeibler, self).__init__(grid_obj, true_model, inte_val, weights)
-        self.grid_points = ma.asarray(np.reshape(grid_obj.radii, (len(grid_obj.radii), 1)))
+        self.grid_points = ma.asarray(np.reshape(grid_obj.points, (len(grid_obj.points), 1)))
         # TODO: Seems like I don't need this attribute
-        self.masked_grid_squared = ma.asarray(np.power(self.grid_obj.radii, 2.))
+        self.masked_grid_squared = ma.asarray(np.power(self.grid_obj.points, 2.))
 
     def get_norm_coeffs(self, coeff_arr, exp_arr):
         r"""
@@ -92,11 +92,11 @@ class GaussianKullbackLeibler(KullbackLeiblerFitting):
         -------
         """
         ratio = self.weights * self.ma_true_mod / masked_normed_gaussian
-        grid_squared = self.grid_obj.radii**2.
+        grid_squared = self.grid_obj.points**2.
         integrand = ratio * np.ma.asarray(np.exp(-exponent * grid_squared))
         if upt_exponent:
             integrand = integrand * self.masked_grid_squared
-        return self._get_norm_constant(exponent) * self.grid_obj.integrate_spher(False, integrand)
+        return self._get_norm_constant(exponent) * self.grid_obj.integrate(integrand, spherical=True)
 
     def _update_coeffs(self, coeff_arr, exp_arr):
         r"""
@@ -150,7 +150,7 @@ class GaussianValKL(KullbackLeiblerFitting):
         if numb_val <= 0.:
             raise ValueError('Number of valence functions should be positive.')
         super(GaussianValKL, self).__init__(grid_obj, true_model, inte_val)
-        self.masked_grid_squared = ma.asarray(np.power(self.grid_obj.radii, 2.))
+        self.masked_grid_squared = ma.asarray(np.power(self.grid_obj.points, 2.))
         self.numb_val = numb_val
 
     def _get_norm_constant(self, fparam, val=False):
@@ -184,7 +184,7 @@ class GaussianValKL(KullbackLeiblerFitting):
             integrand *= self.masked_grid_squared
         if upt_exponents:
             integrand *= self.masked_grid_squared
-        return const * self.grid_obj.integrate_spher(False, integrand)
+        return const * self.grid_obj.integrate(integrand, spherical=True)
 
     def _update_coeffs(self, coeffs, fparams):
         gaussian_model = self.get_model(coeffs, fparams)

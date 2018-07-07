@@ -69,7 +69,7 @@ class KullbackLeiblerFitting(object):
         self.ma_true_mod = ma.array(true_model)
         self.inte_val = inte_val
         if inte_val is None:
-            self.inte_val = grid_obj.integrate_spher(False, true_model)
+            self.inte_val = grid_obj.integrate(true_model, spherical=True)
         if weights is None:
             weights = np.ones(len(true_model))
         self.weights = weights
@@ -157,7 +157,7 @@ class KullbackLeiblerFitting(object):
 
         :return:
         """
-        return self.grid_obj.integrate_spher(False, self.true_model * self.weights) / self.inte_val
+        return self.grid_obj.integrate(self.true_model * self.weights, spherical=True) / self.inte_val
 
     def get_norm_consts(self, exp_arr):
         r"""
@@ -195,7 +195,7 @@ class KullbackLeiblerFitting(object):
         """
         div_model = np.divide(self.ma_true_mod, ma.array(model))
         log_ratio_models = self.weights * np.log(div_model)
-        return self.grid_obj.integrate_spher(False, self.ma_true_mod * log_ratio_models)
+        return self.grid_obj.integrate(self.ma_true_mod * log_ratio_models, spherical=True)
 
     def integrate_model_spherically(self, model):
         r"""
@@ -213,7 +213,7 @@ class KullbackLeiblerFitting(object):
         np.ndarray
                   Integration of the weighted model over the reals
         """
-        return self.grid_obj.integrate_spher(False, model)
+        return self.grid_obj.integrate(model, spherical=True)
 
     def goodness_of_fit_grid_squared(self, model):
         r"""
@@ -233,7 +233,7 @@ class KullbackLeiblerFitting(object):
               An error measure on how good the fit is.
         """
         absolute_diff = np.abs(model - self.true_model)
-        return self.grid_obj.integrate_spher(False, absolute_diff) / (4 * np.pi)
+        return self.grid_obj.integrate(absolute_diff, spherical=True) / (4 * np.pi)
 
     def goodness_of_fit(self, model):
         r"""
