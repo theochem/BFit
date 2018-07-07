@@ -91,20 +91,28 @@ class UniformRadialGrid(BaseRadialGrid):
     .. math::
     """
 
-    def __init__(self, num_pts, max_radii=100.):
+    def __init__(self, num_pts, min_radii=0., max_radii=100.):
         """
         Parameters
         ----------
         num_pts : int
             The number of grid points.
+        min_radii : float, optional
+            The smallest radial grid point.
         max_radii : float, optional
-            The furthest radial grid point to consider.
+            The largest radial grid point.
         """
         if not isinstance(num_pts, int) or num_pts <= 0:
-            raise TypeError("Argument num_pts should be a positive integer.")
-        if not isinstance(max_radii, (int, float)) or max_radii <= 0:
+            raise TypeError("Argument num_pts should be a number.")
+        if not isinstance(min_radii, (int, float)):
+            raise TypeError("Argument min_radii should be a number.")
+        if not isinstance(max_radii, (int, float)):
             raise TypeError("Argument max_radii should be a positive number.")
-        points = np.arange(max_radii, step=1./num_pts)
+        if max_radii <= min_radii:
+            raise ValueError("The max_radii should be greater than the min_radii.")
+
+        # compute points
+        points = np.linspace(start=min_radii, stop=max_radii, num=num_pts)
         super(UniformRadialGrid, self).__init__(points)
 
 
