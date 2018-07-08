@@ -96,4 +96,4 @@ class GreedyKL(GreedyStrategy):
     def get_errors_from_model(self, params):
         model = self.mbis_obj.get_model(params[:len(params) // 2],
                                         params[len(params)//2:])
-        return self.mbis_obj.get_descriptors_of_model(model)
+        return self.mbis_obj.goodness_of_fit(model)

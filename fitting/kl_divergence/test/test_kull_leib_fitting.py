@@ -84,7 +84,7 @@ def test_integration_spherical():
     g = BaseRadialGrid(np.arange(0., 26, 0.01))
     e = np.exp(-g.points)
     kl = KullbackLeiblerFitting(g, e, norm=1.)
-    true_answer = kl.integrate_model_spherically(e)
+    true_answer = kl.goodness_of_fit(e)[0]
     npt.assert_allclose(true_answer, 2. * 4 * np.pi)
 
 
@@ -94,7 +94,7 @@ def test_goodness_of_fit():
     e = np.exp(-g.points)
     kl = KullbackLeiblerFitting(g, e, norm=1.)
     model = np.exp(-g.points**2.)
-    true_answer = kl.goodness_of_fit(model)
+    true_answer = kl.goodness_of_fit(model)[1]
     npt.assert_allclose(true_answer, 0.3431348, rtol=1e-3)
 
 
@@ -104,7 +104,7 @@ def test_goodness_of_fit_squared():
     e = np.exp(-g.points)
     kl = KullbackLeiblerFitting(g, e, norm=1.)
     model = np.exp(-g.points ** 2.)
-    true_answer = kl.goodness_of_fit_grid_squared(model)
+    true_answer = kl.goodness_of_fit(model)[2]
     npt.assert_allclose(true_answer, 1.60909, rtol=1e-4)
 
 
@@ -130,6 +130,6 @@ def test_get_descriptors_of_model():
     e = np.exp(-g.points)
     kl = KullbackLeiblerFitting(g, e, norm=1.)
     model = np.exp(-g.points**2.)
-    true_answer = kl.get_descriptors_of_model(model)
+    true_answer = kl.goodness_of_fit(model)
     desired_answer = [5.56833, 0.3431348, 1.60909, 4. * np.pi * 17.360]
     npt.assert_allclose(true_answer, desired_answer, rtol=1e-4)

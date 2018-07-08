@@ -99,7 +99,7 @@ class KullbackLeiblerFitting(object):
 
     def _update_errors(self, coeffs, exps, c, iprint, update_p=False):
         model = self.get_model(coeffs, exps)
-        errors = self.get_descriptors_of_model(model)
+        errors = self.goodness_of_fit(model)
         if iprint:
             if update_p:
                 print(c + 1, "Update F-param", np.sum(coeffs), errors)
@@ -197,81 +197,28 @@ class KullbackLeiblerFitting(object):
         log_ratio_models = self.weights * np.log(div_model)
         return self.grid.integrate(self.ma_true_mod * log_ratio_models, spherical=True)
 
-    def integrate_model_spherically(self, model):
-        r"""
-        Integrate the model with additional weights.
-
-        Integrates with a four pi r^2 added to it.
-
-        Parameters
-        ----------
-        model : np.ndarray
-                Approximate / fitted model.
-
-        Returns
-        -------
-        np.ndarray
-                  Integration of the weighted model over the reals
-        """
-        return self.grid.integrate(model, spherical=True)
-
-    def goodness_of_fit_grid_squared(self, model):
-        r"""
-        The L2 error measure with emphasis on the tail of the grid.
-
-        The emphasis on the tail end of the grid is done by adding a r^2
-        in the integrand.
-
-        Parameters
-        ----------
-        model : np.ndarray
-                Approximate / fitted model.
-
-        Returns
-        -------
-        err : float
-              An error measure on how good the fit is.
-        """
-        absolute_diff = np.abs(model - self.density)
-        return self.grid.integrate(absolute_diff, spherical=True) / (4 * np.pi)
-
     def goodness_of_fit(self, model):
-        r"""
-        An error measure based on the L2 norm.
+        r"""Compute various measures to see how good is the fitted model.
 
         Parameters
         ----------
-        model : np.ndarray
-                Approximate / fitted model.
+        model : ndarray, (N,)
+            Value of the fitted model on the grid points.
 
         Returns
         -------
+        model_norm : float
+            Integrate(4 * pi * r**2 * model)
+        l1_error : float
+            Integrate(|density - model|)
+        l1_error_modified : float
+            Integrate(|density - model| * r**2)
+        kl : float
+            KL deviation between density and model
         """
-
-        absolute_diff = np.abs(self.density - model)
-        return self.grid.integrate(absolute_diff)
-
-    def get_descriptors_of_model(self, model):
-        r"""
-        Obtains different error measures on the fitted model.
-
-        Integrates the model to see if it converges to the right value.
-        Has two different goodness of fit error measures and
-        the objective function value to see if it is getting minimized.
-
-        Parameters
-        ----------
-        model : np.ndarray
-                Approximate / fitted model.
-
-        Returns
-        -------
-        list
-            Get all possible forms of error measures on the model.
-        """
-        return [self.integrate_model_spherically(model),
-                self.goodness_of_fit(model),
-                self.goodness_of_fit_grid_squared(model),
+        return [self.grid.integrate(model, spherical=True),
+                self.grid.integrate(np.abs(self.density - model)),
+                self.grid.integrate(np.abs(self.density - model), spherical=True) / (4 * np.pi),
                 self.get_kullback_leibler(model)]
 
     def cost_function(self, params):
