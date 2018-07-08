@@ -22,191 +22,216 @@
 
 
 import numpy as np
-import scipy.optimize
-import numpy.testing as npt
+from numpy.testing import assert_raises, assert_almost_equal
 
 from fitting.model import GaussianModel
 
 
 def test_raises_gaussian_model():
-    r"""Test to check inputs for 'least_squares.DensityModel'."""
-    g = np.array([50.])
-    e = np.array([50., 100.])
-    npt.assert_raises(TypeError, GaussianModel, g, 10.)
-    npt.assert_raises(TypeError, GaussianModel, 10., "s")
-
-    g = np.array([50., 50.])
-    npt.assert_raises(TypeError, GaussianModel, 10, g)
-    npt.assert_raises(TypeError, GaussianModel, g, 10.)
+    # check points
+    assert_raises(TypeError, GaussianModel, 10., False)
+    assert_raises(TypeError, GaussianModel, [5.], True)
+    assert_raises(TypeError, GaussianModel, (2, 1), True)
+    assert_raises(TypeError, GaussianModel, np.array([[1., 2.]]), True)
+    assert_raises(TypeError, GaussianModel, np.array([[1.], [2.]]), True)
 
 
-def gaussian_func(c, exps, grid):
-    return [np.sum([c[i] * np.exp(-exps[i] * j**2.) for i in range(0, len(exps))])
-            for j in grid]
+def test_gaussian_s_one_basis_origin():
+    # test one (un)normalized s-type gaussian on r=0. against sympy
+
+    coeffs, expons = np.array([0.]), np.array([0.])
+    # un-normalized at r=0.
+    g, dg = np.array([0.]), np.array([[1., 0.]])
+    model = GaussianModel(np.array([0.]), normalized=False, basis="s")
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+    # normalized at r=0.
+    g, dg = np.array([0.]), np.array([[0., 0.]])
+    model = GaussianModel(np.array([0.]), normalized=True, basis="s")
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+
+    coeffs, expons = np.array([3.]), np.array([2.])
+    # un-normalized at r=0.
+    g, dg = np.array([3.]), np.array([[1., 0.]])
+    model = GaussianModel(np.array([0.]), normalized=False, basis="s")
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+    # normalized at r=0.
+    g, dg = np.array([1.52384726242178]), np.array([[0.507949087473928, 1.14288544681634]])
+    model = GaussianModel(np.array([0.]), normalized=True, basis="s")
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
 
 
-def test_create_model():
-    r"""Test create_model in GaussianModel class."""
-    # Test one point only
-    exponent = 2.0
-    coeff = 3.
-    exponential = coeff * np.exp(-1 * exponent * 1.0**2)
-    # One Coefficient (3.) and one exponent( 2.)
-    parameters = np.array([coeff, exponent])
-    grid = np.array([1.0])
-    density = np.exp(-grid)
+def test_gaussian_s_one_basis_one_point():
+    # test one (un)normalized s-type gaussian on one point against sympy
 
-    model_object = GaussianModel(grid, density)
-    model = model_object.create_model(parameters)
-    assert np.abs(exponential - model) < 1e-13
+    coeffs, expons = np.array([3.]), np.array([0.])
+    # un-normalized at r=1.
+    g, dg = np.array([3.]), np.array([[1., -3.]])
+    model = GaussianModel(np.array([1.]), normalized=False, basis="s")
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+    # normalized at r=1.
+    g, dg = np.array([0.]), np.array([[0., 0.]])
+    model = GaussianModel(np.array([1.]), normalized=True, basis="s")
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
 
-    # Multiple Value Test with multiple coefficients and exponents.
-    grid = np.arange(1, 6)
-    density = np.exp(-grid)
-    model_object = GaussianModel(grid, density)
-    parameters = np.array([2, 2, 2, 4, 5, 1, 2, 3, 4, 5])
-    model = model_object.create_model(parameters)
-    actual_answer = gaussian_func(parameters[:len(parameters)//2],
-                                  parameters[len(parameters)//2:],
-                                  grid)
-    assert np.abs(model[0] - actual_answer[0]) < 1e-5
-    assert model[1] == actual_answer[1]
-    assert model[2] == actual_answer[2]
-
-    # Test for which_opti == c, ie optimizing coefficients.
-    parameters = np.array([2, 2, 2, 4, 5])
-    fixed_params = np.array([1, 2, 3, 4, 5])
-    model = model_object.create_model(parameters, fixed_params, which_opti="c")
-    actual_answer = gaussian_func(parameters, fixed_params, grid)
-    assert np.abs(model[0] - actual_answer[0]) < 1e-5
-    assert model[1] == actual_answer[1]
-    assert model[2] == actual_answer[2]
-
-    # Test which_opti == e
-    parameters = np.array([1, 2, 3, 4, 5])
-    fixed_params = np.array([2, 2, 2, 4, 5])
-    model = model_object.create_model(parameters, fixed_params, which_opti="e")
-    actual_answer = gaussian_func(fixed_params, parameters, grid)
-    assert np.abs(model[0] - actual_answer[0]) < 1e-5
-    assert model[1] == actual_answer[1]
-    assert model[2] == actual_answer[2]
+    coeffs, expons = np.array([3.15]), np.array([1.75])
+    # un-normalized at r=1.5
+    g, dg = np.array([0.0614152227]), np.array([[0.0194968961, -0.1381842511]])
+    model = GaussianModel(np.array([1.5]), normalized=False, basis="s")
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+    # normalized at r=1.5
+    g, dg = np.array([0.0255333792]), np.array([[0.0081058346, -0.0355643496]])
+    model = GaussianModel(np.array([1.5]), normalized=True, basis="s")
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
 
 
-def test_cost_function():
-    r"""Test cost_function in GaussianModel class."""
-    # Test at one point wrt to slater density
-    grid = 3.0
-    coeff = 4.0
-    exponent = 5.0
-    model = coeff * np.exp(-exponent * grid**2)
+def test_gaussian_s_one_basis_multiple_point():
+    # test one (un)normalized s-type gaussian on multiple point against sympy
 
-    parameters = np.array([coeff, exponent])
-    grid = np.array([3.0])
-    density = np.exp(-grid)
+    coeffs, expons = np.array([0.]), np.array([0.])
+    # un-normalized r=[0., 0.5, 1.0]
+    g, dg = np.zeros(3), np.array([[1., 0.], [1., 0.], [1., 0.]])
+    model = GaussianModel(np.array([0., 0.5, 1.]), normalized=False, basis="s")
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+    # normalized r=[0., 0.5, 1.0]
+    g, dg = np.zeros(3), np.zeros((3, 2))
+    model = GaussianModel(np.array([0., 0.5, 1.]), normalized=True, basis="s")
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
 
-    model_object = GaussianModel(grid, density)
-    electron_density = model_object.density
-    desired_answer = (electron_density - model)**2
-    actual_answer = model_object.cost_function(parameters, 1)
-    npt.assert_allclose(actual_answer, desired_answer)
-
-    # Test with multiply points
-    grid = np.arange(1., 3.)
-    density = np.exp(-grid)
-    model_object = GaussianModel(grid, density)
-    parameters = np.array([1.0, 2.0, 3.0, 4.0])
-    actual_answer = model_object.cost_function(parameters)
-    calc_value = np.array([1.0 * np.exp(-3.0 * 1.0**2) + 2.0 * np.exp(-4.0 * 1.0**2),
-                           1.0 * np.exp(-3.0 * 2.0**2) + 2.0 * np.exp(-4.0 * 2.0**2)])
-    desired_answer = (model_object.density - calc_value)**2.
-    npt.assert_allclose(np.sum(desired_answer), actual_answer)
-
-
-def test_residual():
-    r"""Test residual function for GaussianModel."""
-    grid = np.array([1., 2.])
-    density = np.exp(-grid)
-    obj = GaussianModel(grid, density)
-    parameters = np.array([1., 2., 3., 4.])
-    actual_answer = obj.get_residual(parameters)
-    a = np.exp(-3) + 2. * np.exp(-4)
-    b = np.exp(-3 * 2**2) + 2. * np.exp(-4. * 2**2)
-    desired_answer = [obj.density[0] - a,
-                      obj.density[1] - b]
-    npt.assert_allclose(actual_answer, desired_answer)
-
-    grid = np.array([1., 2.], dtype=np.double)
-    density = np.exp(-grid, density)
-    p = np.array([1., 2., 3., 4.], dtype=np.double)
-    obj = GaussianModel(grid, density)
-    actual_answer = obj.get_residual(p)
-
-    den = obj.density.copy()
-    c = (den - gaussian_func([1., 2.], [3., 4.], grid))
-    npt.assert_almost_equal(actual_answer[0], c[0])
-    npt.assert_almost_equal(actual_answer[1], c[1])
+    coeffs, expons = np.array([5.25]), np.array([0.8])
+    # un-normalized r=[0., 1.5, 2.2, 3.1, 10.]
+    g = np.array([5.25, 0.8678191632, 0.1092876455, 0.0024060427, 0.0])
+    dg = np.array([[1.0, 0.0], [0.1652988882, -1.9525931171], [0.0208166944, -0.5289522041],
+                   [0.0004582938, -0.0231220701], [0.0, 0.0]])
+    model = GaussianModel(np.array([0., 1.5, 2.2, 3.1, 10.]), normalized=False, basis="s")
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+    # normalized r=[0., 1.5, 2.2, 3.1, 10.]
+    g = np.array([0.6746359418, 0.1115165711, 0.0140436902, 0.0003091815, 0.0])
+    dg = np.array([[0.1285020841, 1.2649423908], [0.0212412516, -0.0418187142],
+                   [0.0026749886, -0.0416395415], [5.88917e-05, -0.0023915189], [0.0, 0.0]])
+    model = GaussianModel(np.array([0., 1.5, 2.2, 3.1, 10.]), normalized=True, basis="s")
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
 
 
-def test_derivative_coefficient():
-    r"""Test derivative with respect to coefficients."""
-    grid = np.array([1., 2.], dtype=np.double)
-    exps = np.array([3., 4.])
-    true_dens = np.exp(-grid)
-    obj = GaussianModel(grid, true_dens)
-    dens = obj.density
+def test_gaussian_s_multiple_basis_origin():
+    # test multiple (un)normalized s-type gaussian on r=0. against sympy
 
-    residual = 2. * np.array([dens[0] - np.exp(-3) - 2. * np.exp(-4),
-                              dens[1] - np.exp(-12) - 2. * np.exp(-16)])
-    actual_answer = obj._deriv_wrt_coeffs(exps, residual)
-    desired_answer = [residual[0] * -np.exp(-3) + residual[1] * -np.exp(-12),
-                      residual[0] * -np.exp(-4) + residual[1] * -np.exp(-16)]
-    npt.assert_allclose(actual_answer, desired_answer, rtol=1e-3)
+    coeffs, expons = np.zeros(10), np.zeros(10)
+    # un-normalized at r=0.
+    g, dg = np.array([0.]), np.array([[1.] * 10 + [0.] * 10])
+    model = GaussianModel(np.array([0.]), normalized=False, basis="s")
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+    # normalized at r=0.
+    g, dg = np.array([0.]), np.zeros(20)[None, :]
+    model = GaussianModel(np.array([0.]), normalized=True, basis="s")
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+
+    coeffs, expons = np.array([0.0, 1.0, 0.0, 3.5]), np.array([0.0, 0.0, 2.0, 0.5])
+    # un-normalized at r=0.
+    g, dg = np.array([4.5]), np.array([[1., 1., 1., 1., 0., 0., 0., 0.]])
+    model = GaussianModel(np.array([0.]), normalized=False, basis="s")
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+    # normalized at r=0.
+    g = np.array([0.2222277257])
+    dg = np.array([[0., 0., 0.5079490874, 0.0634936359, 0., 0., 0., 0.6666831773]])
+    model = GaussianModel(np.array([0.]), normalized=True, basis="s")
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
 
 
-def test_derivative_exponents():
-    r"""Test derivative with respect to exponents."""
-    grid = np.array([1., 2.], dtype=np.double)
-    coeff = np.array([1., 2.])
-    exps = np.array([3., 4.])
-    den = np.exp(-grid)
-    obj = GaussianModel(grid, den)
-    actual_answer = obj.derivative_of_cost_function(exps, coeff, which_opti='e')
+def test_gaussian_s_multiple_basis_one_point():
+    # test multiple (un)normalized s-type gaussian on one point against sympy
 
-    c = 2. * (den - gaussian_func([1., 2.], [3., 4.], grid))
-    deriv_e1 = c[0] * coeff[0] * np.exp(-exps[0]) + \
-        c[1] * coeff[0] * 4 * np.exp(-exps[0] * 4)
-    deriv_e2 = c[0] * coeff[1] * np.exp(-exps[1]) + \
-        c[1] * coeff[1] * 4 * np.exp(-exps[1] * 4)
-    npt.assert_allclose(actual_answer, [np.sum(deriv_e1), np.sum(deriv_e2)])
+    coeffs, expons = np.array([0.0, 1.0, 0.0, 3.5]), np.array([0.0, 0.0, 2.0, 0.5])
+    # un-normalized at r=1.
+    g = np.array([3.12285730899422])
+    dg = np.array([[1, 1, 0.1353352832, 0.606530659712633, 0., -1., 0., -2.1228573089]])
+    model = GaussianModel(np.array([1.]), normalized=False, basis="s")
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+
+    # normalized at r=1.
+    g = np.array([0.1347879291])
+    dg = np.array([[0., 0., 0.0687434336, 0.0385108368, 0., 0., 0., 0.2695758582]])
+    model = GaussianModel(np.array([1.]), normalized=True, basis="s")
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+
+    # un-normalized at r=2.5
+    g = np.array([1.1537792676])
+    dg = np.array([[1., 1., 3.7266531720e-6, 0.0439369336, 0., -6.25, 0., -0.9611204230]])
+    model = GaussianModel(np.array([2.5]), normalized=False, basis="s")
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+
+    # normalized at r=2.5
+    g = np.array([0.0097640048])
+    dg = np.array([[0., 0., 1.8929500780e-6, 0.0027897156, 0., 0., 0., -0.0317330157]])
+    model = GaussianModel(np.array([2.5]), normalized=True, basis="s")
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
 
 
-def test_derivative_cost_function():
-    r"""Test derivaitve of cost function for GaussianModel."""
-    # Test With Array WRT TO ONLY COEFFICIENT
-    grid = np.array([1., 2.], dtype=np.double)
-    coeff = np.array([1., 2.])
-    exps = np.array([3., 4.])
-    den = np.exp(-grid)
-    obj = GaussianModel(grid, den)
-    actual_answer = obj.derivative_of_cost_function(coeff, exps, which_opti='c')
+def test_gaussian_s_multiple_basis_multiple_point():
+    # test multiple (un)normalized s-type gaussian on multiple points against sympy
+    points = np.array([0.0, 2.67, 0.43, 5.1])
+    coeffs = np.array([2.0, 0.02, 1.51])
+    expons = np.array([6.1, 0.19, 7.67])
 
-    c = -2. * (den - gaussian_func([1., 2.], [3., 4.], grid))
-    npt.assert_almost_equal(c[0], -2 * (den[0] - np.exp(-3) - 2. * np.exp(-4)))
-    npt.assert_almost_equal(c[1], -2 * (den[1] - np.exp(-12) - 2. * np.exp(-16)))
+    # un-normalized
+    g = np.array([3.53, 0.0051615725, 1.0323926829, 0.0001428204])
+    dg = [[1.0, 1.0, 1.0, 0.0, 0.0, 0.0],
+          [0.0, 0.258078623, 0.0, -0.0, -0.0367963339, -0.0],
+          [0.3237155762, 0.9654789302, 0.2421536105, -0.1197100201, -0.0035703411, -0.0676090459],
+          [0.0, 0.0071410175, 0.0, -0.0, -0.0037147573, -0.0]]
+    dg = np.array(dg)
+    model = GaussianModel(points, normalized=False, basis="s")
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
 
-    deriv_c = c * np.exp(-exps[0] * grid**2.)
-    deriv_c2 = c * np.exp(-exps[1] * grid**2.)
-    npt.assert_allclose(actual_answer, [np.sum(deriv_c), np.sum(deriv_c2)])
-
-    # Test with Scipy
-    grid = np.array([5.0])
-    exponents = np.array([0., 1., 2., 3., 4.])
-    coefficient = np.array([5.0, 3.0, 2.0, 2.44, 5.6])
-    den = np.exp(-grid)
-    parameters = np.append(coefficient, exponents)
-    model_object = GaussianModel(grid, den)
-    approximation = scipy.optimize.approx_fprime(parameters,
-                                                 model_object.cost_function,
-                                                 1e-5, 5)
-    derivative = model_object.derivative_of_cost_function(parameters)
-    npt.assert_allclose(approximation, derivative, rtol=1e-3, atol=1e-1)
+    # normalized
+    g = np.array([11.1718777104, 7.67693e-05, 3.1468802527, 2.1242e-06])
+    dg = [[2.7056395801, 0.0148732402, 3.8147689308, 1.3306424164, 0.0023484064, 1.126525636],
+          [0.0, 0.0038384654, 0.0, -0.0, 5.87928e-05, -0.0],
+          [0.8758576756, 0.0143598001, 0.9237600699, 0.1068575081, 0.0022142343, 0.0148793624],
+          [0.0, 0.0001062101, 0.0, -0.0, -3.84805e-05, -0.0]]
+    dg = np.array(dg)
+    model = GaussianModel(points, normalized=True, basis="s")
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
