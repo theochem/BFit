@@ -52,20 +52,6 @@ class GaussianKullbackLeibler(KullbackLeiblerFitting):
 
         """
         super(GaussianKullbackLeibler, self).__init__(grid, density, norm, weights)
-        self.grid_points = ma.asarray(np.reshape(grid.points, (len(grid.points), 1)))
-        # TODO: Seems like I don't need this attribute
-        self.masked_grid_squared = ma.asarray(np.power(self.grid.points, 2.))
-
-    def get_norm_coeffs(self, coeff_arr, exp_arr):
-        r"""
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-        """
-        return coeff_arr * self.get_norm_consts(exp_arr)
 
     def get_model(self, coeff_arr, exp_arr, norm=True):
         r"""
@@ -76,9 +62,9 @@ class GaussianKullbackLeibler(KullbackLeiblerFitting):
         Returns
         -------
         """
-        exponential = np.exp(-exp_arr * np.power(self.grid_points, 2.))
+        exponential = np.exp(-exp_arr * np.power(self.grid.points[:, None], 2.))
         if norm:
-            coeff_arr = self.get_norm_coeffs(coeff_arr, exp_arr)
+            coeff_arr = coeff_arr * (exp_arr / np.pi)**(3./2.)
         normalized_gaussian_density = np.dot(exponential, coeff_arr)
         return normalized_gaussian_density
 
@@ -95,8 +81,8 @@ class GaussianKullbackLeibler(KullbackLeiblerFitting):
         grid_squared = self.grid.points**2.
         integrand = ratio * np.ma.asarray(np.exp(-exponent * grid_squared))
         if upt_exponent:
-            integrand = integrand * self.masked_grid_squared
-        return self._get_norm_constant(exponent) * self.grid.integrate(integrand, spherical=True)
+            integrand = integrand * self.grid.points**2
+        return (exponent / np.pi)**(3./2.) * self.grid.integrate(integrand, spherical=True)
 
     def _update_coeffs(self, coeff_arr, exp_arr):
         r"""
@@ -134,9 +120,6 @@ class GaussianKullbackLeibler(KullbackLeiblerFitting):
             new_exps[i] /= (2. * integration)
         return new_exps
 
-    def _get_norm_constant(self, exponent):
-        return (exponent / np.pi) ** (3./2.)
-
 
 class GaussianValKL(KullbackLeiblerFitting):
     r"""
@@ -150,7 +133,6 @@ class GaussianValKL(KullbackLeiblerFitting):
         if numb_val <= 0.:
             raise ValueError('Number of valence functions should be positive.')
         super(GaussianValKL, self).__init__(grid, density, norm)
-        self.masked_grid_squared = ma.asarray(np.power(self.grid.points, 2.))
         self.numb_val = numb_val
 
     def _get_norm_constant(self, fparam, val=False):
@@ -166,24 +148,24 @@ class GaussianValKL(KullbackLeiblerFitting):
 
     def get_model(self, coeffs, fparams):
         n = len(fparams)
-        grid = np.reshape(self.masked_grid_squared, (len(self.masked_grid_squared), 1))
+        grid = self.grid.points[:, None]**2
         s_expo = np.exp(-fparams[:n - self.numb_val] * grid)
         p_expo = np.exp(-fparams[self.numb_val:] * grid)
         norm_coeffs = self.get_norm_coeffs(coeffs, fparams)
 
         s_gaussian_model = np.dot(s_expo, norm_coeffs[:n - self.numb_val])
         p_gaussian_model = np.dot(p_expo, norm_coeffs[self.numb_val:])
-        p_gaussian_model = p_gaussian_model * self.masked_grid_squared
+        p_gaussian_model = p_gaussian_model * self.grid.points**2
         return s_gaussian_model + p_gaussian_model
 
     def get_inte_factor(self, exponent, masked_normed_gaussian, upt_exponents=False, val=False):
         ratio = self.weights * self.ma_true_mod / masked_normed_gaussian
-        integrand = ratio * np.exp(-exponent * self.masked_grid_squared)
+        integrand = ratio * np.exp(-exponent * self.grid.points**2)
         const = self._get_norm_constant(exponent, val=val)
         if val:
-            integrand *= self.masked_grid_squared
+            integrand *= self.grid.points**2
         if upt_exponents:
-            integrand *= self.masked_grid_squared
+            integrand *= self.grid.points**2
         return const * self.grid.integrate(integrand, spherical=True)
 
     def _update_coeffs(self, coeffs, fparams):

@@ -68,7 +68,6 @@ def test_raise_not_implemented():
     npt.assert_raises(NotImplementedError, kl.get_model, g, g)
     npt.assert_raises(NotImplementedError, kl._update_fparams)
     npt.assert_raises(NotImplementedError, kl._update_coeffs)
-    npt.assert_raises(NotImplementedError, kl._get_norm_constant)
 
 
 def test_get_lagrange_multiplier():

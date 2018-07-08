@@ -28,40 +28,6 @@ from fitting.kl_divergence.gaussian_kl import GaussianKullbackLeibler
 from fitting.grid import BaseRadialGrid
 
 
-__all__ = ["test_get_integration_factor_coeffs",
-           "test_get_integration_factor_exps",
-           "test_get_model",
-           "test_get_normalized_coefficients",
-           "test_normalized_constant",
-           "test_update_coeff",
-           "test_update_func_params"]
-
-
-def test_normalized_constant():
-    g = BaseRadialGrid(np.arange(0., 10.))
-    e = np.array(g.points * 5.)
-    kl = GaussianKullbackLeibler(g, e)
-    exps = np.array([5., 2., 3.])
-    true_answer = kl._get_norm_constant(exps)
-    desired_answer = [(5. / np.pi) ** (3. / 2.), (2. / np.pi) ** (3. / 2.),
-                      (3. / np.pi) ** (3. / 2.)]
-    npt.assert_array_equal(true_answer, desired_answer)
-
-
-def test_get_normalized_coefficients():
-    coeff = np.array([5., 2., 3., 50.])
-    exps = np.array([10., 3., 2., 1.])
-    g = BaseRadialGrid(np.arange(0., 10.))
-    e = np.array(g.points * 5.)
-    kl = GaussianKullbackLeibler(g, e)
-    true_answer = kl.get_norm_coeffs(coeff, exps)
-    desired_answer = [coeff[0] * (exps[0] / np.pi) ** (3. / 2.),
-                      coeff[1] * (exps[1] / np.pi) ** (3. / 2.),
-                      coeff[2] * (exps[2] / np.pi) ** (3. / 2.),
-                      coeff[3] * (exps[3] / np.pi) ** (3. / 2.)]
-    npt.assert_array_equal(true_answer, desired_answer)
-
-
 def test_get_model():
     coeff = np.array([5., 2., 3., 50.])
     expon = np.array([10., 3., 2., 1.])

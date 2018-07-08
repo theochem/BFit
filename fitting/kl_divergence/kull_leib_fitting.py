@@ -94,9 +94,6 @@ class KullbackLeiblerFitting(object):
     def _update_fparams(self):
         raise NotImplementedError()
 
-    def _get_norm_constant(self):
-        raise NotImplementedError()
-
     def _update_errors(self, coeffs, exps, c, iprint, update_p=False):
         model = self.get_model(coeffs, exps)
         errors = self.goodness_of_fit(model)
