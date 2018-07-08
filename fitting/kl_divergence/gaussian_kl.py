@@ -77,7 +77,7 @@ class GaussianKullbackLeibler(KullbackLeiblerFitting):
         Returns
         -------
         """
-        ratio = self.weights * self.ma_true_mod / masked_normed_gaussian
+        ratio = self.weights * self.density / masked_normed_gaussian
         grid_squared = self.grid.points**2.
         integrand = ratio * np.ma.asarray(np.exp(-exponent * grid_squared))
         if upt_exponent:
@@ -159,7 +159,7 @@ class GaussianValKL(KullbackLeiblerFitting):
         return s_gaussian_model + p_gaussian_model
 
     def get_inte_factor(self, exponent, masked_normed_gaussian, upt_exponents=False, val=False):
-        ratio = self.weights * self.ma_true_mod / masked_normed_gaussian
+        ratio = self.weights * self.density / masked_normed_gaussian
         integrand = ratio * np.exp(-exponent * self.grid.points**2)
         const = self._get_norm_constant(exponent, val=val)
         if val:

@@ -155,7 +155,7 @@ class MolecularFitting(KullbackLeiblerFitting):
             The factors needed for optimizing coefficients and exponents.
 
         """
-        ratio = self.ma_true_mod / masked_normed_gaussian
+        ratio = self.density / masked_normed_gaussian
         grid_squared = np.sum((self.grid.points - mol_coord)**2., axis=1)
         integrand = ratio * np.ma.asarray(np.exp(-exponent * grid_squared))
         if upt_exponent:

@@ -65,8 +65,7 @@ class KullbackLeiblerFitting(object):
         if not isinstance(density, np.ndarray):
             raise TypeError("Electron Density should be a numpy array.")
         self.grid = grid
-        self.density = density
-        self.ma_true_mod = ma.array(density)
+        self.density = ma.array(density)
         self.norm = norm
         if norm is None:
             self.norm = grid.integrate(density, spherical=True)
@@ -190,9 +189,9 @@ class KullbackLeiblerFitting(object):
         np.ndarray
                   Kullback Leibler fomula
         """
-        div_model = np.divide(self.ma_true_mod, ma.array(model))
+        div_model = np.divide(self.density, ma.array(model))
         log_ratio_models = self.weights * np.log(div_model)
-        return self.grid.integrate(self.ma_true_mod * log_ratio_models, spherical=True)
+        return self.grid.integrate(self.density * log_ratio_models, spherical=True)
 
     def goodness_of_fit(self, model):
         r"""Compute various measures to see how good is the fitted model.

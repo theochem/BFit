@@ -77,7 +77,7 @@ class GreedyKL(GreedyStrategy):
         return self.mbis_obj.get_kullback_leibler(model)
 
     def get_best_one_function_solution(self):
-        denom = self.grid.integrate(self.mbis_obj.ma_true_mod * np.power(
+        denom = self.grid.integrate(self.mbis_obj.density * np.power(
                 self.mbis_obj.grid.points**2, 2.), spherical=True)
         exps = 3. * self.norm / (2. * 4. * np.pi * denom)
         return np.array([self.norm, exps])
