@@ -46,7 +46,7 @@ class KullbackLeiblerFitting(object):
 
     """
 
-    def __init__(self, grid, density, norm=None, weights=None):
+    def __init__(self, grid, density, model, norm=None, weights=None):
         r"""
 
         Parameters
@@ -66,9 +66,10 @@ class KullbackLeiblerFitting(object):
             raise TypeError("Electron Density should be a numpy array.")
         self.grid = grid
         self.density = ma.array(density)
-        self.norm = norm
+        self.model = model
         if norm is None:
-            self.norm = grid.integrate(density, spherical=True)
+            norm = grid.integrate(density, spherical=True)
+        self.norm = norm
         if weights is None:
             weights = np.ones(len(density))
         self.weights = weights
@@ -84,17 +85,8 @@ class KullbackLeiblerFitting(object):
     def lagrange_multiplier(self):
         return self._lagrange_multiplier
 
-    def get_model(self, coeffs, fparams):
-        raise NotImplementedError()
-
-    def _update_coeffs(self):
-        raise NotImplementedError()
-
-    def _update_fparams(self):
-        raise NotImplementedError()
-
     def _update_errors(self, coeffs, exps, c, iprint, update_p=False):
-        model = self.get_model(coeffs, exps)
+        model = self.model.get_model(coeffs, exps)
         errors = self.goodness_of_fit(model)
         if iprint:
             if update_p:
@@ -105,11 +97,11 @@ class KullbackLeiblerFitting(object):
         return c + 1
 
     def _replace_coeffs(self, coeff_arr, exp_arr):
-        new_coeff = self._update_coeffs(coeff_arr, exp_arr)
+        new_coeff = self.model._update_coeffs(coeff_arr, exp_arr, self.lagrange_multiplier)
         return new_coeff, coeff_arr
 
     def _replace_fparams(self, coeff_arr, exp_arr):
-        new_exps = self._update_fparams(coeff_arr, exp_arr)
+        new_exps = self.model._update_fparams(coeff_arr, exp_arr, self.lagrange_multiplier)
         return new_exps, exp_arr
 
     def run(self, eps_coeff, eps_fparam, coeffs, fparams, iprint=False, iplot=False):
@@ -154,25 +146,6 @@ class KullbackLeiblerFitting(object):
         :return:
         """
         return self.grid.integrate(self.density * self.weights, spherical=True) / self.norm
-
-    def get_norm_consts(self, exp_arr):
-        r"""
-        These are normalization constants for gaussian basis set.
-
-        In order words, this is the inverse of the number you get
-        from integrating a gaussian function over the positive reals.
-
-        Parameters
-        ----------
-        exp_arr : np.ndarray
-                  Exponents of the gaussian function.
-
-        Returns
-        -------
-        np.ndarray
-                  Normalization constants.
-        """
-        return np.array([self._get_norm_constant(x) for x in exp_arr])
 
     def get_kullback_leibler(self, model):
         r"""
@@ -228,5 +201,5 @@ class KullbackLeiblerFitting(object):
         params : np.ndarray
             Coefficients and Function parameters appended together.
         """
-        model = self.get_model(params[:len(params)//2], params[len(params)//2:])
+        model = self.model.get_model(params[:len(params)//2], params[len(params)//2:])
         return self.get_kullback_leibler(model)

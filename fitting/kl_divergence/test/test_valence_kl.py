@@ -27,32 +27,23 @@ from scipy.integrate import trapz, simps
 from fitting.grid import BaseRadialGrid
 from fitting.kl_divergence.gaussian_kl import GaussianValKL
 
-__all__ = ["test_get_integration_factor_exps",
-           "test_get_model",
-           "test_get_integration_factor_coeffs",
-           "test_get_norm_coeffs",
-           "test_get_norm_constant",
-           "test_input_valence",
-           "test_updating_coefficients",
-           "test_updating_exponents"]
-
 
 def test_input_valence():
     r"""Test inputs for 'fitting.kl_divergence.valence_kl.GaussianValKL'."""
     g = BaseRadialGrid(np.arange(5))
     e = g.points**2
     i = 5.
-    npt.assert_raises(TypeError, GaussianValKL, "notarray", e)
-    npt.assert_raises(TypeError, GaussianValKL, g, "notarray")
-    npt.assert_raises(TypeError, GaussianValKL, g, e, "notreal")
-    npt.assert_raises(TypeError, GaussianValKL, g, e, i, "not")
+    npt.assert_raises(ValueError, GaussianValKL, "notarray", e, 5.)
+    npt.assert_raises(ValueError, GaussianValKL, g, "notarray", 5.)
+    npt.assert_raises(ValueError, GaussianValKL, g, e, "notreal")
+    npt.assert_raises(ValueError, GaussianValKL, g, e, i, "not")
     npt.assert_raises(ValueError, GaussianValKL, g, e, i, -5)
 
 
 def test_get_norm_constant():
     r"""Test normalization constants for valence kullback-leibler."""
     g = BaseRadialGrid(np.arange(0., 5, 0.001))
-    kl = GaussianValKL(g, 3. * np.exp(-5 * g.points**2.), 5., 1)
+    kl = GaussianValKL(g, 3. * np.exp(-5 * g.points**2.), 1)
     # Test non-valence
     e = 5.
     true_answer = kl._get_norm_constant(e, False)
@@ -72,7 +63,7 @@ def test_get_norm_constant():
 def test_get_norm_coeffs():
     r"""Test getting normalization constants for a list of coefficients."""
     g = BaseRadialGrid(np.arange(0., 5, 0.001))
-    kl = GaussianValKL(g, 3. * np.exp(-5 * g.points ** 2.), 5., 1)
+    kl = GaussianValKL(g, 3. * np.exp(-5 * g.points ** 2.), 1)
 
     c = np.array([1., 2])
     e = np.array([3., 4.])
@@ -84,7 +75,7 @@ def test_get_norm_coeffs():
 def test_get_model():
     r"""Test getting the model for 'fitting.kl_divergence.valence_kl'."""
     g = BaseRadialGrid(np.arange(2))
-    kl = GaussianValKL(g, g.points, norm=1., numb_val=1)
+    kl = GaussianValKL(g, g.points, numb_val=1)
 
     c = np.array([1., 2.])
     e = np.array([3., 4.])
@@ -99,7 +90,7 @@ def test_get_integration_factor_coeffs():
     r"""Test coeffs integration factor for 'fitting.kl_divergence.valence_kl'."""
     g = BaseRadialGrid(np.arange(0., 25, 0.0001))
     m = np.exp(-g.points)
-    kl = GaussianValKL(g, m, norm=1., numb_val=1)
+    kl = GaussianValKL(g, m, numb_val=1)
 
     c = np.array([1., 2.])
     e = np.array([3., 4.])
@@ -126,7 +117,7 @@ def test_get_integration_factor_exps():
     r"""Test exponent integration factor for 'fitting.kl_divergence.valence_kl'."""
     g = BaseRadialGrid(np.arange(0., 25, 0.0001))
     m = np.exp(-g.points)
-    kl = GaussianValKL(g, m, norm=1., numb_val=1)
+    kl = GaussianValKL(g, m, numb_val=1)
 
     c = np.array([1., 2.])
     e = np.array([3., 4.])
@@ -155,8 +146,9 @@ def test_updating_coefficients():
     g = BaseRadialGrid(np.arange(0., 25, 0.0001))
     m = np.exp(-g.points)
     integration = simps(m * g.points**2. * 4. * np.pi, g.points)
-    kl = GaussianValKL(g, m, norm=integration, numb_val=1)
-    npt.assert_allclose(kl.lagrange_multiplier, 1)
+    lm = g.integrate(m, spherical=True) / integration
+    kl = GaussianValKL(g, m, numb_val=1)
+    npt.assert_allclose(lm, 1)
 
     c = np.array([1., 2.])
     e = np.array([3., 4.])
@@ -165,9 +157,9 @@ def test_updating_coefficients():
         c[1] * (2. * 4**2.5 / (3. * np.pi**1.5)) * g_s * np.exp(-4 * g_s)
     npt.assert_allclose(kl.get_model(c, e), model)
 
-    true_answer = kl._update_coeffs(c, e)
-    ratio = np.ma.array(m) / np.ma.array(model)
-    integrand = np.ma.array(ratio * np.exp(-3 * g_s) * 4. * np.pi * g_s)
+    true_answer = kl._update_coeffs(c, e, lm)
+    ratio = np.ma.array(m / model, fill_value=0.0)
+    integrand = ratio * np.exp(-3 * g_s) * 4. * np.pi * g_s
     desired_ans = simps(integrand, g.points) * (3. / np.pi)**1.5
     c1 = c[0] * desired_ans
 
@@ -175,7 +167,7 @@ def test_updating_coefficients():
     desired_ans = simps(integrand, x=g.points) * (2 * 4.**2.5 / (3 * np.pi**1.5))
     c2 = c[1] * desired_ans * 4. * np.pi
 
-    npt.assert_allclose(true_answer, [c1, c2])
+    npt.assert_allclose(true_answer, [c1, c2], rtol=1.e-5)
 
 
 def test_updating_exponents():
@@ -183,8 +175,9 @@ def test_updating_exponents():
     g = BaseRadialGrid(np.arange(0., 25, 0.0001))
     m = np.exp(-g.points)
     integration = simps(m * g.points ** 2. * 4. * np.pi, g.points)
-    kl = GaussianValKL(g, m, norm=integration, numb_val=1)
-    npt.assert_allclose(kl.lagrange_multiplier, 1)
+    lm = g.integrate(m, spherical=True) / integration
+    kl = GaussianValKL(g, m, numb_val=1)
+    npt.assert_allclose(lm, 1)
 
     c = np.array([1., 2.])
     e = np.array([3., 4.])
@@ -193,7 +186,7 @@ def test_updating_exponents():
         c[1] * (2. * 4 ** 2.5 / (3. * np.pi ** 1.5)) * g_s * np.exp(-4 * g_s)
     npt.assert_allclose(kl.get_model(c, e), model)
 
-    true_answer = kl._update_fparams(c, e)
+    true_answer = kl._update_fparams(c, e, lm)
     ratio = np.ma.array(m) / np.ma.array(model)
     integrand = np.ma.array(ratio * np.exp(-3 * g_s) * 4. * np.pi * g_s)
     desired_answer = 3. * simps(integrand, g.points)

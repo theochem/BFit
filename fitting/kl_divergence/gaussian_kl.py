@@ -39,11 +39,11 @@ from fitting.kl_divergence.kull_leib_fitting import KullbackLeiblerFitting
 __all__ = ["GaussianKullbackLeibler", "GaussianValKL"]
 
 
-class GaussianKullbackLeibler(KullbackLeiblerFitting):
+class GaussianKullbackLeibler(object):
     r"""
 
     """
-    def __init__(self, grid, density, norm=None, weights=None):
+    def __init__(self, grid, density, weights=None):
         r"""
 
         Parameters
@@ -51,7 +51,11 @@ class GaussianKullbackLeibler(KullbackLeiblerFitting):
 
 
         """
-        super(GaussianKullbackLeibler, self).__init__(grid, density, norm, weights)
+        self.grid = grid
+        self.density = density
+        if weights is None:
+            weights = np.ones_like(self.density)
+        self.weights = weights
 
     def get_model(self, coeff_arr, exp_arr, norm=True):
         r"""
@@ -84,7 +88,7 @@ class GaussianKullbackLeibler(KullbackLeiblerFitting):
             integrand = integrand * self.grid.points**2
         return (exponent / np.pi)**(3./2.) * self.grid.integrate(integrand, spherical=True)
 
-    def _update_coeffs(self, coeff_arr, exp_arr):
+    def _update_coeffs(self, coeff_arr, exp_arr, lm):
         r"""
 
         Parameters
@@ -97,9 +101,9 @@ class GaussianKullbackLeibler(KullbackLeiblerFitting):
         new_coeff = coeff_arr.copy()
         for i in range(0, len(coeff_arr)):
             new_coeff[i] *= self.get_inte_factor(exp_arr[i], gaussian)
-        return new_coeff / self.lagrange_multiplier
+        return new_coeff / lm
 
-    def _update_fparams(self, coeff_arr, exp_arr, with_convergence=True):
+    def _update_fparams(self, coeff_arr, exp_arr, lm, with_convergence=True):
         r"""
 
         Parameters
@@ -113,7 +117,7 @@ class GaussianKullbackLeibler(KullbackLeiblerFitting):
         new_exps = exp_arr.copy()
         for i in range(0, len(exp_arr)):
             if with_convergence:
-                new_exps[i] = 3. * self._lagrange_multiplier
+                new_exps[i] = 3. * lm
             else:
                 new_exps[i] = 3. * self.get_inte_factor(exp_arr[i], masked_normed_gaussian)
             integration = self.get_inte_factor(exp_arr[i], masked_normed_gaussian, True)
@@ -121,18 +125,23 @@ class GaussianKullbackLeibler(KullbackLeiblerFitting):
         return new_exps
 
 
-class GaussianValKL(KullbackLeiblerFitting):
+class GaussianValKL(object):
     r"""
 
     """
 
     # TODO: Discuss how to have numb_val or to include it in __call__
-    def __init__(self, grid, density, norm, numb_val):
+    def __init__(self, grid, density, numb_val, weights=None):
         if not isinstance(numb_val, Integral):
-            raise TypeError("Number of valence functions should be an integer.")
+            raise ValueError("Number of valence functions should be an integer.")
         if numb_val <= 0.:
             raise ValueError('Number of valence functions should be positive.')
-        super(GaussianValKL, self).__init__(grid, density, norm)
+
+        self.grid = grid
+        self.density = density
+        if weights is None:
+            weights = np.ones_like(self.density)
+        self.weights = weights
         self.numb_val = numb_val
 
     def _get_norm_constant(self, fparam, val=False):
@@ -159,7 +168,7 @@ class GaussianValKL(KullbackLeiblerFitting):
         return s_gaussian_model + p_gaussian_model
 
     def get_inte_factor(self, exponent, masked_normed_gaussian, upt_exponents=False, val=False):
-        ratio = self.weights * self.density / masked_normed_gaussian
+        ratio = np.ma.array(self.weights * self.density / masked_normed_gaussian, fill_value=0.0)
         integrand = ratio * np.exp(-exponent * self.grid.points**2)
         const = self._get_norm_constant(exponent, val=val)
         if val:
@@ -168,18 +177,20 @@ class GaussianValKL(KullbackLeiblerFitting):
             integrand *= self.grid.points**2
         return const * self.grid.integrate(integrand, spherical=True)
 
-    def _update_coeffs(self, coeffs, fparams):
+    def _update_coeffs(self, coeffs, fparams, lm):
+        print("lm = ", lm)
         gaussian_model = self.get_model(coeffs, fparams)
+        print("gm = ", gaussian_model)
         new_coeff = coeffs.copy()
         val = False
         for i in range(0, len(coeffs)):
             if i >= self.numb_val:
                 val = True
             new_coeff[i] *= self.get_inte_factor(fparams[i], gaussian_model, val=val)
-            new_coeff[i] /= self.lagrange_multiplier
+            new_coeff[i] /= lm
         return new_coeff
 
-    def _update_fparams(self, coeffs, fparams):
+    def _update_fparams(self, coeffs, fparams, lm):
         gaussian_model = self.get_model(coeffs, fparams)
         new_exps = fparams.copy()
         val = False

@@ -25,9 +25,8 @@ r"""Test file for 'fitting.kl_divergence.molecular_fitting'."""
 import numpy as np
 import numpy.testing as npt
 from fitting.grid import CubicGrid
+from fitting.kl_divergence.kull_leib_fitting import KullbackLeiblerFitting
 from fitting.kl_divergence.molecular_fitting import MolecularFitting
-
-__all__ = []
 
 
 def test_input_checks():
@@ -104,7 +103,8 @@ def test_updating_coeffs():
     norm = np.pi**(3. / 2.)
     mol_coord = np.array([[0., 0., 0.], [0., 0., 1.]])
     numb_of_params = [1, 1]
-    dens_obj = MolecularFitting(grid, dens_val, norm, mol_coord, numb_of_params)
+    model = MolecularFitting(grid, dens_val, norm, mol_coord, numb_of_params)
+    dens_obj = KullbackLeiblerFitting(grid, dens_val, model, norm=norm)
     c = np.array([1., 2.])
     e = np.array([3., 4.])
     true_answer = dens_obj._replace_coeffs(c, e)
@@ -130,10 +130,11 @@ def test_updating_exponents():
     norm = np.pi ** (3. / 2.)
     mol_coord = np.array([[0., 0., 0.], [0., 0., 1.]])
     numb_of_params = [1, 1]
+    lm = grid.integrate(dens_val, spherical=True) / norm
     dens_obj = MolecularFitting(grid, dens_val, norm, mol_coord, numb_of_params)
     c = np.array([1., 2.])
     e = np.array([3., 4.])
-    true_answer = dens_obj._update_fparams(c, e, False)
+    true_answer = dens_obj._update_fparams(c, e, lm, False)
 
     radial_1 = np.sum((grid.points - mol_coord[0]) ** 2., axis=1)
     radial_2 = np.sum((grid.points - mol_coord[1]) ** 2., axis=1)

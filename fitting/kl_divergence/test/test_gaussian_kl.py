@@ -34,7 +34,7 @@ def test_get_model():
     g = BaseRadialGrid(np.arange(0., 10.))
     e = np.array(g.points * 5.)
     kl = GaussianKullbackLeibler(g, e)
-    true_answer = kl.get_model(coeff, expon)
+    true_answer = kl.get_model(coeff, expon, True)
     normalized_coeffs = np.array([coeff[0] * (expon[0] / np.pi) ** (3. / 2.),
                                   coeff[1] * (expon[1] / np.pi) ** (3. / 2.),
                                   coeff[2] * (expon[2] / np.pi) ** (3. / 2.),
@@ -96,7 +96,7 @@ def test_get_integration_factor_exps():
     points = np.arange(0., 5, 1e-3)
     grid = BaseRadialGrid(points)
     tmod = np.exp(-points)
-    kl = GaussianKullbackLeibler(grid, tmod, norm=1)
+    kl = GaussianKullbackLeibler(grid, tmod)
 
     model = coeff[0] * ((exps[0] / np.pi) ** (3. / 2.)) * np.exp(-exps[0] * points ** 2.) + \
         coeff[1] * ((exps[1] / np.pi) ** (3. / 2.)) * np.exp(-exps[1] * points ** 2.)
@@ -134,11 +134,12 @@ def test_update_coeff():
     e = np.array([10., 3.])
     g = BaseRadialGrid(np.arange(0., 9, 0.001))
     e2 = np.exp(-g.points)
-    kl = GaussianKullbackLeibler(g, e2, norm=5.)
+    lm = g.integrate(e2, spherical=True) / 5.0
+    kl = GaussianKullbackLeibler(g, e2)
 
     model = c[0] * (e[0] / np.pi) ** (3. / 2.) * np.exp(-e[0] * g.points ** 2.) + \
         c[1] * (e[1] / np.pi) ** (3. / 2.) * np.exp(-e[1] * g.points ** 2.)
-    true_answer = kl._update_coeffs(c, e)
+    true_answer = kl._update_coeffs(c, e, lm)
 
     desired_ans = c.copy()
     integrand = e2 * np.exp(-e[0] * g.points ** 2.) * g.points ** 2. / model
@@ -159,13 +160,14 @@ def test_update_func_params():
     e = np.array([10., 3.])
     g = BaseRadialGrid(np.arange(0., 13, 0.001))
     e2 = np.exp(-g.points)
-    kl = GaussianKullbackLeibler(g, e2, norm=5.)
+    lm = g.integrate(e2, spherical=True) / 5.0
+    kl = GaussianKullbackLeibler(g, e2)
 
     model = c[0] * (e[0] / np.pi) ** (3. / 2.) * np.exp(-e[0] * g.points ** 2.) + \
         c[1] * (e[1] / np.pi) ** (3. / 2.) * np.exp(-e[1] * g.points ** 2.)
     model = np.ma.array(model)
     # Assume without convergence
-    true_answer = kl._update_fparams(c, e, False)
+    true_answer = kl._update_fparams(c, e, lm, False)
 
     # Find Numerator of integration factor
     integrand = e2 * np.exp(-e[0] * g.points ** 2.) * g.points ** 2. / model
@@ -192,39 +194,7 @@ def test_update_func_params():
     npt.assert_allclose(true_answer, [desired_answer1, desired_answer2])
 
     # Assume With Convergence
-    true_answer = kl._update_fparams(c, e, True)
-    desired_answer1 = 3. * kl.norm / (2. * desired_answer_den1)
-    desired_answer2 = 3. * kl.norm / (2. * desired_answer_den)
-    npt.assert_allclose(true_answer, [desired_answer1, desired_answer2],
-                        rtol=1e-2)
-
-
-def test_update_errors():
-    r"""Test updating errors for kullback-leibler method."""
-    g = BaseRadialGrid(np.arange(0., 10, 0.001))
-    e = np.exp(-g.points)
-    kl = GaussianKullbackLeibler(g, e, norm=1.)
-    counter = 10
-
-    c = np.array([5.])
-    e = np.array([5.])
-    c_new = kl._update_errors(c, e, counter, False, False)
-    assert c_new == counter + 1
-
-
-def test_run():
-    r"""Test the optimization algorithm for gaussian kullback-leibler method."""
-    g = BaseRadialGrid(np.arange(0., 10, 0.001))
-    e = (1 / np.pi) ** 1.5 * np.exp(-g.points ** 2.)
-    kl = GaussianKullbackLeibler(g, e, norm=1.)
-
-    # Test One Basis Function
-    c = np.array([1.])
-
-    denom = np.trapz(y=g.points ** 4. * e, x=g.points)
-    exps = 3. / (2. * 4. * np.pi * denom)
-    params = kl.run(1e-3, 1e-3, c, np.array([exps]), iprint=True)
-    params_x = params["x"]
-    npt.assert_allclose(1., params_x)
-    assert np.abs(params["errors"][-1, 0] - 1.) < 1e-10
-    assert np.all(np.abs(params["errors"][-1][1:]) < 1e-10)
+    true_answer = kl._update_fparams(c, e, lm, True)
+    desired_answer1 = 3. * 5. / (2. * desired_answer_den1)
+    desired_answer2 = 3. * 5. / (2. * desired_answer_den)
+    npt.assert_allclose(true_answer, [desired_answer1, desired_answer2], rtol=1e-2)

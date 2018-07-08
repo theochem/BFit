@@ -30,7 +30,7 @@ from fitting.grid import CubicGrid
 __all__ = ["MolecularFitting"]
 
 
-class MolecularFitting(KullbackLeiblerFitting):
+class MolecularFitting(object):
     def __init__(self, grid, dens_val, norm, mol_coords, number_of_params):
         r"""
         Parameters
@@ -71,7 +71,11 @@ class MolecularFitting(KullbackLeiblerFitting):
             raise ValueError("Density values should be one dimensional.")
         self.mol_coords = mol_coords
         self.number_of_params = number_of_params
-        super(MolecularFitting, self).__init__(grid, dens_val, norm)
+        self.grid = grid
+        self.density = dens_val
+        if norm is None:
+            norm = grid.integrate(self.density, spherical=True)
+        self.norm = norm
 
     def get_norm_coeffs(self, coeff_arr, exp_arr):
         r"""
@@ -94,6 +98,25 @@ class MolecularFitting(KullbackLeiblerFitting):
 
         """
         return coeff_arr * self.get_norm_consts(exp_arr)
+
+    def get_norm_consts(self, exp_arr):
+        r"""
+        These are normalization constants for gaussian basis set.
+
+        In order words, this is the inverse of the number you get
+        from integrating a gaussian function over the positive reals.
+
+        Parameters
+        ----------
+        exp_arr : np.ndarray
+                  Exponents of the gaussian function.
+
+        Returns
+        -------
+        np.ndarray
+                  Normalization constants.
+        """
+        return np.array([self._get_norm_constant(x) for x in exp_arr])
 
     def get_model(self, coeffs, fparams):
         r"""
@@ -187,7 +210,7 @@ class MolecularFitting(KullbackLeiblerFitting):
         assert found != -1.
         return self.mol_coords[found]
 
-    def _update_coeffs(self, coeff_arr, exp_arr):
+    def _update_coeffs(self, coeff_arr, exp_arr, lm):
         r"""
         Update a list of gaussian coefficients, using the fixed-point iteration method.
 
@@ -210,7 +233,7 @@ class MolecularFitting(KullbackLeiblerFitting):
         for i in range(0, len(coeff_arr)):
             mol = self.get_mol_coord(i)
             new_coeff[i] *= self.get_inte_factor(exp_arr[i], gaussian, mol)
-        return new_coeff / self.lagrange_multiplier
+        return new_coeff / lm
 
     def _get_norm_constant(self, exponent):
         r"""
@@ -218,7 +241,7 @@ class MolecularFitting(KullbackLeiblerFitting):
         """
         return (exponent / np.pi) ** (3./2.)
 
-    def _update_fparams(self, coeff_arr, exp_arr, with_convergence=True):
+    def _update_fparams(self, coeff_arr, exp_arr, lm, with_convergence=True):
         r"""
         Updates the function parameters based on the fixed point iteration method.
 
@@ -248,7 +271,7 @@ class MolecularFitting(KullbackLeiblerFitting):
         for i in range(0, len(exp_arr)):
             mol = self.get_mol_coord(i)
             if with_convergence:
-                new_exps[i] = 3. * self._lagrange_multiplier
+                new_exps[i] = 3. * lm
             else:
                 new_exps[i] = 3. * self.get_inte_factor(exp_arr[i], masked_normed_gaussian, mol)
             integration = self.get_inte_factor(exp_arr[i], masked_normed_gaussian, mol, True)
