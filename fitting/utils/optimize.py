@@ -79,7 +79,7 @@ def optimize_using_slsqp(density_model, initial_guess, bounds=None, *args):
     """
     const = None
     if isinstance(density_model, KullbackLeiblerFitting):
-        const = {"eq": np.sum(initial_guess - density_model.inte_val)}
+        const = {"eq": np.sum(initial_guess - density_model.norm)}
 
     if bounds is None:
         bounds = np.array([(0.0, np.inf)] * len(initial_guess))

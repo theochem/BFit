@@ -31,17 +31,17 @@ __all__ = ["MolecularFitting"]
 
 
 class MolecularFitting(KullbackLeiblerFitting):
-    def __init__(self, grid_obj, dens_val, inte_val, mol_coords, number_of_params):
+    def __init__(self, grid, dens_val, norm, mol_coords, number_of_params):
         r"""
         Parameters
         ----------
-        grid_obj : CubicGrid
+        grid : CubicGrid
             This is the grid object responsible for holding the grid points and integrating.
 
         dens_val : np.ndarray(shape=(1, N))
             Holds the molecular density values, where N is the number of points.
 
-        inte_val : float
+        norm : float
             The integration of the molecular density over the entire space.
 
         mol_coords : np.ndarray(shape=(M, 3))
@@ -51,11 +51,11 @@ class MolecularFitting(KullbackLeiblerFitting):
             The number of gaussian parameters for each atom stored in a list.
 
         """
-        if not isinstance(grid_obj, CubicGrid):
+        if not isinstance(grid, CubicGrid):
             raise TypeError("Grid object should be of type CubicGrid.")
         if not isinstance(dens_val, np.ndarray):
             raise TypeError("Density values should be a numpy array.")
-        if not isinstance(inte_val, Real):
+        if not isinstance(norm, Real):
             raise TypeError("Integration Value should be a number.")
         if not isinstance(mol_coords, np.ndarray):
             raise TypeError("Molecule Coordinates should be a numpy array.")
@@ -71,7 +71,7 @@ class MolecularFitting(KullbackLeiblerFitting):
             raise ValueError("Density values should be one dimensional.")
         self.mol_coords = mol_coords
         self.number_of_params = number_of_params
-        super(MolecularFitting, self).__init__(grid_obj, dens_val, inte_val)
+        super(MolecularFitting, self).__init__(grid, dens_val, norm)
 
     def get_norm_coeffs(self, coeff_arr, exp_arr):
         r"""
@@ -113,7 +113,7 @@ class MolecularFitting(KullbackLeiblerFitting):
             Returns the gaussian density values evaluated at each grid point.
 
         """
-        model = np.zeros(len(self.grid_obj))
+        model = np.zeros(len(self.grid))
         coeffs = self.get_norm_coeffs(coeffs, fparams)
 
         i1 = 0
@@ -121,10 +121,10 @@ class MolecularFitting(KullbackLeiblerFitting):
             coeff = coeffs[i1: numb + i1]
             exp1 = fparams[i1: numb + i1]
 
-            radius = np.zeros(len(self.grid_obj))
-            radius += np.sum((self.grid_obj.points - self.mol_coords[j])**2., axis=1)
+            radius = np.zeros(len(self.grid))
+            radius += np.sum((self.grid.points - self.mol_coords[j])**2., axis=1)
 
-            exponential = np.exp(-exp1 * radius.reshape((len(self.grid_obj), 1)))
+            exponential = np.exp(-exp1 * radius.reshape((len(self.grid), 1)))
             model += exponential.dot(coeff)
             i1 = numb + i1
         return model
@@ -156,11 +156,11 @@ class MolecularFitting(KullbackLeiblerFitting):
 
         """
         ratio = self.ma_true_mod / masked_normed_gaussian
-        grid_squared = np.sum((self.grid_obj.points - mol_coord)**2., axis=1)
+        grid_squared = np.sum((self.grid.points - mol_coord)**2., axis=1)
         integrand = ratio * np.ma.asarray(np.exp(-exponent * grid_squared))
         if upt_exponent:
             integrand = integrand * grid_squared
-        return self._get_norm_constant(exponent) * self.grid_obj.integrate(integrand)
+        return self._get_norm_constant(exponent) * self.grid.integrate(integrand)
 
     def get_mol_coord(self, index):
         r"""

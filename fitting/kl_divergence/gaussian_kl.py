@@ -43,7 +43,7 @@ class GaussianKullbackLeibler(KullbackLeiblerFitting):
     r"""
 
     """
-    def __init__(self, grid_obj, true_model, inte_val=None, weights=None):
+    def __init__(self, grid, density, norm=None, weights=None):
         r"""
 
         Parameters
@@ -51,10 +51,10 @@ class GaussianKullbackLeibler(KullbackLeiblerFitting):
 
 
         """
-        super(GaussianKullbackLeibler, self).__init__(grid_obj, true_model, inte_val, weights)
-        self.grid_points = ma.asarray(np.reshape(grid_obj.points, (len(grid_obj.points), 1)))
+        super(GaussianKullbackLeibler, self).__init__(grid, density, norm, weights)
+        self.grid_points = ma.asarray(np.reshape(grid.points, (len(grid.points), 1)))
         # TODO: Seems like I don't need this attribute
-        self.masked_grid_squared = ma.asarray(np.power(self.grid_obj.points, 2.))
+        self.masked_grid_squared = ma.asarray(np.power(self.grid.points, 2.))
 
     def get_norm_coeffs(self, coeff_arr, exp_arr):
         r"""
@@ -92,11 +92,11 @@ class GaussianKullbackLeibler(KullbackLeiblerFitting):
         -------
         """
         ratio = self.weights * self.ma_true_mod / masked_normed_gaussian
-        grid_squared = self.grid_obj.points**2.
+        grid_squared = self.grid.points**2.
         integrand = ratio * np.ma.asarray(np.exp(-exponent * grid_squared))
         if upt_exponent:
             integrand = integrand * self.masked_grid_squared
-        return self._get_norm_constant(exponent) * self.grid_obj.integrate(integrand, spherical=True)
+        return self._get_norm_constant(exponent) * self.grid.integrate(integrand, spherical=True)
 
     def _update_coeffs(self, coeff_arr, exp_arr):
         r"""
@@ -144,13 +144,13 @@ class GaussianValKL(KullbackLeiblerFitting):
     """
 
     # TODO: Discuss how to have numb_val or to include it in __call__
-    def __init__(self, grid_obj, true_model, inte_val, numb_val):
+    def __init__(self, grid, density, norm, numb_val):
         if not isinstance(numb_val, Integral):
             raise TypeError("Number of valence functions should be an integer.")
         if numb_val <= 0.:
             raise ValueError('Number of valence functions should be positive.')
-        super(GaussianValKL, self).__init__(grid_obj, true_model, inte_val)
-        self.masked_grid_squared = ma.asarray(np.power(self.grid_obj.points, 2.))
+        super(GaussianValKL, self).__init__(grid, density, norm)
+        self.masked_grid_squared = ma.asarray(np.power(self.grid.points, 2.))
         self.numb_val = numb_val
 
     def _get_norm_constant(self, fparam, val=False):
@@ -184,7 +184,7 @@ class GaussianValKL(KullbackLeiblerFitting):
             integrand *= self.masked_grid_squared
         if upt_exponents:
             integrand *= self.masked_grid_squared
-        return const * self.grid_obj.integrate(integrand, spherical=True)
+        return const * self.grid.integrate(integrand, spherical=True)
 
     def _update_coeffs(self, coeffs, fparams):
         gaussian_model = self.get_model(coeffs, fparams)

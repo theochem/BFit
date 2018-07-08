@@ -46,7 +46,7 @@ class KullbackLeiblerFitting(object):
 
     """
 
-    def __init__(self, grid_obj, true_model, inte_val=None, weights=None):
+    def __init__(self, grid, density, norm=None, weights=None):
         r"""
 
         Parameters
@@ -54,24 +54,24 @@ class KullbackLeiblerFitting(object):
 
 
         """
-        if not isinstance(inte_val, (type(None), Real)):
+        if not isinstance(norm, (type(None), Real)):
             raise TypeError("Integration Value should be an integer.")
         if not isinstance(weights, (type(None), np.ndarray)):
             raise TypeError("Weights should be none or a numpy array.")
-        if inte_val is not None and inte_val <= 0.:
+        if norm is not None and norm <= 0.:
             raise ValueError("Integration value should be positive.")
-        if not isinstance(grid_obj, (BaseRadialGrid, CubicGrid)):
+        if not isinstance(grid, (BaseRadialGrid, CubicGrid)):
             raise TypeError("Grid Object should be 'fitting.radial_grid.radial_grid'.")
-        if not isinstance(true_model, np.ndarray):
+        if not isinstance(density, np.ndarray):
             raise TypeError("Electron Density should be a numpy array.")
-        self.grid_obj = grid_obj
-        self.true_model = true_model
-        self.ma_true_mod = ma.array(true_model)
-        self.inte_val = inte_val
-        if inte_val is None:
-            self.inte_val = grid_obj.integrate(true_model, spherical=True)
+        self.grid = grid
+        self.density = density
+        self.ma_true_mod = ma.array(density)
+        self.norm = norm
+        if norm is None:
+            self.norm = grid.integrate(density, spherical=True)
         if weights is None:
-            weights = np.ones(len(true_model))
+            weights = np.ones(len(density))
         self.weights = weights
         # Various methods relay on masked values due to division of small numbers.
         self._lagrange_multiplier = self.get_lagrange_multiplier()
@@ -157,7 +157,7 @@ class KullbackLeiblerFitting(object):
 
         :return:
         """
-        return self.grid_obj.integrate(self.true_model * self.weights, spherical=True) / self.inte_val
+        return self.grid.integrate(self.density * self.weights, spherical=True) / self.norm
 
     def get_norm_consts(self, exp_arr):
         r"""
@@ -195,7 +195,7 @@ class KullbackLeiblerFitting(object):
         """
         div_model = np.divide(self.ma_true_mod, ma.array(model))
         log_ratio_models = self.weights * np.log(div_model)
-        return self.grid_obj.integrate(self.ma_true_mod * log_ratio_models, spherical=True)
+        return self.grid.integrate(self.ma_true_mod * log_ratio_models, spherical=True)
 
     def integrate_model_spherically(self, model):
         r"""
@@ -213,7 +213,7 @@ class KullbackLeiblerFitting(object):
         np.ndarray
                   Integration of the weighted model over the reals
         """
-        return self.grid_obj.integrate(model, spherical=True)
+        return self.grid.integrate(model, spherical=True)
 
     def goodness_of_fit_grid_squared(self, model):
         r"""
@@ -232,8 +232,8 @@ class KullbackLeiblerFitting(object):
         err : float
               An error measure on how good the fit is.
         """
-        absolute_diff = np.abs(model - self.true_model)
-        return self.grid_obj.integrate(absolute_diff, spherical=True) / (4 * np.pi)
+        absolute_diff = np.abs(model - self.density)
+        return self.grid.integrate(absolute_diff, spherical=True) / (4 * np.pi)
 
     def goodness_of_fit(self, model):
         r"""
@@ -248,8 +248,8 @@ class KullbackLeiblerFitting(object):
         -------
         """
 
-        absolute_diff = np.abs(self.true_model - model)
-        return self.grid_obj.integrate(absolute_diff)
+        absolute_diff = np.abs(self.density - model)
+        return self.grid.integrate(absolute_diff)
 
     def get_descriptors_of_model(self, model):
         r"""
@@ -287,16 +287,3 @@ class KullbackLeiblerFitting(object):
         """
         model = self.get_model(params[:len(params)//2], params[len(params)//2:])
         return self.get_kullback_leibler(model)
-
-    def derivative_of_cost_function(self, params):
-        r"""
-        Get the Derivative of the kullback-leibler formula wrt each parameter.
-
-        Used for optimization via SLSQP in the 'fitting.utils.optimize.py' File.
-
-        Parameters
-        ----------
-        params : np.ndarray
-            Coefficients and Function parameters appended together.
-        """
-        pass

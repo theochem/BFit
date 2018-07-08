@@ -33,31 +33,31 @@ __all__ = ["GreedyLeastSquares"]
 
 
 class GreedyLeastSquares(GreedyStrategy):
-    def __init__(self, grid_obj, true_model, splitting_func=get_next_choices,
+    def __init__(self, grid, density, splitting_func=get_next_choices,
                  factor=2):
-        self.gauss_obj = GaussianModel(grid_obj.points, true_model)
-        self.grid_obj = grid_obj
+        self.gauss_obj = GaussianModel(grid.points, density)
+        self.grid = grid
         self.factor = factor
         self.splitting_func = splitting_func
         super(GreedyStrategy, self).__init__()
 
     @property
-    def true_model(self):
-        return self.gauss_obj._true_model
+    def density(self):
+        return self.gauss_obj._density
 
     def get_cost_function(self, params):
         self.gauss_obj.cost_function(params)
 
     def _solve_one_function_weight(self, weight):
         a = 2.0 * np.sum(weight)
-        sum_of_grid_squared = np.sum(weight * np.power(self.grid_obj.points, 2))
+        sum_of_grid_squared = np.sum(weight * np.power(self.grid.points, 2))
         b = 2.0 * sum_of_grid_squared
-        sum_ln_electron_density = np.sum(weight * np.log(self.true_model))
+        sum_ln_electron_density = np.sum(weight * np.log(self.density))
         c = 2.0 * sum_ln_electron_density
         d = b
-        e = 2.0 * np.sum(weight * np.power(self.grid_obj.points, 4))
-        f = 2.0 * np.sum(weight * np.power(self.grid_obj.points, 2) *
-                         np.log(self.true_model))
+        e = 2.0 * np.sum(weight * np.power(self.grid.points, 4))
+        f = 2.0 * np.sum(weight * np.power(self.grid.points, 2) *
+                         np.log(self.density))
         big_a = (b * f - c * e) / (b * d - a * e)
         big_b = (a * f - c * d) / (a * e - b * d)
         coefficient = np.exp(big_a)
@@ -66,12 +66,12 @@ class GreedyLeastSquares(GreedyStrategy):
 
     def get_best_one_function_solution(self):
         # Minimizing weighted least squares with three different weights
-        weight1 = np.ones(len(self.grid_obj.points))
-        weight3 = np.power(self.true_model, 2.)
+        weight1 = np.ones(len(self.grid.points))
+        weight3 = np.power(self.density, 2.)
         p1 = self._solve_one_function_weight(weight1)
         cost_func1 = self.gauss_obj.cost_function(p1)
 
-        p2 = self._solve_one_function_weight(self.true_model)
+        p2 = self._solve_one_function_weight(self.density)
         cost_func2 = self.gauss_obj.cost_function(p2)
 
         p3 = self._solve_one_function_weight(weight3)
@@ -89,10 +89,10 @@ class GreedyLeastSquares(GreedyStrategy):
                                                                       self.ugbs)
             exp_choice3 = self.gauss_obj.generation_of_UGBS_exponents(1.75,
                                                                       self.ugbs)
-            grid_squared = self.grid_obj.points**2.
+            grid_squared = self.grid.points**2.
             best_found = None
             for exp in np.append((exp_choice1, exp_choice2, exp_choice3)):
-                num = np.sum(self.true_model * np.exp(-exp * grid_squared))
+                num = np.sum(self.density * np.exp(-exp * grid_squared))
                 den = np.sum(np.exp(-2. * exp * grid_squared))
                 c = num / den
                 p = np.array([c, exp])
@@ -113,7 +113,7 @@ class GreedyLeastSquares(GreedyStrategy):
     def get_optimization_routine(self, params):
         exps = params[len(params)//2:]
         cofac_matrix = self.gauss_obj.create_cofactor_matrix(exps)
-        coeffs = optimize_using_nnls(self.true_model, cofac_matrix)
+        coeffs = optimize_using_nnls(self.density, cofac_matrix)
 
         p = np.append(coeffs, exps)
         params = optimize_using_slsqp(self.gauss_obj, p)
@@ -122,6 +122,6 @@ class GreedyLeastSquares(GreedyStrategy):
     def get_errors_from_model(self, params):
         model = self.gauss_obj.create_model(params)
         err1 = self.gauss_obj.integrate_model_trapz(model)
-        err2 = self.gauss_obj.get_integration_error(self.true_model, model)
-        err3 = self.gauss_obj.get_error_diffuse(self.true_model, model)
+        err2 = self.gauss_obj.get_integration_error(self.density, model)
+        err3 = self.gauss_obj.get_error_diffuse(self.density, model)
         return [err1, err2, err3]

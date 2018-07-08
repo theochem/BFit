@@ -35,7 +35,7 @@ class GreedyKL(GreedyStrategy):
     r"""
 
     """
-    def __init__(self, grid_obj, true_model, inte_val,
+    def __init__(self, grid, density, norm,
                  splitting_func=get_next_choices, eps_coeff=1e-3, eps_exp=1e-4,
                  factor=2):
         r"""
@@ -47,7 +47,7 @@ class GreedyKL(GreedyStrategy):
         -------
 
         """
-        self.mbis_obj = GaussianKullbackLeibler(grid_obj, true_model, inte_val)
+        self.mbis_obj = GaussianKullbackLeibler(grid, density, norm)
         self.splitting_func = splitting_func
         self.threshold_coeff = eps_coeff
         self.threshold_exp = eps_exp
@@ -56,16 +56,16 @@ class GreedyKL(GreedyStrategy):
         super(GreedyKL, self).__init__()
 
     @property
-    def true_model(self):
-        return self.mbis_obj.true_model
+    def density(self):
+        return self.mbis_obj.density
 
     @property
-    def inte_val(self):
-        return self.mbis_obj.inte_val
+    def norm(self):
+        return self.mbis_obj.norm
 
     @property
-    def grid_obj(self):
-        return self.mbis_obj.grid_obj
+    def grid(self):
+        return self.mbis_obj.grid
 
     def get_model(self, params):
         return self.mbis_obj.get_model(params[:len(params)//2],
@@ -77,10 +77,10 @@ class GreedyKL(GreedyStrategy):
         return self.mbis_obj.get_kullback_leibler(model)
 
     def get_best_one_function_solution(self):
-        denom = self.grid_obj.integrate(self.mbis_obj.ma_true_mod * np.power(
+        denom = self.grid.integrate(self.mbis_obj.ma_true_mod * np.power(
                 self.mbis_obj.masked_grid_squared, 2.), spherical=True)
-        exps = 3. * self.inte_val / (2. * 4. * np.pi * denom)
-        return np.array([self.inte_val, exps])
+        exps = 3. * self.norm / (2. * 4. * np.pi * denom)
+        return np.array([self.norm, exps])
 
     def get_next_iter_params(self, factor, params):
         coeffs, exps = params[:len(params)//2], params[len(params)//2:]

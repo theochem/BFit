@@ -84,7 +84,7 @@ def test_get_norm_coeffs():
 def test_get_model():
     r"""Test getting the model for 'fitting.kl_divergence.valence_kl'."""
     g = BaseRadialGrid(np.arange(2))
-    kl = GaussianValKL(g, g.points, inte_val=1., numb_val=1)
+    kl = GaussianValKL(g, g.points, norm=1., numb_val=1)
 
     c = np.array([1., 2.])
     e = np.array([3., 4.])
@@ -99,7 +99,7 @@ def test_get_integration_factor_coeffs():
     r"""Test coeffs integration factor for 'fitting.kl_divergence.valence_kl'."""
     g = BaseRadialGrid(np.arange(0., 25, 0.0001))
     m = np.exp(-g.points)
-    kl = GaussianValKL(g, m, inte_val=1., numb_val=1)
+    kl = GaussianValKL(g, m, norm=1., numb_val=1)
 
     c = np.array([1., 2.])
     e = np.array([3., 4.])
@@ -126,7 +126,7 @@ def test_get_integration_factor_exps():
     r"""Test exponent integration factor for 'fitting.kl_divergence.valence_kl'."""
     g = BaseRadialGrid(np.arange(0., 25, 0.0001))
     m = np.exp(-g.points)
-    kl = GaussianValKL(g, m, inte_val=1., numb_val=1)
+    kl = GaussianValKL(g, m, norm=1., numb_val=1)
 
     c = np.array([1., 2.])
     e = np.array([3., 4.])
@@ -155,7 +155,7 @@ def test_updating_coefficients():
     g = BaseRadialGrid(np.arange(0., 25, 0.0001))
     m = np.exp(-g.points)
     integration = simps(m * g.points**2. * 4. * np.pi, g.points)
-    kl = GaussianValKL(g, m, inte_val=integration, numb_val=1)
+    kl = GaussianValKL(g, m, norm=integration, numb_val=1)
     npt.assert_allclose(kl.lagrange_multiplier, 1)
 
     c = np.array([1., 2.])
@@ -183,7 +183,7 @@ def test_updating_exponents():
     g = BaseRadialGrid(np.arange(0., 25, 0.0001))
     m = np.exp(-g.points)
     integration = simps(m * g.points ** 2. * 4. * np.pi, g.points)
-    kl = GaussianValKL(g, m, inte_val=integration, numb_val=1)
+    kl = GaussianValKL(g, m, norm=integration, numb_val=1)
     npt.assert_allclose(kl.lagrange_multiplier, 1)
 
     c = np.array([1., 2.])

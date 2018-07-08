@@ -60,10 +60,10 @@ def test_get_model():
     r"""Test for getting the model for MolecularFitting."""
     grid = CubicGrid(0., 1., 0.25)
     dens_val = np.sum(grid.points, axis=1)
-    inte_val = 1.
+    norm = 1.
     mol_coord = np.array([[0., 0., 0.], [0., 0., 1.]])
     numb_of_params = [1, 2]
-    dens_obj = MolecularFitting(grid, dens_val, inte_val, mol_coord, numb_of_params)
+    dens_obj = MolecularFitting(grid, dens_val, norm, mol_coord, numb_of_params)
 
     c = np.array([1., 2., 3.])
     e = np.array([4., 5., 6.])
@@ -83,10 +83,10 @@ def test_get_molecular_coordinates():
     r"""Test getting molecular coordinates for MolecularFitting."""
     grid = CubicGrid(0., 1., 0.25)
     dens_val = np.sum(grid.points, axis=1)
-    inte_val = 1.
+    norm = 1.
     mol_coord = np.array([[0., 0., 0.], [0., 0., 1.], [20., 3., 2.]])
     numb_of_params = [1, 2, 4]
-    dens_obj = MolecularFitting(grid, dens_val, inte_val, mol_coord, numb_of_params)
+    dens_obj = MolecularFitting(grid, dens_val, norm, mol_coord, numb_of_params)
 
     npt.assert_array_equal(dens_obj.get_mol_coord(0), mol_coord[0])
     npt.assert_array_equal(dens_obj.get_mol_coord(1), mol_coord[1])
@@ -101,10 +101,10 @@ def test_updating_coeffs():
     r"""Test updating coefficients for MolecularFitting."""
     grid = CubicGrid(-2., 2., 0.1)
     dens_val = np.exp(-np.sum(grid.points**2., axis=1))
-    inte_val = np.pi**(3. / 2.)
+    norm = np.pi**(3. / 2.)
     mol_coord = np.array([[0., 0., 0.], [0., 0., 1.]])
     numb_of_params = [1, 1]
-    dens_obj = MolecularFitting(grid, dens_val, inte_val, mol_coord, numb_of_params)
+    dens_obj = MolecularFitting(grid, dens_val, norm, mol_coord, numb_of_params)
     c = np.array([1., 2.])
     e = np.array([3., 4.])
     true_answer = dens_obj._replace_coeffs(c, e)
@@ -127,10 +127,10 @@ def test_updating_exponents():
     r"""Test updating exponents for MolecularFitting"""
     grid = CubicGrid(-2., 2., 0.1)
     dens_val = np.exp(-np.sum(grid.points ** 2., axis=1))
-    inte_val = np.pi ** (3. / 2.)
+    norm = np.pi ** (3. / 2.)
     mol_coord = np.array([[0., 0., 0.], [0., 0., 1.]])
     numb_of_params = [1, 1]
-    dens_obj = MolecularFitting(grid, dens_val, inte_val, mol_coord, numb_of_params)
+    dens_obj = MolecularFitting(grid, dens_val, norm, mol_coord, numb_of_params)
     c = np.array([1., 2.])
     e = np.array([3., 4.])
     true_answer = dens_obj._update_fparams(c, e, False)

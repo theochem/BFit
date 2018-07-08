@@ -44,9 +44,9 @@ class GaussianModel(object):
     Attributes
     ----------
     grid : np.ndarray
-        Grid Points where the 'true_model' is being defined on.
+        Grid Points where the 'density' is being defined on.
 
-    true_model : np.ndarray
+    density : np.ndarray
         The probability distribution that is being fitted to, defined on the 'grid'.
 
     Methods
@@ -54,7 +54,7 @@ class GaussianModel(object):
     create_model(parameters) : Computes the gaussian promolecular density based on the parameters.
 
     cost_function() : Computes the sum of squares of residuals based on the 'create_model' and
-                      'true_model'.
+                      'density'.
 
     derivative_of_cost_function() : Computes the derivative of the 'cost_function'.
 
@@ -63,7 +63,7 @@ class GaussianModel(object):
                               functions.
 
     """
-    def __init__(self, grid, true_model):
+    def __init__(self, grid, density):
         r"""
         Creates the class by providing formula to the DensityModel class.
 
@@ -72,7 +72,7 @@ class GaussianModel(object):
         grid : np.ndarray
                Radial Grid points for the basis set.
 
-        true_model : np.ndarray
+        density : np.ndarray
                     Electron Density to be fitted to. By default, it is the
                     slater densities where the parameters of the slater
                     densities is provided by the file path.
@@ -80,25 +80,25 @@ class GaussianModel(object):
         """
         if not isinstance(grid, np.ndarray):
             raise TypeError("Grid should be a numpy array.")
-        if true_model is not None:
-            if not isinstance(true_model, np.ndarray):
+        if density is not None:
+            if not isinstance(density, np.ndarray):
                 raise TypeError("Electron least_squares should be an array.")
-            if grid.shape != true_model.shape:
+            if grid.shape != density.shape:
                 raise ValueError("Electron least_squares and _grid should be the same "
                                  "size.")
         self._grid = np.ravel(np.copy(grid))
-        self._true_model = np.ravel(true_model)
+        self._density = np.ravel(density)
 
     @property
     def grid(self):
         return self._grid
 
     @property
-    def true_model(self):
-        return self._true_model
+    def density(self):
+        return self._density
 
     def get_residual(self, *args):
-        return self._true_model - self.create_model(*args)
+        return self._density - self.create_model(*args)
 
     def create_model(self, parameters, fixed_params=[], which_opti="b"):
         r"""

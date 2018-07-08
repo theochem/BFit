@@ -54,16 +54,16 @@ def test_create_model():
     # One Coefficient (3.) and one exponent( 2.)
     parameters = np.array([coeff, exponent])
     grid = np.array([1.0])
-    true_model = np.exp(-grid)
+    density = np.exp(-grid)
 
-    model_object = GaussianModel(grid, true_model)
+    model_object = GaussianModel(grid, density)
     model = model_object.create_model(parameters)
     assert np.abs(exponential - model) < 1e-13
 
     # Multiple Value Test with multiple coefficients and exponents.
     grid = np.arange(1, 6)
-    true_model = np.exp(-grid)
-    model_object = GaussianModel(grid, true_model)
+    density = np.exp(-grid)
+    model_object = GaussianModel(grid, density)
     parameters = np.array([2, 2, 2, 4, 5, 1, 2, 3, 4, 5])
     model = model_object.create_model(parameters)
     actual_answer = gaussian_func(parameters[:len(parameters)//2],
@@ -102,46 +102,46 @@ def test_cost_function():
 
     parameters = np.array([coeff, exponent])
     grid = np.array([3.0])
-    true_model = np.exp(-grid)
+    density = np.exp(-grid)
 
-    model_object = GaussianModel(grid, true_model)
-    electron_density = model_object.true_model
+    model_object = GaussianModel(grid, density)
+    electron_density = model_object.density
     desired_answer = (electron_density - model)**2
     actual_answer = model_object.cost_function(parameters, 1)
     npt.assert_allclose(actual_answer, desired_answer)
 
     # Test with multiply points
     grid = np.arange(1., 3.)
-    true_model = np.exp(-grid)
-    model_object = GaussianModel(grid, true_model)
+    density = np.exp(-grid)
+    model_object = GaussianModel(grid, density)
     parameters = np.array([1.0, 2.0, 3.0, 4.0])
     actual_answer = model_object.cost_function(parameters)
     calc_value = np.array([1.0 * np.exp(-3.0 * 1.0**2) + 2.0 * np.exp(-4.0 * 1.0**2),
                            1.0 * np.exp(-3.0 * 2.0**2) + 2.0 * np.exp(-4.0 * 2.0**2)])
-    desired_answer = (model_object.true_model - calc_value)**2.
+    desired_answer = (model_object.density - calc_value)**2.
     npt.assert_allclose(np.sum(desired_answer), actual_answer)
 
 
 def test_residual():
     r"""Test residual function for GaussianModel."""
     grid = np.array([1., 2.])
-    true_model = np.exp(-grid)
-    obj = GaussianModel(grid, true_model)
+    density = np.exp(-grid)
+    obj = GaussianModel(grid, density)
     parameters = np.array([1., 2., 3., 4.])
     actual_answer = obj.get_residual(parameters)
     a = np.exp(-3) + 2. * np.exp(-4)
     b = np.exp(-3 * 2**2) + 2. * np.exp(-4. * 2**2)
-    desired_answer = [obj.true_model[0] - a,
-                      obj.true_model[1] - b]
+    desired_answer = [obj.density[0] - a,
+                      obj.density[1] - b]
     npt.assert_allclose(actual_answer, desired_answer)
 
     grid = np.array([1., 2.], dtype=np.double)
-    true_model = np.exp(-grid, true_model)
+    density = np.exp(-grid, density)
     p = np.array([1., 2., 3., 4.], dtype=np.double)
-    obj = GaussianModel(grid, true_model)
+    obj = GaussianModel(grid, density)
     actual_answer = obj.get_residual(p)
 
-    den = obj.true_model.copy()
+    den = obj.density.copy()
     c = (den - gaussian_func([1., 2.], [3., 4.], grid))
     npt.assert_almost_equal(actual_answer[0], c[0])
     npt.assert_almost_equal(actual_answer[1], c[1])
@@ -153,7 +153,7 @@ def test_derivative_coefficient():
     exps = np.array([3., 4.])
     true_dens = np.exp(-grid)
     obj = GaussianModel(grid, true_dens)
-    dens = obj.true_model
+    dens = obj.density
 
     residual = 2. * np.array([dens[0] - np.exp(-3) - 2. * np.exp(-4),
                               dens[1] - np.exp(-12) - 2. * np.exp(-16)])

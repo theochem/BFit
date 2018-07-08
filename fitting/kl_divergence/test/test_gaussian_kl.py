@@ -127,24 +127,24 @@ def test_get_integration_factor_exps():
     r"""Test getting integration factor for updating exponents."""
     coeff = np.array([5., 3.])
     exps = np.array([10., 8])
-    grid = np.arange(0., 5, 1e-3)
-    grid_obj = BaseRadialGrid(grid)
-    tmod = np.exp(-grid)
-    kl = GaussianKullbackLeibler(grid_obj, tmod, inte_val=1)
+    points = np.arange(0., 5, 1e-3)
+    grid = BaseRadialGrid(points)
+    tmod = np.exp(-points)
+    kl = GaussianKullbackLeibler(grid, tmod, norm=1)
 
-    model = coeff[0] * ((exps[0] / np.pi) ** (3. / 2.)) * np.exp(-exps[0] * grid ** 2.) + \
-        coeff[1] * ((exps[1] / np.pi) ** (3. / 2.)) * np.exp(-exps[1] * grid ** 2.)
+    model = coeff[0] * ((exps[0] / np.pi) ** (3. / 2.)) * np.exp(-exps[0] * points ** 2.) + \
+        coeff[1] * ((exps[1] / np.pi) ** (3. / 2.)) * np.exp(-exps[1] * points ** 2.)
     true_answer = kl.get_inte_factor(exps[0], model, True)
     true_answer2 = kl.get_inte_factor(exps[1], model, True)
 
     # Test with using simpson and masked array
-    integrand = tmod * np.exp(-exps[0] * grid ** 2.) * grid ** 4. / model
-    desired_answer1 = simps(integrand, grid)
+    integrand = tmod * np.exp(-exps[0] * points ** 2.) * points ** 4. / model
+    desired_answer1 = simps(integrand, points)
     desired_answer1 *= 4. * np.pi * (exps[0] / np.pi) ** (3. / 2.)
     npt.assert_allclose(true_answer, desired_answer1)
 
-    integrand = tmod * np.exp(-exps[1] * grid ** 2.) * grid ** 4. / model
-    desired_answer2 = simps(integrand, grid)
+    integrand = tmod * np.exp(-exps[1] * points ** 2.) * points ** 4. / model
+    desired_answer2 = simps(integrand, points)
     desired_answer2 *= 4. * np.pi * (exps[1] / np.pi) ** (3. / 2.)
     npt.assert_allclose(true_answer2, desired_answer2)
 
@@ -168,7 +168,7 @@ def test_update_coeff():
     e = np.array([10., 3.])
     g = BaseRadialGrid(np.arange(0., 9, 0.001))
     e2 = np.exp(-g.points)
-    kl = GaussianKullbackLeibler(g, e2, inte_val=5.)
+    kl = GaussianKullbackLeibler(g, e2, norm=5.)
 
     model = c[0] * (e[0] / np.pi) ** (3. / 2.) * np.exp(-e[0] * g.points ** 2.) + \
         c[1] * (e[1] / np.pi) ** (3. / 2.) * np.exp(-e[1] * g.points ** 2.)
@@ -193,7 +193,7 @@ def test_update_func_params():
     e = np.array([10., 3.])
     g = BaseRadialGrid(np.arange(0., 13, 0.001))
     e2 = np.exp(-g.points)
-    kl = GaussianKullbackLeibler(g, e2, inte_val=5.)
+    kl = GaussianKullbackLeibler(g, e2, norm=5.)
 
     model = c[0] * (e[0] / np.pi) ** (3. / 2.) * np.exp(-e[0] * g.points ** 2.) + \
         c[1] * (e[1] / np.pi) ** (3. / 2.) * np.exp(-e[1] * g.points ** 2.)
@@ -227,8 +227,8 @@ def test_update_func_params():
 
     # Assume With Convergence
     true_answer = kl._update_fparams(c, e, True)
-    desired_answer1 = 3. * kl.inte_val / (2. * desired_answer_den1)
-    desired_answer2 = 3. * kl.inte_val / (2. * desired_answer_den)
+    desired_answer1 = 3. * kl.norm / (2. * desired_answer_den1)
+    desired_answer2 = 3. * kl.norm / (2. * desired_answer_den)
     npt.assert_allclose(true_answer, [desired_answer1, desired_answer2],
                         rtol=1e-2)
 
@@ -237,7 +237,7 @@ def test_update_errors():
     r"""Test updating errors for kullback-leibler method."""
     g = BaseRadialGrid(np.arange(0., 10, 0.001))
     e = np.exp(-g.points)
-    kl = GaussianKullbackLeibler(g, e, inte_val=1.)
+    kl = GaussianKullbackLeibler(g, e, norm=1.)
     counter = 10
 
     c = np.array([5.])
@@ -250,7 +250,7 @@ def test_run():
     r"""Test the optimization algorithm for gaussian kullback-leibler method."""
     g = BaseRadialGrid(np.arange(0., 10, 0.001))
     e = (1 / np.pi) ** 1.5 * np.exp(-g.points ** 2.)
-    kl = GaussianKullbackLeibler(g, e, inte_val=1.)
+    kl = GaussianKullbackLeibler(g, e, norm=1.)
 
     # Test One Basis Function
     c = np.array([1.])
