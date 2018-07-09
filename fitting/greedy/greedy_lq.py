@@ -35,7 +35,7 @@ __all__ = ["GreedyLeastSquares"]
 class GreedyLeastSquares(GreedyStrategy):
     def __init__(self, grid_obj, true_model, splitting_func=get_next_choices,
                  factor=2):
-        self.gauss_obj = GaussianBasisSet(grid_obj.radii, true_model)
+        self.gauss_obj = GaussianBasisSet(grid_obj.points, true_model)
         self.grid_obj = grid_obj
         self.factor = factor
         self.splitting_func = splitting_func
@@ -50,13 +50,13 @@ class GreedyLeastSquares(GreedyStrategy):
 
     def _solve_one_function_weight(self, weight):
         a = 2.0 * np.sum(weight)
-        sum_of_grid_squared = np.sum(weight * np.power(self.grid_obj.radii, 2))
+        sum_of_grid_squared = np.sum(weight * np.power(self.grid_obj.points, 2))
         b = 2.0 * sum_of_grid_squared
         sum_ln_electron_density = np.sum(weight * np.log(self.true_model))
         c = 2.0 * sum_ln_electron_density
         d = b
-        e = 2.0 * np.sum(weight * np.power(self.grid_obj.radii, 4))
-        f = 2.0 * np.sum(weight * np.power(self.grid_obj.radii, 2) *
+        e = 2.0 * np.sum(weight * np.power(self.grid_obj.points, 4))
+        f = 2.0 * np.sum(weight * np.power(self.grid_obj.points, 2) *
                          np.log(self.true_model))
         big_a = (b * f - c * e) / (b * d - a * e)
         big_b = (a * f - c * d) / (a * e - b * d)
@@ -66,7 +66,7 @@ class GreedyLeastSquares(GreedyStrategy):
 
     def get_best_one_function_solution(self):
         # Minimizing weighted least squares with three different weights
-        weight1 = np.ones(len(self.grid_obj.radii))
+        weight1 = np.ones(len(self.grid_obj.points))
         weight3 = np.power(self.true_model, 2.)
         p1 = self._solve_one_function_weight(weight1)
         cost_func1 = self.gauss_obj.cost_function(p1)
@@ -89,7 +89,7 @@ class GreedyLeastSquares(GreedyStrategy):
                                                                       self.ugbs)
             exp_choice3 = self.gauss_obj.generation_of_UGBS_exponents(1.75,
                                                                       self.ugbs)
-            grid_squared = self.grid_obj.radii**2.
+            grid_squared = self.grid_obj.points**2.
             best_found = None
             for exp in np.append((exp_choice1, exp_choice2, exp_choice3)):
                 num = np.sum(self.true_model * np.exp(-exp * grid_squared))

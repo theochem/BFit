@@ -33,7 +33,7 @@ __all__ = []
 def test_input_checks():
     r"""Test for input checks for MolecularFitting."""
     true_a = CubicGrid(0., 1., 0.5)
-    true_b = np.sum(true_a.grid, axis=1)
+    true_b = np.sum(true_a.points, axis=1)
     true_c = 5.
     true_d = np.array([[1., 1., 1.], [2., 2., 2.], [3., 3., 3.], [4., 4., 4.]])
     true_e = [5, 2, 3, 5]
@@ -53,13 +53,13 @@ def test_input_checks():
     params_not_same = [5., 2.]
     npt.assert_raises(ValueError, MolecularFitting, true_a, true_b, true_c, true_d, params_not_same)
 
-    npt.assert_raises(ValueError, MolecularFitting, true_a, true_a.grid, true_c, true_d, true_e)
+    npt.assert_raises(ValueError, MolecularFitting, true_a, true_a.points, true_c, true_d, true_e)
 
 
 def test_get_model():
     r"""Test for getting the model for MolecularFitting."""
     grid = CubicGrid(0., 1., 0.25)
-    dens_val = np.sum(grid.grid, axis=1)
+    dens_val = np.sum(grid.points, axis=1)
     inte_val = 1.
     mol_coord = np.array([[0., 0., 0.], [0., 0., 1.]])
     numb_of_params = [1, 2]
@@ -69,8 +69,8 @@ def test_get_model():
     e = np.array([4., 5., 6.])
     true_answer = dens_obj.get_model(c, e)
 
-    radial_1 = np.sum((grid.grid - mol_coord[0])**2., axis=1)
-    radial_2 = np.sum((grid.grid - mol_coord[1])**2., axis=1)
+    radial_1 = np.sum((grid.points - mol_coord[0])**2., axis=1)
+    radial_2 = np.sum((grid.points - mol_coord[1])**2., axis=1)
     c1 = c[0] * (e[0] / np.pi)**(3. / 2.)
     c2 = c[1] * (e[1] / np.pi)**(3. / 2.)
     c3 = c[2] * (e[2] / np.pi)**(3. / 2.)
@@ -82,7 +82,7 @@ def test_get_model():
 def test_get_molecular_coordinates():
     r"""Test getting molecular coordinates for MolecularFitting."""
     grid = CubicGrid(0., 1., 0.25)
-    dens_val = np.sum(grid.grid, axis=1)
+    dens_val = np.sum(grid.points, axis=1)
     inte_val = 1.
     mol_coord = np.array([[0., 0., 0.], [0., 0., 1.], [20., 3., 2.]])
     numb_of_params = [1, 2, 4]
@@ -100,7 +100,7 @@ def test_get_molecular_coordinates():
 def test_updating_coeffs():
     r"""Test updating coefficients for MolecularFitting."""
     grid = CubicGrid(-2., 2., 0.1)
-    dens_val = np.exp(-np.sum(grid.grid**2., axis=1))
+    dens_val = np.exp(-np.sum(grid.points**2., axis=1))
     inte_val = np.pi**(3. / 2.)
     mol_coord = np.array([[0., 0., 0.], [0., 0., 1.]])
     numb_of_params = [1, 1]
@@ -109,8 +109,8 @@ def test_updating_coeffs():
     e = np.array([3., 4.])
     true_answer = dens_obj._replace_coeffs(c, e)
 
-    radial_1 = np.sum((grid.grid - mol_coord[0])**2., axis=1)
-    radial_2 = np.sum((grid.grid - mol_coord[1])**2., axis=1)
+    radial_1 = np.sum((grid.points - mol_coord[0])**2., axis=1)
+    radial_2 = np.sum((grid.points - mol_coord[1])**2., axis=1)
     promol = c[0] * (e[0] / np.pi)**1.5 * np.exp(-e[0] * radial_1) + \
         c[1] * (e[1] / np.pi)**1.5 * np.exp(-e[1] * radial_2)
 
@@ -126,7 +126,7 @@ def test_updating_coeffs():
 def test_updating_exponents():
     r"""Test updating exponents for MolecularFitting"""
     grid = CubicGrid(-2., 2., 0.1)
-    dens_val = np.exp(-np.sum(grid.grid ** 2., axis=1))
+    dens_val = np.exp(-np.sum(grid.points ** 2., axis=1))
     inte_val = np.pi ** (3. / 2.)
     mol_coord = np.array([[0., 0., 0.], [0., 0., 1.]])
     numb_of_params = [1, 1]
@@ -135,8 +135,8 @@ def test_updating_exponents():
     e = np.array([3., 4.])
     true_answer = dens_obj._update_fparams(c, e, False)
 
-    radial_1 = np.sum((grid.grid - mol_coord[0]) ** 2., axis=1)
-    radial_2 = np.sum((grid.grid - mol_coord[1]) ** 2., axis=1)
+    radial_1 = np.sum((grid.points - mol_coord[0]) ** 2., axis=1)
+    radial_2 = np.sum((grid.points - mol_coord[1]) ** 2., axis=1)
     promol = c[0] * (e[0] / np.pi) ** 1.5 * np.exp(-e[0] * radial_1) + \
         c[1] * (e[1] / np.pi) ** 1.5 * np.exp(-e[1] * radial_2)
 
