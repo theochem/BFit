@@ -36,7 +36,11 @@ class GaussianModel(object):
         Parameters
         ----------
         points : ndarray, (N,)
-            The grid points to evaluate model density & its derivatives.
+            The grid points.
+        normalized : bool, optional
+            Whether to normalize Gaussian basis functions.
+        basis : str, optional
+            The type of Gaussian. The options are "s", "p", "sp".
         """
         if not isinstance(points, np.ndarray) or points.ndim != 1:
             raise TypeError("Arguments points should be a 1D numpy array.")
@@ -51,7 +55,7 @@ class GaussianModel(object):
         return self._points
 
     def evaluate(self, coeffs, expons, deriv=False):
-        """Compute linear combination of Gaussian basis and its derivatives on grid points.
+        """Compute linear combination of Gaussian basis and its derivatives on the grid points.
 
         .. math::
 
@@ -62,14 +66,16 @@ class GaussianModel(object):
         expons : ndarray, (M,)
             The exponents of Gaussian basis functions.
         deriv : bool, optional
-            Whether to normalize Gaussian basis functions.
+            Whether to compute derivative of Gaussian basis functions w.r.t. coefficients &
+            exponents.
+
         Returns
         -------
         g : ndarray, (N,)
             The linear combination of Gaussian basis functions evaluated on the grid points.
         dg : ndarray, (N, 2*M)
-            The derivative of linear combination of Gaussian basis functions w.r.t. coeffs
-            (the 1st M columns) & expons (the 2nd M columns) evaluated on the grid points.
+            The derivative of linear combination of Gaussian basis functions w.r.t. coefficients
+            (the 1st M columns) & exponents (the 2nd M columns) evaluated on the grid points.
             Only returned if `deriv=True`.
         """
         if coeffs.ndim != 1 or expons.ndim != 1:
