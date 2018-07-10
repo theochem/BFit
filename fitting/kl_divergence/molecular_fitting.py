@@ -96,28 +96,9 @@ class MolecularFitting(object):
             New normalized coefficients.
 
         """
-        return coeff_arr * self.get_norm_consts(exp_arr)
+        return coeff_arr * (exp_arr / np.pi) ** (3./2.)
 
-    def get_norm_consts(self, exp_arr):
-        r"""
-        These are normalization constants for gaussian basis set.
-
-        In order words, this is the inverse of the number you get
-        from integrating a gaussian function over the positive reals.
-
-        Parameters
-        ----------
-        exp_arr : np.ndarray
-                  Exponents of the gaussian function.
-
-        Returns
-        -------
-        np.ndarray
-                  Normalization constants.
-        """
-        return np.array([self._get_norm_constant(x) for x in exp_arr])
-
-    def get_model(self, coeffs, fparams):
+    def evaluate(self, coeffs, fparams):
         r"""
         Returns the gaussian molecular density situated at each atom's coordinates.
 
@@ -182,7 +163,7 @@ class MolecularFitting(object):
         integrand = ratio * np.ma.asarray(np.exp(-exponent * grid_squared))
         if upt_exponent:
             integrand = integrand * grid_squared
-        return self._get_norm_constant(exponent) * self.grid.integrate(integrand)
+        return (exponent / np.pi) ** (3./2.) * self.grid.integrate(integrand)
 
     def get_mol_coord(self, index):
         r"""
@@ -227,18 +208,12 @@ class MolecularFitting(object):
             Updated gaussian coefficients for the next iteration.
 
         """
-        gaussian = ma.asarray(self.get_model(coeff_arr, exp_arr))
+        gaussian = ma.asarray(self.evaluate(coeff_arr, exp_arr))
         new_coeff = coeff_arr.copy()
         for i in range(0, len(coeff_arr)):
             mol = self.get_mol_coord(i)
             new_coeff[i] *= self.get_inte_factor(exp_arr[i], gaussian, mol)
         return new_coeff / lm
-
-    def _get_norm_constant(self, exponent):
-        r"""
-        Normalization constant for a single gaussian function integrated over real space.
-        """
-        return (exponent / np.pi) ** (3./2.)
 
     def _update_fparams(self, coeff_arr, exp_arr, lm, with_convergence=True):
         r"""
@@ -264,7 +239,7 @@ class MolecularFitting(object):
             Optimized exponents, where K is the number of gaussian parameters.
 
         """
-        masked_normed_gaussian = np.ma.asarray(self.get_model(coeff_arr, exp_arr)).copy()
+        masked_normed_gaussian = np.ma.asarray(self.evaluate(coeff_arr, exp_arr)).copy()
 
         new_exps = exp_arr.copy()
         for i in range(0, len(exp_arr)):
