@@ -24,7 +24,6 @@ r"""File contains algorithms responsible for fitting a molecular density to gaus
 import numpy as np
 import numpy.ma as ma
 from numbers import Real
-from fitting.kl_divergence.kull_leib_fitting import KullbackLeiblerFitting
 from fitting.grid import CubicGrid
 
 __all__ = ["MolecularFitting"]

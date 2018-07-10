@@ -24,17 +24,17 @@ r"""Test file for 'fitting.divergence_fitting.gaussian_kl"""
 import numpy as np
 import numpy.testing as npt
 from scipy.integrate import simps, quad
-from fitting.kl_divergence.gaussian_kl import GaussianKullbackLeibler
 from fitting.grid import BaseRadialGrid
+from fitting.model import GaussianModel
+from fitting.kl_divergence.kull_leib_fitting import KullbackLeiblerFitting
 
 
 def test_get_model():
     coeff = np.array([5., 2., 3., 50.])
     expon = np.array([10., 3., 2., 1.])
     g = BaseRadialGrid(np.arange(0., 10.))
-    e = np.array(g.points * 5.)
-    kl = GaussianKullbackLeibler(g, e)
-    true_answer = kl.get_model(coeff, expon, True)
+    kl = GaussianModel(g.points, num_s=4, num_p=0, normalized=True)
+    true_answer = kl.evaluate(coeff, expon)
     normalized_coeffs = np.array([coeff[0] * (expon[0] / np.pi) ** (3. / 2.),
                                   coeff[1] * (expon[1] / np.pi) ** (3. / 2.),
                                   coeff[2] * (expon[2] / np.pi) ** (3. / 2.),
@@ -50,7 +50,8 @@ def test_get_integration_factor_coeffs():
     e = np.array([10., 3.])
     g = BaseRadialGrid(np.arange(0., 25, 1e-4))
     e2 = np.exp(-g.points)
-    kl = GaussianKullbackLeibler(g, e2)
+    m = GaussianModel(g.points, num_s=2, num_p=0, normalized=True)
+    kl = KullbackLeiblerFitting(g, e2, m)
 
     # Integration Factor for updating coefficient.
     model = c[0] * (e[0] / np.pi) ** (3. / 2.) * np.exp(-e[0] * g.points ** 2.) + \
@@ -96,7 +97,8 @@ def test_get_integration_factor_exps():
     points = np.arange(0., 5, 1e-3)
     grid = BaseRadialGrid(points)
     tmod = np.exp(-points)
-    kl = GaussianKullbackLeibler(grid, tmod)
+    m = GaussianModel(grid.points, num_s=2, num_p=0, normalized=True)
+    kl = KullbackLeiblerFitting(grid, tmod, m)
 
     model = coeff[0] * ((exps[0] / np.pi) ** (3. / 2.)) * np.exp(-exps[0] * points ** 2.) + \
         coeff[1] * ((exps[1] / np.pi) ** (3. / 2.)) * np.exp(-exps[1] * points ** 2.)
@@ -135,10 +137,11 @@ def test_update_coeff():
     g = BaseRadialGrid(np.arange(0., 9, 0.001))
     e2 = np.exp(-g.points)
     lm = g.integrate(e2, spherical=True) / 5.0
-    kl = GaussianKullbackLeibler(g, e2)
+    m = GaussianModel(g.points, num_s=2, num_p=0, normalized=True)
+    kl = KullbackLeiblerFitting(g, e2, m)
 
     model = c[0] * (e[0] / np.pi) ** (3. / 2.) * np.exp(-e[0] * g.points ** 2.) + \
-        c[1] * (e[1] / np.pi) ** (3. / 2.) * np.exp(-e[1] * g.points ** 2.)
+            c[1] * (e[1] / np.pi) ** (3. / 2.) * np.exp(-e[1] * g.points ** 2.)
     true_answer = kl._update_coeffs(c, e, lm)
 
     desired_ans = c.copy()
@@ -161,7 +164,8 @@ def test_update_func_params():
     g = BaseRadialGrid(np.arange(0., 13, 0.001))
     e2 = np.exp(-g.points)
     lm = g.integrate(e2, spherical=True) / 5.0
-    kl = GaussianKullbackLeibler(g, e2)
+    m = GaussianModel(g.points, num_s=2, num_p=0, normalized=True)
+    kl = KullbackLeiblerFitting(g, e2, m)
 
     model = c[0] * (e[0] / np.pi) ** (3. / 2.) * np.exp(-e[0] * g.points ** 2.) + \
         c[1] * (e[1] / np.pi) ** (3. / 2.) * np.exp(-e[1] * g.points ** 2.)

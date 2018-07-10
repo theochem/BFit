@@ -86,7 +86,7 @@ class KullbackLeiblerFitting(object):
         return self._lagrange_multiplier
 
     def _update_errors(self, coeffs, exps, c, iprint, update_p=False):
-        model = self.model.get_model(coeffs, exps)
+        model = self.model.evaluate(coeffs, exps)
         errors = self.goodness_of_fit(model)
         if iprint:
             if update_p:
@@ -97,12 +97,66 @@ class KullbackLeiblerFitting(object):
         return c + 1
 
     def _replace_coeffs(self, coeff_arr, exp_arr):
-        new_coeff = self.model._update_coeffs(coeff_arr, exp_arr, self.lagrange_multiplier)
+        new_coeff = self._update_coeffs(coeff_arr, exp_arr, self.lagrange_multiplier)
         return new_coeff, coeff_arr
 
     def _replace_fparams(self, coeff_arr, exp_arr):
-        new_exps = self.model._update_fparams(coeff_arr, exp_arr, self.lagrange_multiplier)
+        new_exps = self._update_fparams(coeff_arr, exp_arr, self.lagrange_multiplier)
         return new_exps, exp_arr
+
+    def get_inte_factor(self, exponent, masked_normed_gaussian, upt_exponent=False):
+        r"""
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        """
+        if self.model.num_p == 0:
+            ratio = self.weights * self.density / masked_normed_gaussian
+            grid_squared = self.grid.points**2.
+            integrand = ratio * np.ma.asarray(np.exp(-exponent * grid_squared))
+            if upt_exponent:
+                integrand = integrand * self.grid.points**2
+            return (exponent / np.pi)**(3./2.) * self.grid.integrate(integrand, spherical=True)
+
+    def _update_coeffs(self, coeff_arr, exp_arr, lm):
+        r"""
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        """
+        if self.model.num_p == 0:
+            gaussian = ma.asarray(self.model.evaluate(coeff_arr, exp_arr))
+            new_coeff = coeff_arr.copy()
+            for i in range(0, len(coeff_arr)):
+                new_coeff[i] *= self.get_inte_factor(exp_arr[i], gaussian)
+            return new_coeff / lm
+
+    def _update_fparams(self, coeff_arr, exp_arr, lm, with_convergence=True):
+        r"""
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        """
+        if self.model.num_p == 0:
+            masked_normed_gaussian = np.ma.asarray(self.model.evaluate(coeff_arr, exp_arr)).copy()
+            new_exps = exp_arr.copy()
+            for i in range(0, len(exp_arr)):
+                if with_convergence:
+                    new_exps[i] = 3. * lm
+                else:
+                    new_exps[i] = 3. * self.get_inte_factor(exp_arr[i], masked_normed_gaussian)
+                integration = self.get_inte_factor(exp_arr[i], masked_normed_gaussian, True)
+                new_exps[i] /= (2. * integration)
+            return new_exps
 
     def run(self, eps_coeff, eps_fparam, coeffs, fparams, iprint=False, iplot=False):
         r"""
@@ -201,5 +255,5 @@ class KullbackLeiblerFitting(object):
         params : np.ndarray
             Coefficients and Function parameters appended together.
         """
-        model = self.model.get_model(params[:len(params)//2], params[len(params)//2:])
+        model = self.model.evaluate(params[:len(params)//2], params[len(params)//2:])
         return self.get_kullback_leibler(model)

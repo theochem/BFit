@@ -32,97 +32,10 @@ Note that being a probability distribution means it is integrable.
 
 from __future__ import division
 import numpy as np
-import numpy.ma as ma
 from numbers import Integral
-from fitting.kl_divergence.kull_leib_fitting import KullbackLeiblerFitting
-
-__all__ = ["GaussianKullbackLeibler", "GaussianValKL"]
 
 
-class GaussianKullbackLeibler(object):
-    r"""
-
-    """
-    def __init__(self, grid, density, weights=None):
-        r"""
-
-        Parameters
-        ----------
-
-
-        """
-        self.grid = grid
-        self.density = density
-        if weights is None:
-            weights = np.ones_like(self.density)
-        self.weights = weights
-
-    def get_model(self, coeff_arr, exp_arr, norm=True):
-        r"""
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-        """
-        exponential = np.exp(-exp_arr * np.power(self.grid.points[:, None], 2.))
-        if norm:
-            coeff_arr = coeff_arr * (exp_arr / np.pi)**(3./2.)
-        normalized_gaussian_density = np.dot(exponential, coeff_arr)
-        return normalized_gaussian_density
-
-    def get_inte_factor(self, exponent, masked_normed_gaussian, upt_exponent=False):
-        r"""
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-        """
-        ratio = self.weights * self.density / masked_normed_gaussian
-        grid_squared = self.grid.points**2.
-        integrand = ratio * np.ma.asarray(np.exp(-exponent * grid_squared))
-        if upt_exponent:
-            integrand = integrand * self.grid.points**2
-        return (exponent / np.pi)**(3./2.) * self.grid.integrate(integrand, spherical=True)
-
-    def _update_coeffs(self, coeff_arr, exp_arr, lm):
-        r"""
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-        """
-        gaussian = ma.asarray(self.get_model(coeff_arr, exp_arr))
-        new_coeff = coeff_arr.copy()
-        for i in range(0, len(coeff_arr)):
-            new_coeff[i] *= self.get_inte_factor(exp_arr[i], gaussian)
-        return new_coeff / lm
-
-    def _update_fparams(self, coeff_arr, exp_arr, lm, with_convergence=True):
-        r"""
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-        """
-        masked_normed_gaussian = np.ma.asarray(self.get_model(coeff_arr, exp_arr)).copy()
-
-        new_exps = exp_arr.copy()
-        for i in range(0, len(exp_arr)):
-            if with_convergence:
-                new_exps[i] = 3. * lm
-            else:
-                new_exps[i] = 3. * self.get_inte_factor(exp_arr[i], masked_normed_gaussian)
-            integration = self.get_inte_factor(exp_arr[i], masked_normed_gaussian, True)
-            new_exps[i] /= (2. * integration)
-        return new_exps
+__all__ = ["GaussianValKL"]
 
 
 class GaussianValKL(object):
@@ -178,9 +91,7 @@ class GaussianValKL(object):
         return const * self.grid.integrate(integrand, spherical=True)
 
     def _update_coeffs(self, coeffs, fparams, lm):
-        print("lm = ", lm)
         gaussian_model = self.get_model(coeffs, fparams)
-        print("gm = ", gaussian_model)
         new_coeff = coeffs.copy()
         val = False
         for i in range(0, len(coeffs)):

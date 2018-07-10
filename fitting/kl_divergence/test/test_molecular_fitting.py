@@ -55,7 +55,7 @@ def test_input_checks():
     npt.assert_raises(ValueError, MolecularFitting, true_a, true_a.points, true_c, true_d, true_e)
 
 
-def test_get_model():
+def test_evaluate():
     r"""Test for getting the model for MolecularFitting."""
     grid = CubicGrid(0., 1., 0.25)
     dens_val = np.sum(grid.points, axis=1)
@@ -66,7 +66,7 @@ def test_get_model():
 
     c = np.array([1., 2., 3.])
     e = np.array([4., 5., 6.])
-    true_answer = dens_obj.get_model(c, e)
+    true_answer = dens_obj.evaluate(c, e)
 
     radial_1 = np.sum((grid.points - mol_coord[0])**2., axis=1)
     radial_2 = np.sum((grid.points - mol_coord[1])**2., axis=1)

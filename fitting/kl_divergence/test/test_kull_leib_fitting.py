@@ -24,8 +24,8 @@ r"""Test file for 'fitting.mbis.mbis_abc'"""
 
 import numpy as np
 import numpy.testing as npt
+from fitting.model import GaussianModel
 from fitting.kl_divergence.kull_leib_fitting import KullbackLeiblerFitting
-from fitting.kl_divergence.gaussian_kl import GaussianKullbackLeibler
 from fitting.grid import BaseRadialGrid, ClenshawRadialGrid
 
 
@@ -95,7 +95,7 @@ def test_get_kullback_leibler():
     # Test same probabiltiy distribution
     g = BaseRadialGrid(np.arange(0., 26, 0.01))
     e = np.exp(-g.points**2.)
-    model = GaussianKullbackLeibler(g, e, weights=None)
+    model = GaussianModel(g.points, num_s=1, num_p=0, normalized=False)
     kl = KullbackLeiblerFitting(g, e, model, weights=None)
     true_answer = kl.get_kullback_leibler(e)
     npt.assert_allclose(true_answer, 0.)
@@ -111,7 +111,7 @@ def test_get_descriptors_of_model():
     r"""Test get descriptors of model."""
     g = BaseRadialGrid(np.arange(0., 10, 0.001))
     e = np.exp(-g.points)
-    model = GaussianKullbackLeibler(g, e, weights=None)
+    model = GaussianModel(g.points, num_s=1, num_p=0, normalized=False)
     kl = KullbackLeiblerFitting(g, e, model, weights=None, norm=1.)
     aprox = np.exp(-g.points**2.)
     true_answer = kl.goodness_of_fit(aprox)
@@ -123,7 +123,7 @@ def test_update_errors():
     g = BaseRadialGrid(np.arange(0., 10, 0.001))
     e = np.exp(-g.points)
     lm = g.integrate(e, spherical=True) / 1.0
-    m = GaussianKullbackLeibler(g, e)
+    m = GaussianModel(g.points, num_s=1, num_p=0, normalized=False)
     kl = KullbackLeiblerFitting(g, e, m, norm=1.0, weights=None)
     counter = 10
     c = np.array([5.])
@@ -135,8 +135,8 @@ def test_update_errors():
 def test_run():
     g = BaseRadialGrid(np.arange(0., 10, 0.001))
     e = (1 / np.pi) ** 1.5 * np.exp(-g.points ** 2.)
-    m = GaussianKullbackLeibler(g, e)
-    kl = KullbackLeiblerFitting(g, e, m, norm=1.0, weights=None)
+    model = GaussianModel(g.points, num_s=1, num_p=0, normalized=True)
+    kl = KullbackLeiblerFitting(g, e, model, norm=1.0, weights=None)
 
     # Test One Basis Function
     c = np.array([1.])

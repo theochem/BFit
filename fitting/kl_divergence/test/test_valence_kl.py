@@ -26,6 +26,7 @@ import numpy.testing as npt
 from scipy.integrate import trapz, simps
 from fitting.grid import BaseRadialGrid
 from fitting.kl_divergence.gaussian_kl import GaussianValKL
+from fitting.model import GaussianModel
 
 
 def test_input_valence():
@@ -75,11 +76,11 @@ def test_get_norm_coeffs():
 def test_get_model():
     r"""Test getting the model for 'fitting.kl_divergence.valence_kl'."""
     g = BaseRadialGrid(np.arange(2))
-    kl = GaussianValKL(g, g.points, numb_val=1)
+    kl = GaussianModel(g.points, num_s=1, num_p=1, normalized=True)
 
     c = np.array([1., 2.])
     e = np.array([3., 4.])
-    true_answer = kl.get_model(c, e)
+    true_answer = kl.evaluate(c, e)
     g_s = g.points**2.
     desired_answer = (3 / np.pi)**1.5 * np.exp(-3 * g_s) + \
                      (4 * 4**(5. / 2) / (3 * np.pi**1.5)) * g_s * np.exp(-4. * g_s)
