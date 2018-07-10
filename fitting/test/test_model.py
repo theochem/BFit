@@ -91,15 +91,15 @@ def test_gaussian_1s_one_point():
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # test one (un)normalized s-type gaussian on one point against sympy
     coeffs, expons = np.array([3.15]), np.array([1.75])
-    # un-normalized at r=1.5
+    # un-normalized at r=-1.5
     g, dg = np.array([0.0614152227]), np.array([[0.0194968961, -0.1381842511]])
-    model = GaussianModel(np.array([1.5]), 1, 0, normalized=False)
+    model = GaussianModel(np.array([-1.5]), 1, 0, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
-    # normalized at r=1.5
+    # normalized at r=-1.5
     g, dg = np.array([0.0255333792]), np.array([[0.0081058346, -0.0355643496]])
-    model = GaussianModel(np.array([1.5]), 1, 0, normalized=True)
+    model = GaussianModel(np.array([-1.5]), 1, 0, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -122,11 +122,11 @@ def test_gaussian_1s_multiple_point():
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # test one (un)normalized s-type gaussian on multiple point against sympy
     coeffs, expons = np.array([5.25]), np.array([0.8])
-    # un-normalized r=[0., 1.5, 2.2, 3.1, 10.]
+    # un-normalized r=[0., 1.5, -2.2, 3.1, 10.]
     g = np.array([5.25, 0.8678191632, 0.1092876455, 0.0024060427, 0.0])
     dg = np.array([[1.0, 0.0], [0.1652988882, -1.9525931171], [0.0208166944, -0.5289522041],
                    [0.0004582938, -0.0231220701], [0.0, 0.0]])
-    model = GaussianModel(np.array([0., 1.5, 2.2, 3.1, 10.]), 1, 0, normalized=False)
+    model = GaussianModel(np.array([0., 1.5, -2.2, 3.1, 10.]), 1, 0, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -134,7 +134,7 @@ def test_gaussian_1s_multiple_point():
     g = np.array([0.6746359418, 0.1115165711, 0.0140436902, 0.0003091815, 0.0])
     dg = np.array([[0.1285020841, 1.2649423908], [0.0212412516, -0.0418187142],
                    [0.0026749886, -0.0416395415], [5.88917e-05, -0.0023915189], [0.0, 0.0]])
-    model = GaussianModel(np.array([0., 1.5, 2.2, 3.1, 10.]), 1, 0, normalized=True)
+    model = GaussianModel(np.array([0., 1.5, -2.2, 3.1, 10.]), 1, 0, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -175,17 +175,17 @@ def test_gaussian_xs_origin():
 def test_gaussian_xs_one_point():
     # test multiple (un)normalized s-type gaussian on one point against sympy
     coeffs, expons = np.array([0.0, 1.0, 0.0, 3.5]), np.array([0.0, 0.0, 2.0, 0.5])
-    # un-normalized at r=1.
+    # un-normalized at r=-1.
     g = np.array([3.12285730899422])
     dg = np.array([[1, 1, 0.1353352832, 0.606530659712633, 0., -1., 0., -2.1228573089]])
-    model = GaussianModel(np.array([1.]), 4, 0, normalized=False)
+    model = GaussianModel(np.array([-1.]), 4, 0, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
-    # normalized at r=1.
+    # normalized at r=-1.
     g = np.array([0.1347879291])
     dg = np.array([[0., 0., 0.0687434336, 0.0385108368, 0., 0., 0., 0.2695758582]])
-    model = GaussianModel(np.array([1.]), 4, 0, normalized=True)
+    model = GaussianModel(np.array([-1.]), 4, 0, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -207,7 +207,7 @@ def test_gaussian_xs_one_point():
 
 def test_gaussian_xs_multiple_point():
     # test multiple (un)normalized s-type gaussian on multiple points against sympy
-    points = np.array([0.0, 2.67, 0.43, 5.1])
+    points = np.array([0.0, -2.67, 0.43, 5.1])
     coeffs = np.array([2.0, 0.02, 1.51])
     expons = np.array([6.1, 0.19, 7.67])
     # un-normalized
@@ -267,15 +267,15 @@ def test_gaussian_1p_origin():
 def test_gaussian_1p_one_point():
     # test one (un)normalized p-type gaussian on one point against sympy
     coeffs, expons = np.array([3.]), np.array([0.])
-    # un-normalized at r=1.
+    # un-normalized at r=-1.
     g, dg = np.array([3.]), np.array([[1., -3.]])
-    model = GaussianModel(np.array([1.]), 0, 1, normalized=False)
+    model = GaussianModel(np.array([-1.]), 0, 1, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
-    # normalized at r=1.
+    # normalized at r=-1.
     g, dg = np.array([0.]), np.array([[0., 0.]])
-    model = GaussianModel(np.array([1.]), 0, 1, normalized=True)
+    model = GaussianModel(np.array([-1.]), 0, 1, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -298,33 +298,33 @@ def test_gaussian_1p_one_point():
 def test_gaussian_1p_multiple_point():
     # test one (un)normalized p-type gaussian on multiple point against sympy
     coeffs, expons = np.array([0.]), np.array([0.])
-    # un-normalized r=[0., 0.5, 1.0]
+    # un-normalized r=[0., -0.5, 1.0]
     g, dg = np.zeros(3), np.array([[0., 0.], [0.25, 0.], [1., 0.]])
-    model = GaussianModel(np.array([0., 0.5, 1.]), 0, 1, normalized=False)
+    model = GaussianModel(np.array([0., -0.5, 1.]), 0, 1, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
-    # normalized r=[0., 0.5, 1.0]
+    # normalized r=[0., -0.5, 1.0]
     g, dg = np.zeros(3), np.zeros((3, 2))
-    model = GaussianModel(np.array([0., 0.5, 1.]), 0, 1, normalized=True)
+    model = GaussianModel(np.array([0., -0.5, 1.]), 0, 1, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # test one (un)normalized p-type gaussian on multiple point against sympy
     coeffs, expons = np.array([5.25]), np.array([0.8])
-    # un-normalized r=[0., 1.5, 2.2, 3.1, 10.]
+    # un-normalized r=[0., 1.5, 2.2, -3.1, 10.]
     g = np.array([0.0, 1.9525931171, 0.5289522041, 0.0231220701, 0.0])
     dg = np.array([[0.0, 0.0], [0.3719224985, -4.3933345135],
                    [0.1007528008, -2.5601286677], [0.0044042038, -0.222203094], [0.0, 0.0]])
-    model = GaussianModel(np.array([0., 1.5, 2.2, 3.1, 10.]), 0, 1, normalized=False)
+    model = GaussianModel(np.array([0., 1.5, 2.2, -3.1, 10.]), 0, 1, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
-    # normalized r=[0., 1.5, 2.2, 3.1, 10.]
+    # normalized r=[0., 1.5, 2.2, -3.1, 10.]
     g = np.array([0.0, 0.1338198854, 0.0362514457, 0.0015846582, 0.0])
     dg = np.array([[0.0, 0.0], [0.025489502, 0.1170923997], [0.0069050373, -0.0621712293],
                    [0.0003018397, -0.0102765087], [0.0, 0.0]])
-    model = GaussianModel(np.array([0., 1.5, 2.2, 3.1, 10.]), 0, 1, normalized=True)
+    model = GaussianModel(np.array([0., 1.5, 2.2, -3.1, 10.]), 0, 1, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -377,17 +377,17 @@ def test_gaussian_xp_one_point():
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
-    # un-normalized at r=2.5
+    # un-normalized at r=-2.5
     g = np.array([7.2111204230])
     dg = np.array([[6.25, 6.25, 2.3291582325e-5, 0.2746058351, 0., -39.0625, 0., -6.0070026438]])
-    model = GaussianModel(np.array([2.5]), 0, 4, normalized=False)
+    model = GaussianModel(np.array([-2.5]), 0, 4, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
-    # normalized at r=2.5
+    # normalized at r=-2.5
     g = np.array([0.0203416767])
     dg = np.array([[0., 0., 1.5774583984e-5, 0.0058119076, 0., 0., 0., -0.0254270959]])
-    model = GaussianModel(np.array([2.5]), 0, 4, normalized=True)
+    model = GaussianModel(np.array([-2.5]), 0, 4, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -395,7 +395,7 @@ def test_gaussian_xp_one_point():
 
 def test_gaussian_xp_multiple_point():
     # test multiple (un)normalized p-type gaussian on multiple points against sympy
-    points = np.array([0.0, 2.67, 0.43, 5.1])
+    points = np.array([0.0, 2.67, -0.43, 5.1])
     coeffs = np.array([2.0, 0.02, 1.51])
     expons = np.array([6.1, 0.19, 7.67])
     # un-normalized
@@ -443,17 +443,17 @@ def test_gaussian_1s1p_basis_one_point():
     # test (un)normalized s-type & p-type gaussian on one point against sympy
     coeffs = np.array([0.5, 2.0])
     expons = np.array([0.1, 0.4])
-    # un-normalized at r=3.
+    # un-normalized at r=-3.
     g, = np.array([0.6951118339])
     dg = np.array([[0.4065696597, -1.8295634688, 0.2459135020, -4.4264430364]])
-    model = GaussianModel(np.array([3.]), 1, 1, normalized=False)
+    model = GaussianModel(np.array([-3.]), 1, 1, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
-    # normalized at r=3.
+    # normalized at r=-3.
     g = np.array([0.0071130914])
     dg = np.array([[0.0023089267, 0.0069267802, 0.0029793140, -0.0163862272]])
-    model = GaussianModel(np.array([3.]), 1, 1, normalized=True)
+    model = GaussianModel(np.array([-3.]), 1, 1, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -482,23 +482,23 @@ def test_gaussian_2s1p_basis_multiple_point():
     # test (un)normalized s-type & p-type gaussian on one point against sympy
     coeffs = np.array([1.2, -4.5, -0.75])
     expons = np.array([0.8, 1.25, 2.19])
-    # un-normalized at r=[0.89, 2.56]
+    # un-normalized at r=[0.89, -2.56]
     g = np.array([-1.1399500497, 0.0050932753])
     dg = np.array([[0.530635465, 0.3715302468, -0.5043796222,
                     1.3243009883, 0.1397686627, 0.0830330683],
                    [0.0052850141, 0.0002768596, -0.0415630417,
                     0.0081649222, 3.831100e-06, 1.8830400e-05]])
-    model = GaussianModel(np.array([0.89, 2.56]), 2, 1, normalized=False)
+    model = GaussianModel(np.array([0.89, -2.56]), 2, 1, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
-    # normalized at r=[0.89, 4.01]
+    # normalized at r=[0.89, -2.56]
     g = np.array([-0.4268626593, 0.000499832])
     dg = np.array([[0.0681877632, 0.0932468966, 0.0886086345,
                     -0.171159341, 0.1187692541, -0.0311281606],
                    [0.0006791353, 6.94864e-05, -0.003812883,
                     0.0016740108, 3.25550e-06, 1.321400e-05]])
-    model = GaussianModel(np.array([0.89, 2.56]), 2, 1, normalized=True)
+    model = GaussianModel(np.array([0.89, -2.56]), 2, 1, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -527,24 +527,24 @@ def test_gaussian_1s2p_basis_multiple_point():
     # test (un)normalized s-type & p-type gaussian on one point against sympy
     coeffs = np.array([1.2, -4.5, -0.75])
     expons = np.array([0.8, 1.25, 2.19])
-    # un-normalized at r=[0.201, 1.701]
+    # un-normalized at r=[-0.201, 1.701]
     g = np.array([0.9612490198, -0.2351426929])
     dg = np.array([[0.9681959350, -0.0469393008, 0.0384113615,
                     0.0369799675,  0.0069833584, 0.0011205208],
                    [0.0987937634, -0.3430199685, 0.0777451878,
                     0.0051224852,  1.0122660185, 0.0111160529]])
-    model = GaussianModel(np.array([0.201, 1.701]), 1, 2, normalized=False)
+    model = GaussianModel(np.array([-0.201, 1.701]), 1, 2, normalized=False)
     print("m = ", model.evaluate(coeffs, expons, deriv=False))
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
-    # normalized at r=0.
+    # normalized at r=[-0.201, 1.701]
     g = np.array([0.0895783695, -0.0612024131])
     dg = np.array([[0.1244151955,  0.27390239190,  0.0080337565,
                     0.0314239478, -0.07084323550, -0.0259518957],
                    [0.0126952045, -0.01551457070,  0.0162604470,
                     0.0043528623,  0.06537194840,  0.0057191665]])
-    model = GaussianModel(np.array([0.201, 1.701]), 1, 2, normalized=True)
+    model = GaussianModel(np.array([-0.201, 1.701]), 1, 2, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -554,7 +554,7 @@ def test_gaussian_2s2p_basis_multiple_point():
     # test multiple (un)normalized s-type & p-type gaussian on one point against sympy
     coeffs = np.array([0.53, -6.1, -2.0, 4.3])
     expons = np.array([0.11, 3.4, 1.5, 0.78])
-    points = np.array([0., 0.71, 1.68, 2.03, 3.12, 4.56])
+    points = np.array([0., -0.71, 1.68, -2.03, 3.12, 4.56])
     # un-normalized
     g = np.array([-5.57, 0.3920707885, 1.6490462639, 1.0318279643, 0.2027417225, 0.0538246312])
     dg = [[1., 1., 0., 0., 0., 0., 0., 0.],
