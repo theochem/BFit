@@ -71,17 +71,6 @@ class KullbackLeiblerFitting(object):
     def lagrange_multiplier(self):
         return self._lm
 
-    def _update_errors(self, coeffs, exps, c, iprint, update_p=False):
-        model = self.model.evaluate(coeffs, exps)
-        errors = self.goodness_of_fit(model)
-        if iprint:
-            if update_p:
-                print(c + 1, "Update F-param", np.sum(coeffs), errors)
-            else:
-                print(c + 1, "Update Coeff ", np.sum(coeffs), errors)
-        self.errors_arr.append(errors)
-        return c + 1
-
     def get_inte_factor(self, exponent, masked_normed_gaussian, upt_exponent=False):
         r"""
 
@@ -136,7 +125,7 @@ class KullbackLeiblerFitting(object):
                 new_exps[i] /= (2. * integration)
             return new_exps
 
-    def run(self, eps_coeff, eps_fparam, coeffs, fparams, iprint=False, iplot=False):
+    def run(self, eps_coeff, eps_fparam, coeffs, fparams):
         r"""
 
         Parameters
@@ -160,23 +149,27 @@ class KullbackLeiblerFitting(object):
             # One iteration to update coefficients
             coeffs_i1, coeffs_i = self._update_coeffs(coeffs_i1, fparams_i1, self._lm), coeffs_i1
 
-            counter = self._update_errors(coeffs_i1, fparams_i1, counter, iprint, iplot)
+            self.errors_arr.append(self.goodness_of_fit(coeffs_i1, fparams_i1))
+            counter += 1
 
             while np.any(np.abs(coeffs_i - coeffs_i1) > eps_coeff):
                 coeffs_i = coeffs_i1
                 coeffs_i1 = self._update_coeffs(coeffs_i1, fparams_i1, self._lm)
-                counter = self._update_errors(coeffs_i1, fparams_i1, counter, iprint, iplot)
+
+                self.errors_arr.append(self.goodness_of_fit(coeffs_i1, fparams_i1))
+                counter += 1
 
             fparams_i = fparams_i1
             fparams_i1 = self._update_fparams(coeffs_i1, fparams_i1, self.lagrange_multiplier)
 
-            counter = self._update_errors(coeffs_i1, fparams_i1, counter, iprint, update_p=True)
+            self.errors_arr.append(self.goodness_of_fit(coeffs_i1, fparams_i1))
+            counter += 1
             prev_func_val, curr_func_val = curr_func_val, self.errors_arr[counter - 1][3]
 
         return {"x": np.append(coeffs_i1, fparams_i1), "iter": counter,
                 "errors": np.array(self.errors_arr)}
 
-    def goodness_of_fit(self, model):
+    def goodness_of_fit(self, coeffs, expons):
         r"""Compute various measures to see how good is the fitted model.
 
         Parameters
@@ -195,9 +188,11 @@ class KullbackLeiblerFitting(object):
         kl : float
             KL deviation between density and model
         """
+        # evaluate model density
+        dens = self.model.evaluate(coeffs, expons)
         # compute KL deviation measure on the grid
-        value = self.measure.evaluate(model, deriv=False)
-        return [self.grid.integrate(model, spherical=True),
-                self.grid.integrate(np.abs(self.density - model)),
-                self.grid.integrate(np.abs(self.density - model), spherical=True) / (4 * np.pi),
+        value = self.measure.evaluate(dens, deriv=False)
+        return [self.grid.integrate(dens, spherical=True),
+                self.grid.integrate(np.abs(self.density - dens)),
+                self.grid.integrate(np.abs(self.density - dens), spherical=True) / (4 * np.pi),
                 self.grid.integrate(self.weights * value, spherical=True)]

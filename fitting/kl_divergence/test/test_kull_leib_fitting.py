@@ -38,22 +38,13 @@ def test_get_lagrange_multiplier():
     npt.assert_allclose(kl.lagrange_multiplier, lm)
 
 
-def test_integration_spherical():
-    r"""Test integration of model in KullbackLeiblerFitting."""
-    g = BaseRadialGrid(np.arange(0., 26, 0.01))
-    e = np.exp(-g.points)
-    kl = KullbackLeiblerFitting(g, e, None)
-    true_answer = kl.goodness_of_fit(e)[0]
-    npt.assert_allclose(true_answer, 2. * 4 * np.pi)
-
-
 def test_goodness_of_fit():
     r"""Test goodness of fit."""
     g = BaseRadialGrid(np.arange(0., 10, 0.01))
     e = np.exp(-g.points)
-    kl = KullbackLeiblerFitting(g, e, None)
-    model = np.exp(-g.points**2.)
-    true_answer = kl.goodness_of_fit(model)[1]
+    m = GaussianModel(g.points, num_s=1, num_p=0)
+    kl = KullbackLeiblerFitting(g, e, m)
+    true_answer = kl.goodness_of_fit(np.array([1.]), np.array([1.]))[1]
     npt.assert_allclose(true_answer, 0.3431348, rtol=1e-3)
 
 
@@ -61,9 +52,9 @@ def test_goodness_of_fit_squared():
     r"""Test goodness of fit squared."""
     g = BaseRadialGrid(np.arange(0., 10, 0.01))
     e = np.exp(-g.points)
-    kl = KullbackLeiblerFitting(g, e, None)
-    model = np.exp(-g.points ** 2.)
-    true_answer = kl.goodness_of_fit(model)[2]
+    m = GaussianModel(g.points, num_s=1, num_p=0)
+    kl = KullbackLeiblerFitting(g, e, m)
+    true_answer = kl.goodness_of_fit(np.array([1.]), np.array([1.]))[2]
     npt.assert_allclose(true_answer, 1.60909, rtol=1e-4)
 
 
@@ -90,23 +81,9 @@ def test_get_descriptors_of_model():
     e = np.exp(-g.points)
     model = GaussianModel(g.points, num_s=1, num_p=0, normalized=False)
     kl = KullbackLeiblerFitting(g, e, model, weights=None, mask_value=0.)
-    aprox = np.exp(-g.points**2.)
-    true_answer = kl.goodness_of_fit(aprox)
+    true_answer = kl.goodness_of_fit(np.array([1.]), np.array([1.]))
     desired_answer = [5.56833, 0.3431348, 1.60909, 4. * np.pi * 17.360]
     npt.assert_allclose(true_answer, desired_answer, rtol=1e-4)
-
-
-def test_update_errors():
-    g = BaseRadialGrid(np.arange(0., 10, 0.001))
-    e = np.exp(-g.points)
-    lm = g.integrate(e, spherical=True) / 1.0
-    m = GaussianModel(g.points, num_s=1, num_p=0, normalized=False)
-    kl = KullbackLeiblerFitting(g, e, m, weights=None)
-    counter = 10
-    c = np.array([5.])
-    e = np.array([5.])
-    c_new = kl._update_errors(c, e, counter, False, False)
-    assert c_new == counter + 1
 
 
 def test_run():
@@ -120,7 +97,7 @@ def test_run():
 
     denom = np.trapz(y=g.points ** 4. * e, x=g.points)
     exps = 3. / (2. * 4. * np.pi * denom)
-    params = kl.run(1e-3, 1e-3, c, np.array([exps]), iprint=True)
+    params = kl.run(1e-3, 1e-3, c, np.array([exps]))
     params_x = params["x"]
     npt.assert_allclose(1., params_x)
     assert np.abs(params["errors"][-1, 0] - 1.) < 1e-10
