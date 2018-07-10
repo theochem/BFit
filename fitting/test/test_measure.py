@@ -25,7 +25,7 @@ import numpy as np
 
 from numpy.testing import assert_raises, assert_almost_equal
 
-from fitting.measure import KLDivergence
+from fitting.measure import KLDivergence, SquaredDifference
 
 
 def test_raises_kl():
@@ -58,7 +58,7 @@ def test_evaluate_kl_equal():
 
 
 def test_evaluate_kl():
-    # test different density and model
+    # test different density and model against sympy
     dens = np.linspace(0.0, 10., 15)
     model = np.linspace(0.0, 12., 15)
     # KL divergence measure
@@ -70,3 +70,50 @@ def test_evaluate_kl():
     assert_almost_equal(k, measure.evaluate(model, deriv=False), decimal=8)
     assert_almost_equal(k, measure.evaluate(model, deriv=True)[0], decimal=8)
     assert_almost_equal(dk, measure.evaluate(model, deriv=True)[1], decimal=8)
+
+
+def test_raises_squared_difference():
+    # check density argument
+    assert_raises(ValueError, SquaredDifference, 3.5)
+    assert_raises(ValueError, SquaredDifference, np.array([[1., 2., 3.]]))
+    assert_raises(ValueError, SquaredDifference, np.array([[1.], [2.], [3.]]))
+    # check model argument
+    measure = SquaredDifference(np.array([1., 2., 3.]))
+    assert_raises(ValueError, measure.evaluate, 1.75)
+    assert_raises(ValueError, measure.evaluate, np.array([1., 2., 3., 4.]))
+    assert_raises(ValueError, measure.evaluate, np.array([[1.], [2.], [3.]]))
+
+
+def test_evaluate_squared_difference_equal():
+    # test equal density & zero model
+    dens = np.array([0.0, 1.0, 2.0])
+    model = np.array([0., 0., 0.])
+    measure = SquaredDifference(dens)
+    assert_almost_equal(np.zeros(3), measure.evaluate(dens, deriv=False), decimal=8)
+    assert_almost_equal(np.zeros(3), measure.evaluate(dens, deriv=True)[0], decimal=8)
+    assert_almost_equal(np.zeros(3), measure.evaluate(dens, deriv=True)[1], decimal=8)
+    assert_almost_equal(dens**2, measure.evaluate(model, deriv=False), decimal=8)
+    assert_almost_equal(dens**2, measure.evaluate(model, deriv=True)[0], decimal=8)
+    assert_almost_equal(-2 * dens, measure.evaluate(model, deriv=True)[1], decimal=8)
+
+
+def test_evaluate_squared_difference():
+    # test different density and model against sympy
+    dens = np.linspace(0.0, 10., 15)
+    model = np.linspace(0.0, 12., 15)
+    # KL divergence measure
+    measure = SquaredDifference(dens)
+    # equal density
+    assert_almost_equal(np.zeros(15), measure.evaluate(dens, deriv=False), decimal=8)
+    assert_almost_equal(np.zeros(15), measure.evaluate(dens, deriv=True)[0], decimal=8)
+    assert_almost_equal(np.zeros(15), measure.evaluate(dens, deriv=True)[1], decimal=8)
+    # different densities
+    m = np.array([0.0, 0.0204081633, 0.0816326531, 0.1836734694, 0.3265306122,
+                  0.5102040816, 0.7346938776, 1.0, 1.306122449, 1.6530612245,
+                  2.0408163265, 2.4693877551, 2.9387755102, 3.4489795918, 4.0])
+    dm = np.array([0.0, 0.2857142857, 0.5714285714, 0.8571428571, 1.1428571429,
+                   1.4285714286, 1.7142857143, 2.0, 2.2857142857, 2.5714285714,
+                   2.8571428571, 3.1428571429, 3.4285714286, 3.7142857143, 4.0])
+    assert_almost_equal(m, measure.evaluate(model, deriv=False), decimal=8)
+    assert_almost_equal(m, measure.evaluate(model, deriv=True)[0], decimal=8)
+    assert_almost_equal(dm, measure.evaluate(model, deriv=True)[1], decimal=8)

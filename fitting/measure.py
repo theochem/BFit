@@ -25,7 +25,53 @@
 import numpy as np
 
 
-__all__ = ["KLDivergence"]
+__all__ = ["KLDivergence", "SquaredDifference"]
+
+
+class SquaredDifference(object):
+    """Sum of Squares Difference Class."""
+
+    def __init__(self, density):
+        """
+        Parameters
+        ----------
+        density : ndarray, (N,)
+            The exact density evaluated on the grid points.
+        """
+        if not isinstance(density, np.ndarray) or density.ndim != 1:
+            raise ValueError("Arguments density should be a 1D numpy array.")
+        self.density = density
+
+    def evaluate(self, model, deriv=False):
+        r"""Evaluate squared difference b/w density & model on the grid points.
+
+        .. math ::
+
+        Parameters
+        ----------
+        model : ndarray, (N,)
+            The model density evaluated on the grid points.
+        deriv : bool, optional
+            Whether to compute the derivative of squared difference w.r.t. model density.
+
+        Returns
+        -------
+        m : ndarray, (N,)
+            The squared difference between density & model on the grid points.
+        dm : ndarray, (N,)
+            The derivative of squared difference w.r.t. model density evaluated on the
+            grid points. Only returned if `deriv=True`.
+        """
+        if not isinstance(model, np.ndarray) or model.shape != self.density.shape:
+            raise ValueError("Argument model should be {0} array.".format_map(self.density.shape))
+        # compute residual
+        residual = self.density - model
+        # compute squared residual
+        value = np.power(residual, 2)
+        # compute derivative of cost function
+        if deriv:
+            return value, -2 * residual
+        return value
 
 
 class KLDivergence(object):
