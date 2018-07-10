@@ -26,46 +26,23 @@ import numpy as np
 import numpy.testing as npt
 from fitting.model import GaussianModel
 from fitting.kl_divergence.kull_leib_fitting import KullbackLeiblerFitting
-from fitting.grid import BaseRadialGrid, ClenshawRadialGrid
-
-
-def test_input_checks():
-    r"""Test input checks for 'fitting.kl_divergence.KullbackLeiblerFitting'."""
-    g = ClenshawRadialGrid(10, 2, 1)
-    e = np.array(g.points * 5.)
-    npt.assert_raises(TypeError, KullbackLeiblerFitting, 10., e, None)
-    npt.assert_raises(TypeError, KullbackLeiblerFitting, g, 10., None)
-    npt.assert_raises(TypeError, KullbackLeiblerFitting, g, e, None, 5j)
-    npt.assert_raises(ValueError, KullbackLeiblerFitting, g, e, None, -5)
-    npt.assert_raises(ValueError, KullbackLeiblerFitting, g, e, None, 0.)
-
-    # Test that lagrange multiplier gives zero or nan.
-    g = BaseRadialGrid(np.arange(0., 10.))
-    e = np.exp(-g.points)
-    npt.assert_raises(RuntimeError, KullbackLeiblerFitting, g, e, None, np.nan)
-    e = np.zeros(10)
-    npt.assert_raises(RuntimeError, KullbackLeiblerFitting, g, e, None, 1)
-
-    # Test when Integration Value (norm) is None
-    g = BaseRadialGrid(np.arange(0., 26, 0.05))
-    e = np.exp(-g.points)
-    kl = KullbackLeiblerFitting(g, e, None, None)
-    npt.assert_allclose(kl.norm, 2. * 4. * np.pi)
+from fitting.grid import BaseRadialGrid
 
 
 def test_get_lagrange_multiplier():
     r"""Test the lagrange multiplier in KullbackLeiblerFitting."""
     g = BaseRadialGrid(np.arange(0., 26, 0.05))
     e = np.exp(-g.points)
-    kl = KullbackLeiblerFitting(g, e, None, norm=1.)
-    npt.assert_allclose(kl.lagrange_multiplier, 2. * 4 * np.pi)
+    kl = KullbackLeiblerFitting(g, e, None)
+    lm = 2. * 4 * np.pi / g.integrate(e, spherical=True)
+    npt.assert_allclose(kl.lagrange_multiplier, lm)
 
 
 def test_integration_spherical():
     r"""Test integration of model in KullbackLeiblerFitting."""
     g = BaseRadialGrid(np.arange(0., 26, 0.01))
     e = np.exp(-g.points)
-    kl = KullbackLeiblerFitting(g, e, None, norm=1.)
+    kl = KullbackLeiblerFitting(g, e, None)
     true_answer = kl.goodness_of_fit(e)[0]
     npt.assert_allclose(true_answer, 2. * 4 * np.pi)
 
@@ -74,7 +51,7 @@ def test_goodness_of_fit():
     r"""Test goodness of fit."""
     g = BaseRadialGrid(np.arange(0., 10, 0.01))
     e = np.exp(-g.points)
-    kl = KullbackLeiblerFitting(g, e, None, norm=1.)
+    kl = KullbackLeiblerFitting(g, e, None)
     model = np.exp(-g.points**2.)
     true_answer = kl.goodness_of_fit(model)[1]
     npt.assert_allclose(true_answer, 0.3431348, rtol=1e-3)
@@ -84,7 +61,7 @@ def test_goodness_of_fit_squared():
     r"""Test goodness of fit squared."""
     g = BaseRadialGrid(np.arange(0., 10, 0.01))
     e = np.exp(-g.points)
-    kl = KullbackLeiblerFitting(g, e, None, norm=1.)
+    kl = KullbackLeiblerFitting(g, e, None)
     model = np.exp(-g.points ** 2.)
     true_answer = kl.goodness_of_fit(model)[2]
     npt.assert_allclose(true_answer, 1.60909, rtol=1e-4)
@@ -97,13 +74,13 @@ def test_get_kullback_leibler():
     e = np.exp(-g.points**2.)
     model = GaussianModel(g.points, num_s=1, num_p=0, normalized=False)
     kl = KullbackLeiblerFitting(g, e, model, weights=None)
-    true_answer = kl.get_kullback_leibler(e)
+    true_answer = g.integrate(kl.measure.evaluate(e, deriv=False), spherical=True)
     npt.assert_allclose(true_answer, 0.)
 
     # Test Different Model with wolfram
     # Integrate e^(-x^2) * log(e^(-x^2) / x) 4 pi r^2 dr from 0 to 25
     fit_model = g.points
-    true_answer = kl.get_kullback_leibler(fit_model)
+    true_answer = g.integrate(kl.measure.evaluate(fit_model, deriv=False), spherical=True)
     npt.assert_allclose(true_answer, -0.672755 * 4 * np.pi, rtol=1e-3)
 
 
@@ -112,7 +89,7 @@ def test_get_descriptors_of_model():
     g = BaseRadialGrid(np.arange(0., 10, 0.001))
     e = np.exp(-g.points)
     model = GaussianModel(g.points, num_s=1, num_p=0, normalized=False)
-    kl = KullbackLeiblerFitting(g, e, model, weights=None, norm=1.)
+    kl = KullbackLeiblerFitting(g, e, model, weights=None, mask_value=0.)
     aprox = np.exp(-g.points**2.)
     true_answer = kl.goodness_of_fit(aprox)
     desired_answer = [5.56833, 0.3431348, 1.60909, 4. * np.pi * 17.360]
@@ -124,7 +101,7 @@ def test_update_errors():
     e = np.exp(-g.points)
     lm = g.integrate(e, spherical=True) / 1.0
     m = GaussianModel(g.points, num_s=1, num_p=0, normalized=False)
-    kl = KullbackLeiblerFitting(g, e, m, norm=1.0, weights=None)
+    kl = KullbackLeiblerFitting(g, e, m, weights=None)
     counter = 10
     c = np.array([5.])
     e = np.array([5.])
@@ -136,7 +113,7 @@ def test_run():
     g = BaseRadialGrid(np.arange(0., 10, 0.001))
     e = (1 / np.pi) ** 1.5 * np.exp(-g.points ** 2.)
     model = GaussianModel(g.points, num_s=1, num_p=0, normalized=True)
-    kl = KullbackLeiblerFitting(g, e, model, norm=1.0, weights=None)
+    kl = KullbackLeiblerFitting(g, e, model, weights=None)
 
     # Test One Basis Function
     c = np.array([1.])

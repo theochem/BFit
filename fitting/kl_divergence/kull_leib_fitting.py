@@ -31,11 +31,10 @@ If one wants to implement their own linear convex sums of function. They would
 have to inherit from KullbackLeibler class.
 """
 
-from __future__ import division
+
 import numpy as np
-import numpy.ma as ma
-from numbers import Real
-from fitting.grid import BaseRadialGrid, CubicGrid
+
+from fitting.measure import KLDivergence
 
 
 __all__ = ["KullbackLeiblerFitting"]
@@ -46,7 +45,7 @@ class KullbackLeiblerFitting(object):
 
     """
 
-    def __init__(self, grid, density, model, norm=None, weights=None):
+    def __init__(self, grid, density, model, weights=None, mask_value=0.):
         r"""
 
         Parameters
@@ -54,36 +53,23 @@ class KullbackLeiblerFitting(object):
 
 
         """
-        if not isinstance(norm, (type(None), Real)):
-            raise TypeError("Integration Value should be an integer.")
-        if not isinstance(weights, (type(None), np.ndarray)):
-            raise TypeError("Weights should be none or a numpy array.")
-        if norm is not None and norm <= 0.:
-            raise ValueError("Integration value should be positive.")
-        if not isinstance(grid, (BaseRadialGrid, CubicGrid)):
-            raise TypeError("Grid Object should be 'fitting.radial_grid.radial_grid'.")
-        if not isinstance(density, np.ndarray):
-            raise TypeError("Electron Density should be a numpy array.")
         self.grid = grid
-        self.density = ma.array(density)
+        self.density = density
         self.model = model
-        if norm is None:
-            norm = grid.integrate(density, spherical=True)
-        self.norm = norm
+        self.norm = grid.integrate(density, spherical=True)
         if weights is None:
             weights = np.ones(len(density))
         self.weights = weights
         # Various methods relay on masked values due to division of small numbers.
-        self._lagrange_multiplier = self.get_lagrange_multiplier()
-        if self._lagrange_multiplier == 0.:
-            raise RuntimeError("Lagrange multiplier cannot be zero.")
-        if np.isnan(self._lagrange_multiplier):
-            raise RuntimeError("Lagrange multiplier cannot be nan.")
+        self._lm = self.grid.integrate(self.density * self.weights, spherical=True) / self.norm
+        if self._lm == 0. or np.isnan(self._lm):
+            raise RuntimeError("Lagrange multiplier cannot be {0}.".format(self._lm))
         self.errors_arr = []
+        self.measure = KLDivergence(density, mask_value=mask_value)
 
     @property
     def lagrange_multiplier(self):
-        return self._lagrange_multiplier
+        return self._lm
 
     def _update_errors(self, coeffs, exps, c, iprint, update_p=False):
         model = self.model.evaluate(coeffs, exps)
@@ -95,14 +81,6 @@ class KullbackLeiblerFitting(object):
                 print(c + 1, "Update Coeff ", np.sum(coeffs), errors)
         self.errors_arr.append(errors)
         return c + 1
-
-    def _replace_coeffs(self, coeff_arr, exp_arr):
-        new_coeff = self._update_coeffs(coeff_arr, exp_arr, self.lagrange_multiplier)
-        return new_coeff, coeff_arr
-
-    def _replace_fparams(self, coeff_arr, exp_arr):
-        new_exps = self._update_fparams(coeff_arr, exp_arr, self.lagrange_multiplier)
-        return new_exps, exp_arr
 
     def get_inte_factor(self, exponent, masked_normed_gaussian, upt_exponent=False):
         r"""
@@ -131,7 +109,7 @@ class KullbackLeiblerFitting(object):
         -------
         """
         if self.model.num_p == 0:
-            gaussian = ma.asarray(self.model.evaluate(coeff_arr, exp_arr))
+            gaussian = np.ma.asarray(self.model.evaluate(coeff_arr, exp_arr))
             new_coeff = coeff_arr.copy()
             for i in range(0, len(coeff_arr)):
                 new_coeff[i] *= self.get_inte_factor(exp_arr[i], gaussian)
@@ -180,45 +158,23 @@ class KullbackLeiblerFitting(object):
                 np.abs(prev_func_val - curr_func_val) > 1e-8:
 
             # One iteration to update coefficients
-            coeffs_i1, coeffs_i = self._replace_coeffs(coeffs_i1, fparams_i1)
+            coeffs_i1, coeffs_i = self._update_coeffs(coeffs_i1, fparams_i1, self._lm), coeffs_i1
+
             counter = self._update_errors(coeffs_i1, fparams_i1, counter, iprint, iplot)
 
             while np.any(np.abs(coeffs_i - coeffs_i1) > eps_coeff):
-                coeffs_i1, coeffs_i = self._replace_coeffs(coeffs_i1, fparams_i1)
+                coeffs_i = coeffs_i1
+                coeffs_i1 = self._update_coeffs(coeffs_i1, fparams_i1, self._lm)
                 counter = self._update_errors(coeffs_i1, fparams_i1, counter, iprint, iplot)
 
-            fparams_i1, fparams_i = self._replace_fparams(coeffs_i1, fparams_i1)
+            fparams_i = fparams_i1
+            fparams_i1 = self._update_fparams(coeffs_i1, fparams_i1, self.lagrange_multiplier)
+
             counter = self._update_errors(coeffs_i1, fparams_i1, counter, iprint, update_p=True)
             prev_func_val, curr_func_val = curr_func_val, self.errors_arr[counter - 1][3]
 
         return {"x": np.append(coeffs_i1, fparams_i1), "iter": counter,
                 "errors": np.array(self.errors_arr)}
-
-    def get_lagrange_multiplier(self):
-        r"""
-
-        :return:
-        """
-        return self.grid.integrate(self.density * self.weights, spherical=True) / self.norm
-
-    def get_kullback_leibler(self, model):
-        r"""
-        Compute the Kullback-Leibler formula between the two models over the grid.
-
-
-        Parameters
-        ----------
-        model : np.ndarray
-                Approximate / fitted model.
-
-        Returns
-        -------
-        np.ndarray
-                  Kullback Leibler fomula
-        """
-        div_model = np.divide(self.density, ma.array(model))
-        log_ratio_models = self.weights * np.log(div_model)
-        return self.grid.integrate(self.density * log_ratio_models, spherical=True)
 
     def goodness_of_fit(self, model):
         r"""Compute various measures to see how good is the fitted model.
@@ -239,21 +195,9 @@ class KullbackLeiblerFitting(object):
         kl : float
             KL deviation between density and model
         """
+        # compute KL deviation measure on the grid
+        value = self.measure.evaluate(model, deriv=False)
         return [self.grid.integrate(model, spherical=True),
                 self.grid.integrate(np.abs(self.density - model)),
                 self.grid.integrate(np.abs(self.density - model), spherical=True) / (4 * np.pi),
-                self.get_kullback_leibler(model)]
-
-    def cost_function(self, params):
-        r"""
-        Get the kullback-leibler formula which is ought to be minimized.
-
-        Used for optimization via SLSQP in the 'fitting.utils.optimize.py' File.
-
-        Parameters
-        ----------
-        params : np.ndarray
-            Coefficients and Function parameters appended together.
-        """
-        model = self.model.evaluate(params[:len(params)//2], params[len(params)//2:])
-        return self.get_kullback_leibler(model)
+                self.grid.integrate(self.weights * value, spherical=True)]
