@@ -63,12 +63,12 @@ class SquaredDifference(object):
             grid points. Only returned if `deriv=True`.
         """
         if not isinstance(model, np.ndarray) or model.shape != self.density.shape:
-            raise ValueError("Argument model should be {0} array.".format_map(self.density.shape))
+            raise ValueError("Argument model should be {0} array.".format(self.density.shape))
         # compute residual
         residual = self.density - model
         # compute squared residual
         value = np.power(residual, 2)
-        # compute derivative of cost function
+        # compute derivative of squared residual w.r.t. model
         if deriv:
             return value, -2 * residual
         return value
@@ -115,7 +115,7 @@ class KLDivergence(object):
         """
         # check model density
         if not isinstance(model, np.ndarray) or model.shape != self.density.shape:
-            raise ValueError("Argument model should be {0} array.".format_map(self.density.shape))
+            raise ValueError("Argument model should be {0} array.".format(self.density.shape))
         if np.any(model < 0.):
             raise ValueError("Argument model should be positive.")
 

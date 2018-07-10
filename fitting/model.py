@@ -66,12 +66,12 @@ class GaussianModel(object):
 
     @property
     def num_s(self):
-        """Number of s-type Gaussian basis functions/=."""
+        """Number of s-type Gaussian basis functions."""
         return self.ns
 
     @property
     def num_p(self):
-        """Number of p-type Gaussian basis functions/=."""
+        """Number of p-type Gaussian basis functions."""
         return self.np
 
     @property
@@ -110,7 +110,7 @@ class GaussianModel(object):
         if coeffs.size != expons.size:
             raise ValueError("Arguments coeffs and expons should have the same length.")
         if coeffs.size != self.nbasis:
-            raise ValueError("Argument coeffs should have {0} size.".format_map(self.nbasis))
+            raise ValueError("Argument coeffs should have {0} size.".format(self.nbasis))
 
         # evaluate all Gaussian basis on the grid, i.e., exp(-a * r**2)
         matrix = np.exp(-expons[None, :] * np.power(self.points, 2)[:, None])
