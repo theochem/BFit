@@ -164,7 +164,7 @@ class KullbackLeiblerFitting(object):
             counter += 1
 
             # compute absolute change in divergence
-            diff_divergence = np.abs(errors[counter - 1][3] - errors[counter - 2][3])
+            diff_divergence = np.abs(errors[counter - 1][-1] - errors[counter - 2][-1])
 
         return {"x": (new_coeffs, new_expons), "iter": counter, "errors": np.array(errors)}
 
