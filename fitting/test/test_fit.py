@@ -19,86 +19,74 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-r"""Test file for 'fitting.mbis.mbis_abc'"""
 
 
 import numpy as np
-import numpy.testing as npt
+from numpy.testing import assert_almost_equal
+
 from fitting.model import GaussianModel
 from fitting.fit import KLDivergenceSCF
 from fitting.grid import BaseRadialGrid
 
 
-def test_get_lagrange_multiplier():
-    r"""Test the lagrange multiplier in KLDivergenceSCF."""
+def test_lagrange_multiplier():
     g = BaseRadialGrid(np.arange(0., 26, 0.05))
     e = np.exp(-g.points)
     kl = KLDivergenceSCF(g, e, None)
-    lm = 2. * 4 * np.pi / g.integrate(e, spherical=True)
-    npt.assert_allclose(kl.lagrange_multiplier, lm)
+    assert_almost_equal(kl.lagrange_multiplier, 1., decimal=8)
+    kl = KLDivergenceSCF(g, e, None, weights=2 * np.ones_like(e))
+    assert_almost_equal(kl.lagrange_multiplier, 2., decimal=8)
 
 
 def test_goodness_of_fit():
-    r"""Test goodness of fit."""
     g = BaseRadialGrid(np.arange(0., 10, 0.01))
     e = np.exp(-g.points)
-    m = GaussianModel(g.points, num_s=1, num_p=0)
-    kl = KLDivergenceSCF(g, e, m)
-    true_answer = kl.goodness_of_fit(np.array([1.]), np.array([1.]))[1]
-    npt.assert_allclose(true_answer, 0.3431348, rtol=1e-3)
+    m = GaussianModel(g.points, num_s=1, num_p=0, normalized=False)
+    kl = KLDivergenceSCF(g, e, m, mask_value=0.)
+    gf = kl.goodness_of_fit(np.array([1.]), np.array([1.]))
+    expected = [5.56833, 0.3431348, 1.60909, 4. * np.pi * 17.360]
+    assert_almost_equal(expected, gf, decimal=1)
 
 
-def test_goodness_of_fit_squared():
-    r"""Test goodness of fit squared."""
-    g = BaseRadialGrid(np.arange(0., 10, 0.01))
-    e = np.exp(-g.points)
-    m = GaussianModel(g.points, num_s=1, num_p=0)
-    kl = KLDivergenceSCF(g, e, m)
-    true_answer = kl.goodness_of_fit(np.array([1.]), np.array([1.]))[2]
-    npt.assert_allclose(true_answer, 1.60909, rtol=1e-4)
-
-
-def test_get_kullback_leibler():
-    r"""Test kullback leibler formula."""
-    # Test same probabiltiy distribution
-    g = BaseRadialGrid(np.arange(0., 26, 0.01))
-    e = np.exp(-g.points**2.)
-    model = GaussianModel(g.points, num_s=1, num_p=0, normalized=False)
-    kl = KLDivergenceSCF(g, e, model, weights=None)
-    true_answer = g.integrate(kl.measure.evaluate(e, deriv=False), spherical=True)
-    npt.assert_allclose(true_answer, 0.)
-
-    # Test Different Model with wolfram
-    # Integrate e^(-x^2) * log(e^(-x^2) / x) 4 pi r^2 dr from 0 to 25
-    fit_model = g.points
-    true_answer = g.integrate(kl.measure.evaluate(fit_model, deriv=False), spherical=True)
-    npt.assert_allclose(true_answer, -0.672755 * 4 * np.pi, rtol=1e-3)
-
-
-def test_get_descriptors_of_model():
-    r"""Test get descriptors of model."""
+def test_run_normalized_1s_gaussian():
+    # density is normalized 1s orbital with exponent=1.0
     g = BaseRadialGrid(np.arange(0., 10, 0.001))
-    e = np.exp(-g.points)
-    model = GaussianModel(g.points, num_s=1, num_p=0, normalized=False)
-    kl = KLDivergenceSCF(g, e, model, weights=None, mask_value=0.)
-    true_answer = kl.goodness_of_fit(np.array([1.]), np.array([1.]))
-    desired_answer = [5.56833, 0.3431348, 1.60909, 4. * np.pi * 17.360]
-    npt.assert_allclose(true_answer, desired_answer, rtol=1e-4)
-
-
-def test_run():
-    g = BaseRadialGrid(np.arange(0., 10, 0.001))
-    e = (1 / np.pi) ** 1.5 * np.exp(-g.points ** 2.)
+    e = (1. / np.pi)**1.5 * np.exp(-g.points**2.)
     model = GaussianModel(g.points, num_s=1, num_p=0, normalized=True)
     kl = KLDivergenceSCF(g, e, model, weights=None)
 
-    # Test One Basis Function
-    c = np.array([1.])
+    # fit density with initial coeff=1. & expon=1.
+    res = kl.run(np.array([1.]), np.array([1.]), 1.e-4, 1.e-4, 1.e-4)
+    # check optimized coeffs & expons
+    assert_almost_equal(np.array([1.]), res["x"][0], decimal=8)
+    assert_almost_equal(np.array([1.]), res["x"][1], decimal=8)
+    # check value of optimized objective function & fitness measure
+    assert_almost_equal(0., res["fun"][-1], decimal=10)
+    assert_almost_equal(1., res["performance"][-1, 0], decimal=8)
+    assert_almost_equal(0., res["performance"][-1, 1:], decimal=8)
 
-    denom = np.trapz(y=g.points ** 4. * e, x=g.points)
-    exps = 3. / (2. * 4. * np.pi * denom)
-    params = kl.run(c, 10 * np.array([exps]), 1.e-3, 1.e-3, 1.e-8)
-    params_x = params["x"]
-    npt.assert_allclose(1., params_x)
-    assert np.abs(params["performance"][-1, 0] - 1.) < 1e-10
-    assert np.all(np.abs(params["performance"][-1][1:]) < 1e-10)
+    # fit density with initial coeff=0.5 & expon=0.5
+    res = kl.run(np.array([0.5]), np.array([0.5]), 1.e-4, 1.e-4, 1.e-4)
+    # check optimized coeffs & expons
+    assert_almost_equal(np.array([1.]), res["x"][0], decimal=8)
+    assert_almost_equal(np.array([1.]), res["x"][1], decimal=8)
+    # check value of optimized objective function & fitness measure
+    assert_almost_equal(0., res["fun"][-1], decimal=10)
+    assert_almost_equal(1., res["performance"][-1, 0], decimal=8)
+    assert_almost_equal(0., res["performance"][-1, 1:], decimal=8)
+
+    # fit density with initial coeff=0.1 & expon=10.
+    res = kl.run(np.array([0.1]), np.array([10.]), 1.e-4, 1.e-4, 1.e-4)
+    # check optimized coeffs & expons
+    assert_almost_equal(np.array([1.]), res["x"][0], decimal=8)
+    assert_almost_equal(np.array([1.]), res["x"][1], decimal=8)
+    # check value of optimized objective function
+    assert_almost_equal(0., res["fun"][-1], decimal=10)
+
+    # fit density with initial coeff=20. & expon=0.01.
+    res = kl.run(np.array([20.]), np.array([0.01]), 1.e-4, 1.e-4, 1.e-4)
+    # check optimized coeffs & expons
+    assert_almost_equal(np.array([1.]), res["x"][0], decimal=8)
+    assert_almost_equal(np.array([1.]), res["x"][1], decimal=8)
+    # check value of optimized objective function
+    assert_almost_equal(0., res["fun"][-1], decimal=10)
