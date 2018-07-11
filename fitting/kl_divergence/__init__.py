@@ -19,4 +19,3 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-from fitting.kl_divergence.kull_leib_fitting import KullbackLeiblerFitting

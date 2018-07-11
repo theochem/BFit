@@ -25,7 +25,7 @@ r"""Test file for 'fitting.kl_divergence.molecular_fitting'."""
 import numpy as np
 import numpy.testing as npt
 from fitting.grid import CubicGrid
-from fitting.kl_divergence.kull_leib_fitting import KullbackLeiblerFitting
+from fitting.fit import KLDivergenceSCF
 from fitting.kl_divergence.molecular_fitting import MolecularFitting
 
 
@@ -104,7 +104,7 @@ def test_updating_coeffs():
     mol_coord = np.array([[0., 0., 0.], [0., 0., 1.]])
     numb_of_params = [1, 1]
     model = MolecularFitting(grid, dens_val, norm, mol_coord, numb_of_params)
-    dens_obj = KullbackLeiblerFitting(grid, dens_val, model)
+    dens_obj = KLDivergenceSCF(grid, dens_val, model)
     c = np.array([1., 2.])
     e = np.array([3., 4.])
     true_answer = dens_obj._replace_coeffs(c, e)

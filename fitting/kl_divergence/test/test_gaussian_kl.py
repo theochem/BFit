@@ -26,7 +26,7 @@ import numpy.testing as npt
 from scipy.integrate import simps, quad
 from fitting.grid import BaseRadialGrid
 from fitting.model import GaussianModel
-from fitting.kl_divergence.kull_leib_fitting import KullbackLeiblerFitting
+from fitting.fit import KLDivergenceSCF
 
 
 def test_get_model():
@@ -50,7 +50,7 @@ def test_update_coeff():
     g = BaseRadialGrid(np.arange(0., 9, 0.001))
     e2 = np.exp(-g.points)
     m = GaussianModel(g.points, num_s=2, num_p=0, normalized=True)
-    kl = KullbackLeiblerFitting(g, e2, m)
+    kl = KLDivergenceSCF(g, e2, m)
 
     model = c[0] * (e[0] / np.pi) ** (3. / 2.) * np.exp(-e[0] * g.points ** 2.) + \
             c[1] * (e[1] / np.pi) ** (3. / 2.) * np.exp(-e[1] * g.points ** 2.)
@@ -76,7 +76,7 @@ def test_update_func_params():
     g = BaseRadialGrid(np.arange(0., 13, 0.001))
     e2 = np.exp(-g.points)
     m = GaussianModel(g.points, num_s=2, num_p=0, normalized=True)
-    kl = KullbackLeiblerFitting(g, e2, m)
+    kl = KLDivergenceSCF(g, e2, m)
 
     model = c[0] * (e[0] / np.pi) ** (3. / 2.) * np.exp(-e[0] * g.points ** 2.) + \
         c[1] * (e[1] / np.pi) ** (3. / 2.) * np.exp(-e[1] * g.points ** 2.)

@@ -25,15 +25,15 @@ r"""Test file for 'fitting.mbis.mbis_abc'"""
 import numpy as np
 import numpy.testing as npt
 from fitting.model import GaussianModel
-from fitting.kl_divergence.kull_leib_fitting import KullbackLeiblerFitting
+from fitting.fit import KLDivergenceSCF
 from fitting.grid import BaseRadialGrid
 
 
 def test_get_lagrange_multiplier():
-    r"""Test the lagrange multiplier in KullbackLeiblerFitting."""
+    r"""Test the lagrange multiplier in KLDivergenceSCF."""
     g = BaseRadialGrid(np.arange(0., 26, 0.05))
     e = np.exp(-g.points)
-    kl = KullbackLeiblerFitting(g, e, None)
+    kl = KLDivergenceSCF(g, e, None)
     lm = 2. * 4 * np.pi / g.integrate(e, spherical=True)
     npt.assert_allclose(kl.lagrange_multiplier, lm)
 
@@ -43,7 +43,7 @@ def test_goodness_of_fit():
     g = BaseRadialGrid(np.arange(0., 10, 0.01))
     e = np.exp(-g.points)
     m = GaussianModel(g.points, num_s=1, num_p=0)
-    kl = KullbackLeiblerFitting(g, e, m)
+    kl = KLDivergenceSCF(g, e, m)
     true_answer = kl.goodness_of_fit(np.array([1.]), np.array([1.]))[1]
     npt.assert_allclose(true_answer, 0.3431348, rtol=1e-3)
 
@@ -53,7 +53,7 @@ def test_goodness_of_fit_squared():
     g = BaseRadialGrid(np.arange(0., 10, 0.01))
     e = np.exp(-g.points)
     m = GaussianModel(g.points, num_s=1, num_p=0)
-    kl = KullbackLeiblerFitting(g, e, m)
+    kl = KLDivergenceSCF(g, e, m)
     true_answer = kl.goodness_of_fit(np.array([1.]), np.array([1.]))[2]
     npt.assert_allclose(true_answer, 1.60909, rtol=1e-4)
 
@@ -64,7 +64,7 @@ def test_get_kullback_leibler():
     g = BaseRadialGrid(np.arange(0., 26, 0.01))
     e = np.exp(-g.points**2.)
     model = GaussianModel(g.points, num_s=1, num_p=0, normalized=False)
-    kl = KullbackLeiblerFitting(g, e, model, weights=None)
+    kl = KLDivergenceSCF(g, e, model, weights=None)
     true_answer = g.integrate(kl.measure.evaluate(e, deriv=False), spherical=True)
     npt.assert_allclose(true_answer, 0.)
 
@@ -80,7 +80,7 @@ def test_get_descriptors_of_model():
     g = BaseRadialGrid(np.arange(0., 10, 0.001))
     e = np.exp(-g.points)
     model = GaussianModel(g.points, num_s=1, num_p=0, normalized=False)
-    kl = KullbackLeiblerFitting(g, e, model, weights=None, mask_value=0.)
+    kl = KLDivergenceSCF(g, e, model, weights=None, mask_value=0.)
     true_answer = kl.goodness_of_fit(np.array([1.]), np.array([1.]))
     desired_answer = [5.56833, 0.3431348, 1.60909, 4. * np.pi * 17.360]
     npt.assert_allclose(true_answer, desired_answer, rtol=1e-4)
@@ -90,7 +90,7 @@ def test_run():
     g = BaseRadialGrid(np.arange(0., 10, 0.001))
     e = (1 / np.pi) ** 1.5 * np.exp(-g.points ** 2.)
     model = GaussianModel(g.points, num_s=1, num_p=0, normalized=True)
-    kl = KullbackLeiblerFitting(g, e, model, weights=None)
+    kl = KLDivergenceSCF(g, e, model, weights=None)
 
     # Test One Basis Function
     c = np.array([1.])

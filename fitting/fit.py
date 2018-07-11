@@ -37,13 +37,11 @@ import numpy as np
 from fitting.measure import KLDivergence
 
 
-__all__ = ["KullbackLeiblerFitting"]
+__all__ = ["KLDivergenceSCF"]
 
 
-class KullbackLeiblerFitting(object):
-    r"""
-
-    """
+class KLDivergenceSCF(object):
+    r"""Kullback-Leiber Divergence Self-Consistent Fitting."""
 
     def __init__(self, grid, density, model, weights=None, mask_value=0.):
         r"""
