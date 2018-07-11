@@ -97,7 +97,7 @@ def test_run():
 
     denom = np.trapz(y=g.points ** 4. * e, x=g.points)
     exps = 3. / (2. * 4. * np.pi * denom)
-    params = kl.run(1e-3, 1e-3, c, np.array([exps]))
+    params = kl.run(c, 10 * np.array([exps]), 1.e-3, 1.e-3, 1.e-8)
     params_x = params["x"]
     npt.assert_allclose(1., params_x)
     assert np.abs(params["errors"][-1, 0] - 1.) < 1e-10

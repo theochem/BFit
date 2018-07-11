@@ -124,49 +124,72 @@ class KullbackLeiblerFitting(object):
                 new_exps[i] /= (2. * integration)
             return new_exps
 
-    def run(self, eps_coeff, eps_fparam, coeffs, fparams):
-        r"""
+    def run(self, init_coeffs, init_expons, c_threshold, e_threshold, d_threshold, maxiter=500):
+        """Optimize the coefficients & exponents of Gaussian basis functions self-consistently.
 
         Parameters
         ----------
-
+        init_coeffs : ndarray
+            The initial coefficients of Gaussian basis functions.
+        init_expons : ndarray
+            The initial exponents of Gaussian basis functions.
+        c_threshold : float
+            The convergence threshold for absolute change in coefficients.
+        e_threshold : float
+            The convergence threshold for absolute change in exponents.
+        d_threshold : float
+            The convergence threshold for absolute change in divergence value.
+        maxiter : int, optional
+            The maximum number of iterations.
 
         Returns
         -------
-
+        result : dict
+            The optimization results presented as a dictionary containing:
+            "x" : (ndarray, ndarray)
+                The optimized coefficients and exponents.
+            "success": bool
+                Whether or not the optimization exited successfully.
+            "errors" : ndarray
+                The absolute change in the KL divergence measure computed at each step.
         """
-        new_coeffs = np.copy(coeffs)
-        new_expons = np.copy(fparams)
+        new_coeffs, new_expons = init_coeffs, init_expons
 
         diff_divergence = np.inf
         max_diff_coeffs = np.inf
         max_diff_expons = np.inf
 
         errors = []
-        counter = 0
-        while max_diff_expons > eps_fparam and diff_divergence > 1e-8:
+        niter = 0
+        while max_diff_expons > e_threshold and diff_divergence > d_threshold and maxiter > niter:
 
-            while max_diff_coeffs > eps_coeff:
+            while max_diff_coeffs > c_threshold:
                 # update coeffs & compute max |coeffs_change|
                 old_coeffs = new_coeffs
                 new_coeffs = self._update_coeffs(new_coeffs, new_expons, self._lm)
                 max_diff_coeffs = np.max(np.abs(new_coeffs - old_coeffs))
-                # compute errors & update counter
+                # compute errors & update niter
                 errors.append(self.goodness_of_fit(new_coeffs, new_expons))
-                counter += 1
+                niter += 1
 
             # update expons & compute max |expons_change|
             old_expons = new_expons
             new_expons = self._update_fparams(new_coeffs, new_expons, self.lagrange_multiplier)
             max_diff_expons = np.max(np.abs(new_expons - old_expons))
-            # compute errors & update counter
+            # compute errors & update niter
             errors.append(self.goodness_of_fit(new_coeffs, new_expons))
-            counter += 1
+            niter += 1
 
             # compute absolute change in divergence
-            diff_divergence = np.abs(errors[counter - 1][-1] - errors[counter - 2][-1])
+            diff_divergence = np.abs(errors[niter - 1][-1] - errors[niter - 2][-1])
 
-        return {"x": (new_coeffs, new_expons), "iter": counter, "errors": np.array(errors)}
+        # check whether convergence is reached
+        if maxiter < niter and diff_divergence > d_threshold:
+            success = False
+        else:
+            success = True
+
+        return {"x": (new_coeffs, new_expons), "success": success, "errors": np.array(errors)}
 
     def goodness_of_fit(self, coeffs, expons):
         r"""Compute various measures to see how good is the fitted model.
