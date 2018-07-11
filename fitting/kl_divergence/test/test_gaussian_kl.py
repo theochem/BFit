@@ -136,25 +136,24 @@ def test_update_coeff():
     e = np.array([10., 3.])
     g = BaseRadialGrid(np.arange(0., 9, 0.001))
     e2 = np.exp(-g.points)
-    lm = g.integrate(e2, spherical=True) / 5.0
     m = GaussianModel(g.points, num_s=2, num_p=0, normalized=True)
     kl = KullbackLeiblerFitting(g, e2, m)
 
     model = c[0] * (e[0] / np.pi) ** (3. / 2.) * np.exp(-e[0] * g.points ** 2.) + \
             c[1] * (e[1] / np.pi) ** (3. / 2.) * np.exp(-e[1] * g.points ** 2.)
-    true_answer = kl._update_coeffs(c, e, lm)
+    true_answer = kl._update_coeffs(c, e)
 
     desired_ans = c.copy()
     integrand = e2 * np.exp(-e[0] * g.points ** 2.) * g.points ** 2. / model
     desired_answer1 = simps(integrand, g.points)
     desired_answer1 *= 4. * np.pi * (e[0] / np.pi) ** (3. / 2.)
 
-    desired_ans[0] *= desired_answer1 / 5.
+    desired_ans[0] *= desired_answer1
 
     integrand = e2 * np.exp(-e[1] * g.points ** 2.) * g.points ** 2. / model
     desired_answer2 = simps(integrand, g.points)
     desired_answer2 *= 4. * np.pi * (e[1] / np.pi) ** (3. / 2.)
-    desired_ans[1] *= desired_answer2 / 5.
+    desired_ans[1] *= desired_answer2
     npt.assert_allclose(desired_ans, true_answer, rtol=1e-3)
 
 
@@ -163,7 +162,6 @@ def test_update_func_params():
     e = np.array([10., 3.])
     g = BaseRadialGrid(np.arange(0., 13, 0.001))
     e2 = np.exp(-g.points)
-    lm = g.integrate(e2, spherical=True) / 5.0
     m = GaussianModel(g.points, num_s=2, num_p=0, normalized=True)
     kl = KullbackLeiblerFitting(g, e2, m)
 
@@ -171,7 +169,7 @@ def test_update_func_params():
         c[1] * (e[1] / np.pi) ** (3. / 2.) * np.exp(-e[1] * g.points ** 2.)
     model = np.ma.array(model)
     # Assume without convergence
-    true_answer = kl._update_fparams(c, e, lm, False)
+    true_answer = kl._update_fparams(c, e, False)
 
     # Find Numerator of integration factor
     integrand = e2 * np.exp(-e[0] * g.points ** 2.) * g.points ** 2. / model
@@ -198,7 +196,7 @@ def test_update_func_params():
     npt.assert_allclose(true_answer, [desired_answer1, desired_answer2])
 
     # Assume With Convergence
-    true_answer = kl._update_fparams(c, e, lm, True)
-    desired_answer1 = 3. * 5. / (2. * desired_answer_den1)
-    desired_answer2 = 3. * 5. / (2. * desired_answer_den)
+    true_answer = kl._update_fparams(c, e, True)
+    desired_answer1 = 3. / (2. * desired_answer_den1)
+    desired_answer2 = 3. / (2. * desired_answer_den)
     npt.assert_allclose(true_answer, [desired_answer1, desired_answer2], rtol=1e-2)

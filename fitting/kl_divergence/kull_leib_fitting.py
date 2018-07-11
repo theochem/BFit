@@ -87,7 +87,7 @@ class KullbackLeiblerFitting(object):
                 integrand = integrand * self.grid.points**2
             return (exponent / np.pi)**(3./2.) * self.grid.integrate(integrand, spherical=True)
 
-    def _update_coeffs(self, coeff_arr, exp_arr, lm):
+    def _update_coeffs(self, coeff_arr, exp_arr):
         r"""
 
         Parameters
@@ -101,9 +101,9 @@ class KullbackLeiblerFitting(object):
             new_coeff = coeff_arr.copy()
             for i in range(0, len(coeff_arr)):
                 new_coeff[i] *= self.get_inte_factor(exp_arr[i], gaussian)
-            return new_coeff / lm
+            return new_coeff / self._lm
 
-    def _update_fparams(self, coeff_arr, exp_arr, lm, with_convergence=True):
+    def _update_fparams(self, coeff_arr, exp_arr, with_convergence=True):
         r"""
 
         Parameters
@@ -117,7 +117,7 @@ class KullbackLeiblerFitting(object):
             new_exps = exp_arr.copy()
             for i in range(0, len(exp_arr)):
                 if with_convergence:
-                    new_exps[i] = 3. * lm
+                    new_exps[i] = 3. * self._lm
                 else:
                     new_exps[i] = 3. * self.get_inte_factor(exp_arr[i], masked_normed_gaussian)
                 integration = self.get_inte_factor(exp_arr[i], masked_normed_gaussian, True)
@@ -166,7 +166,7 @@ class KullbackLeiblerFitting(object):
             while max_diff_coeffs > c_threshold:
                 # update coeffs & compute max |coeffs_change|
                 old_coeffs = new_coeffs
-                new_coeffs = self._update_coeffs(new_coeffs, new_expons, self._lm)
+                new_coeffs = self._update_coeffs(new_coeffs, new_expons)
                 max_diff_coeffs = np.max(np.abs(new_coeffs - old_coeffs))
                 # compute errors & update niter
                 errors.append(self.goodness_of_fit(new_coeffs, new_expons))
@@ -174,7 +174,7 @@ class KullbackLeiblerFitting(object):
 
             # update expons & compute max |expons_change|
             old_expons = new_expons
-            new_expons = self._update_fparams(new_coeffs, new_expons, self.lagrange_multiplier)
+            new_expons = self._update_fparams(new_coeffs, new_expons)
             max_diff_expons = np.max(np.abs(new_expons - old_expons))
             # compute errors & update niter
             errors.append(self.goodness_of_fit(new_coeffs, new_expons))
