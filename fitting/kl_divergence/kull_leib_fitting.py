@@ -64,7 +64,6 @@ class KullbackLeiblerFitting(object):
         self._lm = self.grid.integrate(self.density * self.weights, spherical=True) / self.norm
         if self._lm == 0. or np.isnan(self._lm):
             raise RuntimeError("Lagrange multiplier cannot be {0}.".format(self._lm))
-        self.errors_arr = []
         self.measure = KLDivergence(density, mask_value=mask_value)
 
     @property
@@ -136,38 +135,38 @@ class KullbackLeiblerFitting(object):
         -------
 
         """
-        # Old Coeffs/Exps are initialized to allow while loop to hold initially.
-        coeffs_i1, coeffs_i = coeffs.copy(), 10. * coeffs.copy()
-        fparams_i1, fparams_i = fparams.copy(), 10. * fparams.copy()
-        self.errors_arr = []
-        prev_func_val, curr_func_val = 1e6, 1e4
+        new_coeffs = np.copy(coeffs)
+        new_expons = np.copy(fparams)
 
+        diff_divergence = np.inf
+        max_diff_coeffs = np.inf
+        max_diff_expons = np.inf
+
+        errors = []
         counter = 0
-        while np.any(np.abs(fparams_i1 - fparams_i) > eps_fparam) and \
-                np.abs(prev_func_val - curr_func_val) > 1e-8:
+        while max_diff_expons > eps_fparam and diff_divergence > 1e-8:
 
-            # One iteration to update coefficients
-            coeffs_i1, coeffs_i = self._update_coeffs(coeffs_i1, fparams_i1, self._lm), coeffs_i1
-
-            self.errors_arr.append(self.goodness_of_fit(coeffs_i1, fparams_i1))
-            counter += 1
-
-            while np.any(np.abs(coeffs_i - coeffs_i1) > eps_coeff):
-                coeffs_i = coeffs_i1
-                coeffs_i1 = self._update_coeffs(coeffs_i1, fparams_i1, self._lm)
-
-                self.errors_arr.append(self.goodness_of_fit(coeffs_i1, fparams_i1))
+            while max_diff_coeffs > eps_coeff:
+                # update coeffs & compute max |coeffs_change|
+                old_coeffs = new_coeffs
+                new_coeffs = self._update_coeffs(new_coeffs, new_expons, self._lm)
+                max_diff_coeffs = np.max(np.abs(new_coeffs - old_coeffs))
+                # compute errors & update counter
+                errors.append(self.goodness_of_fit(new_coeffs, new_expons))
                 counter += 1
 
-            fparams_i = fparams_i1
-            fparams_i1 = self._update_fparams(coeffs_i1, fparams_i1, self.lagrange_multiplier)
-
-            self.errors_arr.append(self.goodness_of_fit(coeffs_i1, fparams_i1))
+            # update expons & compute max |expons_change|
+            old_expons = new_expons
+            new_expons = self._update_fparams(new_coeffs, new_expons, self.lagrange_multiplier)
+            max_diff_expons = np.max(np.abs(new_expons - old_expons))
+            # compute errors & update counter
+            errors.append(self.goodness_of_fit(new_coeffs, new_expons))
             counter += 1
-            prev_func_val, curr_func_val = curr_func_val, self.errors_arr[counter - 1][3]
 
-        return {"x": np.append(coeffs_i1, fparams_i1), "iter": counter,
-                "errors": np.array(self.errors_arr)}
+            # compute absolute change in divergence
+            diff_divergence = np.abs(errors[counter - 1][3] - errors[counter - 2][3])
+
+        return {"x": (new_coeffs, new_expons), "iter": counter, "errors": np.array(errors)}
 
     def goodness_of_fit(self, coeffs, expons):
         r"""Compute various measures to see how good is the fitted model.
