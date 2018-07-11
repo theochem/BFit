@@ -120,16 +120,25 @@ class KullbackLeiblerFitting(object):
                 The optimized coefficients and exponents.
             "success": bool
                 Whether or not the optimization exited successfully.
-            "errors" : ndarray
-                The absolute change in the KL divergence measure computed at each step.
+            "fun" : ndarray
+                Values of KL divergence (objective function) at each iteration.
+            "performance" : ndarray
+                Values of various performance measures of modeled density at each iteration,
+                as computed by `goodness_of_fit()` method.
         """
+        # check the shape of initial coeffs and expons
+        if init_coeffs.shape != (self.model.nbasis,):
+            raise ValueError("Argument init_coeffs shape != ({0},)".format(self.model.nbasis))
+        if init_expons.shape != (self.model.nbasis,):
+            raise ValueError("Argument init_expons shape != ({0},)".format(self.model.nbasis))
+
         new_coeffs, new_expons = init_coeffs, init_expons
 
         diff_divergence = np.inf
         max_diff_coeffs = np.inf
         max_diff_expons = np.inf
 
-        errors = []
+        fun, performance = [], []
         niter = 0
         while max_diff_expons > e_threshold and diff_divergence > d_threshold and maxiter > niter:
 
@@ -139,7 +148,8 @@ class KullbackLeiblerFitting(object):
                 new_coeffs = self._update_params(new_coeffs, new_expons, True, False)
                 max_diff_coeffs = np.max(np.abs(new_coeffs - old_coeffs))
                 # compute errors & update niter
-                errors.append(self.goodness_of_fit(new_coeffs, new_expons))
+                performance.append(self.goodness_of_fit(new_coeffs, new_expons))
+                fun.append(performance[-1][-1])
                 niter += 1
 
             # update expons & compute max |expons_change|
@@ -147,11 +157,12 @@ class KullbackLeiblerFitting(object):
             new_expons = self._update_params(new_coeffs, new_expons, False, True)
             max_diff_expons = np.max(np.abs(new_expons - old_expons))
             # compute errors & update niter
-            errors.append(self.goodness_of_fit(new_coeffs, new_expons))
+            performance.append(self.goodness_of_fit(new_coeffs, new_expons))
+            fun.append(performance[-1][-1])
             niter += 1
 
             # compute absolute change in divergence
-            diff_divergence = np.abs(errors[niter - 1][-1] - errors[niter - 2][-1])
+            diff_divergence = np.abs(performance[niter - 1][-1] - performance[niter - 2][-1])
 
         # check whether convergence is reached
         if maxiter < niter and diff_divergence > d_threshold:
@@ -159,7 +170,12 @@ class KullbackLeiblerFitting(object):
         else:
             success = True
 
-        return {"x": (new_coeffs, new_expons), "success": success, "errors": np.array(errors)}
+        results = {"x": (new_coeffs, new_expons),
+                   "fun": np.array(fun),
+                   "success": success,
+                   "performance": np.array(performance)}
+
+        return results
 
     def goodness_of_fit(self, coeffs, expons):
         r"""Compute various measures to see how good is the fitted model.

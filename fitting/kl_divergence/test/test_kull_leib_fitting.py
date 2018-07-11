@@ -100,5 +100,5 @@ def test_run():
     params = kl.run(c, 10 * np.array([exps]), 1.e-3, 1.e-3, 1.e-8)
     params_x = params["x"]
     npt.assert_allclose(1., params_x)
-    assert np.abs(params["errors"][-1, 0] - 1.) < 1e-10
-    assert np.all(np.abs(params["errors"][-1][1:]) < 1e-10)
+    assert np.abs(params["performance"][-1, 0] - 1.) < 1e-10
+    assert np.all(np.abs(params["performance"][-1][1:]) < 1e-10)
