@@ -44,93 +44,6 @@ def test_get_model():
     npt.assert_array_almost_equal(true_answer, desired_answer)
 
 
-def test_get_integration_factor_coeffs():
-    r"""Test getting the integration factor for coefficients."""
-    c = np.array([5., 2.])
-    e = np.array([10., 3.])
-    g = BaseRadialGrid(np.arange(0., 25, 1e-4))
-    e2 = np.exp(-g.points)
-    m = GaussianModel(g.points, num_s=2, num_p=0, normalized=True)
-    kl = KullbackLeiblerFitting(g, e2, m)
-
-    # Integration Factor for updating coefficient.
-    model = c[0] * (e[0] / np.pi) ** (3. / 2.) * np.exp(-e[0] * g.points ** 2.) + \
-        c[1] * (e[1] / np.pi) ** (3. / 2.) * np.exp(-e[1] * g.points ** 2.)
-    true_answer = kl.get_inte_factor(e[0], model, False)
-    true_answer2 = kl.get_inte_factor(e[1], model, False)
-
-    # Testing with Simps and Masked Array
-    masked_arr = np.ma.array(e2 * np.exp(-e[0] * g.points ** 2.))
-    desired_answer = simps(y=masked_arr * g.points ** 2. / model, x=g.points)
-    desired_answer *= 4. * np.pi * (e[0] / np.pi) ** (3. / 2.)
-    npt.assert_allclose(true_answer, desired_answer, rtol=1e-5)
-
-    masked_arr = np.ma.array(e2 * np.exp(-e[1] * g.points ** 2.))
-    desired_answer = simps(y=masked_arr * g.points ** 2. / model, x=g.points)
-    desired_answer *= 4. * np.pi * (e[1] / np.pi) ** (3. / 2.)
-    npt.assert_allclose(true_answer2, desired_answer, rtol=1e-5)
-
-    # Testing with Simps and Zero Division
-    model[model == 0] = 1e-20
-    desired_answer = simps(y=e2 * np.exp(-e[0] * g.points ** 2.) * g.points ** 2. / model, x=g.points)
-    desired_answer *= 4. * np.pi * (e[0] / np.pi) ** (3. / 2.)
-    npt.assert_allclose(true_answer, desired_answer, rtol=1e-3)
-
-    # Test with lambda function
-    def f(x, ex):
-        m = c[0] * (e[0] / np.pi) ** (3. / 2.) * np.exp(-e[0] * x ** 2.) + \
-            c[1] * (e[1] / np.pi) ** (3. / 2.) * np.exp(-e[1] * x ** 2.)
-        em = np.exp(-x) * 4. * np.pi * x ** 2. * (ex / np.pi) ** (3. / 2.)
-        em *= np.exp(-ex * x ** 2.)
-        return em / m
-
-    desired_answer = quad(f, 0, 5, args=(e[0]))
-    npt.assert_allclose(true_answer, desired_answer[0], rtol=1e-5)
-    desired_answer = quad(f, 0, 15, args=(e[1]))
-    npt.assert_allclose(true_answer2, desired_answer[0], rtol=1e-3)
-
-
-def test_get_integration_factor_exps():
-    r"""Test getting integration factor for updating exponents."""
-    coeff = np.array([5., 3.])
-    exps = np.array([10., 8])
-    points = np.arange(0., 5, 1e-3)
-    grid = BaseRadialGrid(points)
-    tmod = np.exp(-points)
-    m = GaussianModel(grid.points, num_s=2, num_p=0, normalized=True)
-    kl = KullbackLeiblerFitting(grid, tmod, m)
-
-    model = coeff[0] * ((exps[0] / np.pi) ** (3. / 2.)) * np.exp(-exps[0] * points ** 2.) + \
-        coeff[1] * ((exps[1] / np.pi) ** (3. / 2.)) * np.exp(-exps[1] * points ** 2.)
-    true_answer = kl.get_inte_factor(exps[0], model, True)
-    true_answer2 = kl.get_inte_factor(exps[1], model, True)
-
-    # Test with using simpson and masked array
-    integrand = tmod * np.exp(-exps[0] * points ** 2.) * points ** 4. / model
-    desired_answer1 = simps(integrand, points)
-    desired_answer1 *= 4. * np.pi * (exps[0] / np.pi) ** (3. / 2.)
-    npt.assert_allclose(true_answer, desired_answer1)
-
-    integrand = tmod * np.exp(-exps[1] * points ** 2.) * points ** 4. / model
-    desired_answer2 = simps(integrand, points)
-    desired_answer2 *= 4. * np.pi * (exps[1] / np.pi) ** (3. / 2.)
-    npt.assert_allclose(true_answer2, desired_answer2)
-
-    # Test using quad rule
-    def f(x, ex):
-        m = coeff[0] * (exps[0] / np.pi) ** (3. / 2.) * np.exp(-exps[0] * x ** 2.) + \
-            coeff[1] * (exps[1] / np.pi) ** (3. / 2.) * np.exp(-exps[1] * x ** 2.)
-
-        em = np.exp(-x) * 4. * np.pi * x ** 4. * (ex / np.pi) ** (3. / 2.)
-        em *= np.exp(-ex * x ** 2.)
-        return em / m
-
-    desired_answer1 = quad(f, 0, 5, args=(exps[0]))
-    npt.assert_allclose(true_answer, desired_answer1[0], rtol=1e-4)
-    desired_answer2 = quad(f, 0, 5, args=(exps[1]))
-    npt.assert_allclose(true_answer2, desired_answer2[0], rtol=1e-2)
-
-
 def test_update_coeff():
     c = np.array([5., 2.])
     e = np.array([10., 3.])
@@ -141,7 +54,7 @@ def test_update_coeff():
 
     model = c[0] * (e[0] / np.pi) ** (3. / 2.) * np.exp(-e[0] * g.points ** 2.) + \
             c[1] * (e[1] / np.pi) ** (3. / 2.) * np.exp(-e[1] * g.points ** 2.)
-    true_answer = kl._update_coeffs(c, e)
+    true_answer = kl._update_params(c, e, True, False)
 
     desired_ans = c.copy()
     integrand = e2 * np.exp(-e[0] * g.points ** 2.) * g.points ** 2. / model
@@ -169,7 +82,7 @@ def test_update_func_params():
         c[1] * (e[1] / np.pi) ** (3. / 2.) * np.exp(-e[1] * g.points ** 2.)
     model = np.ma.array(model)
     # Assume without convergence
-    true_answer = kl._update_fparams(c, e, False)
+    true_answer = kl._update_params(c, e, False, True)
 
     # Find Numerator of integration factor
     integrand = e2 * np.exp(-e[0] * g.points ** 2.) * g.points ** 2. / model
@@ -194,9 +107,3 @@ def test_update_func_params():
     desired_answer2 = 3. * desired_answer_num / (2. * desired_answer_den)
 
     npt.assert_allclose(true_answer, [desired_answer1, desired_answer2])
-
-    # Assume With Convergence
-    true_answer = kl._update_fparams(c, e, True)
-    desired_answer1 = 3. / (2. * desired_answer_den1)
-    desired_answer2 = 3. / (2. * desired_answer_den)
-    npt.assert_allclose(true_answer, [desired_answer1, desired_answer2], rtol=1e-2)

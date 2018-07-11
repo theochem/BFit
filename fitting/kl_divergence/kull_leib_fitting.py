@@ -70,59 +70,29 @@ class KullbackLeiblerFitting(object):
     def lagrange_multiplier(self):
         return self._lm
 
-    def get_inte_factor(self, exponent, masked_normed_gaussian, upt_exponent=False):
-        r"""
+    def _update_params(self, coeffs, expons, update_coeffs=True, update_expons=False):
 
-        Parameters
-        ----------
-
-        Returns
-        -------
-        """
-        if self.model.num_p == 0:
-            ratio = self.weights * self.density / masked_normed_gaussian
-            grid_squared = self.grid.points**2.
-            integrand = ratio * np.ma.asarray(np.exp(-exponent * grid_squared))
-            if upt_exponent:
-                integrand = integrand * self.grid.points**2
-            return (exponent / np.pi)**(3./2.) * self.grid.integrate(integrand, spherical=True)
-
-    def _update_coeffs(self, coeff_arr, exp_arr):
-        r"""
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-        """
-        if self.model.num_p == 0:
-            gaussian = np.ma.asarray(self.model.evaluate(coeff_arr, exp_arr))
-            new_coeff = coeff_arr.copy()
-            for i in range(0, len(coeff_arr)):
-                new_coeff[i] *= self.get_inte_factor(exp_arr[i], gaussian)
-            return new_coeff / self._lm
-
-    def _update_fparams(self, coeff_arr, exp_arr, with_convergence=True):
-        r"""
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-        """
-        if self.model.num_p == 0:
-            masked_normed_gaussian = np.ma.asarray(self.model.evaluate(coeff_arr, exp_arr)).copy()
-            new_exps = exp_arr.copy()
-            for i in range(0, len(exp_arr)):
-                if with_convergence:
-                    new_exps[i] = 3. * self._lm
-                else:
-                    new_exps[i] = 3. * self.get_inte_factor(exp_arr[i], masked_normed_gaussian)
-                integration = self.get_inte_factor(exp_arr[i], masked_normed_gaussian, True)
-                new_exps[i] /= (2. * integration)
-            return new_exps
+        if not update_coeffs and not update_expons:
+            raise ValueError("At least one of args update_coeff or update_expons should be True.")
+        # compute model density & its derivative
+        m, dm = self.model.evaluate(coeffs, expons, deriv=True)
+        # compute KL divergence & its derivative
+        k, dk = self.measure.evaluate(m, deriv=True)
+        # compute averages needed to update parameters
+        avrg1, avrg2 = np.zeros(self.model.nbasis), np.zeros(self.model.nbasis)
+        for index in range(self.model.nbasis):
+            integrand = self.weights * -dk * dm[:, index]
+            avrg1[index] = self.grid.integrate(integrand, spherical=True)
+            if update_expons:
+                avrg2[index] = self.grid.integrate(integrand * self.grid.points**2, spherical=True)
+        # compute updated coeffs & expons
+        if update_coeffs:
+            new_coeffs = coeffs * avrg1 / self._lm
+        if update_expons:
+            new_expons = 1.5 * avrg1 / avrg2
+        if update_coeffs and update_expons:
+            return new_coeffs, new_expons
+        return new_coeffs if update_coeffs else new_expons
 
     def run(self, init_coeffs, init_expons, c_threshold, e_threshold, d_threshold, maxiter=500):
         """Optimize the coefficients & exponents of Gaussian basis functions self-consistently.
@@ -166,7 +136,7 @@ class KullbackLeiblerFitting(object):
             while max_diff_coeffs > c_threshold:
                 # update coeffs & compute max |coeffs_change|
                 old_coeffs = new_coeffs
-                new_coeffs = self._update_coeffs(new_coeffs, new_expons)
+                new_coeffs = self._update_params(new_coeffs, new_expons, True, False)
                 max_diff_coeffs = np.max(np.abs(new_coeffs - old_coeffs))
                 # compute errors & update niter
                 errors.append(self.goodness_of_fit(new_coeffs, new_expons))
@@ -174,7 +144,7 @@ class KullbackLeiblerFitting(object):
 
             # update expons & compute max |expons_change|
             old_expons = new_expons
-            new_expons = self._update_fparams(new_coeffs, new_expons)
+            new_expons = self._update_params(new_coeffs, new_expons, False, True)
             max_diff_expons = np.max(np.abs(new_expons - old_expons))
             # compute errors & update niter
             errors.append(self.goodness_of_fit(new_coeffs, new_expons))
