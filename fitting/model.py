@@ -24,8 +24,10 @@ r"""Model Density Module."""
 
 import numpy as np
 
+from numbers import Integral
 
-__all__ = ["GaussianModel"]
+
+__all__ = ["GaussianModel", "MolecularGaussianModel"]
 
 
 class GaussianModel(object):
@@ -45,11 +47,10 @@ class GaussianModel(object):
             Whether to normalize Gaussian basis functions.
         """
         if not isinstance(points, np.ndarray) or points.ndim != 1:
-            print("points = ", points)
             raise TypeError("Argument points should be a 1D numpy array.")
-        if not isinstance(num_s, int) or num_s < 0:
+        if not isinstance(num_s, Integral) or num_s < 0:
             raise TypeError("Argument num_s should be a positive integer.")
-        if not isinstance(num_p, int) or num_p < 0:
+        if not isinstance(num_p, Integral) or num_p < 0:
             raise TypeError("Argument num_p should be a positive integer.")
         if num_s + num_p == 0:
             raise ValueError("Arguments num_s & num_p cannot both be zero!")
@@ -100,17 +101,16 @@ class GaussianModel(object):
         -------
         g : ndarray, (N,)
             The linear combination of Gaussian basis functions evaluated on the grid points.
-        dg : ndarray, (N, `nbasis`)
-            The derivative of linear combination of Gaussian basis functions w.r.t. s-type
-            coefficients, s-type exponents, p-type coefficients & p-type exponents evaluated
-            on the grid points. Only returned if `deriv=True`.
+        dg : ndarray, (N, 2 * `nbasis`)
+            The derivative of linear combination of Gaussian basis functions w.r.t. coefficients
+            & exponents, respectively, evaluated on the grid points. Only returned if `deriv=True`.
         """
         if coeffs.ndim != 1 or expons.ndim != 1:
             raise ValueError("Arguments coeffs and expons should be 1D arrays.")
         if coeffs.size != expons.size:
             raise ValueError("Arguments coeffs and expons should have the same length.")
         if coeffs.size != self.nbasis:
-            raise ValueError("Argument coeffs should have {0} size.".format(self.nbasis))
+            raise ValueError("Argument coeffs should have size {0}.".format(self.nbasis))
 
         # evaluate all Gaussian basis on the grid, i.e., exp(-a * r**2)
         matrix = np.exp(-expons[None, :] * np.power(self.points, 2)[:, None])
@@ -119,17 +119,18 @@ class GaussianModel(object):
         if self.np == 0:
             # only s-type Gaussian basis functions
             return self._eval_s(matrix, coeffs, expons, deriv)
-
         elif self.ns == 0:
             # only p-type Gaussian basis functions
             return self._eval_p(matrix, coeffs, expons, deriv)
-
         else:
             # both s-type & p-type Gaussian basis functions
             gs = self._eval_s(matrix[:, :self.ns], coeffs[:self.ns], expons[:self.ns], deriv)
             gp = self._eval_p(matrix[:, self.ns:], coeffs[self.ns:], expons[self.ns:], deriv)
             if deriv:
-                return gs[0] + gp[0], np.concatenate((gs[1], gp[1]), axis=1)
+                # split derivatives w.r.t. coeffs & expons
+                d_coeffs = np.concatenate((gs[1][:, :self.ns], gp[1][:, :self.np]), axis=1)
+                d_expons = np.concatenate((gs[1][:, self.ns:], gp[1][:, self.np:]), axis=1)
+                return gs[0] + gp[0], np.concatenate((d_coeffs, d_expons), axis=1)
             return gs + gp
 
     def _eval_s(self, matrix, coeffs, expons, deriv):
@@ -226,3 +227,106 @@ class GaussianModel(object):
             return g, dg
         return g
 
+
+class MolecularGaussianModel(object):
+    """Molecular Atom-Centered Gaussian Density Model."""
+
+    def __init__(self, points, coords, basis, normalized=False):
+        """
+        Parameters
+        ----------
+        points : ndarray, (N,)
+            The grid points.
+        coords : ndarray
+            The atomic coordinates on which Gaussian basis are centered.
+        basis : ndarray, (M, 2)
+            The number of s-type & p-type Gaussian basis functions placed on each center.
+        normalized : bool, optional
+            Whether to normalize Gaussian basis functions.
+        """
+        # check arguments
+        if points.ndim != coords.ndim:
+            raise ValueError("Arguments points and coords should have the same ndim.")
+        if len(coords) != len(basis):
+            raise ValueError("Argument coords & basis should represent the same number of atoms.")
+        if basis.ndim != 2 and basis.shape[1] != 2:
+            raise ValueError("Argument basis should be a 2D array with 2 columns.")
+
+        self._points = points
+        self.natoms = len(basis)
+        self._nbasis = np.sum(basis)
+        # place a GaussianModel on each center
+        self.center = []
+        for index, b in enumerate(basis):
+            # compute radial distance of grid points from center
+            distance = points - coords[index]
+            if points.ndim > 1:
+                distance = np.linalg.norm(points - coords[index], axis=1)
+            self.center.append(GaussianModel(distance, b[0], b[1], normalized))
+
+    @property
+    def points(self):
+        """The grid points."""
+        return self._points
+
+    @property
+    def nbasis(self):
+        """The total number of Gaussian basis functions."""
+        return self._nbasis
+
+    def evaluate(self, coeffs, expons, deriv=False):
+        """Compute linear combination of Gaussian basis & derivatives on the grid points.
+
+        .. math::
+
+        Parameters
+        ----------
+        coeffs : ndarray, (`nbasis`,)
+            The coefficients of `num_s` s-type Gaussian basis functions followed by the
+            coefficients of `num_p` p-type Gaussian basis functions.
+        expons : ndarray, (`nbasis`,)
+            The exponents of `num_s` s-type Gaussian basis functions followed by the
+            exponents of `num_p` p-type Gaussian basis functions.
+        deriv : bool, optional
+            Whether to compute derivative of Gaussian basis functions w.r.t. coefficients &
+            exponents.
+
+        Returns
+        -------
+        g : ndarray, (N,)
+            The linear combination of Gaussian basis functions evaluated on the grid points.
+        dg : ndarray, (N, `nbasis`)
+            The derivative of linear combination of Gaussian basis functions w.r.t. coefficients
+            & exponents, respectively, evaluated on the grid points. Only returned if `deriv=True`.
+        """
+        if coeffs.ndim != 1 or expons.ndim != 1:
+            raise ValueError("Arguments coeffs & expons should be 1D arrays.")
+        if coeffs.size != self.nbasis or expons.size != self.nbasis:
+            raise ValueError("Arguments coeffs & expons shape != ({0},)".format(self.nbasis))
+        # assign arrays
+        total_g = np.zeros(len(self.points))
+        if deriv:
+            total_dg = np.zeros((len(self.points), 2 * self.nbasis))
+        # compute contribution of each center
+        count = 0
+        for center in self.center:
+            # get coeffs & expons of center
+            cs = coeffs[count: count + center.nbasis]
+            es = expons[count: count + center.nbasis]
+            if deriv:
+                # compute linear combination of gaussian placed on center & its derivatives
+                g, dg = center.evaluate(cs, es, deriv)
+                # split derivatives w.r.t. coeffs & expons
+                dg_c = dg[:, :center.nbasis]
+                dg_e = dg[:, center.nbasis:]
+                # add contributions to the total array
+                total_g += g
+                total_dg[:, count: count + center.nbasis] = dg_c
+                total_dg[:, self.nbasis + count: self.nbasis + count + center.nbasis] = dg_e
+            else:
+                # compute linear combination of gaussian placed on center
+                total_g += center.evaluate(cs, es, deriv)
+            count += center.nbasis
+        if deriv:
+            return total_g, total_dg
+        return total_g

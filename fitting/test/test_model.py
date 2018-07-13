@@ -24,7 +24,7 @@
 import numpy as np
 from numpy.testing import assert_raises, assert_almost_equal
 
-from fitting.model import GaussianModel
+from fitting.model import GaussianModel, MolecularGaussianModel
 
 
 def test_raises_gaussian_model():
@@ -432,7 +432,7 @@ def test_gaussian_1s1p_basis_origin():
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=0.
-    g, dg = np.array([0.0028395217]), np.array([[0.0056790434, 0.04259282582, 0., 0.]])
+    g, dg = np.array([0.0028395217]), np.array([[0.0056790434, 0., 0.04259282582, 0.]])
     model = GaussianModel(np.array([0.]), 1, 1, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
@@ -445,14 +445,14 @@ def test_gaussian_1s1p_basis_one_point():
     expons = np.array([0.1, 0.4])
     # un-normalized at r=-3.
     g, = np.array([0.6951118339])
-    dg = np.array([[0.4065696597, -1.8295634688, 0.2459135020, -4.4264430364]])
+    dg = np.array([[0.4065696597, 0.2459135020, -1.8295634688, -4.4264430364]])
     model = GaussianModel(np.array([-3.]), 1, 1, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=-3.
     g = np.array([0.0071130914])
-    dg = np.array([[0.0023089267, 0.0069267802, 0.0029793140, -0.0163862272]])
+    dg = np.array([[0.0023089267, 0.0029793140, 0.0069267802, -0.0163862272]])
     model = GaussianModel(np.array([-3.]), 1, 1, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
@@ -471,7 +471,7 @@ def test_gaussian_2s1p_basis_origin():
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=0.
     g = np.array([-0.9752103479])
-    dg = np.array([[0.1285020841, 0.2509806330, 0.2891296893, -1.3552954187, 0., 0.]])
+    dg = np.array([[0.1285020841, 0.2509806330, 0., 0.2891296893, -1.3552954187, 0.]])
     model = GaussianModel(np.array([0.]), 2, 1, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
@@ -484,20 +484,20 @@ def test_gaussian_2s1p_basis_multiple_point():
     expons = np.array([0.8, 1.25, 2.19])
     # un-normalized at r=[0.89, -2.56]
     g = np.array([-1.1399500497, 0.0050932753])
-    dg = np.array([[0.530635465, 0.3715302468, -0.5043796222,
-                    1.3243009883, 0.1397686627, 0.0830330683],
-                   [0.0052850141, 0.0002768596, -0.0415630417,
-                    0.0081649222, 3.831100e-06, 1.8830400e-05]])
+    dg = np.array([[ 5.30635465e-01,  3.71530247e-01,  1.39768663e-01,
+                    -5.04379622e-01,  1.32430099e+00,  8.30330683e-02],
+                   [ 5.28501406e-03,  2.76859611e-04,  3.83105827e-06,
+                    -4.15630417e-02,  8.16492216e-03,  1.88304176e-05]])
     model = GaussianModel(np.array([0.89, -2.56]), 2, 1, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=[0.89, -2.56]
     g = np.array([-0.4268626593, 0.000499832])
-    dg = np.array([[0.0681877632, 0.0932468966, 0.0886086345,
-                    -0.171159341, 0.1187692541, -0.0311281606],
-                   [0.0006791353, 6.94864e-05, -0.003812883,
-                    0.0016740108, 3.25550e-06, 1.321400e-05]])
+    dg = np.array([[ 6.81877632e-02,  9.32468966e-02,  1.18769254e-01,
+                     8.86086345e-02, -1.71159341e-01, -3.11281606e-02],
+                   [ 6.79135321e-04,  6.94864004e-05,  3.25546459e-06,
+                    -3.81288302e-03,  1.67401077e-03,  1.32140467e-05]])
     model = GaussianModel(np.array([0.89, -2.56]), 2, 1, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
@@ -516,7 +516,7 @@ def test_gaussian_1s2p_basis_origin():
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=0.
     g = np.array([0.1542025009])
-    dg = np.array([[0.1285020841, 0.2891296893, 0., 0., 0., 0.]])
+    dg = np.array([[0.1285020841, 0., 0., 0.2891296893, 0., 0.]])
     model = GaussianModel(np.array([0.]), 1, 2, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
@@ -529,10 +529,8 @@ def test_gaussian_1s2p_basis_multiple_point():
     expons = np.array([0.8, 1.25, 2.19])
     # un-normalized at r=[-0.201, 1.701]
     g = np.array([0.9612490198, -0.2351426929])
-    dg = np.array([[0.9681959350, -0.0469393008, 0.0384113615,
-                    0.0369799675,  0.0069833584, 0.0011205208],
-                   [0.0987937634, -0.3430199685, 0.0777451878,
-                    0.0051224852,  1.0122660185, 0.0111160529]])
+    dg = np.array([[ 0.96819593, 0.03841136, 0.03697997, -0.04693930, 0.00698336, 0.00112052],
+                   [ 0.09879376, 0.07774519, 0.00512249, -0.34301997, 1.01226602, 0.01111605]])
     model = GaussianModel(np.array([-0.201, 1.701]), 1, 2, normalized=False)
     print("m = ", model.evaluate(coeffs, expons, deriv=False))
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
@@ -540,10 +538,8 @@ def test_gaussian_1s2p_basis_multiple_point():
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=[-0.201, 1.701]
     g = np.array([0.0895783695, -0.0612024131])
-    dg = np.array([[0.1244151955,  0.27390239190,  0.0080337565,
-                    0.0314239478, -0.07084323550, -0.0259518957],
-                   [0.0126952045, -0.01551457070,  0.0162604470,
-                    0.0043528623,  0.06537194840,  0.0057191665]])
+    dg = np.array([[ 0.1244152, 0.00803376, 0.03142395,  0.27390239, -0.07084324, -0.0259519],
+                   [ 0.0126952, 0.01626045, 0.00435286, -0.01551457,  0.06537195,  0.00571917]])
     model = GaussianModel(np.array([-0.201, 1.701]), 1, 2, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
@@ -557,16 +553,18 @@ def test_gaussian_2s2p_basis_multiple_point():
     points = np.array([0., -0.71, 1.68, -2.03, 3.12, 4.56])
     # un-normalized
     g = np.array([-5.57, 0.3920707885, 1.6490462639, 1.0318279643, 0.2027417225, 0.0538246312])
-    dg = [[1., 1., 0., 0., 0., 0., 0., 0.],
-          [0.9460583794, 0.1801545834, -0.2527612554,  0.5539771455,
-           0.2366600353, 0.3402146225,  0.2386006476, -0.7374594222],
-          [0.7331067158, 6.798930e-05, -1.0966338091,  0.0011705476,
-           0.0409250713, 0.3122708330,  0.2310138426, -3.7898187562],
-          [0.6355280823, 8.224000e-07, -1.3880422674,  2.06726e-05,
-           0.0085205157, 0.1655916578,  0.0702243861, -2.9342626493],
-          [0.3427397041, 0.0000000000, -1.7682736492,  0.0, 4.4352e-06,
-           0.0049066395, 8.634840e-05, -0.2053817226],
-          [0.1015406569, 0.0000000000, -1.1190397759, 0.0, 0.0, 1.8798e-06, 0.0, -0.0001680746]]
+    dg = np.array([[  1.00000000e+00, 1.00000000e+00, 0.00000000e+00,  0.00000000e+00,
+                     -0.00000000e+00, 0.00000000e+00, 0.00000000e+00, -0.00000000e+00],
+                   [  9.46058379e-01, 1.80154583e-01, 2.36660035e-01,  3.40214622e-01,
+                     -2.52761255e-01, 5.53977145e-01, 2.38600648e-01, -7.37459422e-01],
+                   [  7.33106716e-01, 6.79893148e-05, 4.09250713e-02,  3.12270833e-01,
+                     -1.09663381e+00, 1.17054756e-03, 2.31013843e-01, -3.78981876e+00],
+                   [  6.35528082e-01, 8.22382682e-07, 8.52051568e-03,  1.65591658e-01,
+                     -1.38804227e+00, 2.06726365e-05, 7.02243861e-02, -2.93426265e+00],
+                   [  3.42739704e-01, 4.22836923e-15, 4.43521708e-06,  4.90663947e-03,
+                     -1.76827365e+00, 2.51079889e-13, 8.63483543e-05, -2.05381723e-01],
+                   [  1.01540657e-01, 1.97762748e-31, 5.91712954e-13,  1.87976695e-06,
+                     -1.11903978e+00, 2.50844168e-29, 2.46076850e-11, -1.68074625e-04]])
     dg = np.array(dg)
     model = GaussianModel(points, 2, 2, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
@@ -575,18 +573,256 @@ def test_gaussian_2s2p_basis_multiple_point():
     # normalized
     g = np.array([-6.8644186384, -1.2960445644, 0.0614559599,
                   0.0423855159, 0.0025445224, 0.0003531182])
-    dg = [[0.0065518541, 1.1258837903, 0.0473520366, -3.0299519652, 0.0, 0.0, 0.0, 0.0],
-          [0.0061984365, 0.2028331252, 0.0431417361, 0.0778541543,
-           0.0780794966, 0.0218863537, -0.1815452401, 0.2541973327],
-          [0.0048032083, 7.65481e-05, 0.0275291113, 0.0011118962,
-           0.0135021064, 0.0200887013, 0.0312096688, 0.0330606041],
-          [0.0041638873, 9.259e-07, 0.0209992985, 2.07832e-05,
-           0.0028111108, 0.0106526803, 0.0137982435, -0.0419483238],
-          [0.0022455805, 0.0, 0.004643952, 0.0,
-           1.4633e-06, 0.0003156491, 2.36107e-05, -0.0088621233],
-          [0.0006652796, 0.0, -0.0025236285, 0.0, 0.0, 1.209e-07, 0.0, -9.1458e-06]]
+    dg = np.array([[ 6.55185411e-03,  1.12588379e+00,  0.00000000e+00,  0.00000000e+00,
+                     4.73520366e-02, -3.02995197e+00,  0.00000000e+00,  0.00000000e+00],
+                   [ 6.19843649e-03,  2.02833125e-01,  7.80794966e-02,  2.18863537e-02,
+                     4.31417361e-02,  7.78541543e-02, -1.81545240e-01,  2.54197333e-01],
+                   [ 4.80320825e-03,  7.65480675e-05,  1.35021064e-02,  2.00887013e-02,
+                     2.75291113e-02,  1.11189616e-03,  3.12096688e-02,  3.30606041e-02],
+                   [ 4.16388728e-03,  9.25907331e-07,  2.81111077e-03,  1.06526803e-02,
+                     2.09992985e-02,  2.07832063e-05,  1.37982435e-02, -4.19483238e-02],
+                   [ 2.24558054e-03,  4.76065238e-15,  1.46327840e-06,  3.15649123e-04,
+                     4.64395201e-03,  2.69875021e-13,  2.36106798e-05, -8.86212334e-03],
+                   [ 6.65279571e-04,  2.22657872e-31,  1.95219482e-13,  1.20927325e-07,
+                    -2.52362846e-03,  2.76429266e-29,  7.46790004e-12, -9.14578547e-06]])
     dg = np.array(dg)
     model = GaussianModel(points, 2, 2, normalized=True)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+
+
+def test_molecular_gaussian_density_1d_1center_1s():
+    # points in 1D space
+    points = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
+    # gaussian parameters
+    coeffs = np.array([1.5])
+    expons = np.array([0.5])
+    coords = np.array([2.5])
+    # un-normalized 1s basis function
+    model = MolecularGaussianModel(points, coords, basis=np.array([[1, 0]]), normalized=False)
+    g = np.array([0.0659054004, 0.486978701, 1.3237453539, 1.3237453539, 0.486978701])
+    dg = np.array([[0.0439369336, -0.4119087527], [0.3246524674, -1.0957020773],
+                   [0.8824969026, -0.3309363385], [0.8824969026, -0.3309363385],
+                   [0.3246524674, -1.0957020773]])
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+    # normalized 1s basis function
+    model = MolecularGaussianModel(points, coords, basis=np.array([[1, 0]]), normalized=True)
+    g = np.array([0.0041845735, 0.0309200484, 0.0840494056, 0.0840494056, 0.0309200484])
+    dg = np.array([[0.0027897157, -0.0135998639], [0.0206133656, 0.0231900363],
+                   [0.0560329370,  0.2311358653], [0.0560329370, 0.2311358653],
+                   [0.0206133656,  0.0231900363]])
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+
+
+def test_molecular_gaussian_density_1d_1center_2s():
+    # points in 1D space
+    points = np.array([-3.09, -1.53, 0.0, 0.79, 2.91, 4.09])
+    # gaussian parameters
+    coeffs = np.array([6.03, 2.56])
+    expons = np.array([2.45, 0.36])
+    coords = np.array([1.45])
+    # un-normalized 1s basis function
+    model = MolecularGaussianModel(points, coords, basis=np.array([[2, 0]]), normalized=False)
+    g = np.array([0.0015335519, 0.1046706295, 1.2358743034, 4.2625443763, 1.2209551847, 0.2082434127])
+    dg = np.array([[ 1.17169574e-22, 5.99043705e-04, -1.45627659e-20, -3.16089580e-02],
+                   [ 3.55683438e-10, 4.08869638e-02, -1.90464255e-08, -9.29517039e-01],
+                   [ 5.79288407e-03, 4.69118442e-01, -7.34426186e-02, -2.52498310e+00],
+                   [ 3.43963408e-01, 8.54861339e-01, -9.03477676e-01, -9.53286654e-01],
+                   [ 5.39425921e-03, 4.64229610e-01, -6.93353697e-02, -2.53325270e+00],
+                   [ 3.83880356e-08, 8.13449927e-02, -1.61332199e-06, -1.45137168e+00]])
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+    # normalized 1s basis function
+    model = MolecularGaussianModel(points, coords, basis=np.array([[2, 0]]), normalized=True)
+    g = np.array([5.94877e-05, 0.0040602608, 0.070642293, 1.5133048321, 0.0685013983, 0.0080780828])
+    dg = np.array([[ 8.06936140e-23, 2.32373955e-05, -9.73133606e-21, -9.78271797e-04],
+                   [ 2.44955932e-10, 1.58603879e-03, -1.22127618e-08, -1.91389796e-02],
+                   [ 3.98950629e-03, 1.81974883e-02, -3.58506541e-02,  9.61603808e-02],
+                   [ 2.36884454e-01, 3.31607709e-02,  2.52321914e-01,  3.16736121e-01],
+                   [ 3.71497700e-03, 1.80078465e-02, -3.40355466e-02,  9.38167504e-02],
+                   [ 2.64374891e-08, 3.15543884e-03, -1.01347721e-06, -2.26418808e-02]])
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+
+
+def test_molecular_gaussian_density_1d_1center_1s2p():
+    # points in 1D space
+    points = np.array([-2.22, -0.76, 0.0, 1.98, 3.25, 5.50])
+    # gaussian parameters
+    coeffs = np.array([1.45, 0.0, 1.45])
+    expons = np.array([0.75, 1.0, 0.75])
+    coords = np.array([1.00])
+    # un-normalized 1s + 2p basis function
+    model = MolecularGaussianModel(points, coords, basis=np.array([[1, 2]]), normalized=False)
+    g = np.array([0.0069161303, 0.5820289984, 1.369863003, 1.3832172004, 0.1972685684, 7.8141e-06])
+    dg = np.array([[0.0004195617, 0.0003256663, 0.0043501834, -0.0063077659, 0.0, -0.0654014398],
+                   [0.0979596128, 0.1398797181, 0.3034396965, -0.4399875599, 0.0, -1.3629054655],
+                   [0.4723665527, 0.3678794412, 0.4723665527, -0.6849315015, 0.0, -0.6849315015],
+                   [0.4866062522, 0.3675832650, 0.4673366446, -0.6776381347, 0.0, -0.6508036645],
+                   [0.0224407899, 0.0320441844, 0.1136064987, -0.1647294231, 0.0, -0.8339427044],
+                   [2.536e-07, 3.25e-08, 5.1354e-06, -7.4464e-06, 0.0, -0.0001507893]])
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+    # normalized 1s + 2p basis function
+    model = MolecularGaussianModel(points, coords, basis=np.array([[1, 2]]), normalized=True)
+    g = np.array([0.0004388483, 0.0422296913, 0.119841017, 0.1218240891, 0.01340299, 4.772e-07])
+    dg = np.array([[4.89399e-05, 3.89903e-05, 0.0002537141, -0.0005938453, 0.0, -0.0025880989],
+                   [0.0114265243, 0.016747064, 0.0176974008, -0.0181855419, 0.0, 0.0060492075],
+                   [0.0550993182, 0.0440442734, 0.0275496591, 0.0798940113, 0.0, 0.0932096799],
+                   [0.0567603116, 0.0440088138, 0.0272563016, 0.0855616289, 0.0, 0.0937822106],
+                   [0.0026176117, 0.0038364819, 0.0066258296, -0.011623832, 0.0, -0.0166128875],
+                   [2.96e-08, 3.9e-09, 2.995e-07, -7.828e-07, 0.0, -7.3468e-06]])
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+
+
+def test_molecular_gaussian_density_2d_1center_2s1p():
+    # points in 2D space
+    points = np.array([[0.0, 0.0], [0.25, -0.25], [-0.5, -0.5], [0.25, 0.5]])
+    # gaussian parameters
+    coeffs = np.array([1.45, 0.0, 1.45])
+    expons = np.array([0.75, 1.0, 0.75])
+    coords = np.array([[0.5, 0.5]])
+    # un-normalized 2s + 1p basis function
+    model = MolecularGaussianModel(points, coords, basis=np.array([[2, 1]]), normalized=False)
+    g = np.array([1.4948541813, 1.4745035726, 0.9706161966, 1.4700746448])
+    dg = np.array([[0.6872892788, 0.6065306597, 0.3436446394, -0.4982847271, 0.0, -0.2491423636],
+                   [0.6257840096, 0.5352614285, 0.391115006, -0.5671167587, 0.0, -0.3544479742],
+                   [0.2231301601, 0.1353352832, 0.4462603203, -0.6470774644, 0.0, -1.2941549289],
+                   [0.954206666, 0.9394130628, 0.0596379166, -0.0864749791, 0.0, -0.0054046862]])
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+    # normalized 2s + 1p basis function
+    model = MolecularGaussianModel(points, coords, basis=np.array([[2, 1]]), normalized=True)
+    g = np.array([0.1453063757, 0.1389181087, 0.0754785174, 0.1664337873])
+    dg = np.array([[0.0801690349, 0.1089250957, 0.0200422587, 0.1743676509, 0.0, 0.0823402796],
+                   [0.0729947369, 0.0961260595, 0.0228108553, 0.1455332567, 0.0, 0.0895801296],
+                   [0.026027075, 0.024304474, 0.026027075, 0.0, 0.0, 0.0503190116],
+                   [0.1113036822, 0.1687064884, 0.0034782401, 0.3126937823, 0.0, 0.0164962782]])
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+
+
+def test_molecular_gaussian_density_2d_2center_1s1p_2p():
+    # points in 2D space
+    points = np.array([[0.0, 0.0], [0.25, -0.25], [-0.5, -0.5], [0.25, 0.5]])
+    # gaussian parameters
+    coeffs = np.array([1.45, 0.45, 2.91, 0.89])
+    expons = np.array([0.75, 0.65, 1.23, 0.00])
+    basis = np.array([[1, 1], [0, 2]])
+    coords = np.array([[0.0, 0.0], [0.5, 0.5]])
+    # un-normalized (1s + 1p) & (2p) basis functions
+    model = MolecularGaussianModel(points, coords, basis=basis, normalized=False)
+    g = np.array([2.6816325027, 2.7715087598, 3.4363695234, 1.4858614587])
+    dg = [[1.0, 0.0, 0.2703204, 0.5, 0.0, 0.0, -0.3933163, -0.2225],
+          [0.9105104, 0.1152454, 0.2897451, 0.625, -0.16503, -0.0064826, -0.5269739, -0.3476563],
+          [0.6872893, 0.3612637, 0.1708699, 2.0, -0.4982847, -0.0812843, -0.9944628, -3.56],
+          [0.7910651, 0.2550551, 0.0578753, 0.0625, -0.3584514, -0.0358671, -0.0105261, -0.0034766]]
+    dg = np.array(dg)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=7)
+    # normalized (1s + 1p) & (2p) basis functions
+    model = MolecularGaussianModel(points, coords, basis=basis, normalized=True)
+    g = np.array([0.3271580029, 0.3254922487, 0.2227611062, 0.1723104634])
+    dg = np.array([[0.1166453, 0.0, 0.0543032, 0.0, 0.3382712, 0.0, 0.2421725, 0.0],
+                   [0.1062067, 0.0046999, 0.0582053, 0.0, 0.2887495, 0.0078701, 0.2384023, 0.0],
+                   [0.080169, 0.014733, 0.0343251, 0.0, 0.1743677, 0.0221845, 0.0032483, 0.0],
+                   [0.092274, 0.0104016, 0.0116263, 0.0, 0.2257829, 0.0165401, 0.0666506, 0.0]])
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=7)
+
+
+def test_molecular_gaussian_density_3d_2center_1p_1p():
+    # points in 3D space
+    points = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, -1.0], [0.0, -1.0, 0.0]])
+    # gaussian parameters
+    coeffs = np.array([0.6, 1.6])
+    expons = np.array([2.5, 0.7])
+    coords = np.array([[0.0, 0.0, 0.0], [0.0, 0.5, -0.5]])
+    basis = np.array([[0, 1], [0, 1]])
+    # un-normalized (1p) & (1p) basis functions
+    model = MolecularGaussianModel(points, coords, basis=basis, normalized=False)
+    g = np.array([0.56375047, 0.84793613, 0.74434677])
+    dg = np.array([[ 0.        ,  0.35234404,  0.        , -0.28187524],
+                   [ 0.01347589,  0.52490662, -0.01617107, -1.2597759 ],
+                   [ 0.082085  ,  0.43443486, -0.049251  , -1.73773943]])
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+    # un-normalized (1p) & (1p) basis functions
+    model = MolecularGaussianModel(points, coords, basis=basis, normalized=True)
+    g = np.array([0.02767043, 0.05078846, 0.09238776])
+    dg = np.array([[ 0.00000000e+00,  1.72940204e-02,  0.00000000e+00, 8.49877575e-02],
+                   [ 1.59437891e-02,  2.57638692e-02, -9.56627343e-03, 8.53888235e-02],
+                   [ 9.71175569e-02,  2.13232647e-02, -1.38777878e-17, 3.65541680e-02]])
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+
+
+def test_molecular_gaussian_density_3d_3center_2s1p_1p_2s():
+    # points in 3D space
+    points = np.array([[0.5, 0.5, 0.5], [1.0, 0.0, 0.0], [0.0, 1.5, 0.5], [0.0, 0.0, -0.5]])
+    # gaussian parameters
+    coeffs = np.array([3.2, 1.7, 0.9, 4.1, 2.2, 7.1])
+    expons = np.array([0.8, 2.5, 1.9, 1.1, 7.5, 3.1])
+    coords = np.array([[0.0, 0.0, 0.0], [1.0, 0.5, -0.5], [0.0, 1.0, 0.0]])
+    basis = np.array([[2, 1], [0, 1], [2, 0]])
+    # un-normalized (2s1p) & (1p) & (1s) basis functions
+    model = MolecularGaussianModel(points, coords, basis=basis, normalized=False)
+    # compute density value & its derivatives
+    g = np.array([4.177243712, 2.9091656819, 2.4681836067, 5.1131523036])
+    dg = np.array([[ 5.48811636e-01,  1.53354967e-01,  1.80381347e-01,
+                     3.16049495e-01,  3.60656314e-03,  9.77834441e-02,
+                    -1.31714793e+00, -1.95527583e-01, -1.21757409e-01,
+                    -1.61975366e+00, -5.95082917e-03, -5.20696840e-01],
+                   [ 4.49328964e-01,  8.20849986e-02,  1.49568619e-01,
+                     2.88474905e-01,  3.05902321e-07,  2.02943064e-03,
+                    -1.43785269e+00, -1.39544498e-01, -1.34611757e-01,
+                    -5.91373556e-01, -1.34597021e-06, -2.88179150e-02],
+                   [ 1.35335283e-01,  1.93045414e-03,  2.16292380e-02,
+                     1.10649502e-01,  2.35177459e-02,  2.12247974e-01,
+                    -1.08268227e+00, -8.20443008e-03, -4.86657855e-02,
+                    -1.36098888e+00, -2.58695204e-02, -7.53480307e-01],
+                   [ 8.18730753e-01,  5.35261429e-01,  1.55471264e-01,
+                     3.16049495e-01,  8.48182352e-05,  2.07543379e-02,
+                    -6.54984602e-01, -2.27486107e-01, -3.49810344e-02,
+                    -1.61975366e+00, -2.33250147e-04, -1.84194749e-01]])
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
+    assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
+    assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+    # normalized (2s1p) & (1p) & (1s) basis functions
+    model = MolecularGaussianModel(points, coords, basis=basis, normalized=True)
+    g = np.array([1.4141296252, 0.5578528034, 1.8064862846, 1.4079886645])
+    dg = np.array([[ 7.05234390e-02,  1.08863690e-01,  1.07463149e-01,
+                     4.80198440e-02,  1.33033380e-02,  9.58480014e-02,
+                     2.53884381e-01, -2.77602409e-02,  5.47213665e-02,
+                     2.01355937e-01, -1.60970390e-02, -1.81106344e-01],
+                   [ 5.77397084e-02,  5.82705342e-02,  8.91063016e-02,
+                     4.38302234e-02,  1.12836565e-06,  1.98926180e-03,
+                     1.61671183e-01, -3.96239632e-02,  2.53249489e-02,
+                     3.18566033e-01, -4.46832798e-06, -2.14134408e-02],
+                   [ 1.73908660e-02,  1.37039161e-03,  1.28857338e-02,
+                     1.68118346e-02,  8.67486608e-02,  2.08046917e-01,
+                    -3.47817319e-02, -4.42636491e-03, -1.37334794e-02,
+                    -5.01298341e-02, -5.72541161e-02, -2.38247276e-02],
+                   [ 1.05208608e-01,  3.79971613e-01,  9.26228338e-02,
+                     4.80198440e-02,  3.12864522e-04,  2.03435441e-02,
+                     5.47084762e-01,  2.26083110e-01,  8.88447971e-02,
+                     2.01355937e-01, -7.22717046e-04, -1.10659036e-01]])
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
