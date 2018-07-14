@@ -77,7 +77,7 @@ class GreedyKL(GreedyStrategy):
 
     def get_best_one_function_solution(self):
         denom = self.grid.integrate(self.mbis_obj.density * np.power(
-                self.mbis_obj.grid.points**2, 2.), spherical=True)
+            self.mbis_obj.grid.points ** 2, 2.))
         exps = 3. * self.norm / (2. * 4. * np.pi * denom)
         return np.array([self.norm, exps])
 

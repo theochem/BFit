@@ -88,7 +88,7 @@ class GaussianValKL(object):
             integrand *= self.grid.points**2
         if upt_exponents:
             integrand *= self.grid.points**2
-        return const * self.grid.integrate(integrand, spherical=True)
+        return const * self.grid.integrate(integrand)
 
     def _update_coeffs(self, coeffs, fparams, lm):
         gaussian_model = self.get_model(coeffs, fparams)

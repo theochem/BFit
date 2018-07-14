@@ -40,11 +40,11 @@ def test_raises_base():
 
 def test_integration_base():
     # integrate a triangle
-    grid = BaseRadialGrid(np.arange(0., 2., 0.000001))
-    value = grid.integrate(grid.points, spherical=False)
+    grid = BaseRadialGrid(np.arange(0., 2., 0.000001), spherical=False)
+    value = grid.integrate(grid.points)
     assert_almost_equal(value, 2. * 2. / 2, decimal=5)
     # integrate a square
-    value = grid.integrate(2. * np.ones(len(grid)), spherical=False)
+    value = grid.integrate(2. * np.ones(len(grid)))
     assert_almost_equal(value, 2. * 2., decimal=5)
 
 
@@ -87,8 +87,8 @@ def test_points_uniform():
 
 def test_integration_clenshaw():
     # test against wolfram
-    grid = ClenshawRadialGrid(10, 1000, 1000)
-    value = grid.integrate(np.exp(-grid.points**2), spherical=True)
+    grid = ClenshawRadialGrid(10, 1000, 1000, spherical=True)
+    value = grid.integrate(np.exp(-grid.points ** 2))
     assert_almost_equal(value, 4. * np.pi * 0.443313, decimal=2)
 
 
@@ -115,10 +115,10 @@ def test_points_cubic():
 
 
 def test_integration_cubic():
-    grid = CubicGrid(0., 0.25, 0.001)
+    grid = CubicGrid(0., 0.25, 0.001, spherical=False)
     # integrate constant value of 1.
-    value = grid.integrate(np.ones(len(grid)), spherical=False)
+    value = grid.integrate(np.ones(len(grid)))
     assert_almost_equal(value, 0.25**3, decimal=3)
     # integrate constant value of 2.
-    value = grid.integrate(2 * np.ones(len(grid)), spherical=False)
+    value = grid.integrate(2 * np.ones(len(grid)))
     assert_almost_equal(value, 2 * 0.25**3, decimal=3)

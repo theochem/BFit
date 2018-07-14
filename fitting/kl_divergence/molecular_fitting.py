@@ -73,7 +73,7 @@ class MolecularFitting(object):
         self.grid = grid
         self.density = dens_val
         if norm is None:
-            norm = grid.integrate(self.density, spherical=True)
+            norm = grid.integrate(self.density)
         self.norm = norm
 
     def get_norm_coeffs(self, coeff_arr, exp_arr):

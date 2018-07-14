@@ -144,10 +144,10 @@ def test_get_integration_factor_exps():
 
 def test_updating_coefficients():
     r"""Test updating coeffs for 'fitting.kl_divergence.valence_kl'."""
-    g = BaseRadialGrid(np.arange(0., 25, 0.0001))
+    g = BaseRadialGrid(np.arange(0., 25, 0.0001), spherical=True)
     m = np.exp(-g.points)
     integration = simps(m * g.points**2. * 4. * np.pi, g.points)
-    lm = g.integrate(m, spherical=True) / integration
+    lm = g.integrate(m) / integration
     kl = GaussianValKL(g, m, numb_val=1)
     npt.assert_allclose(lm, 1)
 
@@ -173,10 +173,10 @@ def test_updating_coefficients():
 
 def test_updating_exponents():
     r"""Test updating exponents for 'fitting.kl_divergence.valence_kl'."""
-    g = BaseRadialGrid(np.arange(0., 25, 0.0001))
+    g = BaseRadialGrid(np.arange(0., 25, 0.0001), spherical=True)
     m = np.exp(-g.points)
     integration = simps(m * g.points ** 2. * 4. * np.pi, g.points)
-    lm = g.integrate(m, spherical=True) / integration
+    lm = g.integrate(m) / integration
     kl = GaussianValKL(g, m, numb_val=1)
     npt.assert_allclose(lm, 1)
 

@@ -130,7 +130,7 @@ def test_updating_exponents():
     norm = np.pi ** (3. / 2.)
     mol_coord = np.array([[0., 0., 0.], [0., 0., 1.]])
     numb_of_params = [1, 1]
-    lm = grid.integrate(dens_val, spherical=True) / norm
+    lm = grid.integrate(dens_val) / norm
     dens_obj = MolecularFitting(grid, dens_val, norm, mol_coord, numb_of_params)
     c = np.array([1., 2.])
     e = np.array([3., 4.])

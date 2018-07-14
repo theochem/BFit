@@ -54,12 +54,12 @@ class KLDivergenceSCF(object):
         self.grid = grid
         self.density = density
         self.model = model
-        self.norm = grid.integrate(density, spherical=True)
+        self.norm = grid.integrate(density)
         if weights is None:
             weights = np.ones(len(density))
         self.weights = weights
         # Various methods relay on masked values due to division of small numbers.
-        self._lm = self.grid.integrate(self.density * self.weights, spherical=True) / self.norm
+        self._lm = self.grid.integrate(self.density * self.weights) / self.norm
         if self._lm == 0. or np.isnan(self._lm):
             raise RuntimeError("Lagrange multiplier cannot be {0}.".format(self._lm))
         self.measure = KLDivergence(density, mask_value=mask_value)
@@ -80,9 +80,9 @@ class KLDivergenceSCF(object):
         avrg1, avrg2 = np.zeros(self.model.nbasis), np.zeros(self.model.nbasis)
         for index in range(self.model.nbasis):
             integrand = self.weights * -dk * dm[:, index]
-            avrg1[index] = self.grid.integrate(integrand, spherical=True)
+            avrg1[index] = self.grid.integrate(integrand)
             if update_expons:
-                avrg2[index] = self.grid.integrate(integrand * self.grid.points**2, spherical=True)
+                avrg2[index] = self.grid.integrate(integrand * self.grid.points ** 2)
         # compute updated coeffs & expons
         if update_coeffs:
             new_coeffs = coeffs * avrg1 / self._lm
@@ -198,7 +198,6 @@ class KLDivergenceSCF(object):
         dens = self.model.evaluate(coeffs, expons)
         # compute KL deviation measure on the grid
         value = self.measure.evaluate(dens, deriv=False)
-        return [self.grid.integrate(dens, spherical=True),
+        return [self.grid.integrate(dens),
                 self.grid.integrate(np.abs(self.density - dens)),
-                self.grid.integrate(np.abs(self.density - dens), spherical=True) / (4 * np.pi),
-                self.grid.integrate(self.weights * value, spherical=True)]
+                self.grid.integrate(self.weights * value)]

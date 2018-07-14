@@ -35,27 +35,35 @@ __all__ = ["ClenshawRadialGrid", "UniformRadialGrid", "CubicGrid"]
 class BaseRadialGrid(object):
     r"""Base Radial Grid Class."""
 
-    def __init__(self, points):
+    def __init__(self, points, spherical=True):
         """
         Parameters
         ----------
         points : ndarray, (N,)
             The radial grid points.
+        spherical : bool, optional
+            If `True`, the spherical integration of function is computed.
         """
         if not isinstance(points, np.ndarray) or points.ndim != 1:
             raise TypeError("Argument points should be a 1D numpy array.")
         self._points = np.ravel(points)
+        self._spherical = spherical
 
     @property
     def points(self):
         """Radial grid points."""
         return self._points
 
+    @property
+    def spherical(self):
+        """Whether to perform spherical integration."""
+        return self._spherical
+
     def __len__(self):
         """Number of grid points."""
         return self._points.shape[0]
 
-    def integrate(self, arr, spherical=False):
+    def integrate(self, arr):
         r"""Compute trapezoidal integration of a function evaluated on the radial grid points.
 
         .. math:: \int p * f(r) dr
@@ -67,8 +75,7 @@ class BaseRadialGrid(object):
         ----------
         arr : ndarray
             The integrand evaluated on the radial grid points.
-        spherical : bool, optional
-            If `True`, the spherical integration of :math:`f(r)` is computed.
+
         Returns
         -------
         value : float
@@ -76,7 +83,7 @@ class BaseRadialGrid(object):
         """
         if arr.shape != self.points.shape:
             raise ValueError("The argument arr should have {0} shape!".format(self.points.shape))
-        if spherical:
+        if self._spherical:
             value = 4. * np.pi * np.trapz(y=self.points**2 * arr, x=self.points)
         else:
             value = np.trapz(y=arr, x=self.points)
@@ -91,7 +98,7 @@ class UniformRadialGrid(BaseRadialGrid):
     .. math::
     """
 
-    def __init__(self, num_pts, min_radii=0., max_radii=100.):
+    def __init__(self, num_pts, min_radii=0., max_radii=100., spherical=True):
         """
         Parameters
         ----------
@@ -101,6 +108,8 @@ class UniformRadialGrid(BaseRadialGrid):
             The smallest radial grid point.
         max_radii : float, optional
             The largest radial grid point.
+        spherical : bool, optional
+            If `True`, the spherical integration of function is computed.
         """
         if not isinstance(num_pts, int) or num_pts <= 0:
             raise TypeError("Argument num_pts should be a number.")
@@ -113,7 +122,7 @@ class UniformRadialGrid(BaseRadialGrid):
 
         # compute points
         points = np.linspace(start=min_radii, stop=max_radii, num=num_pts)
-        super(UniformRadialGrid, self).__init__(points)
+        super(UniformRadialGrid, self).__init__(points, spherical)
 
 
 class ClenshawRadialGrid(BaseRadialGrid):
@@ -123,7 +132,7 @@ class ClenshawRadialGrid(BaseRadialGrid):
     and add sparse points further away.
     """
 
-    def __init__(self, atomic_number, num_core_pts, num_diffuse_pts, extra_pts=None):
+    def __init__(self, atomic_number, num_core_pts, num_diffuse_pts, extra_pts=None, spherical=True):
         r"""
         Parameters
         ----------
@@ -135,6 +144,8 @@ class ClenshawRadialGrid(BaseRadialGrid):
             The number of points far from the origin/core region.
         extra_pts : list
             Additional points to be added to the grid, commonly points far away from origin.
+        spherical : bool, optional
+            If `True`, the spherical integration of function is computed.
         """
         if not isinstance(atomic_number, int) or atomic_number <= 0:
             raise TypeError("Argument atomic_number should be a positive integer.")
@@ -158,7 +169,7 @@ class ClenshawRadialGrid(BaseRadialGrid):
         else:
             points = np.concatenate((core_points, diff_points[1:]))
 
-        super(ClenshawRadialGrid, self).__init__(np.sort(points))
+        super(ClenshawRadialGrid, self).__init__(np.sort(points), spherical)
 
     @property
     def atomic_number(self):
@@ -207,7 +218,7 @@ class CubicGrid(object):
     The cubic grid construct a 3D equally-spaced points.
     """
 
-    def __init__(self, smallest_pnt, largest_pnt, step_size):
+    def __init__(self, smallest_pnt, largest_pnt, step_size, spherical=True):
         """
         Parameters
         ----------
@@ -217,6 +228,8 @@ class CubicGrid(object):
             The largest point on any axis in the 3D cubic grid.
         step_size : float
             The step-size between two consecutive points on any axis in the 3D cubic grid.
+        spherical : bool, optional
+            If `True`, the spherical integration of function is computed.
         """
         if not isinstance(smallest_pnt, (int, float)):
             raise TypeError("Argument smallest_pt should be a positive number.")
@@ -235,6 +248,7 @@ class CubicGrid(object):
                     points.append([x, y, z])
         self._points = np.array(points)
         self._step = step_size
+        self._spherical = spherical
 
     @property
     def points(self):
@@ -246,11 +260,16 @@ class CubicGrid(object):
         """The step size between to consecutive points."""
         return self._step
 
+    @property
+    def spherical(self):
+        """Whether to perform spherical integration."""
+        return self._spherical
+
     def __len__(self):
         """Number of grid points."""
         return self._points.shape[0]
 
-    def integrate(self, arr, spherical=False):
+    def integrate(self, arr):
         r"""Compute the integral of a function evaluated on the grid points based on Riemann sums.
 
         .. math:: \int p * f(r) dr
@@ -262,8 +281,6 @@ class CubicGrid(object):
         ----------
         arr : ndarray
             The integrand evaluated on the radial grid points.
-        spherical : bool, optional
-            If `True`, the spherical integration of :math:`f(r)` is computed.
 
         Returns
         -------
@@ -273,6 +290,6 @@ class CubicGrid(object):
         if arr.shape != (len(self),):
             raise ValueError("Argument arr should have ({0},) shape.".format(len(self)))
         value = np.power(self._step, 3) * np.sum(arr)
-        if spherical:
+        if self._spherical:
             value *= 4 * np.pi
         return value

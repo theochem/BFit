@@ -39,12 +39,12 @@ def test_lagrange_multiplier():
 
 
 def test_goodness_of_fit():
-    g = BaseRadialGrid(np.arange(0., 10, 0.01))
+    g = BaseRadialGrid(np.arange(0., 10, 0.01), spherical=True)
     e = np.exp(-g.points)
     m = GaussianModel(g.points, num_s=1, num_p=0, normalized=False)
     kl = KLDivergenceSCF(g, e, m, mask_value=0.)
     gf = kl.goodness_of_fit(np.array([1.]), np.array([1.]))
-    expected = [5.56833, 0.3431348, 1.60909, 4. * np.pi * 17.360]
+    expected = [5.56833, 4 * np.pi * 1.60909, 4. * np.pi * 17.360]
     assert_almost_equal(expected, gf, decimal=1)
 
 
