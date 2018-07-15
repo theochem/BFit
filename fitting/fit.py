@@ -36,7 +36,7 @@ import numpy as np
 
 from scipy.optimize import minimize
 
-from fitting.measure import KLDivergence
+from fitting.measure import KLDivergence, SquaredDifference
 
 
 __all__ = ["KLDivergenceSCF"]
@@ -205,10 +205,10 @@ class KLDivergenceSCF(object):
                 self.grid.integrate(self.weights * value)]
 
 
-class KLDivergenceFit(object):
+class GaussianBasisFit(object):
     r"""Kullback-Leiber Divergence Fitting using `Scipy.Optimize` Library."""
 
-    def __init__(self, grid, density, model, method="slsqp", mask_value=0.):
+    def __init__(self, grid, density, model, measure="KL", method="SLSQP", mask_value=0.):
         r"""
         Parameters
         ----------
@@ -222,7 +222,7 @@ class KLDivergenceFit(object):
             raise ValueError("The grid.points & model.points are not the same!")
         if len(grid.points) != len(density):
             raise ValueError("Argument density should have ({0},) shape.".format(len(grid.points)))
-        if method not in ["slsqp", "l_bfgs_b", "tnc", "cobyla"]:
+        if method.lower() not in ["slsqp"]:
             raise ValueError("Argument method={0} is not recognized!".format(method))
 
         self.grid = grid
@@ -230,7 +230,12 @@ class KLDivergenceFit(object):
         self.model = model
         self.method = method
         # assign measure to measure deviation between density & modeled density.
-        self.measure = KLDivergence(density, mask_value=mask_value)
+        if measure.lower() == "kl":
+            self.measure = KLDivergence(density, mask_value=mask_value)
+        elif measure.lower() == "sd":
+            self.measure = SquaredDifference(density)
+        else:
+            raise ValueError("Argument measure={0} not recognized!".format(measure))
 
     def run(self, c0, e0, opt_coeffs=True, opt_expons=True, maxiter=1000, ftol=1.e-14):
         r"""Optimize coefficients and/or exponents of Gaussian basis functions.
