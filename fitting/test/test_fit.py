@@ -24,7 +24,7 @@
 import numpy as np
 from numpy.testing import assert_almost_equal
 
-from fitting.model import GaussianModel
+from fitting.model import GaussianModel, MolecularGaussianModel
 from fitting.fit import KLDivergenceSCF, KLDivergenceFit
 from fitting.grid import BaseRadialGrid
 
@@ -334,3 +334,97 @@ def test_kl_fit_normalized_dens_normalized_1s2p_gaussian():
     # assert_almost_equal(np.array([es0[1], es0[0], es0[2]]), es, decimal=6)
     # assert_almost_equal(0., f, decimal=10)
     # assert_almost_equal(np.array([0., 0., 0.]), df, decimal=6)
+
+
+def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1s_gaussian():
+    # density is normalized 1s + 1s gaussians
+    grid = BaseRadialGrid(np.arange(0., 10, 0.001), spherical=True)
+    points = grid.points
+    cs0 = np.array([1.52, 2.67])
+    es0 = np.array([0.31, 0.41])
+    coords = np.array([0., 1.])
+    # compute density on each center
+    dens1 = cs0[0] * np.exp(-es0[0] * (points - coords[0])**2.)
+    dens2 = cs0[1] * np.exp(-es0[1] * (points - coords[1])**2.)
+    # un-normalized 1s + 1s functions
+    model = MolecularGaussianModel(points, coords, np.array([[1, 0], [1, 0]]), False)
+    # fit total density
+    kl = KLDivergenceFit(grid, dens1 + dens2, model, "slsqp")
+    # initial coeff=1. & expon=1.
+    cs, es, f, df = kl.run(np.ones(2), np.ones(2), True, True)
+    assert_almost_equal(cs0, cs, decimal=4)
+    assert_almost_equal(es0, es, decimal=4)
+    assert_almost_equal(0., f, decimal=10)
+    # initial coeff=1. & expon=1.
+    cs, es, f, df = kl.run(np.array([5.45, 0.001]), es0, True, False)
+    assert_almost_equal(cs0, cs, decimal=6)
+    assert_almost_equal(es0, es, decimal=6)
+    assert_almost_equal(0., f, decimal=10)
+    # initial coeff=1. & expon=1.
+    cs, es, f, df = kl.run(cs0, np.array([5.45, 0.001]), False, True)
+    assert_almost_equal(cs0, cs, decimal=6)
+    assert_almost_equal(es0, es, decimal=6)
+    assert_almost_equal(0., f, decimal=10)
+    # fit 1s density on center 1
+    kl = KLDivergenceFit(grid, dens1, model, "slsqp")
+    # initial coeff=1. & expon=1.
+    cs, es, f, df = kl.run(np.ones(2), np.ones(2), True, True)
+    assert_almost_equal(np.array([cs[0], 0.]), cs, decimal=4)
+    assert_almost_equal(es0[0], es[0], decimal=4)
+    assert_almost_equal(0., f, decimal=10)
+    # initial coeff=1. & expon=1.
+    cs, es, f, df = kl.run(np.array([6.79, 8.51]), es0, True, False)
+    assert_almost_equal(np.array([cs[0], 0.]), cs, decimal=4)
+    assert_almost_equal(es0, es, decimal=4)
+    assert_almost_equal(0., f, decimal=10)
+    # initial coeff=1. & expon=1.
+    cs, es, f, df = kl.run(np.array([1.52, 0.0]), np.array([3.0, 4.98]), False, True)
+    assert_almost_equal(np.array([cs[0], 0.]), cs, decimal=4)
+    assert_almost_equal(es0[0], es[0], decimal=4)
+    assert_almost_equal(0., f, decimal=10)
+
+
+def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
+    # density is normalized 1s + 1s gaussians
+    grid = BaseRadialGrid(np.arange(0., 10, 0.001), spherical=True)
+    points = grid.points
+    cs0 = np.array([1.52, 2.67])
+    es0 = np.array([0.31, 0.41])
+    coords = np.array([0., 1.])
+    # compute density of each center
+    dens_s = cs0[0] * (es0[0] / np.pi)**1.5 * np.exp(-es0[0] * (points - coords[0])**2.)
+    dens_p = cs0[1] * (points - coords[1])**2 * np.exp(-es0[1] * (points - coords[1])**2.)
+    dens_p *= (2. * es0[1]**2.5 / (3. * np.pi**1.5))
+    # un-normalized 1s + 1p functions
+    model = MolecularGaussianModel(points, coords, np.array([[1, 0], [0, 1]]), True)
+    # fit total density
+    kl = KLDivergenceFit(grid, dens_s + dens_p, model, "slsqp")
+    # opt. coeffs & expons
+    cs, es, f, df = kl.run(np.ones(2), np.ones(2), True, True)
+    assert_almost_equal(cs0, cs, decimal=6)
+    assert_almost_equal(es0, es, decimal=6)
+    assert_almost_equal(0., f, decimal=10)
+    # opt. coeffs, initial expon=es0
+    cs, es, f, df = kl.run(np.array([5.91, 7.01]), es0, True, False)
+    assert_almost_equal(cs0, cs, decimal=6)
+    assert_almost_equal(es0, es, decimal=6)
+    assert_almost_equal(0., f, decimal=10)
+    # opt. expons, initial coeff=cs0
+    cs, es, f, df = kl.run(cs0, np.array([5.91, 7.01]), False, True)
+    assert_almost_equal(cs0, cs, decimal=6)
+    assert_almost_equal(es0, es, decimal=6)
+    assert_almost_equal(0., f, decimal=10)
+    # fit 1s density on center 1
+    kl = KLDivergenceFit(grid, dens_s, model, "slsqp")
+    # opt. coeffs & expons
+    cs, es, f, df = kl.run(np.ones(2), np.ones(2), True, True)
+    assert_almost_equal(np.array([cs0[0], 0.]), cs, decimal=6)
+    assert_almost_equal(es0[0], es[0], decimal=6)
+    assert_almost_equal(0., f, decimal=10)
+    # # fit 1p density on center 2
+    kl = KLDivergenceFit(grid, dens_p, model, "slsqp", mask_value=1.e-12)
+    # opt. expons
+    cs, es, f, df = kl.run(np.array([0., cs0[1]]), np.ones(2), False, True)
+    assert_almost_equal(np.array([0., cs0[1]]), cs, decimal=6)
+    assert_almost_equal(es0[1], es[1], decimal=6)
+    assert_almost_equal(0., f, decimal=10)
