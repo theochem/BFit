@@ -34,6 +34,8 @@ have to inherit from KullbackLeibler class.
 
 import numpy as np
 
+from scipy.optimize import minimize
+
 from fitting.measure import KLDivergence
 
 
@@ -201,3 +203,155 @@ class KLDivergenceSCF(object):
         return [self.grid.integrate(dens),
                 self.grid.integrate(np.abs(self.density - dens)),
                 self.grid.integrate(self.weights * value)]
+
+
+class KLDivergenceFit(object):
+    r"""Kullback-Leiber Divergence Fitting using `Scipy.Optimize` Library."""
+
+    def __init__(self, grid, density, model, method="slsqp", mask_value=0.):
+        r"""
+        Parameters
+        ----------
+        grid
+        density
+        model
+        method
+        mask_value
+        """
+        if np.any(abs(grid.points - model.points) > 1.e-12):
+            raise ValueError("The grid.points & model.points are not the same!")
+        if len(grid.points) != len(density):
+            raise ValueError("Argument density should have ({0},) shape.".format(len(grid.points)))
+        if method not in ["slsqp", "l_bfgs_b", "tnc", "cobyla"]:
+            raise ValueError("Argument method={0} is not recognized!".format(method))
+
+        self.grid = grid
+        self.density = density
+        self.model = model
+        self.method = method
+        # assign measure to measure deviation between density & modeled density.
+        self.measure = KLDivergence(density, mask_value=mask_value)
+
+    def run(self, c0, e0, opt_coeffs=True, opt_expons=True, maxiter=1000, ftol=1.e-14):
+        r"""Optimize coefficients and/or exponents of Gaussian basis functions.
+
+        Parameters
+        ----------
+        c0 : ndarray
+            Initial guess for coefficients of Gaussian basis functions.
+        e0 : ndarray
+            Initial guess for exponents of Gaussian basis functions.
+        opt_coeffs : bool, optional
+            Whether to optimize coefficients of Gaussian basis functions.
+        opt_expons : bool, optional
+            Whether to optimize exponents of Gaussian basis functions.
+        maxiter : int, optional
+            Maximum number of iterations.
+        ftol : float, optional
+            Precision goal for the value of objective function in the stopping criterion.
+        """
+        # set bounds, initial guess & args
+        if opt_coeffs and opt_expons:
+            bounds = [(1.e-12, np.inf)] * 2 * self.model.nbasis
+            x0 = np.concatenate((c0, e0))
+            args = ()
+        elif opt_coeffs:
+            bounds = [(1.e-12, np.inf)] * self.model.nbasis
+            x0 = c0
+            args = ("fixed_expons", e0)
+        elif opt_expons:
+            bounds = [(1.e-12, np.inf)] * self.model.nbasis
+            x0 = e0
+            args = ("fixed_coeffs", c0)
+        else:
+            raise ValueError("Nothing to optimize!")
+        # set constraints
+        constraints = [{"fun": self.const_norm, "type": "eq", "args": args}]
+        # set optimization options
+        options = {"ftol": ftol, "maxiter": maxiter, "disp": True}
+        # optimize
+        res = minimize(fun=self.func,
+                       x0=x0,
+                       args=args,
+                       method=self.method,
+                       jac=True,
+                       bounds=bounds,
+                       constraints=constraints,
+                       options=options,
+                       )
+        # check successful optimization
+        if not res["success"]:
+            raise ValueError("Failed Optimization: {0}".format(res["message"]))
+        # check constraints
+
+        # split optimized coeffs & expons
+        if opt_coeffs and opt_expons:
+            coeffs, expons = res["x"][:self.model.nbasis], res["x"][self.model.nbasis:]
+        elif opt_coeffs:
+            coeffs, expons = res["x"], e0
+        else:
+            coeffs, expons = c0, res["x"]
+        return coeffs, expons, res["fun"], res["jac"]
+
+    def func(self, x, *args):
+        r"""Compute objective function and its derivative w.r.t. Gaussian basis parameters.
+
+        Parameters
+        ----------
+        x : ndarray
+            The parameters of Gaussian basis which is being optimized
+        args :
+        """
+        # compute linear combination of gaussian basis functions
+        m, dm = self.evaluate_model(x, *args)
+        # compute KL divergence
+        k, dk = self.measure.evaluate(m, deriv=True)
+        # compute objective function & its derivative
+        obj = self.grid.integrate(k)
+        d_obj = np.zeros_like(x)
+        for index in range(len(x)):
+            d_obj[index] = self.grid.integrate(dk * dm[:, index])
+        return obj, d_obj
+
+    def const_norm(self, x, *args):
+        r"""Compute deviation in normalization constraint.
+
+        Parameters
+        ----------
+        x : ndarray
+            The parameters of Gaussian basis which is being optimized
+        args :
+        """
+        norm = self.grid.integrate(self.density)
+        # compute linear combination of gaussian basis functions
+        m, dm = self.evaluate_model(x, *args)
+        cons = norm - self.grid.integrate(m)
+        return cons
+
+    def evaluate_model(self, x, *args):
+        r"""Compute deviation between density & fitted density & its derivative.
+
+        Parameters
+        ----------
+        x : ndarray
+            The parameters of Gaussian basis which is being optimized
+        args :
+        """
+        # assign coefficients & exponents
+        if len(args) != 0:
+            if args[0] == "fixed_coeffs":
+                coeffs = args[1]
+                expons = x
+                start, end = self.model.nbasis, 2 * self.model.nbasis
+            elif args[0] == "fixed_expons":
+                coeffs = x
+                expons = args[1]
+                start, end = 0, self.model.nbasis
+            else:
+                raise ValueError("Argument args is not understandable!")
+        else:
+            coeffs, expons = x[:self.model.nbasis], x[self.model.nbasis:]
+            start, end = 0, 2 * self.model.nbasis
+        # compute model density & its derivative
+        m, dm = self.model.evaluate(coeffs, expons, deriv=True)
+        return m, dm[:, start: end]
