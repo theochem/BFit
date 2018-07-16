@@ -146,8 +146,8 @@ def test_kl_fit_normalized_dens_unnormalized_1s_gaussian():
     expected_es = np.array([0.88])
     # initial coeff=2.6 & expon=0.001
     cs, es, f, df = kl.run(np.array([2.6]), np.array([0.001]), opt_coeffs=True, opt_expons=True)
-    assert_almost_equal(expected_cs, cs, decimal=8)
-    assert_almost_equal(expected_es, es, decimal=8)
+    assert_almost_equal(expected_cs, cs, decimal=7)
+    assert_almost_equal(expected_es, es, decimal=7)
     assert_almost_equal(0., f, decimal=10)
     # initial coeff=1. & expon=0.88, opt coeffs
     cs, es, f, df = kl.run(np.array([1.0]), np.array([0.88]), opt_coeffs=True, opt_expons=False)
@@ -233,7 +233,7 @@ def test_kl_fit_normalized_dens_unnormalized_2p_gaussian():
     # initial coeff=[1.5, 0.1] & expon=[4., 0.001]
     cs, es, f, df = kl.run(np.array([1.5, 0.1]), np.array([4.0, 0.001]), True, True)
     assert_almost_equal(expected_cs, cs, decimal=6)
-    assert_almost_equal(expected_es, es, decimal=6)
+    assert_almost_equal(expected_es, es, decimal=5)
     assert_almost_equal(0., f, decimal=10)
     # initial coeff=cs0 & expon=es0, opt coeffs
     cs, es, f, df = kl.run(cs0, es0, opt_coeffs=True, opt_expons=False)
@@ -306,8 +306,8 @@ def test_kl_fit_normalized_dens_normalized_1s2p_gaussian():
     kl = GaussianBasisFit(grid, dens, model, measure="kl", method="slsqp")
     # initial coeff=1. & expon=1.
     cs, es, f, df = kl.run(np.array([1., 1., 1.]), np.array([1., 1., 1.]), True, True)
-    assert_almost_equal(cs0, cs, decimal=6)
-    assert_almost_equal(es0, es, decimal=6)
+    assert_almost_equal(cs0, cs, decimal=5)
+    assert_almost_equal(es0, es, decimal=5)
     assert_almost_equal(0., f, decimal=10)
     assert_almost_equal(np.array([-1., -1., -1., 0., 0., 0.]), df, decimal=6)
     # initial coeff=[0.1, 0.6, 7.] & expon=[1., 0.9, 1.0]
