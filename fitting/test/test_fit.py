@@ -26,11 +26,11 @@ from numpy.testing import assert_almost_equal
 
 from fitting.model import GaussianModel, MolecularGaussianModel
 from fitting.fit import KLDivergenceSCF, GaussianBasisFit
-from fitting.grid import BaseRadialGrid
+from fitting.grid import UniformRadialGrid
 
 
 def test_lagrange_multiplier():
-    g = BaseRadialGrid(np.arange(0., 26, 0.05))
+    g = UniformRadialGrid(150, 0.0, 15.0, spherical=True)
     e = np.exp(-g.points)
     kl = KLDivergenceSCF(g, e, None)
     assert_almost_equal(kl.lagrange_multiplier, 1., decimal=8)
@@ -39,7 +39,7 @@ def test_lagrange_multiplier():
 
 
 def test_goodness_of_fit():
-    g = BaseRadialGrid(np.arange(0., 10, 0.01), spherical=True)
+    g = UniformRadialGrid(1000, 0.0, 10.0, spherical=True)
     e = np.exp(-g.points)
     m = GaussianModel(g.points, num_s=1, num_p=0, normalized=False)
     kl = KLDivergenceSCF(g, e, m, mask_value=0.)
@@ -50,7 +50,7 @@ def test_goodness_of_fit():
 
 def test_run_normalized_1s_gaussian():
     # density is normalized 1s orbital with exponent=1.0
-    g = BaseRadialGrid(np.arange(0., 10, 0.001))
+    g = UniformRadialGrid(150, 0.0, 15.0, spherical=True)
     e = (1. / np.pi)**1.5 * np.exp(-g.points**2.)
     model = GaussianModel(g.points, num_s=1, num_p=0, normalized=True)
     kl = KLDivergenceSCF(g, e, model, weights=None)
@@ -94,7 +94,7 @@ def test_run_normalized_1s_gaussian():
 
 def test_kl_fit_unnormalized_dens_normalized_1s_gaussian():
     # density is normalized 1s orbital with exponent=1.0
-    grid = BaseRadialGrid(np.arange(0., 10, 0.001), spherical=True)
+    grid = UniformRadialGrid(150, 0.0, 15.0, spherical=True)
     # density is normalized 1s gaussian
     dens = 1.57 * np.exp(-0.51 * grid.points**2.)
     model = GaussianModel(grid.points, num_s=1, num_p=0, normalized=True)
@@ -136,7 +136,7 @@ def test_kl_fit_unnormalized_dens_normalized_1s_gaussian():
 
 def test_kl_fit_normalized_dens_unnormalized_1s_gaussian():
     # density is normalized 1s gaussian
-    grid = BaseRadialGrid(np.arange(0., 10, 0.001), spherical=True)
+    grid = UniformRadialGrid(200, 0.0, 15.0, spherical=True)
     dens = 2.06 * (0.88 / np.pi)**1.5 * np.exp(-0.88 * grid.points**2.)
     # un-normalized 1s basis function
     model = GaussianModel(grid.points, num_s=1, num_p=0, normalized=False)
@@ -175,7 +175,7 @@ def test_kl_fit_normalized_dens_unnormalized_1s_gaussian():
 
 def test_kl_fit_normalized_dens_normalized_1s_gaussian():
     # density is normalized 1s gaussian
-    grid = BaseRadialGrid(np.arange(0., 10, 0.001), spherical=True)
+    grid = UniformRadialGrid(150, 0.0, 15.0, spherical=True)
     dens = 2.06 * (0.88 / np.pi)**1.5 * np.exp(-0.88 * grid.points**2.)
     # normalized 1s basis function
     model = GaussianModel(grid.points, num_s=1, num_p=0, normalized=True)
@@ -217,7 +217,7 @@ def test_kl_fit_normalized_dens_normalized_1s_gaussian():
 
 def test_kl_fit_normalized_dens_unnormalized_2p_gaussian():
     # density is normalized 2p orbitals
-    grid = BaseRadialGrid(np.arange(0., 10, 0.001), spherical=True)
+    grid = UniformRadialGrid(150, 0.0, 15.0, spherical=True)
     points = grid.points
     cs0 = np.array([0.76, 3.09])
     es0 = np.array([2.01, 0.83])
@@ -246,7 +246,7 @@ def test_kl_fit_normalized_dens_unnormalized_2p_gaussian():
     assert_almost_equal(expected_es, es, decimal=6)
     assert_almost_equal(0., f, decimal=10)
     # initial coeff=expected_cs & expon=[4.5, 1.0], opt expons
-    cs, es, f, df = kl.run(expected_cs, np.array([0., 0.]), opt_coeffs=False, opt_expons=True)
+    cs, es, f, df = kl.run(expected_cs, np.array([4.5, 1.0]), opt_coeffs=False, opt_expons=True)
     assert_almost_equal(expected_cs, cs, decimal=6)
     assert_almost_equal(expected_es, es, decimal=6)
     assert_almost_equal(0., f, decimal=10)
@@ -254,7 +254,7 @@ def test_kl_fit_normalized_dens_unnormalized_2p_gaussian():
 
 def test_kl_fit_normalized_dens_normalized_2p_gaussian():
     # density is normalized 2p orbitals
-    grid = BaseRadialGrid(np.arange(0., 10, 0.001), spherical=True)
+    grid = UniformRadialGrid(150, 0.0, 15.0, spherical=True)
     points = grid.points
     cs0 = np.array([0.76, 3.09])
     es0 = np.array([2.01, 0.83])
@@ -294,7 +294,7 @@ def test_kl_fit_normalized_dens_normalized_2p_gaussian():
 
 def test_kl_fit_normalized_dens_normalized_1s2p_gaussian():
     # density is normalized 1s + 2p gaussians
-    grid = BaseRadialGrid(np.arange(0., 10, 0.001), spherical=True)
+    grid = UniformRadialGrid(150, 0.0, 15.0, spherical=True)
     points = grid.points
     cs0 = np.array([1.52, 0.76, 3.09])
     es0 = np.array([0.50, 2.01, 0.83])
@@ -306,8 +306,8 @@ def test_kl_fit_normalized_dens_normalized_1s2p_gaussian():
     kl = GaussianBasisFit(grid, dens, model, measure="kl", method="slsqp")
     # initial coeff=1. & expon=1.
     cs, es, f, df = kl.run(np.array([1., 1., 1.]), np.array([1., 1., 1.]), True, True)
-    assert_almost_equal(cs0, cs, decimal=5)
-    assert_almost_equal(es0, es, decimal=5)
+    assert_almost_equal(np.sort(cs0), np.sort(cs), decimal=5)
+    assert_almost_equal(np.sort(es0), np.sort(es), decimal=5)
     assert_almost_equal(0., f, decimal=10)
     assert_almost_equal(np.array([-1., -1., -1., 0., 0., 0.]), df, decimal=6)
     # initial coeff=[0.1, 0.6, 7.] & expon=[1., 0.9, 1.0]
@@ -338,7 +338,7 @@ def test_kl_fit_normalized_dens_normalized_1s2p_gaussian():
 
 def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1s_gaussian():
     # density is normalized 1s + 1s gaussians
-    grid = BaseRadialGrid(np.arange(0., 10, 0.001), spherical=True)
+    grid = UniformRadialGrid(150, 0.0, 15.0, spherical=True)
     points = grid.points
     cs0 = np.array([1.52, 2.67])
     es0 = np.array([0.31, 0.41])
@@ -386,7 +386,7 @@ def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1s_gaussian():
 
 def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
     # density is normalized 1s + 1s gaussians
-    grid = BaseRadialGrid(np.arange(0., 10, 0.001), spherical=True)
+    grid = UniformRadialGrid(150, 0.0, 15.0, spherical=True)
     points = grid.points
     cs0 = np.array([1.52, 2.67])
     es0 = np.array([0.31, 0.41])
@@ -432,7 +432,7 @@ def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
 
 def test_ls_fit_normalized_dens_normalized_1s_gaussian():
     # density is normalized 1s orbital with exponent=1.0
-    grid = BaseRadialGrid(np.arange(0., 10, 0.001), spherical=True)
+    grid = UniformRadialGrid(200, 0.0, 15.0, spherical=True)
     # actual density is a normalized 1s gaussian
     cs0, es0 = np.array([1.57]), np.array([0.51])
     dens = 1.57 * (0.51 / np.pi)**1.5 * np.exp(-0.51 * grid.points**2.)
