@@ -92,6 +92,50 @@ def test_run_normalized_1s_gaussian():
     assert_almost_equal(0., res["fun"][-1], decimal=10)
 
 
+def test_kl_scf_update_coeffs_2s_gaussian():
+    # actual density is a 1s Slater function
+    grid = UniformRadialGrid(150, 0.0, 15.0, spherical=True)
+    cs, es = np.array([5., 2.]), np.array([10., 3.])
+    dens = np.exp(-grid.points)
+    # model density is a normalized 2s Gaussian basis
+    model = GaussianModel(grid.points, num_s=2, num_p=0, normalized=True)
+    # test updating coeffs
+    kl = KLDivergenceSCF(grid, dens, model)
+    new_coeffs = kl._update_params(cs, es, True, False)
+    # compute model density
+    approx = cs[0] * (es[0] / np.pi)**1.5 * np.exp(-es[0] * grid.points**2)
+    approx += cs[1] * (es[1] / np.pi)**1.5 * np.exp(-es[1] * grid.points**2)
+    # compute expected coeffs
+    coeffs = cs * (es / np.pi)**1.5
+    coeffs[0] *= grid.integrate(dens * np.exp(-es[0] * grid.points**2) / approx)
+    coeffs[1] *= grid.integrate(dens * np.exp(-es[1] * grid.points**2) / approx)
+    assert_almost_equal(new_coeffs, coeffs, decimal=6)
+
+
+def test_kl_scf_update_params_2s_gaussian():
+    # actual density is a 1s Slater function
+    grid = UniformRadialGrid(1000, 0.0, 20.0, spherical=True)
+    points = grid.points
+    cs, es = np.array([5., 2.]), np.array([10., 3.])
+    dens = np.exp(-points)
+    # model density is a normalized 2s Gaussian basis
+    model = GaussianModel(points, num_s=2, num_p=0, normalized=True)
+    # test updating coeffs
+    kl = KLDivergenceSCF(grid, dens, model, mask_value=1.e-16)
+    new_expons = kl._update_params(cs, es, False, True)
+    # compute model density
+    approx = cs[0] * (es[0] / np.pi)**1.5 * np.exp(-es[0] * points**2)
+    approx += cs[1] * (es[1] / np.pi)**1.5 * np.exp(-es[1] * points**2)
+    # compute expected expons
+    expons = 1.5 * np.ones(2)
+    ratio = np.ma.filled(dens / np.ma.masked_less_equal(approx, 1.e-16), 1.)
+    expons[0] *= grid.integrate(ratio * np.exp(-es[0] * points**2))
+    expons[1] *= grid.integrate(ratio * np.exp(-es[1] * points**2))
+    expons[0] /= grid.integrate(ratio * points**2 * np.exp(-es[0] * points**2))
+    expons[1] /= grid.integrate(ratio * points**2 * np.exp(-es[1] * points**2))
+    assert_almost_equal(new_expons, expons, decimal=6)
+
+
 def test_kl_fit_unnormalized_dens_normalized_1s_gaussian():
     # density is normalized 1s orbital with exponent=1.0
     grid = UniformRadialGrid(150, 0.0, 15.0, spherical=True)
