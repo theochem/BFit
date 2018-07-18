@@ -457,3 +457,145 @@ def test_ls_fit_normalized_dens_normalized_1s_gaussian():
     assert_almost_equal(np.array([1.57, 0.]), cs, decimal=6)
     assert_almost_equal(np.array([0.51, 0.]), es, decimal=6)
     assert_almost_equal(0., f, decimal=10)
+
+
+def test_ls_fit_normalized_dens_normalized_2s_gaussian():
+    # density is normalized 1s orbital with exponent=1.0
+    grid = UniformRadialGrid(300, 0.0, 15.0, spherical=True)
+    # actual density is a normalized 1s gaussian
+    cs0 = np.array([1.57, 0.12])
+    es0 = np.array([0.45, 1.29])
+    # evaluate normalized 8s density
+    dens = cs0[0] * (es0[0] / np.pi)**1.5 * np.exp(-es0[0] * grid.points**2.)
+    dens += cs0[1] * (es0[1] / np.pi)**1.5 * np.exp(-es0[1] * grid.points**2.)
+    # check norm of density
+    assert_almost_equal(grid.integrate(dens), np.sum(cs0), decimal=6)
+    # model density is a normalized 2s Gaussian
+    model = GaussianModel(grid.points, num_s=2, num_p=0, normalized=True)
+    ls = GaussianBasisFit(grid, dens, model, measure="sd", method="slsqp")
+    initial_cs = np.array([0.57, 0.98])
+    initial_es = np.array([1.67, 0.39])
+    # opt. coeffs & expons
+    cs, es, f, df = ls.run(initial_cs, initial_es, True, True)
+    assert_almost_equal(np.sort(cs0), np.sort(cs), decimal=6)
+    assert_almost_equal(np.sort(es0), np.sort(es), decimal=6)
+    assert_almost_equal(0., f, decimal=10)
+    # opt. coeffs
+    cs, es, f, df = ls.run(initial_cs, es0, True, False)
+    assert_almost_equal(cs0, cs, decimal=8)
+    assert_almost_equal(es0, es, decimal=8)
+    assert_almost_equal(0., f, decimal=10)
+
+
+def test_ls_fit_normalized_dens_normalized_5s_gaussian():
+    # density is normalized 1s orbital with exponent=1.0
+    grid = UniformRadialGrid(300, 0.0, 15.0, spherical=True)
+    # actual density is a normalized 5s gaussian
+    cs0 = np.array([1.57, 0.12, 3.67, 0.97, 5.05])
+    es0 = np.array([0.45, 1.29, 1.25, 20.1, 10.5])
+    # evaluate normalized 5s density
+    dens = cs0[0] * (es0[0] / np.pi)**1.5 * np.exp(-es0[0] * grid.points**2)
+    dens += cs0[1] * (es0[1] / np.pi)**1.5 * np.exp(-es0[1] * grid.points**2)
+    dens += cs0[2] * (es0[2] / np.pi)**1.5 * np.exp(-es0[2] * grid.points**2)
+    dens += cs0[3] * (es0[3] / np.pi)**1.5 * np.exp(-es0[3] * grid.points**2)
+    dens += cs0[4] * (es0[4] / np.pi)**1.5 * np.exp(-es0[4] * grid.points**2)
+    # check norm of density
+    assert_almost_equal(grid.integrate(dens), np.sum(cs0), decimal=6)
+    # model density is a normalized 1s Gaussian
+    model = GaussianModel(grid.points, num_s=5, num_p=0, normalized=True)
+    ls = GaussianBasisFit(grid, dens, model, measure="sd", method="slsqp")
+    initial_cs = np.array([0.57, 0.98, 1.16, 9.26, 2.48])
+    initial_es = np.array([1.67, 0.39, 1.79, 13.58, 18.69])
+    # opt. coeffs & expons
+    cs, es, f, df = ls.run(initial_cs, initial_es, True, True)
+    # assert_almost_equal(np.sort(cs0), np.sort(cs), decimal=6)
+    assert_almost_equal(np.sort(es0), np.sort(es), decimal=1)
+    assert_almost_equal(0., f, decimal=10)
+    # opt. coeffs
+    cs, es, f, df = ls.run(initial_cs, es0, True, False)
+    assert_almost_equal(np.sort(cs0), np.sort(cs), decimal=6)
+    assert_almost_equal(np.sort(es0), np.sort(es), decimal=6)
+    assert_almost_equal(0., f, decimal=10)
+
+
+def test_ls_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1s_gaussian():
+    # density is normalized 1s + 1s gaussians
+    grid = UniformRadialGrid(200, 0.0, 15.0, spherical=True)
+    cs0, es0 = np.array([1.52, 2.67, ]), np.array([0.31, 0.41])
+    coords = np.array([0., 1.])
+    # compute density on each center
+    dens1 = cs0[0] * np.exp(-es0[0] * (grid.points - coords[0])**2.)
+    dens2 = cs0[1] * np.exp(-es0[1] * (grid.points - coords[1])**2.)
+    # un-normalized 1s + 1s basis functions
+    model = MolecularGaussianModel(grid.points, coords, np.array([[1, 0], [1, 0]]), False)
+    # fit total density
+    ls = GaussianBasisFit(grid, dens1 + dens2, model, measure="sd", method="slsqp")
+    # initial coeff=1. & expon=1.
+    cs, es, f, df = ls.run(np.ones(2), np.ones(2), True, True)
+    assert_almost_equal(cs0, cs, decimal=6)
+    assert_almost_equal(es0, es, decimal=6)
+    assert_almost_equal(0., f, decimal=10)
+    # fit 1s density on center 1
+    ls = GaussianBasisFit(grid, dens1, model, measure="sd", method="slsqp")
+    # initial coeff=1. & expon=1.
+    cs, es, f, df = ls.run(np.ones(2), np.ones(2), True, True)
+    assert_almost_equal(np.array([1.52, 0.0]), cs, decimal=6)
+    assert_almost_equal(es0[0], es[0], decimal=6)
+    assert_almost_equal(0., f, decimal=10)
+    # fit 1s density on center 2
+    ls = GaussianBasisFit(grid, dens2, model, measure="sd", method="slsqp")
+    # initial coeff=1. & expon=1.
+    cs, es, f, df = ls.run(np.ones(2), np.ones(2), True, True)
+    assert_almost_equal(np.array([0.0, 2.67]), cs, decimal=6)
+    assert_almost_equal(es0[1], es[1], decimal=6)
+    assert_almost_equal(0., f, decimal=10)
+
+
+def test_ls_fit_normalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
+    # density is normalized 1s + 1s gaussians
+    grid = UniformRadialGrid(200, 0.0, 15.0, spherical=True)
+    cs0, es0 = np.array([1.52, 2.67]), np.array([0.31, 0.41])
+    coords = np.array([0.0, 1.0])
+    # compute density of each center
+    dens_s = cs0[0] * (es0[0] / np.pi)**1.5 * np.exp(-es0[0] * (grid.points - coords[0])**2.)
+    dens_p = cs0[1] * (grid.points - coords[1])**2 * np.exp(-es0[1] * (grid.points - coords[1])**2)
+    dens_p *= (2. * es0[1]**2.5 / (3. * np.pi**1.5))
+    # normalized 1s + 1p basis functions
+    model = MolecularGaussianModel(grid.points, coords, np.array([[1, 0], [0, 1]]), False)
+    expected_cs = cs0 * np.array([(es0[0] / np.pi)**1.5, 2. * es0[1]**2.5 / (3. * np.pi**1.5)])
+    # fit total density
+    ls = GaussianBasisFit(grid, dens_s + dens_p, model, measure="sd", method="slsqp")
+    # opt. coeffs & expons
+    cs, es, f, df = ls.run(np.ones(2), np.ones(2), True, True)
+    assert_almost_equal(expected_cs, cs, decimal=6)
+    assert_almost_equal(es0, es, decimal=6)
+    assert_almost_equal(0., f, decimal=10)
+    # opt. coeffs
+    cs, es, f, df = ls.run(np.array([0.001, 3.671]), es0, True, False)
+    assert_almost_equal(expected_cs, cs, decimal=6)
+    assert_almost_equal(es0, es, decimal=6)
+    assert_almost_equal(0., f, decimal=10)
+    # opt. expons
+    cs, es, f, df = ls.run(expected_cs, np.array([2.5, 1.9]), False, True)
+    assert_almost_equal(expected_cs, cs, decimal=6)
+    assert_almost_equal(es0, es, decimal=6)
+    assert_almost_equal(0., f, decimal=10)
+    # fit 1s density on center 1
+    ls = GaussianBasisFit(grid, dens_s, model, measure="sd", method="slsqp")
+    # opt. coeffs & expons
+    cs, es, f, df = ls.run(np.ones(2), np.ones(2), True, True)
+    assert_almost_equal(np.array([expected_cs[0], 0.]), cs, decimal=6)
+    assert_almost_equal(es0[0], es[0], decimal=6)
+    assert_almost_equal(0., f, decimal=10)
+    # opt. coeffs
+    cs, es, f, df = ls.run(np.array([0.05, 5.01]), es0, True, False)
+    assert_almost_equal(np.array([expected_cs[0], 0.]), cs, decimal=6)
+    assert_almost_equal(es0, es, decimal=6)
+    assert_almost_equal(0., f, decimal=10)
+    # fit 1s density on center 1
+    ls = GaussianBasisFit(grid, dens_p, model, measure="sd", method="slsqp")
+    # opt. expons
+    cs, es, f, df = ls.run(expected_cs, np.array([2.5, 1.9]), False, True)
+    assert_almost_equal(expected_cs, cs, decimal=6)
+    assert_almost_equal(es0[1], es[1], decimal=6)
+    assert_almost_equal(0., f, decimal=10)
