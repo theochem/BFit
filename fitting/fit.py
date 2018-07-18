@@ -89,7 +89,7 @@ class KLDivergenceSCF(object):
         if update_coeffs:
             new_coeffs = coeffs * avrg1 / self._lm
         if update_expons:
-            new_expons = 1.5 * avrg1 / avrg2
+            new_expons = self.model.prefactor * avrg1 / avrg2
         if update_coeffs and update_expons:
             return new_coeffs, new_expons
         return new_coeffs if update_coeffs else new_expons

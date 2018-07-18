@@ -80,6 +80,10 @@ class GaussianModel(object):
         """The total number of Gaussian basis functions."""
         return self.ns + self.np
 
+    @property
+    def prefactor(self):
+        return np.array([1.5] * self.ns + [2.5] * self.np)
+
     def evaluate(self, coeffs, expons, deriv=False):
         """Compute linear combination of Gaussian basis & derivatives on the grid points.
 
@@ -273,6 +277,10 @@ class MolecularGaussianModel(object):
     def nbasis(self):
         """The total number of Gaussian basis functions."""
         return self._nbasis
+
+    @property
+    def prefactor(self):
+        return np.concatenate([center.prefactor for center in self.center])
 
     def evaluate(self, coeffs, expons, deriv=False):
         """Compute linear combination of Gaussian basis & derivatives on the grid points.
