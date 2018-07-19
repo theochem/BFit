@@ -24,7 +24,7 @@
 import numpy as np
 from numpy.testing import assert_almost_equal
 
-from fitting.model import AtomicGaussianDensity, MolecularGaussianModel
+from fitting.model import AtomicGaussianDensity, MolecularGaussianDensity
 from fitting.fit import KLDivergenceSCF, GaussianBasisFit
 from fitting.grid import UniformRadialGrid
 
@@ -425,7 +425,7 @@ def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1s_gaussian():
     dens1 = cs0[0] * np.exp(-es0[0] * (points - coords[0])**2.)
     dens2 = cs0[1] * np.exp(-es0[1] * (points - coords[1])**2.)
     # un-normalized 1s + 1s functions
-    model = MolecularGaussianModel(points, coords, np.array([[1, 0], [1, 0]]), False)
+    model = MolecularGaussianDensity(points, coords, np.array([[1, 0], [1, 0]]), False)
     # fit total density
     kl = GaussianBasisFit(grid, dens1 + dens2, model, measure="kl", method="slsqp")
     # initial coeff=1. & expon=1.
@@ -474,7 +474,7 @@ def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
     dens_p = cs0[1] * (points - coords[1])**2 * np.exp(-es0[1] * (points - coords[1])**2.)
     dens_p *= (2. * es0[1]**2.5 / (3. * np.pi**1.5))
     # un-normalized 1s + 1p functions
-    model = MolecularGaussianModel(points, coords, np.array([[1, 0], [0, 1]]), True)
+    model = MolecularGaussianDensity(points, coords, np.array([[1, 0], [0, 1]]), True)
     # fit total density
     kl = GaussianBasisFit(grid, dens_s + dens_p, model, measure="kl", method="slsqp")
     # opt. coeffs & expons
@@ -605,7 +605,7 @@ def test_ls_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1s_gaussian():
     dens1 = cs0[0] * np.exp(-es0[0] * (grid.points - coords[0])**2.)
     dens2 = cs0[1] * np.exp(-es0[1] * (grid.points - coords[1])**2.)
     # un-normalized 1s + 1s basis functions
-    model = MolecularGaussianModel(grid.points, coords, np.array([[1, 0], [1, 0]]), False)
+    model = MolecularGaussianDensity(grid.points, coords, np.array([[1, 0], [1, 0]]), False)
     # fit total density
     ls = GaussianBasisFit(grid, dens1 + dens2, model, measure="sd", method="slsqp")
     # initial coeff=1. & expon=1.
@@ -639,7 +639,7 @@ def test_ls_fit_normalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
     dens_p = cs0[1] * (grid.points - coords[1])**2 * np.exp(-es0[1] * (grid.points - coords[1])**2)
     dens_p *= (2. * es0[1]**2.5 / (3. * np.pi**1.5))
     # normalized 1s + 1p basis functions
-    model = MolecularGaussianModel(grid.points, coords, np.array([[1, 0], [0, 1]]), False)
+    model = MolecularGaussianDensity(grid.points, coords, np.array([[1, 0], [0, 1]]), False)
     expected_cs = cs0 * np.array([(es0[0] / np.pi)**1.5, 2. * es0[1]**2.5 / (3. * np.pi**1.5)])
     # fit total density
     ls = GaussianBasisFit(grid, dens_s + dens_p, model, measure="sd", method="slsqp")

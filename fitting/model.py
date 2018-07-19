@@ -27,7 +27,7 @@ import numpy as np
 from numbers import Integral
 
 
-__all__ = ["AtomicGaussianDensity", "MolecularGaussianModel"]
+__all__ = ["AtomicGaussianDensity", "MolecularGaussianDensity"]
 
 
 class AtomicGaussianDensity(object):
@@ -232,7 +232,7 @@ class AtomicGaussianDensity(object):
         return g
 
 
-class MolecularGaussianModel(object):
+class MolecularGaussianDensity(object):
     """Molecular Atom-Centered Gaussian Density Model."""
 
     def __init__(self, points, coords, basis, normalized=False):
