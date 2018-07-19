@@ -108,6 +108,11 @@ class AtomicGaussianDensity(object):
         return self.ns + self.np
 
     @property
+    def natoms(self):
+        """Number of basis functions centers."""
+        return 1
+
+    @property
     def prefactor(self):
         return np.array([1.5] * self.ns + [2.5] * self.np)
 
@@ -286,13 +291,16 @@ class MolecularGaussianDensity(object):
             raise ValueError("Arguments points & coords should have the same number of columns.")
 
         self._points = points
-        self.natoms = len(basis)
+        self._natoms = len(basis)
         self._nbasis = np.sum(basis)
         # place a GaussianModel on each center
         self.center = []
+        self._radii = []
         for i, b in enumerate(basis):
             # get the center of Gaussian basis functions
             self.center.append(AtomicGaussianDensity(points, coords[i], b[0], b[1], normalized))
+            self._radii.append(self.center[-1].radii)
+        self._radii = np.array(self._radii)
 
     @property
     def points(self):
@@ -303,6 +311,16 @@ class MolecularGaussianDensity(object):
     def nbasis(self):
         """The total number of Gaussian basis functions."""
         return self._nbasis
+
+    @property
+    def radii(self):
+        """The distance of grid points from center of each basis function."""
+        return self._radii
+
+    @property
+    def natoms(self):
+        """Number of basis functions centers."""
+        return self._natoms
 
     @property
     def prefactor(self):

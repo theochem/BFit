@@ -39,7 +39,7 @@ from scipy.optimize import minimize
 from fitting.measure import KLDivergence, SquaredDifference
 
 
-__all__ = ["KLDivergenceSCF"]
+__all__ = ["KLDivergenceSCF", "GaussianBasisFit"]
 
 
 class KLDivergenceSCF(object):
@@ -84,7 +84,13 @@ class KLDivergenceSCF(object):
             integrand = self.weights * -dk * dm[:, index]
             avrg1[index] = self.grid.integrate(integrand)
             if update_expons:
-                avrg2[index] = self.grid.integrate(integrand * self.grid.points ** 2)
+                if self.model.natoms == 1:
+                    # case of AtomicGaussianDensity or MolecularGaussianDensity model with 1 atom
+                    radii = np.ravel(self.model.radii)
+                else:
+                    # case of MolecularGaussianDensity model with more than 1 atom
+                    radii = self.model.radii[index]
+                avrg2[index] = self.grid.integrate(integrand * radii**2)
         # compute updated coeffs & expons
         if update_coeffs:
             new_coeffs = coeffs * avrg1 / self._lm
