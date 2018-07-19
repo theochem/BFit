@@ -112,6 +112,68 @@ def test_integration_uniform_gaussian():
     assert_almost_equal(value, 1.0 + 3.62 * 1.5 * (np.pi**1.5 / 0.85**2.5), decimal=6)
 
 
+def test_integration_uniform_gaussian_on_x_axis():
+    # integrating from -15 to 15, which is twice as much as integrating from 0 to 15
+    grid = UniformRadialGrid(300, -15., 15., spherical=True)
+    pnts = grid.points
+    # integrate s-type gaussian functions
+    value = grid.integrate(np.exp(-pnts**2))
+    assert_almost_equal(value, 2 * np.pi**1.5, decimal=6)
+    value = grid.integrate(1.23 * np.exp(-0.5 * pnts**2))
+    assert_almost_equal(value, 2 * 1.23 * (np.pi / 0.5)**1.5, decimal=6)
+    value += grid.integrate(0.91 * np.exp(-0.1 * pnts**2))
+    expected_value = 2 * (1.23 * (np.pi / 0.5)**1.5 + 0.91 * (np.pi / 0.1)**1.5)
+    assert_almost_equal(value, expected_value, decimal=6)
+    # integrate p-type gaussian functions
+    value = grid.integrate(pnts**2 * np.exp(-2.5 * pnts**2))
+    assert_almost_equal(value, 2 * 1.5 * np.pi**1.5 / 2.5**2.5, decimal=6)
+    value = grid.integrate(1.2 * pnts**2 * np.exp(-pnts**2))
+    assert_almost_equal(value, 2 * 1.2 * 1.5 * np.pi**1.5, decimal=6)
+    value = grid.integrate(2.5 * pnts**2 * np.exp(-1.1 * pnts**2))
+    assert_almost_equal(value, 2 * 2.5 * 1.5 * np.pi**1.5 / 1.1**2.5, decimal=6)
+    value = grid.integrate(2. * 2.75**2.5 * pnts**2 * np.exp(-2.75 * pnts**2) / (3. * np.pi**1.5))
+    assert_almost_equal(value, 2 * 1.0, decimal=6)
+    # integrate s-type + p-type gaussians
+    value = grid.integrate(np.exp(-4.01 * pnts**2) + pnts**2 * np.exp(-1.25 * pnts**2))
+    expected_value = 2 * ((np.pi / 4.01)**1.5 + 1.5 * (np.pi**1.5 / 1.25**2.5))
+    assert_almost_equal(value, expected_value, decimal=6)
+    value = (0.5 / np.pi)**1.5 * np.exp(-0.5 * pnts**2) + 3.62 * pnts**2 * np.exp(-0.85 * pnts**2)
+    value = grid.integrate(value)
+    assert_almost_equal(value, 2 * (1.0 + 3.62 * 1.5 * (np.pi**1.5 / 0.85**2.5)), decimal=6)
+
+
+def test_integration_uniform_gaussian_shifted():
+    # spherical=False is used but r^2 is added to the integrand
+    grid = UniformRadialGrid(300, 0.0, 30.0, False)
+    pnts = grid.points - 15.
+    # integrate s-type gaussian functions
+    value = 4 * np.pi * grid.integrate(pnts**2 * np.exp(-pnts**2))
+    assert_almost_equal(value, 2 * np.pi**1.5, decimal=6)
+    value = 4 * np.pi * grid.integrate(1.23 * pnts**2 * np.exp(-0.5 * pnts**2))
+    assert_almost_equal(value, 2 * 1.23 * (np.pi / 0.5)**1.5, decimal=6)
+    value += 4 * np.pi * grid.integrate(0.91 * pnts**2 * np.exp(-0.1 * pnts**2))
+    expected_value = 2 * (1.23 * (np.pi / 0.5)**1.5 + 0.91 * (np.pi / 0.1)**1.5)
+    assert_almost_equal(value, expected_value, decimal=6)
+    # integrate p-type gaussian functions
+    value = 4 * np.pi * grid.integrate(pnts**4 * np.exp(-2.5 * pnts**2))
+    assert_almost_equal(value, 2 * 1.5 * np.pi**1.5 / 2.5**2.5, decimal=6)
+    value = 4 * np.pi * grid.integrate(1.2 * pnts**4 * np.exp(-pnts**2))
+    assert_almost_equal(value, 2 * 1.2 * 1.5 * np.pi**1.5, decimal=6)
+    value = 4 * np.pi * grid.integrate(2.5 * pnts**4 * np.exp(-1.1 * pnts**2))
+    assert_almost_equal(value, 2 * 2.5 * 1.5 * np.pi**1.5 / 1.1**2.5, decimal=6)
+    value = grid.integrate(2. * 2.75**2.5 * pnts**4 * np.exp(-2.75 * pnts**2) / (3. * np.pi**1.5))
+    assert_almost_equal(4 * np.pi * value, 2 * 1.0, decimal=6)
+    # integrate s-type + p-type gaussians
+    value = grid.integrate(pnts**2 * np.exp(-4.01 * pnts**2) + pnts**4 * np.exp(-1.25 * pnts**2))
+    value *= 4 * np.pi
+    expected_value = 2 * ((np.pi / 4.01)**1.5 + 1.5 * (np.pi**1.5 / 1.25**2.5))
+    assert_almost_equal(value, expected_value, decimal=6)
+    value = (0.5 / np.pi)**1.5 * pnts**2 * np.exp(-0.5 * pnts**2)
+    value += 3.62 * pnts**4 * np.exp(-0.85 * pnts**2)
+    value = 4 * np.pi * grid.integrate(value)
+    assert_almost_equal(value, 2 * (1.0 + 3.62 * 1.5 * (np.pi**1.5 / 0.85**2.5)), decimal=6)
+
+
 def test_integration_clenshaw_gaussian():
     # clenshaw grid & points
     grid = ClenshawRadialGrid(10, 10000, 10000, spherical=True)
