@@ -29,18 +29,16 @@ from fitting.model import AtomicGaussianDensity, MolecularGaussianDensity
 
 def test_raises_gaussian_model():
     # check points
-    assert_raises(TypeError, AtomicGaussianDensity, 10., 5, 5, False)
-    assert_raises(TypeError, AtomicGaussianDensity, [5.], 5, 5, True)
-    assert_raises(TypeError, AtomicGaussianDensity, (2, 1), 5, 5, True)
-    assert_raises(TypeError, AtomicGaussianDensity, np.array([[1., 2.]]), 5, 5, True)
-    assert_raises(TypeError, AtomicGaussianDensity, np.array([[1.], [2.]]), 5, 5, True)
+    assert_raises(TypeError, AtomicGaussianDensity, 10., None, 5, 5, False)
+    assert_raises(TypeError, AtomicGaussianDensity, [5.], None, 5, 5, True)
+    assert_raises(TypeError, AtomicGaussianDensity, (2, 1), None, 5, 5, True)
     # check num_s & num_p
-    assert_raises(TypeError, AtomicGaussianDensity, np.array([0.]), 5, -1, False)
-    assert_raises(TypeError, AtomicGaussianDensity, np.array([0.]), -5, 1, False)
-    assert_raises(TypeError, AtomicGaussianDensity, np.array([0.]), 5, 1.0, False)
-    assert_raises(TypeError, AtomicGaussianDensity, np.array([0.]), 5.1, 1, False)
-    assert_raises(ValueError, AtomicGaussianDensity, np.array([0.]), 0, 0, False)
-    assert_raises(ValueError, AtomicGaussianDensity, np.array([0.]), 0, 0, True)
+    assert_raises(TypeError, AtomicGaussianDensity, np.array([0.]), None, 5, -1, False)
+    assert_raises(TypeError, AtomicGaussianDensity, np.array([0.]), None, -5, 1, False)
+    assert_raises(TypeError, AtomicGaussianDensity, np.array([0.]), None, 5, 1.0, False)
+    assert_raises(TypeError, AtomicGaussianDensity, np.array([0.]), None, 5.1, 1, False)
+    assert_raises(ValueError, AtomicGaussianDensity, np.array([0.]), None, 0, 0, False)
+    assert_raises(ValueError, AtomicGaussianDensity, np.array([0.]), None, 0, 0, True)
 
 
 def test_gaussian_1s_origin():
@@ -48,13 +46,13 @@ def test_gaussian_1s_origin():
     coeffs, expons = np.array([0.]), np.array([0.])
     # un-normalized at r=0.
     g, dg = np.array([0.]), np.array([[1., 0.]])
-    model = AtomicGaussianDensity(np.array([0.]), 1, 0, normalized=False)
+    model = AtomicGaussianDensity(np.array([0.]), num_s=1, num_p=0, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=0.
     g, dg = np.array([0.]), np.array([[0., 0.]])
-    model = AtomicGaussianDensity(np.array([0.]), 1, 0, normalized=True)
+    model = AtomicGaussianDensity(np.array([0.]), num_s=1, num_p=0, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -62,13 +60,13 @@ def test_gaussian_1s_origin():
     coeffs, expons = np.array([3.]), np.array([2.])
     # un-normalized at r=0.
     g, dg = np.array([3.]), np.array([[1., 0.]])
-    model = AtomicGaussianDensity(np.array([0.]), 1, 0, normalized=False)
+    model = AtomicGaussianDensity(np.array([0.]), num_s=1, num_p=0, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=0.
     g, dg = np.array([1.52384726242178]), np.array([[0.507949087473928, 1.14288544681634]])
-    model = AtomicGaussianDensity(np.array([0.]), 1, 0, normalized=True)
+    model = AtomicGaussianDensity(np.array([0.]), num_s=1, num_p=0, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -79,13 +77,13 @@ def test_gaussian_1s_one_point():
     coeffs, expons = np.array([3.]), np.array([0.])
     # un-normalized at r=1.
     g, dg = np.array([3.]), np.array([[1., -3.]])
-    model = AtomicGaussianDensity(np.array([1.]), 1, 0, normalized=False)
+    model = AtomicGaussianDensity(np.array([1.]), num_s=1, num_p=0, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=1.
     g, dg = np.array([0.]), np.array([[0., 0.]])
-    model = AtomicGaussianDensity(np.array([1.]), 1, 0, normalized=True)
+    model = AtomicGaussianDensity(np.array([1.]), num_s=1, num_p=0, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -93,13 +91,13 @@ def test_gaussian_1s_one_point():
     coeffs, expons = np.array([3.15]), np.array([1.75])
     # un-normalized at r=-1.5
     g, dg = np.array([0.0614152227]), np.array([[0.0194968961, -0.1381842511]])
-    model = AtomicGaussianDensity(np.array([-1.5]), 1, 0, normalized=False)
+    model = AtomicGaussianDensity(np.array([-1.5]), num_s=1, num_p=0, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=-1.5
     g, dg = np.array([0.0255333792]), np.array([[0.0081058346, -0.0355643496]])
-    model = AtomicGaussianDensity(np.array([-1.5]), 1, 0, normalized=True)
+    model = AtomicGaussianDensity(np.array([-1.5]), num_s=1, num_p=0, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -110,13 +108,13 @@ def test_gaussian_1s_multiple_point():
     coeffs, expons = np.array([0.]), np.array([0.])
     # un-normalized r=[0., 0.5, 1.0]
     g, dg = np.zeros(3), np.array([[1., 0.], [1., 0.], [1., 0.]])
-    model = AtomicGaussianDensity(np.array([0., 0.5, 1.]), 1, 0, normalized=False)
+    model = AtomicGaussianDensity(np.array([0., 0.5, 1.]), num_s=1, num_p=0, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized r=[0., 0.5, 1.0]
     g, dg = np.zeros(3), np.zeros((3, 2))
-    model = AtomicGaussianDensity(np.array([0., 0.5, 1.]), 1, 0, normalized=True)
+    model = AtomicGaussianDensity(np.array([0., 0.5, 1.]), num_s=1, num_p=0, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -126,7 +124,7 @@ def test_gaussian_1s_multiple_point():
     g = np.array([5.25, 0.8678191632, 0.1092876455, 0.0024060427, 0.0])
     dg = np.array([[1.0, 0.0], [0.1652988882, -1.9525931171], [0.0208166944, -0.5289522041],
                    [0.0004582938, -0.0231220701], [0.0, 0.0]])
-    model = AtomicGaussianDensity(np.array([0., 1.5, -2.2, 3.1, 10.]), 1, 0, normalized=False)
+    model = AtomicGaussianDensity(np.array([0., 1.5, -2.2, 3.1, 10.]), None, 1, 0, False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -134,7 +132,7 @@ def test_gaussian_1s_multiple_point():
     g = np.array([0.6746359418, 0.1115165711, 0.0140436902, 0.0003091815, 0.0])
     dg = np.array([[0.1285020841, 1.2649423908], [0.0212412516, -0.0418187142],
                    [0.0026749886, -0.0416395415], [5.88917e-05, -0.0023915189], [0.0, 0.0]])
-    model = AtomicGaussianDensity(np.array([0., 1.5, -2.2, 3.1, 10.]), 1, 0, normalized=True)
+    model = AtomicGaussianDensity(np.array([0., 1.5, -2.2, 3.1, 10.]), None, 1, 0, True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -145,13 +143,13 @@ def test_gaussian_xs_origin():
     coeffs, expons = np.zeros(10), np.zeros(10)
     # un-normalized at r=0.
     g, dg = np.array([0.]), np.array([[1.] * 10 + [0.] * 10])
-    model = AtomicGaussianDensity(np.array([0.]), 10, 0, normalized=False)
+    model = AtomicGaussianDensity(np.array([0.]), num_s=10, num_p=0, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=0.
     g, dg = np.array([0.]), np.zeros(20)[None, :]
-    model = AtomicGaussianDensity(np.array([0.]), 10, 0, normalized=True)
+    model = AtomicGaussianDensity(np.array([0.]), num_s=10, num_p=0, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -159,14 +157,14 @@ def test_gaussian_xs_origin():
     coeffs, expons = np.array([0.0, 1.0, 0.0, 3.5]), np.array([0.0, 0.0, 2.0, 0.5])
     # un-normalized at r=0.
     g, dg = np.array([4.5]), np.array([[1., 1., 1., 1., 0., 0., 0., 0.]])
-    model = AtomicGaussianDensity(np.array([0.]), 4, 0, normalized=False)
+    model = AtomicGaussianDensity(np.array([0.]), num_s=4, num_p=0, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=0.
     g = np.array([0.2222277257])
     dg = np.array([[0., 0., 0.5079490874, 0.0634936359, 0., 0., 0., 0.6666831773]])
-    model = AtomicGaussianDensity(np.array([0.]), 4, 0, normalized=True)
+    model = AtomicGaussianDensity(np.array([0.]), num_s=4, num_p=0, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -178,28 +176,28 @@ def test_gaussian_xs_one_point():
     # un-normalized at r=-1.
     g = np.array([3.12285730899422])
     dg = np.array([[1, 1, 0.1353352832, 0.606530659712633, 0., -1., 0., -2.1228573089]])
-    model = AtomicGaussianDensity(np.array([-1.]), 4, 0, normalized=False)
+    model = AtomicGaussianDensity(np.array([-1.]), num_s=4, num_p=0, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=-1.
     g = np.array([0.1347879291])
     dg = np.array([[0., 0., 0.0687434336, 0.0385108368, 0., 0., 0., 0.2695758582]])
-    model = AtomicGaussianDensity(np.array([-1.]), 4, 0, normalized=True)
+    model = AtomicGaussianDensity(np.array([-1.]), num_s=4, num_p=0, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # un-normalized at r=2.5
     g = np.array([1.1537792676])
     dg = np.array([[1., 1., 3.7266531720e-6, 0.0439369336, 0., -6.25, 0., -0.9611204230]])
-    model = AtomicGaussianDensity(np.array([2.5]), 4, 0, normalized=False)
+    model = AtomicGaussianDensity(np.array([2.5]), num_s=4, num_p=0, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=2.5
     g = np.array([0.0097640048])
     dg = np.array([[0., 0., 1.8929500780e-6, 0.0027897156, 0., 0., 0., -0.0317330157]])
-    model = AtomicGaussianDensity(np.array([2.5]), 4, 0, normalized=True)
+    model = AtomicGaussianDensity(np.array([2.5]), num_s=4, num_p=0, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -217,7 +215,7 @@ def test_gaussian_xs_multiple_point():
           [0.3237155762, 0.9654789302, 0.2421536105, -0.1197100201, -0.0035703411, -0.0676090459],
           [0.0, 0.0071410175, 0.0, -0.0, -0.0037147573, -0.0]]
     dg = np.array(dg)
-    model = AtomicGaussianDensity(points, 3, 0, normalized=False)
+    model = AtomicGaussianDensity(points, num_s=3, num_p=0, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -228,7 +226,7 @@ def test_gaussian_xs_multiple_point():
           [0.8758576756, 0.0143598001, 0.9237600699, 0.1068575081, 0.0022142343, 0.0148793624],
           [0.0, 0.0001062101, 0.0, -0.0, -3.84805e-05, -0.0]]
     dg = np.array(dg)
-    model = AtomicGaussianDensity(points, 3, 0, normalized=True)
+    model = AtomicGaussianDensity(points, num_s=3, num_p=0, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -239,13 +237,13 @@ def test_gaussian_1p_origin():
     coeffs, expons = np.array([0.]), np.array([0.])
     # un-normalized at r=0.
     g, dg = np.array([0.]), np.array([[0., 0.]])
-    model = AtomicGaussianDensity(np.array([0.]), 0, 1, normalized=False)
+    model = AtomicGaussianDensity(np.array([0.]), num_s=0, num_p=1, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=0.
     g, dg = np.array([0.]), np.array([[0., 0.]])
-    model = AtomicGaussianDensity(np.array([0.]), 0, 1, normalized=True)
+    model = AtomicGaussianDensity(np.array([0.]), num_s=0, num_p=1, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -253,12 +251,12 @@ def test_gaussian_1p_origin():
     coeffs, expons = np.array([3.]), np.array([2.])
     # un-normalized at r=0.
     g, dg = np.array([0.]), np.array([[0., 0.]])
-    model = AtomicGaussianDensity(np.array([0.]), 0, 1, normalized=False)
+    model = AtomicGaussianDensity(np.array([0.]), num_s=0, num_p=1, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=0.
-    model = AtomicGaussianDensity(np.array([0.]), 0, 1, normalized=True)
+    model = AtomicGaussianDensity(np.array([0.]), num_s=0, num_p=1, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -269,13 +267,13 @@ def test_gaussian_1p_one_point():
     coeffs, expons = np.array([3.]), np.array([0.])
     # un-normalized at r=-1.
     g, dg = np.array([3.]), np.array([[1., -3.]])
-    model = AtomicGaussianDensity(np.array([-1.]), 0, 1, normalized=False)
+    model = AtomicGaussianDensity(np.array([-1.]), num_s=0, num_p=1, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=-1.
     g, dg = np.array([0.]), np.array([[0., 0.]])
-    model = AtomicGaussianDensity(np.array([-1.]), 0, 1, normalized=True)
+    model = AtomicGaussianDensity(np.array([-1.]), num_s=0, num_p=1, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -283,13 +281,13 @@ def test_gaussian_1p_one_point():
     coeffs, expons = np.array([3.15]), np.array([1.75])
     # un-normalized at r=1.5
     g, dg = np.array([0.1381842511]), np.array([[0.0438680162, -0.3109145651]])
-    model = AtomicGaussianDensity(np.array([1.5]), 0, 1, normalized=False)
+    model = AtomicGaussianDensity(np.array([1.5]), num_s=0, num_p=1, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=1.5
     g, dg = np.array([0.0670251204]), np.array([[0.0212778160, -0.0550563489]])
-    model = AtomicGaussianDensity(np.array([1.5]), 0, 1, normalized=True)
+    model = AtomicGaussianDensity(np.array([1.5]), num_s=0, num_p=1, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -300,13 +298,13 @@ def test_gaussian_1p_multiple_point():
     coeffs, expons = np.array([0.]), np.array([0.])
     # un-normalized r=[0., -0.5, 1.0]
     g, dg = np.zeros(3), np.array([[0., 0.], [0.25, 0.], [1., 0.]])
-    model = AtomicGaussianDensity(np.array([0., -0.5, 1.]), 0, 1, normalized=False)
+    model = AtomicGaussianDensity(np.array([0., -0.5, 1.]), num_s=0, num_p=1, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized r=[0., -0.5, 1.0]
     g, dg = np.zeros(3), np.zeros((3, 2))
-    model = AtomicGaussianDensity(np.array([0., -0.5, 1.]), 0, 1, normalized=True)
+    model = AtomicGaussianDensity(np.array([0., -0.5, 1.]), num_s=0, num_p=1, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -316,7 +314,7 @@ def test_gaussian_1p_multiple_point():
     g = np.array([0.0, 1.9525931171, 0.5289522041, 0.0231220701, 0.0])
     dg = np.array([[0.0, 0.0], [0.3719224985, -4.3933345135],
                    [0.1007528008, -2.5601286677], [0.0044042038, -0.222203094], [0.0, 0.0]])
-    model = AtomicGaussianDensity(np.array([0., 1.5, 2.2, -3.1, 10.]), 0, 1, normalized=False)
+    model = AtomicGaussianDensity(np.array([0., 1.5, 2.2, -3.1, 10.]), None, 0, 1, False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -324,7 +322,7 @@ def test_gaussian_1p_multiple_point():
     g = np.array([0.0, 0.1338198854, 0.0362514457, 0.0015846582, 0.0])
     dg = np.array([[0.0, 0.0], [0.025489502, 0.1170923997], [0.0069050373, -0.0621712293],
                    [0.0003018397, -0.0102765087], [0.0, 0.0]])
-    model = AtomicGaussianDensity(np.array([0., 1.5, 2.2, -3.1, 10.]), 0, 1, normalized=True)
+    model = AtomicGaussianDensity(np.array([0., 1.5, 2.2, -3.1, 10.]), None, 0, 1, True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -335,13 +333,13 @@ def test_gaussian_xp_origin():
     coeffs, expons = np.zeros(10), np.zeros(10)
     # un-normalized at r=0.
     g, dg = np.array([0.]), np.array([[0.] * 20])
-    model = AtomicGaussianDensity(np.array([0.]), 0, 10, normalized=False)
+    model = AtomicGaussianDensity(np.array([0.]), num_s=0, num_p=10, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=0.
     g, dg = np.array([0.]), np.zeros(20)[None, :]
-    model = AtomicGaussianDensity(np.array([0.]), 0, 10, normalized=True)
+    model = AtomicGaussianDensity(np.array([0.]), num_s=0, num_p=10, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -349,12 +347,12 @@ def test_gaussian_xp_origin():
     coeffs, expons = np.array([0.0, 1.0, 0.0, 3.5]), np.array([0.0, 0.0, 2.0, 0.5])
     # un-normalized at r=0.
     g, dg = np.array([0]), np.array([[0.] * 8])
-    model = AtomicGaussianDensity(np.array([0.]), 0, 4, normalized=False)
+    model = AtomicGaussianDensity(np.array([0.]), num_s=0, num_p=4, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=0.
-    model = AtomicGaussianDensity(np.array([0.]), 0, 4, normalized=True)
+    model = AtomicGaussianDensity(np.array([0.]), num_s=0, num_p=4, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -366,28 +364,28 @@ def test_gaussian_xp_one_point():
     # un-normalized at r=1.
     g = np.array([3.12285730899422])
     dg = np.array([[1, 1, 0.1353352832, 0.606530659712633, 0., -1., 0., -2.1228573089]])
-    model = AtomicGaussianDensity(np.array([1.]), 0, 4, normalized=False)
+    model = AtomicGaussianDensity(np.array([1.]), num_s=0, num_p=4, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=1.
     g = np.array([0.0449293097])
     dg = np.array([[0., 0., 0.0916579114, 0.0128369456, 0., 0., 0., 0.1797172388]])
-    model = AtomicGaussianDensity(np.array([1.]), 0, 4, normalized=True)
+    model = AtomicGaussianDensity(np.array([1.]), num_s=0, num_p=4, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # un-normalized at r=-2.5
     g = np.array([7.2111204230])
     dg = np.array([[6.25, 6.25, 2.3291582325e-5, 0.2746058351, 0., -39.0625, 0., -6.0070026438]])
-    model = AtomicGaussianDensity(np.array([-2.5]), 0, 4, normalized=False)
+    model = AtomicGaussianDensity(np.array([-2.5]), num_s=0, num_p=4, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=-2.5
     g = np.array([0.0203416767])
     dg = np.array([[0., 0., 1.5774583984e-5, 0.0058119076, 0., 0., 0., -0.0254270959]])
-    model = AtomicGaussianDensity(np.array([-2.5]), 0, 4, normalized=True)
+    model = AtomicGaussianDensity(np.array([-2.5]), num_s=0, num_p=4, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -404,7 +402,7 @@ def test_gaussian_xp_multiple_point():
           [0.05985501, 0.1785170542, 0.0447742026, -0.0221343827, -0.0006601561, -0.0125009126],
           [0.0, 0.1857378662, 0.0, 0.0, -0.096620838, 0.0]]
     dg = np.array(dg)
-    model = AtomicGaussianDensity(points, 0, 3, normalized=False)
+    model = AtomicGaussianDensity(points, num_s=0, num_p=3, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -415,7 +413,7 @@ def test_gaussian_xp_multiple_point():
           [0.6585807425, 0.0003363161, 0.8733738848, 0.2962771222, 8.72605e-05, 0.1860096977],
           [0.0, 0.0003499197, 0.0, 0.0, -8.99441e-05, 0.0]]
     dg = np.array(dg)
-    model = AtomicGaussianDensity(points, 0, 3, normalized=True)
+    model = AtomicGaussianDensity(points, num_s=0, num_p=3, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -427,13 +425,13 @@ def test_gaussian_1s1p_basis_origin():
     expons = np.array([0.1, 0.4])
     # un-normalized at r=0.
     g, dg = np.array([0.5]), np.array([[1., 0., 0., 0.]])
-    model = AtomicGaussianDensity(np.array([0.]), 1, 1, normalized=False)
+    model = AtomicGaussianDensity(np.array([0.]), num_s=1, num_p=1, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=0.
     g, dg = np.array([0.0028395217]), np.array([[0.0056790434, 0., 0.04259282582, 0.]])
-    model = AtomicGaussianDensity(np.array([0.]), 1, 1, normalized=True)
+    model = AtomicGaussianDensity(np.array([0.]), num_s=1, num_p=1, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -446,14 +444,14 @@ def test_gaussian_1s1p_basis_one_point():
     # un-normalized at r=-3.
     g, = np.array([0.6951118339])
     dg = np.array([[0.4065696597, 0.2459135020, -1.8295634688, -4.4264430364]])
-    model = AtomicGaussianDensity(np.array([-3.]), 1, 1, normalized=False)
+    model = AtomicGaussianDensity(np.array([-3.]), num_s=1, num_p=1, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=-3.
     g = np.array([0.0071130914])
     dg = np.array([[0.0023089267, 0.0029793140, 0.0069267802, -0.0163862272]])
-    model = AtomicGaussianDensity(np.array([-3.]), 1, 1, normalized=True)
+    model = AtomicGaussianDensity(np.array([-3.]), num_s=1, num_p=1, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -465,14 +463,14 @@ def test_gaussian_2s1p_basis_origin():
     expons = np.array([0.8, 1.25, 2.19])
     # un-normalized at r=0.
     g, dg = np.array([-3.3]), np.array([[1., 1., 0., 0., 0., 0.]])
-    model = AtomicGaussianDensity(np.array([0.]), 2, 1, normalized=False)
+    model = AtomicGaussianDensity(np.array([0.]), num_s=2, num_p=1, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=0.
     g = np.array([-0.9752103479])
     dg = np.array([[0.1285020841, 0.2509806330, 0., 0.2891296893, -1.3552954187, 0.]])
-    model = AtomicGaussianDensity(np.array([0.]), 2, 1, normalized=True)
+    model = AtomicGaussianDensity(np.array([0.]), num_s=2, num_p=1, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -488,7 +486,7 @@ def test_gaussian_2s1p_basis_multiple_point():
                     -5.04379622e-01,  1.32430099e+00,  8.30330683e-02],
                    [ 5.28501406e-03,  2.76859611e-04,  3.83105827e-06,
                     -4.15630417e-02,  8.16492216e-03,  1.88304176e-05]])
-    model = AtomicGaussianDensity(np.array([0.89, -2.56]), 2, 1, normalized=False)
+    model = AtomicGaussianDensity(np.array([0.89, -2.56]), num_s=2, num_p=1, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -498,7 +496,7 @@ def test_gaussian_2s1p_basis_multiple_point():
                      8.86086345e-02, -1.71159341e-01, -3.11281606e-02],
                    [ 6.79135321e-04,  6.94864004e-05,  3.25546459e-06,
                     -3.81288302e-03,  1.67401077e-03,  1.32140467e-05]])
-    model = AtomicGaussianDensity(np.array([0.89, -2.56]), 2, 1, normalized=True)
+    model = AtomicGaussianDensity(np.array([0.89, -2.56]), num_s=2, num_p=1, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -510,14 +508,14 @@ def test_gaussian_1s2p_basis_origin():
     expons = np.array([0.8, 1.25, 2.19])
     # un-normalized at r=0.
     g, dg = np.array([1.2]), np.array([[1., 0., 0., 0., 0., 0.]])
-    model = AtomicGaussianDensity(np.array([0.]), 1, 2, normalized=False)
+    model = AtomicGaussianDensity(np.array([0.]), num_s=1, num_p=2, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=0.
     g = np.array([0.1542025009])
     dg = np.array([[0.1285020841, 0., 0., 0.2891296893, 0., 0.]])
-    model = AtomicGaussianDensity(np.array([0.]), 1, 2, normalized=True)
+    model = AtomicGaussianDensity(np.array([0.]), num_s=1, num_p=2, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -531,7 +529,7 @@ def test_gaussian_1s2p_basis_multiple_point():
     g = np.array([0.9612490198, -0.2351426929])
     dg = np.array([[ 0.96819593, 0.03841136, 0.03697997, -0.04693930, 0.00698336, 0.00112052],
                    [ 0.09879376, 0.07774519, 0.00512249, -0.34301997, 1.01226602, 0.01111605]])
-    model = AtomicGaussianDensity(np.array([-0.201, 1.701]), 1, 2, normalized=False)
+    model = AtomicGaussianDensity(np.array([-0.201, 1.701]), num_s=1, num_p=2, normalized=False)
     print("m = ", model.evaluate(coeffs, expons, deriv=False))
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
@@ -540,7 +538,7 @@ def test_gaussian_1s2p_basis_multiple_point():
     g = np.array([0.0895783695, -0.0612024131])
     dg = np.array([[ 0.1244152, 0.00803376, 0.03142395,  0.27390239, -0.07084324, -0.0259519],
                    [ 0.0126952, 0.01626045, 0.00435286, -0.01551457,  0.06537195,  0.00571917]])
-    model = AtomicGaussianDensity(np.array([-0.201, 1.701]), 1, 2, normalized=True)
+    model = AtomicGaussianDensity(np.array([-0.201, 1.701]), num_s=1, num_p=2, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -566,7 +564,7 @@ def test_gaussian_2s2p_basis_multiple_point():
                    [  1.01540657e-01, 1.97762748e-31, 5.91712954e-13,  1.87976695e-06,
                      -1.11903978e+00, 2.50844168e-29, 2.46076850e-11, -1.68074625e-04]])
     dg = np.array(dg)
-    model = AtomicGaussianDensity(points, 2, 2, normalized=False)
+    model = AtomicGaussianDensity(points, num_s=2, num_p=2, normalized=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -586,7 +584,7 @@ def test_gaussian_2s2p_basis_multiple_point():
                    [ 6.65279571e-04,  2.22657872e-31,  1.95219482e-13,  1.20927325e-07,
                     -2.52362846e-03,  2.76429266e-29,  7.46790004e-12, -9.14578547e-06]])
     dg = np.array(dg)
-    model = AtomicGaussianDensity(points, 2, 2, normalized=True)
+    model = AtomicGaussianDensity(points, num_s=2, num_p=2, normalized=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)

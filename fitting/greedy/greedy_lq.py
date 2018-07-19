@@ -35,7 +35,7 @@ __all__ = ["GreedyLeastSquares"]
 class GreedyLeastSquares(GreedyStrategy):
     def __init__(self, grid, density, splitting_func=get_next_choices,
                  factor=2):
-        self.gauss_obj = AtomicGaussianDensity(grid.points, density)
+        self.gauss_obj = AtomicGaussianDensity(grid.points, num_s=density)
         self.grid = grid
         self.factor = factor
         self.splitting_func = splitting_func

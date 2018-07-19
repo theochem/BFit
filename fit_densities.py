@@ -151,7 +151,7 @@ def fit_gaussian_densities(grid, element_name=None, true_model=None, inte_val=No
         if element_name is not None:
             slater_file_path = "/data/examples/" + element_name.lower()
             file_path = os.path.join(current_file, slater_file_path)
-        density_model = AtomicGaussianDensity(grid.radii, true_model=true_model)
+        density_model = AtomicGaussianDensity(grid.radii)
 
     # Exits If Custom Density Model is not inherited from density_model
     if not isinstance(density_model, AtomicGaussianDensity):

@@ -33,12 +33,15 @@ __all__ = ["AtomicGaussianDensity", "MolecularGaussianDensity"]
 class AtomicGaussianDensity(object):
     r"""Gaussian Density Model."""
 
-    def __init__(self, points, num_s, num_p, normalized=False):
+    def __init__(self, points, coord=None, num_s=1, num_p=0, normalized=False):
         r"""
         Parameters
         ----------
         points : ndarray, (N,)
             The grid points.
+        coord : ndarray, optional
+            The coordinates of gaussian basis functions center.
+            If `None`, the basis functions are placed on the origin.
         num_s : int
              Number of s-type Gaussian basis functions.
         num_p : int
@@ -46,14 +49,36 @@ class AtomicGaussianDensity(object):
         normalized : bool, optional
             Whether to normalize Gaussian basis functions.
         """
-        if not isinstance(points, np.ndarray) or points.ndim != 1:
-            raise TypeError("Argument points should be a 1D numpy array.")
+        if not isinstance(points, np.ndarray):
+            raise TypeError("Argument points should be a numpy array.")
         if not isinstance(num_s, Integral) or num_s < 0:
             raise TypeError("Argument num_s should be a positive integer.")
         if not isinstance(num_p, Integral) or num_p < 0:
             raise TypeError("Argument num_p should be a positive integer.")
         if num_s + num_p == 0:
             raise ValueError("Arguments num_s & num_p cannot both be zero!")
+
+        # check & assign coord
+        if coord is not None:
+            if not isinstance(coord, np.ndarray):
+                raise ValueError("Argument coord should be a numpy array.")
+            if points.ndim != coord.ndim:
+                raise ValueError("Arguments points & coord should have the same dimensions.")
+            if points.shape[1] != coord.shape[1]:
+                raise ValueError("Arguments points & coord should have the same number of columns.")
+            if coord.ndim > 1 and coord.shape[0] > 1:
+                raise ValueError("Arguments coord should represent coordinate of only one center.")
+        elif points.ndim > 1:
+            coord = np.array([0.] * points.shape[1])
+        else:
+            coord = np.array([0.])
+        self.coord = coord
+
+        # compute radii (distance of points from center coord)
+        if points.ndim > 1:
+            self._radii = np.linalg.norm(points - self.coord, axis=1)
+        else:
+            self._radii = np.abs(points - self.coord)
 
         self._points = points
         self.ns = num_s
@@ -64,6 +89,11 @@ class AtomicGaussianDensity(object):
     def points(self):
         """The grid points."""
         return self._points
+
+    @property
+    def radii(self):
+        """The distance of grid points from center of Gaussian(s)."""
+        return self._radii
 
     @property
     def num_s(self):
@@ -117,7 +147,7 @@ class AtomicGaussianDensity(object):
             raise ValueError("Argument coeffs should have size {0}.".format(self.nbasis))
 
         # evaluate all Gaussian basis on the grid, i.e., exp(-a * r**2)
-        matrix = np.exp(-expons[None, :] * np.power(self.points, 2)[:, None])
+        matrix = np.exp(-expons[None, :] * np.power(self.radii, 2)[:, None])
 
         # compute linear combination of Gaussian basis
         if self.np == 0:
@@ -171,13 +201,13 @@ class AtomicGaussianDensity(object):
 
         # compute derivatives
         if deriv:
-            dg = np.zeros((len(self._points), 2 * coeffs.size))
+            dg = np.zeros((len(self.radii), 2 * coeffs.size))
             # derivative w.r.t. coefficients
             dg[:, :coeffs.size] = matrix
             # derivative w.r.t. exponents
-            dg[:, coeffs.size:] = - matrix * np.power(self.points, 2)[:, None] * coeffs[None, :]
+            dg[:, coeffs.size:] = - matrix * np.power(self.radii, 2)[:, None] * coeffs[None, :]
             if self.normalized:
-                matrix = np.exp(-expons[None, :] * np.power(self.points, 2)[:, None])
+                matrix = np.exp(-expons[None, :] * np.power(self.radii, 2)[:, None])
                 dg[:, coeffs.size:] += 1.5 * matrix * (coeffs * expons**0.5)[None, :] / np.pi**1.5
             return g, dg
         return g
@@ -209,7 +239,7 @@ class AtomicGaussianDensity(object):
             grid points. Only returned if `deriv=True`.
         """
         # multiply r**2 with the evaluated Gaussian basis, i.e., r**2 * exp(-a * r**2)
-        matrix = matrix * np.power(self.points, 2)[:, None]
+        matrix = matrix * np.power(self.radii, 2)[:, None]
 
         if not self.normalized:
             # linear combination of p-basis is the same as s-basis with an extra r**2
@@ -220,13 +250,13 @@ class AtomicGaussianDensity(object):
         # make linear combination of Gaussian basis on the grid
         g = np.dot(matrix, coeffs)
         if deriv:
-            dg = np.zeros((len(self._points), 2 * coeffs.size))
+            dg = np.zeros((len(self.radii), 2 * coeffs.size))
             # derivative w.r.t. coefficients
             dg[:, :coeffs.size] = matrix
             # derivative w.r.t. exponents
-            dg[:, coeffs.size:] = - matrix * np.power(self.points, 2)[:, None] * coeffs[None, :]
-            matrix = np.exp(-expons[None, :] * np.power(self.points, 2)[:, None])
-            matrix = matrix * np.power(self.points, 2)[:, None]
+            dg[:, coeffs.size:] = - matrix * np.power(self.radii, 2)[:, None] * coeffs[None, :]
+            matrix = np.exp(-expons[None, :] * np.power(self.radii, 2)[:, None])
+            matrix = matrix * np.power(self.radii, 2)[:, None]
             dg[:, coeffs.size:] += 5 * matrix * (coeffs * expons**1.5)[None, :] / (3 * np.pi**1.5)
             return g, dg
         return g
@@ -266,7 +296,7 @@ class MolecularGaussianDensity(object):
             distance = points - coords[index]
             if points.ndim > 1:
                 distance = np.linalg.norm(points - coords[index], axis=1)
-            self.center.append(AtomicGaussianDensity(distance, b[0], b[1], normalized))
+            self.center.append(AtomicGaussianDensity(distance, None, b[0], b[1], normalized))
 
     @property
     def points(self):
