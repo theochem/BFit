@@ -25,7 +25,7 @@ r"""
 
 from fitting.greedy.greedy_strat import GreedyStrategy
 from fitting.utils.greedy_utils import get_next_choices
-from fitting.model import GaussianModel
+from fitting.model import AtomicGaussianDensity
 from fitting.utils.optimize import optimize_using_nnls, optimize_using_slsqp
 import numpy as np
 
@@ -35,7 +35,7 @@ __all__ = ["GreedyLeastSquares"]
 class GreedyLeastSquares(GreedyStrategy):
     def __init__(self, grid, density, splitting_func=get_next_choices,
                  factor=2):
-        self.gauss_obj = GaussianModel(grid.points, density)
+        self.gauss_obj = AtomicGaussianDensity(grid.points, density)
         self.grid = grid
         self.factor = factor
         self.splitting_func = splitting_func

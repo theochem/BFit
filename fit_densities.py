@@ -35,7 +35,7 @@ import numpy as np
 from fitting.grid import BaseRadialGrid
 from fitting.kl_divergence.gaussian_kl import GaussianKullbackLeibler
 from fitting.density import AtomicDensity
-from fitting.model import GaussianModel
+from fitting.model import AtomicGaussianDensity
 from fitting.greedy.greedy_kl import GreedyKL
 from fitting.utils.plotting_utils import plot_model_densities, plot_error
 from fitting.utils.greedy_utils import get_next_choices
@@ -151,10 +151,10 @@ def fit_gaussian_densities(grid, element_name=None, true_model=None, inte_val=No
         if element_name is not None:
             slater_file_path = "/data/examples/" + element_name.lower()
             file_path = os.path.join(current_file, slater_file_path)
-        density_model = GaussianModel(grid.radii, true_model=true_model)
+        density_model = AtomicGaussianDensity(grid.radii, true_model=true_model)
 
     # Exits If Custom Density Model is not inherited from density_model
-    if not isinstance(density_model, GaussianModel):
+    if not isinstance(density_model, AtomicGaussianDensity):
         raise TypeError("Custom Density Model should be inherited from "
                         "DensityModel from density_model.py")
 

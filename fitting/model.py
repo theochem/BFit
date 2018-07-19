@@ -27,10 +27,10 @@ import numpy as np
 from numbers import Integral
 
 
-__all__ = ["GaussianModel", "MolecularGaussianModel"]
+__all__ = ["AtomicGaussianDensity", "MolecularGaussianModel"]
 
 
-class GaussianModel(object):
+class AtomicGaussianDensity(object):
     r"""Gaussian Density Model."""
 
     def __init__(self, points, num_s, num_p, normalized=False):
@@ -266,7 +266,7 @@ class MolecularGaussianModel(object):
             distance = points - coords[index]
             if points.ndim > 1:
                 distance = np.linalg.norm(points - coords[index], axis=1)
-            self.center.append(GaussianModel(distance, b[0], b[1], normalized))
+            self.center.append(AtomicGaussianDensity(distance, b[0], b[1], normalized))
 
     @property
     def points(self):

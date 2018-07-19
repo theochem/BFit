@@ -24,7 +24,7 @@
 import numpy as np
 from numpy.testing import assert_almost_equal
 
-from fitting.model import GaussianModel, MolecularGaussianModel
+from fitting.model import AtomicGaussianDensity, MolecularGaussianModel
 from fitting.fit import KLDivergenceSCF, GaussianBasisFit
 from fitting.grid import UniformRadialGrid
 
@@ -41,7 +41,7 @@ def test_lagrange_multiplier():
 def test_goodness_of_fit():
     g = UniformRadialGrid(1000, 0.0, 10.0, spherical=True)
     e = np.exp(-g.points)
-    m = GaussianModel(g.points, num_s=1, num_p=0, normalized=False)
+    m = AtomicGaussianDensity(g.points, num_s=1, num_p=0, normalized=False)
     kl = KLDivergenceSCF(g, e, m, mask_value=0.)
     gf = kl.goodness_of_fit(np.array([1.]), np.array([1.]))
     expected = [5.56833, 4 * np.pi * 1.60909, 4. * np.pi * 17.360]
@@ -52,7 +52,7 @@ def test_run_normalized_1s_gaussian():
     # density is normalized 1s orbital with exponent=1.0
     g = UniformRadialGrid(150, 0.0, 15.0, spherical=True)
     e = (1. / np.pi)**1.5 * np.exp(-g.points**2.)
-    model = GaussianModel(g.points, num_s=1, num_p=0, normalized=True)
+    model = AtomicGaussianDensity(g.points, num_s=1, num_p=0, normalized=True)
     kl = KLDivergenceSCF(g, e, model, weights=None)
 
     # fit density with initial coeff=1. & expon=1.
@@ -98,7 +98,7 @@ def test_kl_scf_update_coeffs_2s_gaussian():
     cs, es = np.array([5., 2.]), np.array([10., 3.])
     dens = np.exp(-grid.points)
     # model density is a normalized 2s Gaussian basis
-    model = GaussianModel(grid.points, num_s=2, num_p=0, normalized=True)
+    model = AtomicGaussianDensity(grid.points, num_s=2, num_p=0, normalized=True)
     # test updating coeffs
     kl = KLDivergenceSCF(grid, dens, model)
     new_coeffs = kl._update_params(cs, es, True, False)
@@ -119,7 +119,7 @@ def test_kl_scf_update_params_2s_gaussian():
     cs, es = np.array([5., 2.]), np.array([10., 3.])
     dens = np.exp(-points)
     # model density is a normalized 2s Gaussian basis
-    model = GaussianModel(points, num_s=2, num_p=0, normalized=True)
+    model = AtomicGaussianDensity(points, num_s=2, num_p=0, normalized=True)
     # test updating coeffs
     kl = KLDivergenceSCF(grid, dens, model, mask_value=1.e-16)
     new_expons = kl._update_params(cs, es, False, True)
@@ -143,7 +143,7 @@ def test_kl_scf_update_params_1s1p_gaussian():
     cs, es = np.array([1., 2.]), np.array([3., 4.])
     dens = np.exp(-grid.points)
     # model density is a normalized 2s Gaussian basis
-    model = GaussianModel(points, num_s=1, num_p=1, normalized=True)
+    model = AtomicGaussianDensity(points, num_s=1, num_p=1, normalized=True)
     # compute model density
     approx = cs[0] * (es[0] / np.pi)**1.5 * np.exp(-es[0] * points**2)
     approx += cs[1] * 2. * es[1]**2.5 * points**2 * np.exp(-es[1] * points**2) / (3 * np.pi**1.5)
@@ -175,7 +175,7 @@ def test_kl_fit_unnormalized_dens_normalized_1s_gaussian():
     grid = UniformRadialGrid(150, 0.0, 15.0, spherical=True)
     # density is normalized 1s gaussian
     dens = 1.57 * np.exp(-0.51 * grid.points**2.)
-    model = GaussianModel(grid.points, num_s=1, num_p=0, normalized=True)
+    model = AtomicGaussianDensity(grid.points, num_s=1, num_p=0, normalized=True)
     kl = GaussianBasisFit(grid, dens, model, measure="kl", method="slsqp")
     # expected coeffs & expons
     expected_cs = np.array([1.57 / (0.51 / np.pi)**1.5])
@@ -217,7 +217,7 @@ def test_kl_fit_normalized_dens_unnormalized_1s_gaussian():
     grid = UniformRadialGrid(200, 0.0, 15.0, spherical=True)
     dens = 2.06 * (0.88 / np.pi)**1.5 * np.exp(-0.88 * grid.points**2.)
     # un-normalized 1s basis function
-    model = GaussianModel(grid.points, num_s=1, num_p=0, normalized=False)
+    model = AtomicGaussianDensity(grid.points, num_s=1, num_p=0, normalized=False)
     kl = GaussianBasisFit(grid, dens, model, measure="kl", method="slsqp")
     # expected coeffs & expons
     expected_cs = np.array([2.06]) * (0.88 / np.pi)**1.5
@@ -256,7 +256,7 @@ def test_kl_fit_normalized_dens_normalized_1s_gaussian():
     grid = UniformRadialGrid(150, 0.0, 15.0, spherical=True)
     dens = 2.06 * (0.88 / np.pi)**1.5 * np.exp(-0.88 * grid.points**2.)
     # normalized 1s basis function
-    model = GaussianModel(grid.points, num_s=1, num_p=0, normalized=True)
+    model = AtomicGaussianDensity(grid.points, num_s=1, num_p=0, normalized=True)
     kl = GaussianBasisFit(grid, dens, model, measure="kl", method="slsqp")
     # expected coeffs & expons
     expected_cs = np.array([2.06])
@@ -303,7 +303,7 @@ def test_kl_fit_normalized_dens_unnormalized_2p_gaussian():
     dens += cs0[1] * es0[1]**2.5 * points**2 * np.exp(-es0[1] * points**2)
     dens *= 2. / (3. * np.pi**1.5)
     # un-normalized 2p functions
-    model = GaussianModel(points, num_s=0, num_p=2, normalized=False)
+    model = AtomicGaussianDensity(points, num_s=0, num_p=2, normalized=False)
     kl = GaussianBasisFit(grid, dens, model, measure="kl", method="slsqp")
     # expected coeffs & expons
     expected_cs = cs0 * es0**2.5 * 2. / (3. * np.pi**1.5)
@@ -340,7 +340,7 @@ def test_kl_fit_normalized_dens_normalized_2p_gaussian():
     dens += cs0[1] * es0[1]**2.5 * points**2 * np.exp(-es0[1] * points**2)
     dens *= 2. / (3. * np.pi ** 1.5)
     # normalized 2p functions
-    model = GaussianModel(points, num_s=0, num_p=2, normalized=True)
+    model = AtomicGaussianDensity(points, num_s=0, num_p=2, normalized=True)
     kl = GaussianBasisFit(grid, dens, model, measure="kl", method="slsqp")
     # initial coeff=cs0 & expon=es0, opt coeffs
     cs, es, f, df = kl.run(cs0, es0, True, False)
@@ -380,7 +380,7 @@ def test_kl_fit_normalized_dens_normalized_1s2p_gaussian():
     dens += cs0[1] * 2 * es0[1]**2.5 * points**2 * np.exp(-es0[1] * points**2) / (3. * np.pi**1.5)
     dens += cs0[2] * 2 * es0[2]**2.5 * points**2 * np.exp(-es0[2] * points**2) / (3. * np.pi**1.5)
     # un-normalized 1s + 2p functions
-    model = GaussianModel(points, num_s=1, num_p=2, normalized=True)
+    model = AtomicGaussianDensity(points, num_s=1, num_p=2, normalized=True)
     kl = GaussianBasisFit(grid, dens, model, measure="kl", method="slsqp")
     # initial coeff=1. & expon=1.
     cs, es, f, df = kl.run(np.array([1., 1., 1.]), np.array([1., 1., 1.]), True, True)
@@ -515,7 +515,7 @@ def test_ls_fit_normalized_dens_normalized_1s_gaussian():
     cs0, es0 = np.array([1.57]), np.array([0.51])
     dens = 1.57 * (0.51 / np.pi)**1.5 * np.exp(-0.51 * grid.points**2.)
     # model density is a normalized 1s Gaussian
-    model = GaussianModel(grid.points, num_s=1, num_p=0, normalized=True)
+    model = AtomicGaussianDensity(grid.points, num_s=1, num_p=0, normalized=True)
     ls = GaussianBasisFit(grid, dens, model, measure="sd", method="slsqp")
     # opt. coeffs & expons
     cs, es, f, df = ls.run(np.array([0.1]), np.array([3.5]), True, True)
@@ -528,7 +528,7 @@ def test_ls_fit_normalized_dens_normalized_1s_gaussian():
     assert_almost_equal(es0, es, decimal=8)
     assert_almost_equal(0., f, decimal=10)
     # model density is two normalized 1s Gaussian
-    model = GaussianModel(grid.points, num_s=2, num_p=0, normalized=True)
+    model = AtomicGaussianDensity(grid.points, num_s=2, num_p=0, normalized=True)
     ls = GaussianBasisFit(grid, dens, model, measure="sd", method="slsqp")
     # opt. coeffs & expons
     cs, es, f, df = ls.run(np.array([0.1, 3.0]), np.array([5.1, 7.8]), True, True)
@@ -549,7 +549,7 @@ def test_ls_fit_normalized_dens_normalized_2s_gaussian():
     # check norm of density
     assert_almost_equal(grid.integrate(dens), np.sum(cs0), decimal=6)
     # model density is a normalized 2s Gaussian
-    model = GaussianModel(grid.points, num_s=2, num_p=0, normalized=True)
+    model = AtomicGaussianDensity(grid.points, num_s=2, num_p=0, normalized=True)
     ls = GaussianBasisFit(grid, dens, model, measure="sd", method="slsqp")
     initial_cs = np.array([0.57, 0.98])
     initial_es = np.array([1.67, 0.39])
@@ -580,7 +580,7 @@ def test_ls_fit_normalized_dens_normalized_5s_gaussian():
     # check norm of density
     assert_almost_equal(grid.integrate(dens), np.sum(cs0), decimal=6)
     # model density is a normalized 1s Gaussian
-    model = GaussianModel(grid.points, num_s=5, num_p=0, normalized=True)
+    model = AtomicGaussianDensity(grid.points, num_s=5, num_p=0, normalized=True)
     ls = GaussianBasisFit(grid, dens, model, measure="sd", method="slsqp")
     initial_cs = np.array([0.57, 0.98, 1.16, 9.26, 2.48])
     initial_es = np.array([1.67, 0.39, 1.79, 13.58, 18.69])
