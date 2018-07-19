@@ -420,7 +420,7 @@ def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1s_gaussian():
     points = grid.points
     cs0 = np.array([1.52, 2.67])
     es0 = np.array([0.31, 0.41])
-    coords = np.array([0., 1.])
+    coords = np.array([[0.], [1.]])
     # compute density on each center
     dens1 = cs0[0] * np.exp(-es0[0] * (points - coords[0])**2.)
     dens2 = cs0[1] * np.exp(-es0[1] * (points - coords[1])**2.)
@@ -468,7 +468,7 @@ def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
     points = grid.points
     cs0 = np.array([1.52, 2.67])
     es0 = np.array([0.31, 0.41])
-    coords = np.array([0., 1.])
+    coords = np.array([[0.], [1.]])
     # compute density of each center
     dens_s = cs0[0] * (es0[0] / np.pi)**1.5 * np.exp(-es0[0] * (points - coords[0])**2.)
     dens_p = cs0[1] * (points - coords[1])**2 * np.exp(-es0[1] * (points - coords[1])**2.)
@@ -600,7 +600,7 @@ def test_ls_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1s_gaussian():
     # density is normalized 1s + 1s gaussians
     grid = UniformRadialGrid(200, 0.0, 15.0, spherical=True)
     cs0, es0 = np.array([1.52, 2.67, ]), np.array([0.31, 0.41])
-    coords = np.array([0., 1.])
+    coords = np.array([[0.], [1.]])
     # compute density on each center
     dens1 = cs0[0] * np.exp(-es0[0] * (grid.points - coords[0])**2.)
     dens2 = cs0[1] * np.exp(-es0[1] * (grid.points - coords[1])**2.)
@@ -633,7 +633,7 @@ def test_ls_fit_normalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
     # density is normalized 1s + 1s gaussians
     grid = UniformRadialGrid(200, 0.0, 15.0, spherical=True)
     cs0, es0 = np.array([1.52, 2.67]), np.array([0.31, 0.41])
-    coords = np.array([0.0, 1.0])
+    coords = np.array([[0.0], [1.0]])
     # compute density of each center
     dens_s = cs0[0] * (es0[0] / np.pi)**1.5 * np.exp(-es0[0] * (grid.points - coords[0])**2.)
     dens_p = cs0[1] * (grid.points - coords[1])**2 * np.exp(-es0[1] * (grid.points - coords[1])**2)

@@ -596,7 +596,7 @@ def test_molecular_gaussian_density_1d_1center_1s():
     # gaussian parameters
     coeffs = np.array([1.5])
     expons = np.array([0.5])
-    coords = np.array([2.5])
+    coords = np.array([[2.5]])
     # un-normalized 1s basis function
     model = MolecularGaussianDensity(points, coords, basis=np.array([[1, 0]]), normalized=False)
     g = np.array([0.0659054004, 0.486978701, 1.3237453539, 1.3237453539, 0.486978701])
@@ -623,7 +623,7 @@ def test_molecular_gaussian_density_1d_1center_2s():
     # gaussian parameters
     coeffs = np.array([6.03, 2.56])
     expons = np.array([2.45, 0.36])
-    coords = np.array([1.45])
+    coords = np.array([[1.45]])
     # un-normalized 1s basis function
     model = MolecularGaussianDensity(points, coords, basis=np.array([[2, 0]]), normalized=False)
     g = np.array([0.0015335519, 0.1046706295, 1.2358743034, 4.2625443763, 1.2209551847, 0.2082434127])
@@ -656,7 +656,7 @@ def test_molecular_gaussian_density_1d_1center_1s2p():
     # gaussian parameters
     coeffs = np.array([1.45, 0.0, 1.45])
     expons = np.array([0.75, 1.0, 0.75])
-    coords = np.array([1.00])
+    coords = np.array([[1.00]])
     # un-normalized 1s + 2p basis function
     model = MolecularGaussianDensity(points, coords, basis=np.array([[1, 2]]), normalized=False)
     g = np.array([0.0069161303, 0.5820289984, 1.369863003, 1.3832172004, 0.1972685684, 7.8141e-06])

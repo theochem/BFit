@@ -60,14 +60,10 @@ class AtomicGaussianDensity(object):
 
         # check & assign coord
         if coord is not None:
-            if not isinstance(coord, np.ndarray):
-                raise ValueError("Argument coord should be a numpy array.")
-            if points.ndim != coord.ndim:
-                raise ValueError("Arguments points & coord should have the same dimensions.")
-            if points.shape[1] != coord.shape[1]:
+            if not isinstance(coord, np.ndarray) and coord.ndim != 1:
+                raise ValueError("Argument coord should be a 1D numpy array.")
+            if points.ndim > 1 and points.shape[1] != coord.size:
                 raise ValueError("Arguments points & coord should have the same number of columns.")
-            if coord.ndim > 1 and coord.shape[0] > 1:
-                raise ValueError("Arguments coord should represent coordinate of only one center.")
         elif points.ndim > 1:
             coord = np.array([0.] * points.shape[1])
         else:
@@ -76,9 +72,10 @@ class AtomicGaussianDensity(object):
 
         # compute radii (distance of points from center coord)
         if points.ndim > 1:
-            self._radii = np.linalg.norm(points - self.coord, axis=1)
+            radii = np.linalg.norm(points - self.coord, axis=1)
         else:
-            self._radii = np.abs(points - self.coord)
+            radii = np.abs(points - self.coord)
+        self._radii = np.ravel(radii)
 
         self._points = points
         self.ns = num_s
@@ -279,24 +276,23 @@ class MolecularGaussianDensity(object):
             Whether to normalize Gaussian basis functions.
         """
         # check arguments
-        if points.ndim != coords.ndim:
-            raise ValueError("Arguments points and coords should have the same ndim.")
+        if not isinstance(coords, np.ndarray) or coords.ndim != 2:
+            raise ValueError("Argument coords should be a 2D numpy array.")
+        if basis.ndim != 2 or basis.shape[1] != 2:
+            raise ValueError("Argument basis should be a 2D array with 2 columns.")
         if len(coords) != len(basis):
             raise ValueError("Argument coords & basis should represent the same number of atoms.")
-        if basis.ndim != 2 and basis.shape[1] != 2:
-            raise ValueError("Argument basis should be a 2D array with 2 columns.")
+        if points.ndim > 1 and points.shape[1] != coords.shape[1]:
+            raise ValueError("Arguments points & coords should have the same number of columns.")
 
         self._points = points
         self.natoms = len(basis)
         self._nbasis = np.sum(basis)
         # place a GaussianModel on each center
         self.center = []
-        for index, b in enumerate(basis):
-            # compute radial distance of grid points from center
-            distance = points - coords[index]
-            if points.ndim > 1:
-                distance = np.linalg.norm(points - coords[index], axis=1)
-            self.center.append(AtomicGaussianDensity(distance, None, b[0], b[1], normalized))
+        for i, b in enumerate(basis):
+            # get the center of Gaussian basis functions
+            self.center.append(AtomicGaussianDensity(points, coords[i], b[0], b[1], normalized))
 
     @property
     def points(self):
