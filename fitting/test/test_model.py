@@ -906,3 +906,29 @@ def test_gaussian_model_sp_integrate_cubic():
     expons = np.array([0.50, 1.85, 0.16, 1.36, 2.08])
     value = model.evaluate(coeffs, expons, deriv=False)
     assert_almost_equal(grid.integrate(value), np.sum(coeffs), decimal=6)
+
+
+def test_molecular_gaussian_model_sp_integrate_cubic():
+    grid = CubicGrid(0., 20., 0.1)
+    coord = np.array([[10., 10., 9.5], [10., 10., 10.5]])
+    # un-normalized s-type & p-type Gaussian
+    basis = np.array([[0, 1], [1, 0]])
+    model = MolecularGaussianDensity(grid.points, coord, basis=basis, normalized=False)
+    # check integration
+    value = model.evaluate(np.array([1., 1.]), np.array([1.25, 4.01]), deriv=False)
+    value = grid.integrate(value)
+    assert_almost_equal(value, 1.5 * (np.pi**1.5 / 1.25**2.5) + (np.pi / 4.01)**1.5, decimal=6)
+    # normalized s-type & p-type Gaussian
+    basis = np.array([[2, 0], [0, 3]])
+    model = MolecularGaussianDensity(grid.points, coords=coord, basis=basis, normalized=True)
+    # check integration
+    coeffs = np.array([1.05, 3.62, 0.56, 2.01, 3.56])
+    expons = np.array([0.50, 1.85, 0.16, 1.36, 2.08])
+    value = model.evaluate(coeffs, expons, deriv=False)
+    assert_almost_equal(grid.integrate(value), np.sum(coeffs), decimal=6)
+    # normalized (s-type + p-type) & p-type Gaussian
+    basis = np.array([[2, 2], [0, 1]])
+    model = MolecularGaussianDensity(grid.points, coords=coord, basis=basis, normalized=True)
+    # check integration
+    value = model.evaluate(coeffs, expons, deriv=False)
+    assert_almost_equal(grid.integrate(value), np.sum(coeffs), decimal=6)
