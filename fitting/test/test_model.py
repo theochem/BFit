@@ -24,6 +24,7 @@
 import numpy as np
 from numpy.testing import assert_raises, assert_almost_equal
 
+from fitting.grid import UniformRadialGrid, CubicGrid
 from fitting.model import AtomicGaussianDensity, MolecularGaussianDensity
 
 
@@ -824,3 +825,84 @@ def test_molecular_gaussian_density_3d_3center_2s1p_1p_2s():
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
+
+
+def test_gaussian_model_s_integrate_uniform():
+    grid = UniformRadialGrid(100, 0.0, 15.0, spherical=True)
+    # un-normalized s-type Gaussian at origin
+    model = AtomicGaussianDensity(grid.points, num_s=1, num_p=0, normalized=False)
+    # check center
+    assert_almost_equal(model.coord, np.zeros(1), decimal=8)
+    # check integration
+    value = model.evaluate(np.ones(1), np.ones(1), deriv=False)
+    assert_almost_equal(grid.integrate(value), np.pi**1.5, decimal=6)
+    value = model.evaluate(np.array([1.23]), np.array([0.5]), deriv=False)
+    assert_almost_equal(grid.integrate(value), 1.23 * (np.pi / 0.5)**1.5, decimal=6)
+    value += model.evaluate(np.array([0.91]), np.array([0.1]), deriv=False)
+    value = grid.integrate(value)
+    assert_almost_equal(value, 1.23 * (np.pi / 0.5)**1.5 + 0.91 * (np.pi / 0.1)**1.5, decimal=6)
+
+
+def test_gaussian_model_p_integrate_uniform():
+    grid = UniformRadialGrid(100, 0.0, 15.0, spherical=True)
+    # un-normalized p-type Gaussian at origin
+    model = AtomicGaussianDensity(grid.points, num_s=0, num_p=1, normalized=False)
+    # check center
+    assert_almost_equal(model.coord, np.zeros(1), decimal=8)
+    # check integration
+    value = model.evaluate(np.array([1.0]), np.array([2.5]), deriv=False)
+    assert_almost_equal(grid.integrate(value), 1.5 * np.pi**1.5 / 2.5**2.5, decimal=6)
+    value = model.evaluate(np.array([1.2]), np.array([1.0]), deriv=False)
+    assert_almost_equal(grid.integrate(value), 1.2 * 1.5 * np.pi**1.5, decimal=6)
+    value = model.evaluate(np.array([2.5]), np.array([1.1]), deriv=False)
+    assert_almost_equal(grid.integrate(value), 2.5 * 1.5 * np.pi**1.5 / 1.1**2.5, decimal=6)
+    # normalized p-type Gaussian at origin
+    model = AtomicGaussianDensity(grid.points, num_s=0, num_p=1, normalized=True)
+    # check center
+    assert_almost_equal(model.coord, np.zeros(1), decimal=8)
+    # check integration
+    value = model.evaluate(np.array([2.]), np.array([2.75]), deriv=False)
+    assert_almost_equal(grid.integrate(value), 2.0 * 1.0, decimal=6)
+
+
+def test_gaussian_model_sp_integrate_uniform():
+    grid = UniformRadialGrid(100, 0.0, 15.0, spherical=True)
+    # un-normalized s-type + p-type Gaussian at origin
+    model = AtomicGaussianDensity(grid.points, num_s=1, num_p=1, normalized=False)
+    # check center
+    assert_almost_equal(model.coord, np.zeros(1), decimal=8)
+    # check integration
+    value = model.evaluate(np.array([1., 1.]), np.array([4.01, 1.25]), deriv=False)
+    value = grid.integrate(value)
+    assert_almost_equal(value, (np.pi / 4.01)**1.5 + 1.5 * (np.pi**1.5 / 1.25**2.5), decimal=6)
+    # normalized s-type + p-type Gaussian at origin
+    model = AtomicGaussianDensity(grid.points, num_s=2, num_p=3, normalized=True)
+    # check center
+    assert_almost_equal(model.coord, np.zeros(1), decimal=8)
+    # check integration
+    coeffs = np.array([1.05, 3.62, 0.56, 2.01, 3.56])
+    expons = np.array([0.50, 1.85, 0.16, 1.36, 2.08])
+    value = model.evaluate(coeffs, expons, deriv=False)
+    assert_almost_equal(grid.integrate(value), np.sum(coeffs), decimal=6)
+
+
+def test_gaussian_model_sp_integrate_cubic():
+    grid = CubicGrid(0., 20., 0.1)
+    coord = np.array([10., 10., 10.])
+    # un-normalized s-type + p-type Gaussian
+    model = AtomicGaussianDensity(grid.points, coord=coord, num_s=1, num_p=1, normalized=False)
+    # check center
+    assert_almost_equal(model.coord, coord, decimal=8)
+    # check integration
+    value = model.evaluate(np.array([1., 1.]), np.array([4.01, 1.25]), deriv=False)
+    value = grid.integrate(value)
+    assert_almost_equal(value, (np.pi / 4.01)**1.5 + 1.5 * (np.pi**1.5 / 1.25**2.5), decimal=6)
+    # normalized s-type + p-type Gaussian
+    model = AtomicGaussianDensity(grid.points, coord=coord, num_s=2, num_p=3, normalized=True)
+    # check center
+    assert_almost_equal(model.coord, coord, decimal=8)
+    # check integration
+    coeffs = np.array([1.05, 3.62, 0.56, 2.01, 3.56])
+    expons = np.array([0.50, 1.85, 0.16, 1.36, 2.08])
+    value = model.evaluate(coeffs, expons, deriv=False)
+    assert_almost_equal(grid.integrate(value), np.sum(coeffs), decimal=6)
