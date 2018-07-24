@@ -225,7 +225,7 @@ def test_points_cubic():
 
 
 def test_integration_cubic():
-    grid = CubicGrid(0., 0.25, 0.001, spherical=False)
+    grid = CubicGrid(0., 0.25, 0.001)
     # integrate constant value of 1.
     value = grid.integrate(np.ones(len(grid)))
     assert_almost_equal(value, 0.25**3, decimal=3)

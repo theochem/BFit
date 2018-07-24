@@ -218,7 +218,7 @@ class CubicGrid(object):
     The cubic grid construct a 3D equally-spaced points.
     """
 
-    def __init__(self, smallest_pnt, largest_pnt, step_size, spherical=True):
+    def __init__(self, smallest_pnt, largest_pnt, step_size):
         """
         Parameters
         ----------
@@ -228,8 +228,6 @@ class CubicGrid(object):
             The largest point on any axis in the 3D cubic grid.
         step_size : float
             The step-size between two consecutive points on any axis in the 3D cubic grid.
-        spherical : bool, optional
-            If `True`, the spherical integration of function is computed.
         """
         if not isinstance(smallest_pnt, (int, float)):
             raise TypeError("Argument smallest_pt should be a positive number.")
@@ -250,7 +248,6 @@ class CubicGrid(object):
         points[:, 2] = np.tile(points_1d, npoints**2)
         self._points = np.array(points)
         self._step = step_size
-        self._spherical = spherical
 
     @property
     def points(self):
@@ -261,11 +258,6 @@ class CubicGrid(object):
     def step(self):
         """The step size between to consecutive points."""
         return self._step
-
-    @property
-    def spherical(self):
-        """Whether to perform spherical integration."""
-        return self._spherical
 
     def __len__(self):
         """Number of grid points."""
@@ -292,6 +284,4 @@ class CubicGrid(object):
         if arr.shape != (len(self),):
             raise ValueError("Argument arr should have ({0},) shape.".format(len(self)))
         value = np.power(self._step, 3) * np.sum(arr)
-        if self._spherical:
-            value *= 4 * np.pi
         return value
