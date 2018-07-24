@@ -240,12 +240,14 @@ class CubicGrid(object):
         if largest_pnt <= smallest_pnt:
             raise ValueError("The largest_pnt should be greater than the smallest_pnt.")
 
-        points = []
+        # compute points in one dimension
         points_1d = np.arange(smallest_pnt, largest_pnt + step_size, step_size)
-        for x in points_1d:
-            for y in points_1d:
-                for z in points_1d:
-                    points.append([x, y, z])
+        npoints = points_1d.size
+        points = np.zeros((npoints**3, 3))
+        # assign x, y & z coordinates
+        points[:, 0] = np.repeat(points_1d, npoints**2)
+        points[:, 1] = np.tile(np.repeat(points_1d, npoints), npoints)
+        points[:, 2] = np.tile(points_1d, npoints**2)
         self._points = np.array(points)
         self._step = step_size
         self._spherical = spherical
