@@ -26,7 +26,7 @@ from numpy.testing import assert_almost_equal
 
 from fitting.model import AtomicGaussianDensity, MolecularGaussianDensity
 from fitting.fit import KLDivergenceSCF, GaussianBasisFit
-from fitting.grid import UniformRadialGrid
+from fitting.grid import UniformRadialGrid, CubicGrid
 
 
 def test_lagrange_multiplier():
@@ -168,6 +168,39 @@ def test_kl_scf_update_params_1s1p_gaussian():
     new_coeffs, new_expons = kl._update_params(cs, es, update_coeffs=True, update_expons=True)
     assert_almost_equal(new_coeffs, coeffs, decimal=6)
     assert_almost_equal(new_expons, expons, decimal=6)
+
+
+def test_kl_scf_update_params_3d_molecular_dens_1s_1s_gaussian():
+    # actual density is a 1s Gaussian at origin
+    grid = CubicGrid(-2., 2., 0.1)
+    dens = np.exp(-np.sum(grid.points ** 2., axis=1))
+    # model density is a normalized 1s Gassuain on each center
+    coord = np.array([[0., 0., 0.], [0., 0., 1.]])
+    cs, es = np.array([1., 2.]), np.array([3., 4.])
+    model = MolecularGaussianDensity(grid.points, coord, np.array([[1, 0], [1, 0]]), True)
+    kl = KLDivergenceSCF(grid, dens, model)
+    # compute expected updated coeffs
+    dist1 = np.sum((grid.points - coord[0])**2, axis=1)
+    dist2 = np.sum((grid.points - coord[1])**2, axis=1)
+    approx = cs[0] * (es[0] / np.pi)**1.5 * np.exp(-es[0] * dist1)
+    approx += cs[1] * (es[1] / np.pi)**1.5 * np.exp(-es[1] * dist2)
+    expected_coeffs = cs * (es / np.pi)**1.5
+    expected_coeffs[0] *= grid.integrate(dens * np.exp(-es[0] * dist1) / approx)
+    expected_coeffs[1] *= grid.integrate(dens * np.exp(-es[1] * dist2) / approx)
+    # check updated coeffs
+    new_coeffs = kl._update_params(cs, es, update_coeffs=True, update_expons=False)
+    assert_almost_equal(new_coeffs, expected_coeffs, decimal=6)
+    # compute expected updated expons
+    expected_expons = 1.5 * (es / np.pi)**1.5
+    expected_expons[0] *= grid.integrate(dens * np.exp(-es[0] * dist1) / approx)
+    expected_expons[1] *= grid.integrate(dens * np.exp(-es[1] * dist2) / approx)
+    denoms = (es / np.pi)**1.5
+    denoms[0] *= grid.integrate(dens * dist1 * np.exp(-es[0] * dist1) / approx)
+    denoms[1] *= grid.integrate(dens * dist2 * np.exp(-es[1] * dist2) / approx)
+    expected_expons /= denoms
+    # check updated expons
+    new_expons = kl._update_params(cs, es, update_coeffs=False, update_expons=True)
+    assert_almost_equal(new_expons, expected_expons, decimal=6)
 
 
 def test_kl_fit_unnormalized_dens_normalized_1s_gaussian():

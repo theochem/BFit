@@ -27,5 +27,4 @@ from fitting.model import *
 from fitting.density import *
 from fitting.measure import *
 from fitting.greedy import *
-from fitting.kl_divergence import *
 from fitting.utils import *
