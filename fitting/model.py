@@ -19,7 +19,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-r"""Model Density Module."""
+r"""Gaussian Density Model Module."""
 
 
 import numpy as np
@@ -40,11 +40,11 @@ class AtomicGaussianDensity(object):
         points : ndarray, (N,)
             The grid points.
         coord : ndarray, optional
-            The coordinates of gaussian basis functions center.
+            The coordinates of gaussian basis functions centers.
             If `None`, the basis functions are placed on the origin.
-        num_s : int
+        num_s : int, optional
              Number of s-type Gaussian basis functions.
-        num_p : int
+        num_p : int, optional
              Number of p-type Gaussian basis functions.
         normalized : bool, optional
             Whether to normalize Gaussian basis functions.
@@ -117,7 +117,7 @@ class AtomicGaussianDensity(object):
         return np.array([1.5] * self.ns + [2.5] * self.np)
 
     def evaluate(self, coeffs, expons, deriv=False):
-        """Compute linear combination of Gaussian basis & derivatives on the grid points.
+        """Compute linear combination of Gaussian basis & its derivatives on the grid points.
 
         .. math::
 
@@ -138,7 +138,7 @@ class AtomicGaussianDensity(object):
         g : ndarray, (N,)
             The linear combination of Gaussian basis functions evaluated on the grid points.
         dg : ndarray, (N, 2 * `nbasis`)
-            The derivative of linear combination of Gaussian basis functions w.r.t. coefficients
+            The derivative of a linear combination of Gaussian basis functions w.r.t. coefficients
             & exponents, respectively, evaluated on the grid points. Only returned if `deriv=True`.
         """
         if coeffs.ndim != 1 or expons.ndim != 1:
@@ -170,7 +170,7 @@ class AtomicGaussianDensity(object):
             return gs + gp
 
     def _eval_s(self, matrix, coeffs, expons, deriv):
-        """Compute linear combination of s-type Gaussian basis & derivatives on the grid points.
+        """Compute linear combination of s-type Gaussian basis & its derivative on the grid points.
 
         .. math::
 
@@ -215,7 +215,7 @@ class AtomicGaussianDensity(object):
         return g
 
     def _eval_p(self, matrix, coeffs, expons, deriv):
-        """Compute linear combination of p-type Gaussian basis & derivatives on the grid points.
+        """Compute linear combination of p-type Gaussian basis & its derivative on the grid points.
 
         .. math::
 
@@ -323,6 +323,7 @@ class MolecularGaussianDensity(object):
 
     @property
     def prefactor(self):
+        """The pre-factor of Gaussian basis functions"""
         return np.concatenate([center.prefactor for center in self.center])
 
     def assign_basis_to_center(self, index):
@@ -347,7 +348,7 @@ class MolecularGaussianDensity(object):
         return index
 
     def evaluate(self, coeffs, expons, deriv=False):
-        """Compute linear combination of Gaussian basis & derivatives on the grid points.
+        """Compute linear combination of Gaussian basis & its derivatives on the grid points.
 
         .. math::
 

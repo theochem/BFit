@@ -19,11 +19,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-"""Grid Module.
-
-This module contains classes for generating grid points and integrating scalar functions
-evaluated on the grid.
-"""
+"""Grid Module."""
 
 
 import numpy as np
@@ -213,10 +209,7 @@ class ClenshawRadialGrid(BaseRadialGrid):
 
 
 class CubicGrid(object):
-    r"""Cubic Grid Class.
-
-    The cubic grid construct a 3D equally-spaced points.
-    """
+    r"""Equally-Spaced 3D Cubic Grid Class."""
 
     def __init__(self, smallest_pnt, largest_pnt, step_size):
         """
@@ -266,15 +259,14 @@ class CubicGrid(object):
     def integrate(self, arr):
         r"""Compute the integral of a function evaluated on the grid points based on Riemann sums.
 
-        .. math:: \int p * f(r) dr
+        .. math:: \int\int\int f(x, y, z) dx dy dz
 
-        where :math:'f(r)' is the integrand and :math:`p=4 \times \pi` if `spherical=True`,
-        otherwise :math:`p=1.0`.
+        where :math:'f(r)' is the integrand.
 
         Parameters
         ----------
         arr : ndarray
-            The integrand evaluated on the radial grid points.
+            The integrand evaluated on the grid points.
 
         Returns
         -------

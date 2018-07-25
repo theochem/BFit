@@ -19,17 +19,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-r"""
-Contains the abstract base class for optimizing the Kullback-Leibler Divergence.
-
-The point of this class is to define the necessary equations in case
-one wants to implement different kinds of linear convex sums of function
-using fixed-point iteration or minimizing with traditional methods provided by
-'scipy.minimize'.In Addition it can work with the greedy method provided.
-
-If one wants to implement their own linear convex sums of function. They would
-have to inherit from KullbackLeibler class.
-"""
+"""Gaussian Basis Fitting Module."""
 
 
 import numpy as np
@@ -95,32 +85,59 @@ class KLDivergenceSCF(BaseFit):
     r"""Kullback-Leiber Divergence Self-Consistent Fitting."""
 
     def __init__(self, grid, density, model, weights=None, mask_value=0.):
-        r"""
-
+        """
         Parameters
         ----------
-
-
+        grid :
+            The grid class.
+        density : ndarray
+            The true density evaluated on the grid points.
+        model :
+            The Gaussian basis model density.
+        weights : ndarray, optional
+            The weights of objective function at each point. If `None`, 1.0 is used.
+        mask_value : float, optional
+            The elements less than or equal to this number are masked in a division.
         """
         # initialize KL deviation measure
         measure = KLDivergence(density, mask_value=mask_value)
         super(KLDivergenceSCF, self).__init__(grid, density, model, measure)
-
+        # compute norm of density
         self.norm = grid.integrate(density)
         if weights is None:
             weights = np.ones(len(density))
         self.weights = weights
-        # Various methods relay on masked values due to division of small numbers.
+        # compute lagrange multiplier
         self._lm = self.grid.integrate(self.density * self.weights) / self.norm
         if self._lm == 0. or np.isnan(self._lm):
             raise RuntimeError("Lagrange multiplier cannot be {0}.".format(self._lm))
 
     @property
     def lagrange_multiplier(self):
+        """The lagrange multiplier."""
         return self._lm
 
     def _update_params(self, coeffs, expons, update_coeffs=True, update_expons=False):
+        """Compute updated coefficients & exponents of Gaussian basis functions.
 
+        Parameters
+        ----------
+        coeffs : ndarray
+            The initial coefficients of Gaussian basis functions.
+        expons : ndarray
+            The initial exponents of Gaussian basis functions.
+        update_coeffs : bool, optional
+            Whether to optimize coefficients of Gaussian basis functions.
+        update_expons : bool, optional
+            Whether to optimize exponents of Gaussian basis functions.
+
+        Returns
+        -------
+        coeffs : ndarray
+            The updated coefficients of Gaussian basis functions. Only returned if `deriv=True`.
+        expons : ndarray
+            The updated exponents of Gaussian basis functions. Only returned if `deriv=True`.
+        """
         if not update_coeffs and not update_expons:
             raise ValueError("At least one of args update_coeff or update_expons should be True.")
         # compute model density & its derivative
@@ -245,11 +262,18 @@ class GaussianBasisFit(BaseFit):
         r"""
         Parameters
         ----------
-        grid
-        density
-        model
-        method
-        mask_value
+        grid :
+            The grid class.
+        density : ndarray
+            The true density evaluated on the grid points.
+        model :
+            The Gaussian basis model density.
+        measure : str, optional
+            The deviation measure between true density and model density.
+        method : str, optional
+            The method used for optimizing parameters.
+        mask_value : float, optional
+            The elements less than or equal to this number are masked in a division.
         """
         if np.any(abs(grid.points - model.points) > 1.e-12):
             raise ValueError("The grid.points & model.points are not the same!")
