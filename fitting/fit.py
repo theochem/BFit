@@ -138,7 +138,8 @@ class KLDivergenceSCF(BaseFit):
                     radii = np.ravel(self.model.radii)
                 else:
                     # case of MolecularGaussianDensity model with more than 1 atom
-                    radii = self.model.radii[index]
+                    center_index = self.model.assign_basis_to_center(index)
+                    radii = self.model.radii[center_index]
                 avrg2[index] = self.grid.integrate(integrand * radii**2)
         # compute updated coeffs & expons
         if update_coeffs:

@@ -22,7 +22,7 @@
 
 
 import numpy as np
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_almost_equal, assert_equal
 
 from fitting.model import AtomicGaussianDensity, MolecularGaussianDensity
 from fitting.fit import KLDivergenceSCF, GaussianBasisFit
@@ -207,6 +207,43 @@ def test_kl_scf_update_params_3d_molecular_dens_1s_1s_gaussian():
     coeffs, expons = kl._update_params(cs, es, update_coeffs=False, update_expons=True)
     assert_almost_equal(coeffs, cs, decimal=6)
     assert_almost_equal(expons, expected_expons, decimal=6)
+
+
+def test_kl_scf_run_3d_molecular_dens_1s_1p_gaussian():
+    # make cubic grid
+    grid = CubicGrid(-15., 15., 0.3)
+    # actual density is a 1s Gaussian at x=0.5 & 1p Gaussian at y=0.25
+    cs, es = np.array([0.53, 2.07]), np.array([0.67, 1.92])
+    coord = np.array([[0.5, 0., 0.], [0., 0.25, 0.]])
+    dist1 = np.sum((grid.points - coord[0])**2., axis=1)
+    dist2 = np.sum((grid.points - coord[1])**2., axis=1)
+    dens1 = cs[0] * (es[0] / np.pi)**1.5 * np.exp(-es[0] * dist1)
+    dens2 = cs[1] * 2. * es[1]**2.5 * dist2 * np.exp(-es[1] * dist2) / (3. * np.pi**1.5)
+    # model density is a normalized 1s Gassuain on each center
+    model = MolecularGaussianDensity(grid.points, coord, np.array([[1, 0], [0, 1]]), True)
+    # check model norm
+    assert_almost_equal(grid.integrate(model.evaluate(cs, es, False)), np.sum(cs), decimal=8)
+    # initial coeffs & expons for optimization
+    cs0, es0 = np.array([0.45, 1.50]), np.array([0.5, 2.2])
+    # optimize coeffs
+    kl = KLDivergenceSCF(grid, dens1 + dens2, model)
+    result = kl.run(cs0, es, True, False, 500, 1.e-7, 1.e-7, 1.e-7)
+    assert_equal(result["success"], True)
+    assert_almost_equal(result["x"][0], cs, decimal=6)
+    assert_almost_equal(result["x"][1], es, decimal=6)
+    assert_almost_equal(result["fun"][-1], 0., decimal=6)
+    # optimize expons
+    result = kl.run(cs, es0, False, True, 500, 1.e-7, 1.e-7, 1.e-7)
+    assert_equal(result["success"], True)
+    assert_almost_equal(result["x"][0], cs, decimal=6)
+    assert_almost_equal(result["x"][1], es, decimal=6)
+    assert_almost_equal(result["fun"][-1], 0., decimal=6)
+    # optimize coeffs & expons
+    result = kl.run(cs0, es0, True, True, 500, 1.e-7, 1.e-7, 1.e-7)
+    assert_equal(result["success"], True)
+    assert_almost_equal(result["x"][0], cs, decimal=6)
+    assert_almost_equal(result["x"][1], es, decimal=6)
+    assert_almost_equal(result["fun"][-1], 0., decimal=6)
 
 
 def test_kl_fit_unnormalized_dens_normalized_1s_gaussian():
