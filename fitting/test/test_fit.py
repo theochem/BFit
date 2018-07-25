@@ -101,7 +101,7 @@ def test_kl_scf_update_coeffs_2s_gaussian():
     model = AtomicGaussianDensity(grid.points, num_s=2, num_p=0, normalized=True)
     # test updating coeffs
     kl = KLDivergenceSCF(grid, dens, model)
-    new_coeffs = kl._update_params(cs, es, True, False)
+    new_coeffs, new_expons = kl._update_params(cs, es, True, False)
     # compute model density
     approx = cs[0] * (es[0] / np.pi)**1.5 * np.exp(-es[0] * grid.points**2)
     approx += cs[1] * (es[1] / np.pi)**1.5 * np.exp(-es[1] * grid.points**2)
@@ -109,6 +109,7 @@ def test_kl_scf_update_coeffs_2s_gaussian():
     coeffs = cs * (es / np.pi)**1.5
     coeffs[0] *= grid.integrate(dens * np.exp(-es[0] * grid.points**2) / approx)
     coeffs[1] *= grid.integrate(dens * np.exp(-es[1] * grid.points**2) / approx)
+    assert_almost_equal(new_expons, es, decimal=6)
     assert_almost_equal(new_coeffs, coeffs, decimal=6)
 
 
@@ -122,7 +123,7 @@ def test_kl_scf_update_params_2s_gaussian():
     model = AtomicGaussianDensity(points, num_s=2, num_p=0, normalized=True)
     # test updating coeffs
     kl = KLDivergenceSCF(grid, dens, model, mask_value=1.e-16)
-    new_expons = kl._update_params(cs, es, False, True)
+    new_coeffs, new_expons = kl._update_params(cs, es, False, True)
     # compute model density
     approx = cs[0] * (es[0] / np.pi)**1.5 * np.exp(-es[0] * points**2)
     approx += cs[1] * (es[1] / np.pi)**1.5 * np.exp(-es[1] * points**2)
@@ -133,6 +134,7 @@ def test_kl_scf_update_params_2s_gaussian():
     expons[1] *= grid.integrate(ratio * np.exp(-es[1] * points**2))
     expons[0] /= grid.integrate(ratio * points**2 * np.exp(-es[0] * points**2))
     expons[1] /= grid.integrate(ratio * points**2 * np.exp(-es[1] * points**2))
+    assert_almost_equal(new_coeffs, cs, decimal=6)
     assert_almost_equal(new_expons, expons, decimal=6)
 
 
@@ -151,18 +153,20 @@ def test_kl_scf_update_params_1s1p_gaussian():
     assert_almost_equal(approx, model.evaluate(cs, es), decimal=6)
     # test updating coeffs
     kl = KLDivergenceSCF(grid, dens, model, mask_value=0.)
-    new_coeffs = kl._update_params(cs, es, update_coeffs=True, update_expons=False)
+    new_coeffs, new_expons = kl._update_params(cs, es, update_coeffs=True, update_expons=False)
     coeffs = cs * np.array([(es[0] / np.pi)**1.5, 2 * es[1]**2.5 / (3 * np.pi**1.5)])
     coeffs[0] *= grid.integrate(dens * np.exp(-es[0] * points**2) / approx)
     coeffs[1] *= grid.integrate(dens * np.exp(-es[1] * points**2) * points**2 / approx)
+    assert_almost_equal(new_expons, es, decimal=6)
     assert_almost_equal(new_coeffs, coeffs, decimal=6)
     # test updating expons
-    new_expons = kl._update_params(cs, es, update_coeffs=False, update_expons=True)
+    new_coeffs, new_expons = kl._update_params(cs, es, update_coeffs=False, update_expons=True)
     expons = np.array([1.5, 2.5])
     expons[0] *= grid.integrate(dens * np.exp(-es[0] * points**2) / approx)
     expons[1] *= grid.integrate(dens * points**2 * np.exp(-es[1] * points**2) / approx)
     expons[0] /= grid.integrate(dens * points**2 * np.exp(-es[0] * points**2) / approx)
     expons[1] /= grid.integrate(dens * points**4 * np.exp(-es[1] * points**2) / approx)
+    assert_almost_equal(new_coeffs, cs, decimal=6)
     assert_almost_equal(new_expons, expons, decimal=6)
     # test updating coeffs & expons
     new_coeffs, new_expons = kl._update_params(cs, es, update_coeffs=True, update_expons=True)
@@ -188,8 +192,9 @@ def test_kl_scf_update_params_3d_molecular_dens_1s_1s_gaussian():
     expected_coeffs[0] *= grid.integrate(dens * np.exp(-es[0] * dist1) / approx)
     expected_coeffs[1] *= grid.integrate(dens * np.exp(-es[1] * dist2) / approx)
     # check updated coeffs
-    new_coeffs = kl._update_params(cs, es, update_coeffs=True, update_expons=False)
-    assert_almost_equal(new_coeffs, expected_coeffs, decimal=6)
+    coeffs, expons = kl._update_params(cs, es, update_coeffs=True, update_expons=False)
+    assert_almost_equal(expons, es, decimal=6)
+    assert_almost_equal(coeffs, expected_coeffs, decimal=6)
     # compute expected updated expons
     expected_expons = 1.5 * (es / np.pi)**1.5
     expected_expons[0] *= grid.integrate(dens * np.exp(-es[0] * dist1) / approx)
@@ -199,8 +204,9 @@ def test_kl_scf_update_params_3d_molecular_dens_1s_1s_gaussian():
     denoms[1] *= grid.integrate(dens * dist2 * np.exp(-es[1] * dist2) / approx)
     expected_expons /= denoms
     # check updated expons
-    new_expons = kl._update_params(cs, es, update_coeffs=False, update_expons=True)
-    assert_almost_equal(new_expons, expected_expons, decimal=6)
+    coeffs, expons = kl._update_params(cs, es, update_coeffs=False, update_expons=True)
+    assert_almost_equal(coeffs, cs, decimal=6)
+    assert_almost_equal(expons, expected_expons, decimal=6)
 
 
 def test_kl_fit_unnormalized_dens_normalized_1s_gaussian():

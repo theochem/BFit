@@ -142,12 +142,10 @@ class KLDivergenceSCF(BaseFit):
                 avrg2[index] = self.grid.integrate(integrand * radii**2)
         # compute updated coeffs & expons
         if update_coeffs:
-            new_coeffs = coeffs * avrg1 / self._lm
+            coeffs = coeffs * avrg1 / self._lm
         if update_expons:
-            new_expons = self.model.prefactor * avrg1 / avrg2
-        if update_coeffs and update_expons:
-            return new_coeffs, new_expons
-        return new_coeffs if update_coeffs else new_expons
+            expons = self.model.prefactor * avrg1 / avrg2
+        return coeffs, expons
 
     def run(self, c0, e0, opt_coeffs=True, opt_expons=True, maxiter=500, c_threshold=1.e-6,
             e_threshold=1.e-6, d_threshold=1.e-6):
@@ -206,12 +204,14 @@ class KLDivergenceSCF(BaseFit):
             # update old coeffs & expons
             old_coeffs, old_expons = new_coeffs, new_expons
             # update coeffs and/or exponents
-            if opt_coeffs and opt_coeffs:
+            if opt_coeffs and opt_expons:
                 new_coeffs, new_expons = self._update_params(new_coeffs, new_expons, True, True)
             elif opt_coeffs:
-                new_coeffs = self._update_params(new_coeffs, new_expons, True, False)
+                new_coeffs, new_expons = self._update_params(new_coeffs, new_expons, True, False)
             elif opt_expons:
-                new_expons = self._update_params(new_coeffs, new_expons, False, True)
+                new_coeffs, new_expons = self._update_params(new_coeffs, new_expons, False, True)
+            else:
+                raise ValueError("Both opt_coeffs & opt_expons are False! Nothing to optimize!")
             # compute max change in coeffs & expons
             max_diff_coeffs = np.max(np.abs(new_coeffs - old_coeffs))
             max_diff_expons = np.max(np.abs(new_expons - old_expons))
