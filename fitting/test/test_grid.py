@@ -235,7 +235,7 @@ def test_integration_cubic():
 
 
 def test_integration_cubic_gaussian():
-    grid = CubicGrid(-15.0, 15.0, 0.1)
+    grid = CubicGrid(-15.0, 15.0, 0.25)
     dist = np.linalg.norm(grid.points, axis=1)
     # integrate s-type gaussian functions
     value = grid.integrate(np.exp(-dist**2))
@@ -263,7 +263,7 @@ def test_integration_cubic_gaussian():
 
 def test_integration_cubic_gaussian_shifted():
     # place the function at the center of cubic grid with coordinates of [15, 15, 15]
-    grid = CubicGrid(0.0, 30.0, 0.1)
+    grid = CubicGrid(0.0, 30.0, 0.25)
     dist = np.linalg.norm(grid.points - np.array([15., 15., 15.]), axis=1)
     # integrate s-type gaussian functions
     value = grid.integrate(np.exp(-dist**2))
