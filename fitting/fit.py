@@ -42,7 +42,56 @@ from fitting.measure import KLDivergence, SquaredDifference
 __all__ = ["KLDivergenceSCF", "GaussianBasisFit"]
 
 
-class KLDivergenceSCF(object):
+class BaseFit(object):
+    """Base Fitting Class."""
+
+    def __init__(self, grid, density, model, measure):
+        """
+        Parameters
+        ----------
+        grid :
+            The grid class.
+        density : ndarray
+            The true density evaluated on the grid points.
+        model :
+            The Gaussian basis model density.
+        measure
+            The deviation measure between true density and model density.
+        """
+        self.grid = grid
+        self.density = density
+        self.model = model
+        self.measure = measure
+
+    def goodness_of_fit(self, coeffs, expons):
+        r"""Compute various measures to see how good is the fitted model.
+
+        Parameters
+        ----------
+        coeffs : ndarray
+            The coefficients of Gaussian basis functions.
+        expons : ndarray
+            The exponents of Gaussian basis functions.
+
+        Returns
+        -------
+        n : float
+            Integral of approximate model density, i.e. norm of approximate model density.
+        l1 : float
+            Integral of absolute difference between density and approximate model density.
+        m : float
+            Integral of deviation measure between density and approximate model density.
+        """
+        # evaluate approximate model density
+        approx = self.model.evaluate(coeffs, expons)
+        # compute deviation measure on the grid
+        value = self.measure.evaluate(approx, deriv=False)
+        return [self.grid.integrate(approx),
+                self.grid.integrate(np.abs(self.density - approx)),
+                self.grid.integrate(self.weights * value)]
+
+
+class KLDivergenceSCF(BaseFit):
     r"""Kullback-Leiber Divergence Self-Consistent Fitting."""
 
     def __init__(self, grid, density, model, weights=None, mask_value=0.):
@@ -53,9 +102,10 @@ class KLDivergenceSCF(object):
 
 
         """
-        self.grid = grid
-        self.density = density
-        self.model = model
+        # initialize KL deviation measure
+        measure = KLDivergence(density, mask_value=mask_value)
+        super(KLDivergenceSCF, self).__init__(grid, density, model, measure)
+
         self.norm = grid.integrate(density)
         if weights is None:
             weights = np.ones(len(density))
@@ -64,7 +114,6 @@ class KLDivergenceSCF(object):
         self._lm = self.grid.integrate(self.density * self.weights) / self.norm
         if self._lm == 0. or np.isnan(self._lm):
             raise RuntimeError("Lagrange multiplier cannot be {0}.".format(self._lm))
-        self.measure = KLDivergence(density, mask_value=mask_value)
 
     @property
     def lagrange_multiplier(self):
@@ -183,35 +232,8 @@ class KLDivergenceSCF(object):
 
         return results
 
-    def goodness_of_fit(self, coeffs, expons):
-        r"""Compute various measures to see how good is the fitted model.
 
-        Parameters
-        ----------
-        model : ndarray, (N,)
-            Value of the fitted model on the grid points.
-
-        Returns
-        -------
-        model_norm : float
-            Integrate(4 * pi * r**2 * model)
-        l1_error : float
-            Integrate(|density - model|)
-        l1_error_modified : float
-            Integrate(|density - model| * r**2)
-        kl : float
-            KL deviation between density and model
-        """
-        # evaluate model density
-        dens = self.model.evaluate(coeffs, expons)
-        # compute KL deviation measure on the grid
-        value = self.measure.evaluate(dens, deriv=False)
-        return [self.grid.integrate(dens),
-                self.grid.integrate(np.abs(self.density - dens)),
-                self.grid.integrate(self.weights * value)]
-
-
-class GaussianBasisFit(object):
+class GaussianBasisFit(BaseFit):
     r"""Kullback-Leiber Divergence Fitting using `Scipy.Optimize` Library."""
 
     def __init__(self, grid, density, model, measure="KL", method="SLSQP", mask_value=0.):
@@ -231,17 +253,15 @@ class GaussianBasisFit(object):
         if method.lower() not in ["slsqp"]:
             raise ValueError("Argument method={0} is not recognized!".format(method))
 
-        self.grid = grid
-        self.density = density
-        self.model = model
         self.method = method
         # assign measure to measure deviation between density & modeled density.
         if measure.lower() == "kl":
-            self.measure = KLDivergence(density, mask_value=mask_value)
+            measure = KLDivergence(density, mask_value=mask_value)
         elif measure.lower() == "sd":
-            self.measure = SquaredDifference(density)
+            measure = SquaredDifference(density)
         else:
             raise ValueError("Argument measure={0} not recognized!".format(measure))
+        super(GaussianBasisFit, self).__init__(grid, density, model, measure)
 
     def run(self, c0, e0, opt_coeffs=True, opt_expons=True, maxiter=1000, ftol=1.e-14):
         r"""Optimize coefficients and/or exponents of Gaussian basis functions.
