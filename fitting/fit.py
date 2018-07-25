@@ -190,7 +190,7 @@ class KLDivergenceSCF(BaseFit):
         if e0.shape != (self.model.nbasis,):
             raise ValueError("Argument init_expons shape != ({0},)".format(self.model.nbasis))
 
-        new_coeffs, new_expons = c0, e0
+        new_cs, new_es = c0, e0
 
         diff_divergence = np.inf
         max_diff_coeffs = np.inf
@@ -202,21 +202,21 @@ class KLDivergenceSCF(BaseFit):
                diff_divergence > d_threshold) and maxiter > niter:
 
             # update old coeffs & expons
-            old_coeffs, old_expons = new_coeffs, new_expons
+            old_cs, old_es = new_cs, new_es
             # update coeffs and/or exponents
             if opt_coeffs and opt_expons:
-                new_coeffs, new_expons = self._update_params(new_coeffs, new_expons, True, True)
+                new_cs, new_es = self._update_params(new_cs, new_es, True, True)
             elif opt_coeffs:
-                new_coeffs, new_expons = self._update_params(new_coeffs, new_expons, True, False)
+                new_cs, new_es = self._update_params(new_cs, new_es, True, False)
             elif opt_expons:
-                new_coeffs, new_expons = self._update_params(new_coeffs, new_expons, False, True)
+                new_cs, new_es = self._update_params(new_cs, new_es, False, True)
             else:
                 raise ValueError("Both opt_coeffs & opt_expons are False! Nothing to optimize!")
-            # compute max change in coeffs & expons
-            max_diff_coeffs = np.max(np.abs(new_coeffs - old_coeffs))
-            max_diff_expons = np.max(np.abs(new_expons - old_expons))
+            # compute max change in cs & expons
+            max_diff_coeffs = np.max(np.abs(new_cs - old_cs))
+            max_diff_expons = np.max(np.abs(new_es - old_es))
             # compute errors & update niter
-            performance.append(self.goodness_of_fit(new_coeffs, new_expons))
+            performance.append(self.goodness_of_fit(new_cs, new_es))
             fun.append(performance[-1][-1])
             niter += 1
 
@@ -229,7 +229,7 @@ class KLDivergenceSCF(BaseFit):
         else:
             success = True
 
-        results = {"x": (new_coeffs, new_expons),
+        results = {"x": (new_cs, new_es),
                    "fun": np.array(fun),
                    "success": success,
                    "performance": np.array(performance)}
