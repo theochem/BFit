@@ -947,7 +947,7 @@ def test_gaussian_model_sp_integrate_uniform():
 
 
 def test_gaussian_model_sp_integrate_cubic():
-    grid = CubicGrid(0., 20., 0.1)
+    grid = CubicGrid(0., 20., 0.3)
     coord = np.array([10., 10., 10.])
     # un-normalized s-type + p-type Gaussian
     model = AtomicGaussianDensity(grid.points, coord=coord, num_s=1, num_p=1, normalized=False)
@@ -969,7 +969,7 @@ def test_gaussian_model_sp_integrate_cubic():
 
 
 def test_molecular_gaussian_model_sp_integrate_cubic():
-    grid = CubicGrid(0., 20., 0.1)
+    grid = CubicGrid(0., 20., 0.3)
     coord = np.array([[10., 10., 9.5], [10., 10., 10.5]])
     # un-normalized s-type & p-type Gaussian
     basis = np.array([[0, 1], [1, 0]])
