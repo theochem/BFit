@@ -56,7 +56,7 @@ def test_run_normalized_1s_gaussian():
     kl = KLDivergenceSCF(g, e, model, weights=None)
 
     # fit density with initial coeff=1. & expon=1.
-    res = kl.run(np.array([1.]), np.array([1.]), 1.e-4, 1.e-4, 1.e-4)
+    res = kl.run(np.array([1.]), np.array([1.]), True, True, 500, 1.e-4, 1.e-4, 1.e-4)
     # check optimized coeffs & expons
     assert_almost_equal(np.array([1.]), res["x"][0], decimal=8)
     assert_almost_equal(np.array([1.]), res["x"][1], decimal=8)
@@ -66,7 +66,7 @@ def test_run_normalized_1s_gaussian():
     assert_almost_equal(0., res["performance"][-1, 1:], decimal=8)
 
     # fit density with initial coeff=0.5 & expon=0.5
-    res = kl.run(np.array([0.5]), np.array([0.5]), 1.e-4, 1.e-4, 1.e-4)
+    res = kl.run(np.array([0.5]), np.array([0.5]), True, True, 500, 1.e-4, 1.e-4, 1.e-4)
     # check optimized coeffs & expons
     assert_almost_equal(np.array([1.]), res["x"][0], decimal=8)
     assert_almost_equal(np.array([1.]), res["x"][1], decimal=8)
@@ -76,7 +76,7 @@ def test_run_normalized_1s_gaussian():
     assert_almost_equal(0., res["performance"][-1, 1:], decimal=8)
 
     # fit density with initial coeff=0.1 & expon=10.
-    res = kl.run(np.array([0.1]), np.array([10.]), 1.e-4, 1.e-4, 1.e-4)
+    res = kl.run(np.array([0.1]), np.array([10.]), True, True, 500, 1.e-4, 1.e-4, 1.e-4)
     # check optimized coeffs & expons
     assert_almost_equal(np.array([1.]), res["x"][0], decimal=8)
     assert_almost_equal(np.array([1.]), res["x"][1], decimal=8)
@@ -84,7 +84,7 @@ def test_run_normalized_1s_gaussian():
     assert_almost_equal(0., res["fun"][-1], decimal=10)
 
     # fit density with initial coeff=20. & expon=0.01.
-    res = kl.run(np.array([20.]), np.array([0.01]), 1.e-4, 1.e-4, 1.e-4)
+    res = kl.run(np.array([20.]), np.array([0.01]), True, True, 500, 1.e-4, 1.e-4, 1.e-4)
     # check optimized coeffs & expons
     assert_almost_equal(np.array([1.]), res["x"][0], decimal=8)
     assert_almost_equal(np.array([1.]), res["x"][1], decimal=8)

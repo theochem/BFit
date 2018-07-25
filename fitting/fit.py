@@ -149,23 +149,28 @@ class KLDivergenceSCF(BaseFit):
             return new_coeffs, new_expons
         return new_coeffs if update_coeffs else new_expons
 
-    def run(self, init_coeffs, init_expons, c_threshold, e_threshold, d_threshold, maxiter=500):
+    def run(self, c0, e0, opt_coeffs=True, opt_expons=True, maxiter=500, c_threshold=1.e-6,
+            e_threshold=1.e-6, d_threshold=1.e-6):
         """Optimize the coefficients & exponents of Gaussian basis functions self-consistently.
 
         Parameters
         ----------
-        init_coeffs : ndarray
+        c0 : ndarray
             The initial coefficients of Gaussian basis functions.
-        init_expons : ndarray
+        e0 : ndarray
             The initial exponents of Gaussian basis functions.
+        opt_coeffs : bool, optional
+            Whether to optimize coefficients of Gaussian basis functions.
+        opt_expons : bool, optional
+            Whether to optimize exponents of Gaussian basis functions.
+        maxiter : int, optional
+            Maximum number of iterations.
         c_threshold : float
             The convergence threshold for absolute change in coefficients.
         e_threshold : float
             The convergence threshold for absolute change in exponents.
         d_threshold : float
             The convergence threshold for absolute change in divergence value.
-        maxiter : int, optional
-            The maximum number of iterations.
 
         Returns
         -------
@@ -182,12 +187,12 @@ class KLDivergenceSCF(BaseFit):
                 as computed by `goodness_of_fit()` method.
         """
         # check the shape of initial coeffs and expons
-        if init_coeffs.shape != (self.model.nbasis,):
+        if c0.shape != (self.model.nbasis,):
             raise ValueError("Argument init_coeffs shape != ({0},)".format(self.model.nbasis))
-        if init_expons.shape != (self.model.nbasis,):
+        if e0.shape != (self.model.nbasis,):
             raise ValueError("Argument init_expons shape != ({0},)".format(self.model.nbasis))
 
-        new_coeffs, new_expons = init_coeffs, init_expons
+        new_coeffs, new_expons = c0, e0
 
         diff_divergence = np.inf
         max_diff_coeffs = np.inf
@@ -195,21 +200,20 @@ class KLDivergenceSCF(BaseFit):
 
         fun, performance = [], []
         niter = 0
-        while max_diff_expons > e_threshold and diff_divergence > d_threshold and maxiter > niter:
+        while (max_diff_expons > e_threshold or max_diff_coeffs > c_threshold or
+               diff_divergence > d_threshold) and maxiter > niter:
 
-            while max_diff_coeffs > c_threshold:
-                # update coeffs & compute max |coeffs_change|
-                old_coeffs = new_coeffs
+            # update old coeffs & expons
+            old_coeffs, old_expons = new_coeffs, new_expons
+            # update coeffs and/or exponents
+            if opt_coeffs and opt_coeffs:
+                new_coeffs, new_expons = self._update_params(new_coeffs, new_expons, True, True)
+            elif opt_coeffs:
                 new_coeffs = self._update_params(new_coeffs, new_expons, True, False)
-                max_diff_coeffs = np.max(np.abs(new_coeffs - old_coeffs))
-                # compute errors & update niter
-                performance.append(self.goodness_of_fit(new_coeffs, new_expons))
-                fun.append(performance[-1][-1])
-                niter += 1
-
-            # update expons & compute max |expons_change|
-            old_expons = new_expons
-            new_expons = self._update_params(new_coeffs, new_expons, False, True)
+            elif opt_expons:
+                new_expons = self._update_params(new_coeffs, new_expons, False, True)
+            # compute max change in coeffs & expons
+            max_diff_coeffs = np.max(np.abs(new_coeffs - old_coeffs))
             max_diff_expons = np.max(np.abs(new_expons - old_expons))
             # compute errors & update niter
             performance.append(self.goodness_of_fit(new_coeffs, new_expons))
