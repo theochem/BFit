@@ -291,8 +291,7 @@ class MolecularGaussianDensity(object):
             raise ValueError("Arguments points & coords should have the same number of columns.")
 
         self._points = points
-        self._natoms = len(basis)
-        self._nbasis = np.sum(basis)
+        self._basis = basis
         # place a GaussianModel on each center
         self.center = []
         self._radii = []
@@ -310,7 +309,7 @@ class MolecularGaussianDensity(object):
     @property
     def nbasis(self):
         """The total number of Gaussian basis functions."""
-        return self._nbasis
+        return np.sum(self._basis)
 
     @property
     def radii(self):
@@ -320,11 +319,32 @@ class MolecularGaussianDensity(object):
     @property
     def natoms(self):
         """Number of basis functions centers."""
-        return self._natoms
+        return len(self._basis)
 
     @property
     def prefactor(self):
         return np.concatenate([center.prefactor for center in self.center])
+
+    def assign_basis_to_center(self, index):
+        """Assign the Gaussian basis function to the atomic center.
+
+        Parameters
+        ----------
+        index : int
+            The index of Gaussian basis function.
+
+        Returns
+        -------
+        index : int
+            The index of atomic center.
+        """
+        if index >= self.nbasis:
+            raise ValueError("The {0} is invalid for {1} basis.".format(index, self.nbasis))
+        # compute the number of basis on each center
+        nbasis = np.sum(self._basis, axis=1)
+        # get the center to which the basis function belongs
+        index = np.where(np.cumsum(nbasis) >= index + 1)[0][0]
+        return index
 
     def evaluate(self, coeffs, expons, deriv=False):
         """Compute linear combination of Gaussian basis & derivatives on the grid points.

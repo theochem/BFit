@@ -22,7 +22,7 @@
 
 
 import numpy as np
-from numpy.testing import assert_raises, assert_almost_equal
+from numpy.testing import assert_raises, assert_equal, assert_almost_equal
 
 from fitting.grid import UniformRadialGrid, CubicGrid
 from fitting.model import AtomicGaussianDensity, MolecularGaussianDensity
@@ -600,6 +600,9 @@ def test_molecular_gaussian_density_1d_1center_1s():
     coords = np.array([[2.5]])
     # un-normalized 1s basis function
     model = MolecularGaussianDensity(points, coords, basis=np.array([[1, 0]]), normalized=False)
+    # check basis & density
+    assert_equal(model.nbasis, 1)
+    assert_equal(model.assign_basis_to_center(0), 0)
     g = np.array([0.0659054004, 0.486978701, 1.3237453539, 1.3237453539, 0.486978701])
     dg = np.array([[0.0439369336, -0.4119087527], [0.3246524674, -1.0957020773],
                    [0.8824969026, -0.3309363385], [0.8824969026, -0.3309363385],
@@ -609,6 +612,9 @@ def test_molecular_gaussian_density_1d_1center_1s():
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized 1s basis function
     model = MolecularGaussianDensity(points, coords, basis=np.array([[1, 0]]), normalized=True)
+    # check basis & density
+    assert_equal(model.nbasis, 1)
+    assert_equal(model.assign_basis_to_center(0), 0)
     g = np.array([0.0041845735, 0.0309200484, 0.0840494056, 0.0840494056, 0.0309200484])
     dg = np.array([[0.0027897157, -0.0135998639], [0.0206133656, 0.0231900363],
                    [0.0560329370,  0.2311358653], [0.0560329370, 0.2311358653],
@@ -627,6 +633,10 @@ def test_molecular_gaussian_density_1d_1center_2s():
     coords = np.array([[1.45]])
     # un-normalized 1s basis function
     model = MolecularGaussianDensity(points, coords, basis=np.array([[2, 0]]), normalized=False)
+    # check basis & density
+    assert_equal(model.nbasis, 2)
+    assert_equal(model.assign_basis_to_center(0), 0)
+    assert_equal(model.assign_basis_to_center(1), 0)
     g = np.array([0.0015335519, 0.1046706295, 1.2358743034, 4.2625443763, 1.2209551847, 0.2082434127])
     dg = np.array([[ 1.17169574e-22, 5.99043705e-04, -1.45627659e-20, -3.16089580e-02],
                    [ 3.55683438e-10, 4.08869638e-02, -1.90464255e-08, -9.29517039e-01],
@@ -639,6 +649,10 @@ def test_molecular_gaussian_density_1d_1center_2s():
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized 1s basis function
     model = MolecularGaussianDensity(points, coords, basis=np.array([[2, 0]]), normalized=True)
+    # check basis & density
+    assert_equal(model.nbasis, 2)
+    assert_equal(model.assign_basis_to_center(0), 0)
+    assert_equal(model.assign_basis_to_center(1), 0)
     g = np.array([5.94877e-05, 0.0040602608, 0.070642293, 1.5133048321, 0.0685013983, 0.0080780828])
     dg = np.array([[ 8.06936140e-23, 2.32373955e-05, -9.73133606e-21, -9.78271797e-04],
                    [ 2.44955932e-10, 1.58603879e-03, -1.22127618e-08, -1.91389796e-02],
@@ -660,6 +674,11 @@ def test_molecular_gaussian_density_1d_1center_1s2p():
     coords = np.array([[1.00]])
     # un-normalized 1s + 2p basis function
     model = MolecularGaussianDensity(points, coords, basis=np.array([[1, 2]]), normalized=False)
+    # check basis & density
+    assert_equal(model.nbasis, 3)
+    assert_equal(model.assign_basis_to_center(0), 0)
+    assert_equal(model.assign_basis_to_center(1), 0)
+    assert_equal(model.assign_basis_to_center(2), 0)
     g = np.array([0.0069161303, 0.5820289984, 1.369863003, 1.3832172004, 0.1972685684, 7.8141e-06])
     dg = np.array([[0.0004195617, 0.0003256663, 0.0043501834, -0.0063077659, 0.0, -0.0654014398],
                    [0.0979596128, 0.1398797181, 0.3034396965, -0.4399875599, 0.0, -1.3629054655],
@@ -672,6 +691,11 @@ def test_molecular_gaussian_density_1d_1center_1s2p():
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized 1s + 2p basis function
     model = MolecularGaussianDensity(points, coords, basis=np.array([[1, 2]]), normalized=True)
+    # check basis & density
+    assert_equal(model.nbasis, 3)
+    assert_equal(model.assign_basis_to_center(0), 0)
+    assert_equal(model.assign_basis_to_center(1), 0)
+    assert_equal(model.assign_basis_to_center(2), 0)
     g = np.array([0.0004388483, 0.0422296913, 0.119841017, 0.1218240891, 0.01340299, 4.772e-07])
     dg = np.array([[4.89399e-05, 3.89903e-05, 0.0002537141, -0.0005938453, 0.0, -0.0025880989],
                    [0.0114265243, 0.016747064, 0.0176974008, -0.0181855419, 0.0, 0.0060492075],
@@ -723,6 +747,12 @@ def test_molecular_gaussian_density_2d_2center_1s1p_2p():
     coords = np.array([[0.0, 0.0], [0.5, 0.5]])
     # un-normalized (1s + 1p) & (2p) basis functions
     model = MolecularGaussianDensity(points, coords, basis=basis, normalized=False)
+    # check basis & density
+    assert_equal(model.nbasis, 4)
+    assert_equal(model.assign_basis_to_center(0), 0)
+    assert_equal(model.assign_basis_to_center(1), 0)
+    assert_equal(model.assign_basis_to_center(2), 1)
+    assert_equal(model.assign_basis_to_center(3), 1)
     g = np.array([2.6816325027, 2.7715087598, 3.4363695234, 1.4858614587])
     dg = [[1.0, 0.0, 0.2703204, 0.5, 0.0, 0.0, -0.3933163, -0.2225],
           [0.9105104, 0.1152454, 0.2897451, 0.625, -0.16503, -0.0064826, -0.5269739, -0.3476563],
@@ -734,6 +764,12 @@ def test_molecular_gaussian_density_2d_2center_1s1p_2p():
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=7)
     # normalized (1s + 1p) & (2p) basis functions
     model = MolecularGaussianDensity(points, coords, basis=basis, normalized=True)
+    # check basis & density
+    assert_equal(model.nbasis, 4)
+    assert_equal(model.assign_basis_to_center(0), 0)
+    assert_equal(model.assign_basis_to_center(1), 0)
+    assert_equal(model.assign_basis_to_center(2), 1)
+    assert_equal(model.assign_basis_to_center(3), 1)
     g = np.array([0.3271580029, 0.3254922487, 0.2227611062, 0.1723104634])
     dg = np.array([[0.1166453, 0.0, 0.0543032, 0.0, 0.3382712, 0.0, 0.2421725, 0.0],
                    [0.1062067, 0.0046999, 0.0582053, 0.0, 0.2887495, 0.0078701, 0.2384023, 0.0],
@@ -754,6 +790,10 @@ def test_molecular_gaussian_density_3d_2center_1p_1p():
     basis = np.array([[0, 1], [0, 1]])
     # un-normalized (1p) & (1p) basis functions
     model = MolecularGaussianDensity(points, coords, basis=basis, normalized=False)
+    # check basis & density
+    assert_equal(model.nbasis, 2)
+    assert_equal(model.assign_basis_to_center(0), 0)
+    assert_equal(model.assign_basis_to_center(1), 1)
     g = np.array([0.56375047, 0.84793613, 0.74434677])
     dg = np.array([[ 0.        ,  0.35234404,  0.        , -0.28187524],
                    [ 0.01347589,  0.52490662, -0.01617107, -1.2597759 ],
@@ -763,6 +803,10 @@ def test_molecular_gaussian_density_3d_2center_1p_1p():
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # un-normalized (1p) & (1p) basis functions
     model = MolecularGaussianDensity(points, coords, basis=basis, normalized=True)
+    # check basis & density
+    assert_equal(model.nbasis, 2)
+    assert_equal(model.assign_basis_to_center(0), 0)
+    assert_equal(model.assign_basis_to_center(1), 1)
     g = np.array([0.02767043, 0.05078846, 0.09238776])
     dg = np.array([[ 0.00000000e+00,  1.72940204e-02,  0.00000000e+00, 8.49877575e-02],
                    [ 1.59437891e-02,  2.57638692e-02, -9.56627343e-03, 8.53888235e-02],
@@ -782,6 +826,14 @@ def test_molecular_gaussian_density_3d_3center_2s1p_1p_2s():
     basis = np.array([[2, 1], [0, 1], [2, 0]])
     # un-normalized (2s1p) & (1p) & (1s) basis functions
     model = MolecularGaussianDensity(points, coords, basis=basis, normalized=False)
+    # check basis
+    assert_equal(model.nbasis, 6)
+    assert_equal(model.assign_basis_to_center(0), 0)
+    assert_equal(model.assign_basis_to_center(1), 0)
+    assert_equal(model.assign_basis_to_center(2), 0)
+    assert_equal(model.assign_basis_to_center(3), 1)
+    assert_equal(model.assign_basis_to_center(4), 2)
+    assert_equal(model.assign_basis_to_center(5), 2)
     # compute density value & its derivatives
     g = np.array([4.177243712, 2.9091656819, 2.4681836067, 5.1131523036])
     dg = np.array([[ 5.48811636e-01,  1.53354967e-01,  1.80381347e-01,
@@ -805,6 +857,14 @@ def test_molecular_gaussian_density_3d_3center_2s1p_1p_2s():
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized (2s1p) & (1p) & (1s) basis functions
     model = MolecularGaussianDensity(points, coords, basis=basis, normalized=True)
+    # check basis
+    assert_equal(model.nbasis, 6)
+    assert_equal(model.assign_basis_to_center(0), 0)
+    assert_equal(model.assign_basis_to_center(1), 0)
+    assert_equal(model.assign_basis_to_center(2), 0)
+    assert_equal(model.assign_basis_to_center(3), 1)
+    assert_equal(model.assign_basis_to_center(4), 2)
+    assert_equal(model.assign_basis_to_center(5), 2)
     g = np.array([1.4141296252, 0.5578528034, 1.8064862846, 1.4079886645])
     dg = np.array([[ 7.05234390e-02,  1.08863690e-01,  1.07463149e-01,
                      4.80198440e-02,  1.33033380e-02,  9.58480014e-02,
@@ -914,6 +974,10 @@ def test_molecular_gaussian_model_sp_integrate_cubic():
     # un-normalized s-type & p-type Gaussian
     basis = np.array([[0, 1], [1, 0]])
     model = MolecularGaussianDensity(grid.points, coord, basis=basis, normalized=False)
+    # check basis
+    assert_equal(model.nbasis, 2)
+    assert_equal(model.assign_basis_to_center(0), 0)
+    assert_equal(model.assign_basis_to_center(1), 1)
     # check integration
     value = model.evaluate(np.array([1., 1.]), np.array([1.25, 4.01]), deriv=False)
     value = grid.integrate(value)
