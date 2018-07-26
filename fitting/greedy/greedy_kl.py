@@ -23,9 +23,10 @@ r"""
 
 """
 
-from fitting.utils.greedy_utils import get_next_choices
-from fitting.greedy.greedy_strat import GreedyStrategy
 import numpy as np
+
+from fitting.greedy.greedy_strat import GreedyStrategy
+from fitting.greedy.greedy_utils import get_next_choices
 
 __all__ = ["GreedyKL"]
 

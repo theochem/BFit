@@ -30,17 +30,17 @@ fit_radial_densities : minimization of least squares or kullback-leibler div
 
 import os
 import warnings
+
 import numpy as np
-
-from fitting.grid import BaseRadialGrid
 from fitting.kl_divergence.gaussian_kl import GaussianKullbackLeibler
-from fitting.density import AtomicDensity
-from fitting.model import AtomicGaussianDensity
-from fitting.greedy.greedy_kl import GreedyKL
-from fitting.utils.plotting_utils import plot_model_densities, plot_error
-from fitting.utils.greedy_utils import get_next_choices
-from fitting.greedy.greedy_lq import GreedyLeastSquares
 
+from fitting.density import AtomicDensity
+from fitting.greedy.greedy_kl import GreedyKL
+from fitting.greedy.greedy_lq import GreedyLeastSquares
+from fitting.greedy.greedy_utils import get_next_choices
+from fitting.grid import BaseRadialGrid
+from fitting.model import AtomicGaussianDensity
+from fitting.utils.plotting_utils import plot_model_densities, plot_error
 
 __all__ = ["fit_gaussian_densities"]
 

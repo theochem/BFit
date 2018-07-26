@@ -22,10 +22,12 @@
 r"""Test file for 'fitting.greedy.greedy_utils'. """
 
 
-import numpy.testing as npt
 import numpy as np
-from fitting.utils.greedy_utils import check_redundancies, get_next_choices, \
-    get_next_possible_coeffs_and_exps2, get_two_next_choices, pick_two_lose_one
+import numpy.testing as npt
+
+from fitting.greedy.greedy_utils import check_redundancies, get_next_choices
+from fitting.greedy.greedy_utils import get_next_possible_coeffs_and_exps2
+from fitting.greedy.greedy_utils import get_two_next_choices, pick_two_lose_one
 
 
 __all__ = ["test_check_redundancies", "test_get_next_possible_coeffs_and_exps",
