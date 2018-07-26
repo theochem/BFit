@@ -40,7 +40,7 @@ from fitting.greedy.greedy_lq import GreedyLeastSquares
 from fitting.greedy.greedy_utils import get_next_choices
 from fitting.grid import BaseRadialGrid
 from fitting.model import AtomicGaussianDensity
-from fitting.utils.plotting_utils import plot_model_densities, plot_error
+from fitting.utils import plot_model_densities, plot_error
 
 __all__ = ["fit_gaussian_densities"]
 
