@@ -32,7 +32,7 @@ Functions
 
 from scipy.optimize import nnls, minimize, fmin_l_bfgs_b
 import numpy as np
-from fitting.kl_divergence.kull_leib_fitting import KullbackLeiblerFitting
+from fitting.fit import KLDivergenceSCF
 
 __all__ = ["optimize_using_slsqp", "optimize_using_nnls", "optimize_using_l_bfgs",
            "optimize_using_nnls_valence"]
@@ -78,8 +78,8 @@ def optimize_using_slsqp(density_model, initial_guess, bounds=None, *args):
 
     """
     const = None
-    if isinstance(density_model, KullbackLeiblerFitting):
-        const = {"eq": np.sum(initial_guess - density_model.inte_val)}
+    if isinstance(density_model, KLDivergenceSCF):
+        const = {"eq": np.sum(initial_guess - density_model.norm)}
 
     if bounds is None:
         bounds = np.array([(0.0, np.inf)] * len(initial_guess))

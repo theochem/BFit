@@ -21,10 +21,9 @@
 # ---
 
 
-import os
 import numpy as np
 
-from fitting.utils import load_slater_wfn
+from fitting.slater import load_slater_wfn
 
 
 __all__ = ["test_parsing_slater_density_ag",

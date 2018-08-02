@@ -26,10 +26,9 @@ This module computes atomic densities from Slater-type orbital basis.
 
 
 import numpy as np
-
 from scipy.misc import factorial
 
-from fitting.utils.io import load_slater_wfn
+from fitting.slater import load_slater_wfn
 
 
 __all__ = ["AtomicDensity"]

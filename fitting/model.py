@@ -19,439 +19,387 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-r"""Module for Least Squares Fitting.
-
-This file designates how to define your model (e.g. gaussian basis set) to fit to a probability
-distribution using the least squares objective function.
-
-Classes
---------
-Density Model :  is the abstract class for all models. It also contains standard error measures
-                 to be used when fitting to get a sense of how good the fit is.
-
-GaussianBasisSet : A child class of Density Model. Responsible for fitting gaussian basis sets,
-                   via least-squares.
-
-"""
+r"""Gaussian Density Model Module."""
 
 
 import numpy as np
 
+from numbers import Integral
 
-__all__ = ["DensityModel", "GaussianBasisSet"]
+
+__all__ = ["AtomicGaussianDensity", "MolecularGaussianDensity"]
 
 
-class DensityModel(object):
-    """
-    An abstract class for the least squares model used for fitting any probability distribution.
+class AtomicGaussianDensity(object):
+    r"""Gaussian Density Model."""
 
-    Primarily used to define the cost function/objective function and the residual which is being
-    minimized through least squares.
-
-    Additionally, contains tools to define different error measures.
-
-    Attributes
-    ----------
-    grid : np.ndarray
-        Grid Points where the 'true_model' is being defined on.
-
-    true_model : np.ndarray
-        The probability distribution that is being fitted to, defined on the 'grid'.
-
-    Methods
-    -------
-    create_model(): Abstract method for defining the approximate model composed of your basis set
-                    of interest.
-
-    cost_function(): Abstract method for defining the least-squares objective function.
-
-    derivative_of_cost_function(): Abstract method for defining the derivative of hte cost
-                                   function with respect to each parameter. Used for optimization.
-
-    create_cofactor_matrix(): Create the cofactor matrix used for NNLS optimization ie optimizing
-                              the coefficients of the basis functions.
-
-    """
-
-    def __init__(self, grid, true_model=None):
+    def __init__(self, points, coord=None, num_s=1, num_p=0, normalized=False):
         r"""
-
         Parameters
         ----------
-        grid : np.ndarray
-               Contains the grid points for the density model.
-
-        element : str, optional
-                 The element that the slater densities are based on.
-                 Used if one want's to use UGBS parameters as initial guess.
-        true_model : np.ndarray
-                         Pre-defined electron density in case one doesn't want
-                         to use slater densities.
-        Raises
-        ------
-        TypeError
-            If an argument of an invalid type is used
-
+        points : ndarray, (N,)
+            The grid points.
+        coord : ndarray, optional
+            The coordinates of gaussian basis functions centers.
+            If `None`, the basis functions are placed on the origin.
+        num_s : int, optional
+             Number of s-type Gaussian basis functions.
+        num_p : int, optional
+             Number of p-type Gaussian basis functions.
+        normalized : bool, optional
+            Whether to normalize Gaussian basis functions.
         """
-        if not isinstance(grid, np.ndarray):
-            raise TypeError("Grid should be a numpy array.")
-        if true_model is not None:
-            if not isinstance(true_model, np.ndarray):
-                raise TypeError("Electron least_squares should be an array.")
-            if grid.shape != true_model.shape:
-                raise ValueError("Electron least_squares and _grid should be the same "
-                                 "size.")
-        self._grid = np.ravel(np.copy(grid))
-        self._true_model = np.ravel(true_model)
+        if not isinstance(points, np.ndarray):
+            raise TypeError("Argument points should be a numpy array.")
+        if not isinstance(num_s, Integral) or num_s < 0:
+            raise TypeError("Argument num_s should be a positive integer.")
+        if not isinstance(num_p, Integral) or num_p < 0:
+            raise TypeError("Argument num_p should be a positive integer.")
+        if num_s + num_p == 0:
+            raise ValueError("Arguments num_s & num_p cannot both be zero!")
+
+        # check & assign coord
+        if coord is not None:
+            if not isinstance(coord, np.ndarray) and coord.ndim != 1:
+                raise ValueError("Argument coord should be a 1D numpy array.")
+            if points.ndim > 1 and points.shape[1] != coord.size:
+                raise ValueError("Arguments points & coord should have the same number of columns.")
+        elif points.ndim > 1:
+            coord = np.array([0.] * points.shape[1])
+        else:
+            coord = np.array([0.])
+        self.coord = coord
+
+        # compute radii (distance of points from center coord)
+        if points.ndim > 1:
+            radii = np.linalg.norm(points - self.coord, axis=1)
+        else:
+            radii = np.abs(points - self.coord)
+        self._radii = np.ravel(radii)
+
+        self._points = points
+        self.ns = num_s
+        self.np = num_p
+        self.normalized = normalized
 
     @property
-    def grid(self):
-        return self._grid
+    def points(self):
+        """The grid points."""
+        return self._points
 
     @property
-    def true_model(self):
-        return self._true_model
+    def radii(self):
+        """The distance of grid points from center of Gaussian(s)."""
+        return self._radii
 
-    def create_model(self):
-        raise NotImplementedError("Need to implement the least_squares model")
+    @property
+    def num_s(self):
+        """Number of s-type Gaussian basis functions."""
+        return self.ns
 
-    def cost_function(self):
-        raise NotImplementedError("Need to implement the cost function")
+    @property
+    def num_p(self):
+        """Number of p-type Gaussian basis functions."""
+        return self.np
 
-    def derivative_of_cost_function(self):
-        raise NotImplementedError("Need to Implement the derivative of cost "
-                                  "function")
+    @property
+    def nbasis(self):
+        """The total number of Gaussian basis functions."""
+        return self.ns + self.np
 
-    def create_cofactor_matrix(self):
-        pass
+    @property
+    def natoms(self):
+        """Number of basis functions centers."""
+        return 1
 
-    def get_residual(self, *args):
-        return self._true_model - self.create_model(*args)
+    @property
+    def prefactor(self):
+        return np.array([1.5] * self.ns + [2.5] * self.np)
 
-    def integrate_model_trapz(self, approx_model):
-        r"""
-        Integrates the approximate model with an added r^2 over [0, inf), using the trapezoidal
-        method.
+    def evaluate(self, coeffs, expons, deriv=False):
+        """Compute linear combination of Gaussian basis & its derivatives on the grid points.
+
+        .. math::
 
         Parameters
         ----------
-        approx_model : np.ndarray
-                       The model obtained from fitting.
+        coeffs : ndarray, (`nbasis`,)
+            The coefficients of `num_s` s-type Gaussian basis functions followed by the
+            coefficients of `num_p` p-type Gaussian basis functions.
+        expons : ndarray, (`nbasis`,)
+            The exponents of `num_s` s-type Gaussian basis functions followed by the
+            exponents of `num_p` p-type Gaussian basis functions.
+        deriv : bool, optional
+            Whether to compute derivative of Gaussian basis functions w.r.t. coefficients &
+            exponents.
 
         Returns
         -------
-        int : float
-              Integration value of r^2 with approximate model over the _grid.
+        g : ndarray, (N,)
+            The linear combination of Gaussian basis functions evaluated on the grid points.
+        dg : ndarray, (N, 2 * `nbasis`)
+            The derivative of a linear combination of Gaussian basis functions w.r.t. coefficients
+            & exponents, respectively, evaluated on the grid points. Only returned if `deriv=True`.
         """
-        grid_squared = np.ravel(self._grid ** 2.)
-        return np.trapz(y=grid_squared * approx_model, x=self._grid)
+        if coeffs.ndim != 1 or expons.ndim != 1:
+            raise ValueError("Arguments coeffs and expons should be 1D arrays.")
+        if coeffs.size != expons.size:
+            raise ValueError("Arguments coeffs and expons should have the same length.")
+        if coeffs.size != self.nbasis:
+            raise ValueError("Argument coeffs should have size {0}.".format(self.nbasis))
 
-    def get_error_diffuse(self, true_model, approx_model):
-        r"""
-        This error measures how good the kl_divergence is between the approximate and
-        true least_squares at long densities.
+        # evaluate all Gaussian basis on the grid, i.e., exp(-a * r**2)
+        matrix = np.exp(-expons[None, :] * np.power(self.radii, 2)[:, None])
 
-        ..math::
-            Given two functions, denoted f, g.
-            The error is given as \int r^2 |f(r) - g(r)|dr
+        # compute linear combination of Gaussian basis
+        if self.np == 0:
+            # only s-type Gaussian basis functions
+            return self._eval_s(matrix, coeffs, expons, deriv)
+        elif self.ns == 0:
+            # only p-type Gaussian basis functions
+            return self._eval_p(matrix, coeffs, expons, deriv)
+        else:
+            # both s-type & p-type Gaussian basis functions
+            gs = self._eval_s(matrix[:, :self.ns], coeffs[:self.ns], expons[:self.ns], deriv)
+            gp = self._eval_p(matrix[:, self.ns:], coeffs[self.ns:], expons[self.ns:], deriv)
+            if deriv:
+                # split derivatives w.r.t. coeffs & expons
+                d_coeffs = np.concatenate((gs[1][:, :self.ns], gp[1][:, :self.np]), axis=1)
+                d_expons = np.concatenate((gs[1][:, self.ns:], gp[1][:, self.np:]), axis=1)
+                return gs[0] + gp[0], np.concatenate((d_coeffs, d_expons), axis=1)
+            return gs + gp
+
+    def _eval_s(self, matrix, coeffs, expons, deriv):
+        """Compute linear combination of s-type Gaussian basis & its derivative on the grid points.
+
+        .. math::
 
         Parameters
         ----------
-        true_model : np.ndarray
-                     The true model that is being fitted.
-
-        approx_model : np.ndarray
-                       The model obtained from fitting.
+        matrix : ndarray, (N, M)
+             The exp(-a * r**2) array evaluated on grid points for each exponent.
+        coeffs : ndarray, (M,)
+            The coefficients of Gaussian basis functions.
+        expons : ndarray, (M,)
+            The exponents of Gaussian basis functions.
+        deriv : bool, optional
+            Whether to compute derivative of Gaussian basis functions w.r.t. coefficients &
+            exponents.
 
         Returns
         -------
-        error : float
-                A positive real number that measures how good the kl_divergence is.
-
+        g : ndarray, (N,)
+            The linear combination of s-type Gaussian basis functions evaluated on the grid points.
+        dg : ndarray, (N, 2*M)
+            The derivative of linear combination of s-type Gaussian basis functions w.r.t.
+            coefficients (the 1st M columns) & exponents (the 2nd M columns) evaluated on the
+            grid points. Only returned if `deriv=True`.
         """
-        abs_diff = np.absolute(np.ravel(true_model) - np.ravel(approx_model))
-        error = np.trapz(y=self._grid**2 * abs_diff, x=self._grid)
-        return error
+        # normalize Gaussian basis
+        if self.normalized:
+            matrix = matrix * (expons[None, :] / np.pi) ** 1.5
+        # make linear combination of Gaussian basis on the grid
+        g = np.dot(matrix, coeffs)
 
-    def get_integration_error(self, true_model, approx_model):
-        r"""
-        This error measures the difference in integration of the two models.
+        # compute derivatives
+        if deriv:
+            dg = np.zeros((len(self.radii), 2 * coeffs.size))
+            # derivative w.r.t. coefficients
+            dg[:, :coeffs.size] = matrix
+            # derivative w.r.t. exponents
+            dg[:, coeffs.size:] = - matrix * np.power(self.radii, 2)[:, None] * coeffs[None, :]
+            if self.normalized:
+                matrix = np.exp(-expons[None, :] * np.power(self.radii, 2)[:, None])
+                dg[:, coeffs.size:] += 1.5 * matrix * (coeffs * expons**0.5)[None, :] / np.pi**1.5
+            return g, dg
+        return g
 
-        ..math::
-            Given two functions, denoted f, g.
-            The error is given as |\int r^2f(r)dr - \int r^2g(r)dr|.
+    def _eval_p(self, matrix, coeffs, expons, deriv):
+        """Compute linear combination of p-type Gaussian basis & its derivative on the grid points.
+
+        .. math::
 
         Parameters
         ----------
-        true_model : np.ndarray
-                     The true model that is being fitted.
-
-        approx_model : np.ndarray
-                       The model obtained from fitting.
+        matrix : ndarray, (N, M)
+             The exp(-a * r**2) array evaluated on grid points for each exponent.
+        coeffs : ndarray, (M,)
+            The coefficients of Gaussian basis functions.
+        expons : ndarray, (M,)
+            The exponents of Gaussian basis functions.
+        deriv : bool, optional
+            Whether to compute derivative of Gaussian basis functions w.r.t. coefficients &
+            exponents.
 
         Returns
         -------
-        error : float
-                Measures the difference in integration of the two models.
-
+        g : ndarray, (N,)
+            The linear combination of p-type Gaussian basis functions evaluated on the grid points.
+        dg : ndarray, (N, 2*M)
+            The derivative of linear combination of p-type Gaussian basis functions w.r.t.
+            coefficients (the 1st M columns) & exponents (the 2nd M columns) evaluated on the
+            grid points. Only returned if `deriv=True`.
         """
-        integrate_true_model = self.integrate_model_trapz(true_model)
-        integrate_approx_model = self.integrate_model_trapz(approx_model)
-        diff_model = integrate_true_model - integrate_approx_model
-        return np.absolute(diff_model)
+        # multiply r**2 with the evaluated Gaussian basis, i.e., r**2 * exp(-a * r**2)
+        matrix = matrix * np.power(self.radii, 2)[:, None]
+
+        if not self.normalized:
+            # linear combination of p-basis is the same as s-basis with an extra r**2
+            return self._eval_s(matrix, coeffs, expons, deriv)
+
+        # normalize Gaussian basis
+        matrix = matrix * (expons[None, :]**2.5 / np.pi**1.5) / 1.5
+        # make linear combination of Gaussian basis on the grid
+        g = np.dot(matrix, coeffs)
+        if deriv:
+            dg = np.zeros((len(self.radii), 2 * coeffs.size))
+            # derivative w.r.t. coefficients
+            dg[:, :coeffs.size] = matrix
+            # derivative w.r.t. exponents
+            dg[:, coeffs.size:] = - matrix * np.power(self.radii, 2)[:, None] * coeffs[None, :]
+            matrix = np.exp(-expons[None, :] * np.power(self.radii, 2)[:, None])
+            matrix = matrix * np.power(self.radii, 2)[:, None]
+            dg[:, coeffs.size:] += 5 * matrix * (coeffs * expons**1.5)[None, :] / (3 * np.pi**1.5)
+            return g, dg
+        return g
 
 
-class GaussianBasisSet(DensityModel):
-    r"""
-    Defines Gaussian Basis Set with least squares formula for optimization.
+class MolecularGaussianDensity(object):
+    """Molecular Atom-Centered Gaussian Density Model."""
 
-    The gaussian basis set is defined based on coefficients and exponents.
-    In addition, the cost-function is provided with it's derivative to be
-    used for optimization routine like, slsqp, l-bfgs, and nnls, in the
-    'fitting.least_squares.least_sqs'.
+    def __init__(self, points, coords, basis, normalized=False):
+        """
+        Parameters
+        ----------
+        points : ndarray, (N,)
+            The grid points.
+        coords : ndarray
+            The atomic coordinates on which Gaussian basis are centered.
+        basis : ndarray, (M, 2)
+            The number of s-type & p-type Gaussian basis functions placed on each center.
+        normalized : bool, optional
+            Whether to normalize Gaussian basis functions.
+        """
+        # check arguments
+        if not isinstance(coords, np.ndarray) or coords.ndim != 2:
+            raise ValueError("Argument coords should be a 2D numpy array.")
+        if basis.ndim != 2 or basis.shape[1] != 2:
+            raise ValueError("Argument basis should be a 2D array with 2 columns.")
+        if len(coords) != len(basis):
+            raise ValueError("Argument coords & basis should represent the same number of atoms.")
+        if points.ndim > 1 and points.shape[1] != coords.shape[1]:
+            raise ValueError("Arguments points & coords should have the same number of columns.")
 
-    Attributes
-    ----------
-    grid : np.ndarray
-        Grid Points where the 'true_model' is being defined on.
+        self._points = points
+        self._basis = basis
+        # place a GaussianModel on each center
+        self.center = []
+        self._radii = []
+        for i, b in enumerate(basis):
+            # get the center of Gaussian basis functions
+            self.center.append(AtomicGaussianDensity(points, coords[i], b[0], b[1], normalized))
+            self._radii.append(self.center[-1].radii)
+        self._radii = np.array(self._radii)
 
-    true_model : np.ndarray
-        The probability distribution that is being fitted to, defined on the 'grid'.
+    @property
+    def points(self):
+        """The grid points."""
+        return self._points
 
-    Methods
-    -------
-    create_model(parameters) : Computes the gaussian promolecular density based on the parameters.
+    @property
+    def nbasis(self):
+        """The total number of Gaussian basis functions."""
+        return np.sum(self._basis)
 
-    cost_function() : Computes the sum of squares of residuals based on the 'create_model' and
-                      'true_model'.
+    @property
+    def radii(self):
+        """The distance of grid points from center of each basis function."""
+        return self._radii
 
-    derivative_of_cost_function() : Computes the derivative of the 'cost_function'.
+    @property
+    def natoms(self):
+        """Number of basis functions centers."""
+        return len(self._basis)
 
-    create_cofactor_matrix() : Create the cofactor matrix used for NNLS optimization ie optimizing
-                              the coefficients of the basis functions. Matrix of exponential
-                              functions.
+    @property
+    def prefactor(self):
+        """The pre-factor of Gaussian basis functions"""
+        return np.concatenate([center.prefactor for center in self.center])
 
-    """
-    def __init__(self, grid, true_model):
-        r"""
-        Creates the class by providing formula to the DensityModel class.
+    def assign_basis_to_center(self, index):
+        """Assign the Gaussian basis function to the atomic center.
 
         Parameters
         ----------
-        grid : np.ndarray
-               Radial Grid points for the basis set.
-
-        true_model : np.ndarray
-                    Electron Density to be fitted to. By default, it is the
-                    slater densities where the parameters of the slater
-                    densities is provided by the file path.
-
-        """
-        if not isinstance(grid, np.ndarray):
-            raise TypeError("Grid should be a numpy array.")
-        if not isinstance(true_model, np.ndarray):
-            raise TypeError("True model should be a numpy array.")
-        super(GaussianBasisSet, self).__init__(grid, true_model)
-
-    def create_model(self, parameters, fixed_params=[], which_opti="b"):
-        r"""
-        Given the coefficients and exponents, creates the gaussian density
-        using the default grid provided in the constructor.
-
-        Parameters
-        ----------
-        parameters : np.ndarray
-                     Parameters to be optimized. Depends on which_opti.
-                     if which_opti is:
-                     - 'b' contains both coefficients and exponents, resp.
-                     - 'c' contains coefficients to be optimized.
-                     - 'e' contains exponents to be optimized.
-
-        fixed_params : np.ndarray
-                     Used when which_opti is 'c' or 'e'. In any case, it contains
-                     the parameters that are considered fixed.
-
-        which_opti : str
-                    Tells which parameters to optimize. Should be one of:
-                    - 'b' optimize both coefficients and exponents.
-                    - 'c' optimize coefficients, exponents fixed.
-                    - 'e' optimize exponents, coefficients fixed.
+        index : int
+            The index of Gaussian basis function.
 
         Returns
         -------
-        gauss_dens_grid : np.ndarray
-                        Array that contains the gauss. density at each pt in the
-                        grid.
+        index : int
+            The index of atomic center.
         """
-        if which_opti == "b":
-            coeffs = parameters[:len(parameters)//2]
-            exps = parameters[len(parameters)//2:]
-        elif which_opti == "c":
-            coeffs = np.copy(parameters)
-            exps = fixed_params
-        elif which_opti == "e":
-            coeffs = fixed_params
-            exps = np.copy(parameters)
-        mat = np.exp(-exps * np.power(self.grid.reshape(self.grid.size, 1), 2.))
-        gauss_dens_grid = np.dot(mat, coeffs)
-        return gauss_dens_grid
+        if index >= self.nbasis:
+            raise ValueError("The {0} is invalid for {1} basis.".format(index, self.nbasis))
+        # compute the number of basis on each center
+        nbasis = np.sum(self._basis, axis=1)
+        # get the center to which the basis function belongs
+        index = np.where(np.cumsum(nbasis) >= index + 1)[0][0]
+        return index
 
-    def cost_function(self, parameters, fixed_params=[], which_opti='b'):
-        r"""
-        The least squares formula between the true electron density and
-        our gaussian model.
+    def evaluate(self, coeffs, expons, deriv=False):
+        """Compute linear combination of Gaussian basis & its derivatives on the grid points.
 
-        It is the sum over the radial grid points, where you take the difference
-        squared between the true elctron density, , and gaussian density.
-        ..math::
-            \sum_n^{N_points}(\rho_{true}(r) - \sum_i c_i e^(-\alpha_i r^2))^2
+        .. math::
 
         Parameters
         ----------
-        parameters : np.ndarray or list
-                     Parameters to be optimized. Depends on which_opti.
-                     if which_opti is:
-                     - 'b' contains both coefficients and exponents, resp.
-                     - 'c' contains coefficients to be optimized.
-                     - 'e' contains exponents to be optimized.
-
-        fixed_params : np.ndarray or list
-                     Used when which_opti is 'c' or 'e'. In any case, it contains
-                     the parameters that are considered fixed.
-
-        which_opti : str
-                    Tells which parameters to optimize. Should be one of:
-                    - 'b' optimize both coefficients and exponents.
-                    - 'c' optimize coefficients, exponents fixed.
-                    - 'e' optimize exponents, coefficients fixed.
+        coeffs : ndarray, (`nbasis`,)
+            The coefficients of `num_s` s-type Gaussian basis functions followed by the
+            coefficients of `num_p` p-type Gaussian basis functions.
+        expons : ndarray, (`nbasis`,)
+            The exponents of `num_s` s-type Gaussian basis functions followed by the
+            exponents of `num_p` p-type Gaussian basis functions.
+        deriv : bool, optional
+            Whether to compute derivative of Gaussian basis functions w.r.t. coefficients &
+            exponents.
 
         Returns
         -------
-        float
-            Computes the sum of squares of residuals over the grid points.
-
+        g : ndarray, (N,)
+            The linear combination of Gaussian basis functions evaluated on the grid points.
+        dg : ndarray, (N, `nbasis`)
+            The derivative of linear combination of Gaussian basis functions w.r.t. coefficients
+            & exponents, respectively, evaluated on the grid points. Only returned if `deriv=True`.
         """
-        res = self.get_residual(parameters, fixed_params, which_opti)
-        residual_squared = np.power(res, 2.0)
-        return np.sum(residual_squared)
-
-    def _deriv_wrt_coeffs(self, exps, res):
-        r"""
-        Get Derivative of cost func. wrt to coefficients of gaussian basis set.
-
-        Parameters
-        ----------
-        exps : np.ndarray
-               Exponents of the gaussian basis set.
-
-        res : np.ndarray
-              Residual factor that shows up from the chain rule.
-
-        Returns
-        -------
-        np.ndarray
-                  Derivative wrt to coefficients
-
-        """
-        cofac = self.create_cofactor_matrix(exps)
-        derivative_coeff = -res.dot(cofac)
-        return derivative_coeff
-
-    def _deriv_wrt_exps(self, coeff, exps, res):
-        r"""
-        Get Derivative of cost func. wrt to exponents of gaussian basis set.
-
-        Parameters
-        ----------
-        coeffs : np.ndarray
-                Coefficients of the gaussian basis set.
-        exps : np.ndarray
-               Exponents of the gaussian basis set.
-        res : np.ndarray
-              Residual factor that shows up from the chain rule.
-
-        Returns
-        -------
-        np.ndarray
-                  Derivative wrt to each exponents.
-
-        """
-        cofac = self.create_cofactor_matrix(exps)
-        residual_squared = res * self._grid**2.
-        derivative_exp = residual_squared.dot(cofac * coeff)
-        return derivative_exp
-
-    def derivative_of_cost_function(self, parameters, fixed_params=[], which_opti="b"):
-        r"""
-        Derivative of the least squares cost-function.
-
-        Depends on which_opti to know which parameters, coeffs, exps or both,
-        to take the derivative wrt to.
-
-        Parameters
-        ----------
-        parameters : np.ndarray or list
-                     Parameters to be optimized. Depends on which_opti.
-                     if which_opti is:
-                     - 'b' contains both coefficients and exponents, resp.
-                     - 'c' contains coefficients to be optimized.
-                     - 'e' contains exponents to be optimized.
-
-        fixed_params : np.ndarray or list
-                     Used when which_opti is 'c' or 'e'. In any case, it contains
-                     the parameters that are considered fixed.
-
-        which_opti : str
-                    Tells which parameters to optimize. Should be one of:
-                    - 'b' optimize both coefficients and exponents.
-                    - 'c' optimize coefficients, exponents fixed.
-                    - 'e' optimize exponents, coefficients fixed.
-
-        Returns
-        -------
-        deriv : np.ndarray
-                Sum of the derivative.
-
-        """
-        residual = self.get_residual(parameters, fixed_params, which_opti)
-        f_function = 2.0 * residual
-        if which_opti == "b":
-            coeffs = parameters[:len(parameters)//2]
-            exps = parameters[len(parameters)//2:]
-            deriv = self._deriv_wrt_coeffs(exps, f_function)
-            deriv = np.append(deriv,
-                              self._deriv_wrt_exps(coeffs, exps, f_function))
-
-        elif which_opti == "c":
-            exps = fixed_params
-            deriv = self._deriv_wrt_coeffs(exps, f_function)
-
-        elif which_opti == "e":
-            exps = np.copy(parameters)
-            coeffs = fixed_params
-            deriv = self._deriv_wrt_exps(coeffs, exps, f_function)
-        return deriv
-
-    def create_cofactor_matrix(self, exponents):
-        r"""
-        Used for Non-Negative least squares (NNLS).
-
-        Because our approximate least_squares is composed as a sum of
-        un-normalized gaussian functions. NNLS optimizes the coefficients,
-        while holding the exponents fixed.
-
-        Parameters
-        ----------
-        exponents : np.ndarray
-                    List holding the exponents for each gaussian function.
-
-        Returns
-        -------
-        cofactor : np.ndarray
-                   A Matrix where rows are the points on the grid and columns
-                   correspond to each gaussian basis function at that point.
-
-        """
-        g_col = self._grid.reshape((len(self._grid), 1))
-        exponential = np.exp(-exponents * np.power(g_col, 2.0))
-        return exponential
+        if coeffs.ndim != 1 or expons.ndim != 1:
+            raise ValueError("Arguments coeffs & expons should be 1D arrays.")
+        if coeffs.size != self.nbasis or expons.size != self.nbasis:
+            raise ValueError("Arguments coeffs & expons shape != ({0},)".format(self.nbasis))
+        # assign arrays
+        total_g = np.zeros(len(self.points))
+        if deriv:
+            total_dg = np.zeros((len(self.points), 2 * self.nbasis))
+        # compute contribution of each center
+        count = 0
+        for center in self.center:
+            # get coeffs & expons of center
+            cs = coeffs[count: count + center.nbasis]
+            es = expons[count: count + center.nbasis]
+            if deriv:
+                # compute linear combination of gaussian placed on center & its derivatives
+                g, dg = center.evaluate(cs, es, deriv)
+                # split derivatives w.r.t. coeffs & expons
+                dg_c = dg[:, :center.nbasis]
+                dg_e = dg[:, center.nbasis:]
+                # add contributions to the total array
+                total_g += g
+                total_dg[:, count: count + center.nbasis] = dg_c
+                total_dg[:, self.nbasis + count: self.nbasis + count + center.nbasis] = dg_e
+            else:
+                # compute linear combination of gaussian placed on center
+                total_g += center.evaluate(cs, es, deriv)
+            count += center.nbasis
+        if deriv:
+            return total_g, total_dg
+        return total_g

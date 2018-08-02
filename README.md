@@ -107,10 +107,10 @@ to write down the formulas for how to update coefficients and
 function parameters. Please see the paper below.
 
 Next you need to create a class inside your own python file, with a parent
-class of [KullbackLeiblerFitting](fitting/kl_divergence/kull_leib_fitting.py),
+class of [KLDivergenceSCF](fitting/kl_divergence/kull_leib_fitting.py),
 implementing the abstract methods provided. In other words,
 ```python
-class YourOwnBasisSet(KullbackLeiblerFitting):
+class YourOwnBasisSet(KLDivergenceSCF):
     def __init__(self, grid_obj, true_model, ...):
         ...
         super(YourOwnBasisSet, self).__init__(grid_obj, true_model, ...)
