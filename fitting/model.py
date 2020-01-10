@@ -31,10 +31,29 @@ __all__ = ["AtomicGaussianDensity", "MolecularGaussianDensity"]
 
 
 class AtomicGaussianDensity(object):
-    r"""Gaussian Density Model."""
+    r"""
+    Gaussian Density Model for modeling atoms.
+
+    Attributes
+    ----------
+    points :
+    radii :
+    num_s :
+    num_p :
+    nbasis :
+    nbasis :
+    natoms :
+
+    Methods
+    -------
+    evaluate :
+
+    """
 
     def __init__(self, points, coord=None, num_s=1, num_p=0, normalized=False):
         r"""
+        Construct class representing atomic density modeled as gaussian functions.
+
         Parameters
         ----------
         points : ndarray, (N,)
@@ -48,6 +67,7 @@ class AtomicGaussianDensity(object):
              Number of p-type Gaussian basis functions.
         normalized : bool, optional
             Whether to normalize Gaussian basis functions.
+
         """
         if not isinstance(points, np.ndarray):
             raise TypeError("Argument points should be a numpy array.")
@@ -84,32 +104,32 @@ class AtomicGaussianDensity(object):
 
     @property
     def points(self):
-        """The grid points."""
+        """Return the grid points."""
         return self._points
 
     @property
     def radii(self):
-        """The distance of grid points from center of Gaussian(s)."""
+        """Return the distance of grid points from center of Gaussian(s)."""
         return self._radii
 
     @property
     def num_s(self):
-        """Number of s-type Gaussian basis functions."""
+        """Return the number of s-type Gaussian basis functions."""
         return self.ns
 
     @property
     def num_p(self):
-        """Number of p-type Gaussian basis functions."""
+        """Return the number of p-type Gaussian basis functions."""
         return self.np
 
     @property
     def nbasis(self):
-        """The total number of Gaussian basis functions."""
+        """Return the total number of Gaussian basis functions."""
         return self.ns + self.np
 
     @property
     def natoms(self):
-        """Number of basis functions centers."""
+        """Return the number of basis functions centers."""
         return 1
 
     @property
