@@ -19,7 +19,8 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-r"""Density Module.
+r"""
+Density Module.
 
 This module computes atomic densities from Slater-type orbital basis.
 """
@@ -47,12 +48,9 @@ class AtomicDensity(object):
         if not isinstance(element, str) or not element.isalpha():
             raise TypeError("The element argument should be all letters string.")
 
-        if element.lower() == "h":
-            raise NotImplementedError
-        else:
-            data = load_slater_wfn(element)
-            for key, value in data.items():
-                setattr(self, key, value)
+        data = load_slater_wfn(element)
+        for key, value in data.items():
+            setattr(self, key, value)
 
     @staticmethod
     def slater_orbital(exponent, number, points):
