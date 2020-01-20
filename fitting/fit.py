@@ -216,7 +216,7 @@ class KLDivergenceSCF(BaseFit):
 
         fun, performance = [], []
         niter = 0
-        while (max_diff_expons > e_threshold or max_diff_coeffs > c_threshold or
+        while ((max_diff_expons > e_threshold or max_diff_coeffs > c_threshold) and
                diff_divergence > d_threshold) and maxiter > niter:
 
             # update old coeffs & expons
@@ -242,7 +242,7 @@ class KLDivergenceSCF(BaseFit):
             diff_divergence = np.abs(performance[niter - 1][-1] - performance[niter - 2][-1])
 
         # check whether convergence is reached
-        if maxiter < niter and diff_divergence > d_threshold:
+        if maxiter == niter and diff_divergence > d_threshold:
             success = False
         else:
             success = True
