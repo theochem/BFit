@@ -131,3 +131,28 @@ def test_parsing_slater_density_ne():
     # Check coefficients of P orbitals
     coeff = np.array([0.0000409, 0.0203038, 0.0340866, 0.2801866, 0.3958489, 0.3203928, 0.0510413])
     assert (abs(ne['orbitals_coeff']['2P'] - coeff.reshape(7, 1)) < 1.e-6).all()
+
+
+def test_parsing_slater_density_h():
+    r"""Test parsing the hydrogen slater file located in ./data/examples/h.slater. """
+    # Load the H file
+    h = load_slater_wfn("h")
+
+    assert h['configuration'] == "1S(1)"
+    assert h['energy'] == [0.5]
+
+    # Check orbiral energy and cusp
+    assert (abs(h['orbitals_energy'] - np.array([-0.50])[:, None]) < 1.e-6).all()
+    assert (abs(h['orbitals_cusp'] - np.array([1.])[:, None]) < 1.e-6).all()
+
+    # Check basis
+    assert h['orbitals_basis']['S'] == ['1S']
+    assert h['orbitals'] == ['1S']
+
+    # Check exponents of S orbitals
+    exp_s = np.array([1.])
+    assert (abs(h['orbitals_exp']['S'] - exp_s) < 1.e-6).all()
+
+    # Check coefficients of P orbitals
+    coeff = np.array([0.5641896])
+    assert (abs(h['orbitals_coeff']['1S'] - coeff) < 1.e-6).all()
