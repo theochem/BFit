@@ -25,27 +25,35 @@ import numpy as np
 
 from numpy.testing import assert_raises, assert_almost_equal
 
-from fitting.grid import BaseRadialGrid, UniformRadialGrid, ClenshawRadialGrid, CubicGrid
+from fitting.grid import _BaseRadialGrid, UniformRadialGrid, ClenshawRadialGrid, CubicGrid
 
 
 def test_raises_base():
     # check array
-    assert_raises(TypeError, BaseRadialGrid, 5.)
-    assert_raises(TypeError, BaseRadialGrid, [1., 2., 3.])
-    assert_raises(TypeError, BaseRadialGrid, (1., 2., 3.))
+    assert_raises(TypeError, _BaseRadialGrid, 5.)
+    assert_raises(TypeError, _BaseRadialGrid, [1., 2., 3.])
+    assert_raises(TypeError, _BaseRadialGrid, (1., 2., 3.))
     # check 1D array
-    assert_raises(TypeError, BaseRadialGrid, np.array([[5.]]))
-    assert_raises(TypeError, BaseRadialGrid, np.array([[5., 5.5], [1.3, 2.5]]))
+    assert_raises(TypeError, _BaseRadialGrid, np.array([[5.]]))
+    assert_raises(TypeError, _BaseRadialGrid, np.array([[5., 5.5], [1.3, 2.5]]))
 
 
 def test_integration_base():
     # integrate a triangle
-    grid = BaseRadialGrid(np.arange(0., 2., 0.000001), spherical=False)
+    grid = _BaseRadialGrid(np.arange(0., 2., 0.000001), spherical=False)
     value = grid.integrate(grid.points)
     assert_almost_equal(value, 2. * 2. / 2, decimal=5)
     # integrate a square
     value = grid.integrate(2. * np.ones(len(grid)))
     assert_almost_equal(value, 2. * 2., decimal=5)
+
+
+def test_raises_integration():
+    r"""Test that integration over BaseRadialGrid returns an assertion error if dimension aren't specified."""
+    grid = _BaseRadialGrid(np.arange(0., 2., 0.000001), spherical=False)
+    # Obtain an array with different dimension than the "grid.points".
+    arr = np.arange(0., 2., 0.1)
+    assert_raises(ValueError, grid.integrate, arr)
 
 
 def test_raises_clenshaw():
@@ -58,6 +66,14 @@ def test_raises_clenshaw():
     assert_raises(TypeError, ClenshawRadialGrid, 1, 1, 1, "not list")
 
 
+def test_raises_uniform():
+    assert_raises(TypeError, UniformRadialGrid, 10.1, 1, 1)
+    assert_raises(TypeError, UniformRadialGrid, -10, 1, 1)
+    assert_raises(TypeError, UniformRadialGrid, 10, "not numb", 1)
+    assert_raises(TypeError, UniformRadialGrid, 10, 1, "not numb")
+    assert_raises(ValueError, UniformRadialGrid, 1, 2.2, 1)
+
+
 def test_points_clenshaw():
     grid = ClenshawRadialGrid(10, 10, 20, [1000])
     # check core points
@@ -68,6 +84,8 @@ def test_points_clenshaw():
     assert_almost_equal(diff, grid._get_points(20, "diffuse"), decimal=8)
     # check points
     assert_almost_equal(sorted(core + diff[1:] + [1000]), grid.points, decimal=8)
+    # check assertion
+    assert_raises(ValueError, grid._get_points, 10, "not core or diffuse")
 
 
 def test_points_uniform():
@@ -232,6 +250,8 @@ def test_integration_cubic():
     # integrate constant value of 2.
     value = grid.integrate(2 * np.ones(len(grid)))
     assert_almost_equal(value, 2 * 0.25**3, decimal=3)
+    # return error if arr is not the same length.
+    assert_raises(ValueError, grid.integrate, np.arange(0., 0.25, 0.1))
 
 
 def test_integration_cubic_gaussian():
