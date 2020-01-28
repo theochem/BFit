@@ -40,7 +40,6 @@ __all__ = ["AtomicDensity"]
 
 
 class AtomicDensity:
-
     r"""
     Atomic Density Class.
 
@@ -117,6 +116,7 @@ class AtomicDensity:
             Excited States of Neutral and Ionized Atoms, Z <= 54" By E. Clementi and C. Roetti.
 
     """
+    
     def __init__(self, element):
         r"""
         Construct AtomicDensity object.
@@ -202,7 +202,7 @@ class AtomicDensity:
 
         Returns
         -------
-        phi_matrix : ndarray, (N, K)
+        phi_matrix : ndarray(N, K)
             The linear combination of Slater-type orbitals evaluated on the grid points, where K is
             the number of orbitals.
 
