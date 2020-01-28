@@ -23,7 +23,7 @@
 
 import numpy as np
 
-from numpy.testing import assert_equal, assert_almost_equal
+from numpy.testing import assert_equal, assert_almost_equal, assert_raises
 
 from fitting.density import AtomicDensity
 
@@ -202,3 +202,11 @@ def test_atomic_density_c():
     assert_almost_equal(dens, core + valn, decimal=6)
     # check number of electrons
     assert_almost_equal(4 * np.pi * np.trapz(grid**2 * dens, grid), 6.0, decimal=6)
+
+
+def test_raises():
+    assert_raises(TypeError, AtomicDensity, 25)
+    assert_raises(TypeError, AtomicDensity, "be2")
+    assert_raises(ValueError, AtomicDensity.slater_orbital, np.array([[1]]), np.array([[2]]), np.array([[1.]]))
+    c = AtomicDensity("c")
+    assert_raises(ValueError, c.atomic_density, np.array([[1.]]), "not total")
