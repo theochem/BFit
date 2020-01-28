@@ -46,21 +46,22 @@ def load_slater_wfn(element):
     """
     file_name = os.path.join(os.path.dirname(__file__) + "/data/examples/%s.slater" % element.lower())
 
-    def get_number_of_electrons_per_orbital(string_configuration):
+    def get_number_of_electrons_per_orbital(configuration):
         """
-        Gets the Occupation Number for all orbitals
-        of an _element returing an dictionary
+        Get the Occupation Number for all orbitals of an _element returing an dictionary.
+
         Parameters
         ----------
-        string_configuration : str
+        configuration : str
+            The electron configuration.
 
         Returns
         --------
         dict
-            a dict containing the number and orbital
+            a dict containing the number and orbital.
 
         """
-        electron_config_list = string_configuration
+        electron_config_list = configuration
 
         shells = ["K", "L", "M", "N"]
 
@@ -103,8 +104,9 @@ def load_slater_wfn(element):
 
     def get_column(t_orbital):
         """
-        The Columns get screwed over sine s orbitals start with one while p orbitals start at energy
-        Therefore this corrects the error in order to retrieve correct column
+        Correct the error in order to retrieve the correct column.
+
+        The Columns are harder to parse since the orbitals start with one while p orbitals start at energy.
 
         Parameters
         ----------
@@ -113,7 +115,9 @@ def load_slater_wfn(element):
 
         Returns
         -------
-
+        int :
+            Retrieve teh right column index depending on whether it is "S", "P" or "D" orbital.
+        
         """
         if t_orbital[1] == "S":
             return int(t_orbital[0]) + 1
