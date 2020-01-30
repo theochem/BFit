@@ -89,6 +89,7 @@ def load_slater_wfn(element):
                     out["4D"] = 10
                     out["4F"] = 14
 
+        print("orbitals ", orbitals)
         for x in orbitals:
             if x in electron_config_list:
                 index = electron_config_list.index(x)
@@ -96,6 +97,7 @@ def load_slater_wfn(element):
 
                 if orbital[1] == "D" or orbital[1] == "F":
                     num_electrons = re.sub('[(){}<>,]', "", electron_config_list.split(orbital)[1])
+                    num_electrons = re.search(orbital + r"\((.*?)\)", electron_config_list).group(1)
                     out[orbital] = int(num_electrons)
                 else:
                     out[orbital] = int(electron_config_list[index + 3: index + 4])
@@ -117,7 +119,7 @@ def load_slater_wfn(element):
         -------
         int :
             Retrieve teh right column index depending on whether it is "S", "P" or "D" orbital.
-        
+
         """
         if t_orbital[1] == "S":
             return int(t_orbital[0]) + 1
@@ -186,7 +188,8 @@ def load_slater_wfn(element):
             'orbitals_coeff':
             {key: np.asarray(value).reshape(len(value), 1)
              for key, value in orbitals_coeff.items() if value != []},
-            'orbitals_occupation': np.array([get_number_of_electrons_per_orbital(configuration)[k] for k in orbitals])[:, None],
+            'orbitals_occupation': np.array([get_number_of_electrons_per_orbital(configuration)[k]
+                                             for k in orbitals])[:, None],
             'basis_numbers':
             {key: np.asarray([[int(x[0])] for x in value])
              for key, value in orbitals_basis.items() if len(value) != 0}
