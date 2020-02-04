@@ -22,12 +22,12 @@
 r"""
 Models used for fitting.
 
-Primarily based on Gaussian-Type Models for electronic structure theory.
+Based on Gaussian-Type Models for electronic structure theory.
 
 Classes
 -------
-    AtomicGaussianDensity - Gaussian density model on one-dimensional space.
-    MolecularGaussianDensity - Gaussian density model on three-dimensional space.
+    AtomicGaussianDensity - Gaussian density model for modeling atomic densities
+    MolecularGaussianDensity - Gaussian density model for modeling multiple atomic densities.
 
 Notes
 -----
@@ -40,12 +40,35 @@ P-type Gaussian functions are defined as,
 .. math ::
      r^2 e^{-\alpha r^2}
 
-where :math:`\alpha` is defined to be the exponent.
+where :math:`\alpha` is defined to be the exponent and :math:`r` is the radius to the center.
 
+- Atomic Gaussian density is defined to be a single center Gaussian function. Note that it
+    can be of any dimension. Molecular Gaussian density is defined to be a more than one centers of
+    Gaussian functions.
+
+- The class MolecularGaussianDensity depends on AtomicGaussianDensity class.
 
 Examples
 --------
+This example shows how to define a single atomic Gaussian density.
 
+First, pick out a grid. Here it is three-dimensional.
+>> grid = np.array([[1., 2., 3.], [1., 2., 2.99], [0., 0., 0.]])
+
+Next pick out where the Gaussian density is centered.
+Since it is AtomicGaussianDensity, then only one center can be provided.
+>> coord = np.array([1., 1., 1.])
+
+Define number of S-type to be 3 and P-type to be 4.
+>> model = AtomicGaussianDensity(grid, center=coord, num_s=3, num_p=4, normalize=True)
+
+Evaluate the model based on coefficients and exponents.
+First 3 coefficients are for S-type and the last four are for P-type.
+>> coeffs = np.array([1., 1., 1., 2., 2., 2., 2.])
+>> exps = np.array([0.001, 0.2, 0.3, 10., 100., 1000.])
+
+Finally, evaluate the model based on those coefficients and exponents.
+>> points = model.evaluate(coeffs, exps)
 
 """
 
@@ -60,20 +83,23 @@ __all__ = ["AtomicGaussianDensity", "MolecularGaussianDensity"]
 
 class AtomicGaussianDensity:
     r"""
-    Gaussian density model for modeling the radial electronic density of atoms.
+    Gaussian density model for modeling the electronic density of a single atom.
 
     Atomic Gaussian density is a linear combination of Gaussian functions of S-type
-     and P-type functions specified by coefficients :math:`c_i, d_i`, exponents `\alpha_i`,`\beta_i`
-     and :math:`x_j` is the center of gaussian function. In other words,
+     and P-type functions:
     .. math::
-        f(x) := \sum_j \sum_i c_i e^{-\alpha_i |x - x_j|^2} + d_i |x - x_j|^2 e^{-\beta |x-x_j|^2}
+        f(x) := \sum_i c_i e^{-\alpha_i |x - c|^2} + d_i |x - c|^2 e^{-\beta |x - c|^2}
+    where
+        :math:`c_i, d_i` are the coefficients of S-type and P-type functions.
+        :math:`c` is the center of the Gaussian functions.
+        :math:`x` is the real coordinates, can be multi-dimensional.
 
     Attributes
     ----------
-    points : (N,) ndarray
-        The grid points in a one-dimensional array.
-    radii : (M, N) ndarray
-        Distance of points from the center of M coordinates.
+    points : ndarray(N, D)
+        The grid points, where N is the number of points and D is the dimension of a point.
+    radii : ndarray(N, D)
+        Distance of points from the center :math:`c`.
     num_s : int
         Number of S-type Gaussian basis functions.
     num_p : int
@@ -92,33 +118,33 @@ class AtomicGaussianDensity:
 
     Examples
     --------
-    First define a radial grid centered around zero.
+    First define a grid.
     >> point = [-0.5, -0.25, 0., 0.25, 0.5]
 
-    Define the coordinates of each center.
-    >> coordinates = np.array([-1., 1.])
+    Define the center.
+    >> center = np.array([-1.])
 
     Define the Model using 5 S-Type and P-type.
-    >> model = AtomicGaussianDensity(point, coord=coordinates, num_s=5, num_p=5)
+    >> model = AtomicGaussianDensity(point, center=center, num_s=5, num_p=5)
 
-    Evaluate model based on specified coefficients and exponents.
-    >> coeff =
-    >> exps =
+    Put first 5 coefficients of S-type followed by P-type. Same with exponents.
+    >> coeff = np.array([1., 2., 3., 4., 5., 1., 2., 3., 4., 5.])
+    >> exps = np.array([0.05, 0.1, 0.2, 0.3, 0.4, 0.01, 0.02, 0.03, 0.04, 0.05])
     >> model.evaluate(coeff, exps)
 
     """
 
-    def __init__(self, points, coord=None, num_s=1, num_p=0, normalize=False):
+    def __init__(self, points, center=None, num_s=1, num_p=0, normalize=False):
         r"""
         Construct class representing atomic density modeled as Gaussian functions.
 
         Parameters
         ----------
-        points : ndarray, (N, C)
-            Grid points where N is the number of points and C is the number of centers (optional).
-        coord : ndarray (C,), optional
-            The coordinates of gaussian basis functions centers.
-            If `None`, the basis functions are placed on the origin.
+        points : ndarray, (N, D)
+            Grid points where N is the number of points and D is the number of dimensions.
+        center : ndarray (D,), optional
+            The D-dimensional coordinates of the single center.
+            If `None`, then the center is the origin of all zeros.
         num_s : int, optional
              Number of s-type Gaussian basis functions.
         num_p : int, optional
@@ -137,18 +163,18 @@ class AtomicGaussianDensity:
             raise ValueError("Arguments num_s & num_p cannot both be zero!")
 
         # check & assign coordinates.
-        if coord is not None:
-            if not isinstance(coord, np.ndarray) or coord.ndim != 1:
-                raise ValueError("Argument coord should be a 1D numpy array.")
-            if points.ndim > 1 and points.shape[1] != coord.size:
-                raise ValueError("Arguments points & coord should have the same number of columns.")
+        if center is not None:
+            if not isinstance(center, np.ndarray) or center.ndim != 1:
+                raise ValueError("Argument center should be a 1D numpy array.")
+            if points.ndim > 1 and points.shape[1] != center.size:
+                raise ValueError("Points & center should have the same number of columns.")
         elif points.ndim > 1:
-            coord = np.array([0.] * points.shape[1])
+            center = np.array([0.] * points.shape[1])
         else:
-            coord = np.array([0.])
-        self.coord = coord
+            center = np.array([0.])
+        self.coord = center
 
-        # compute radii (distance of points from center coord)
+        # compute radii (distance of points from center center)
         if points.ndim > 1:
             radii = np.linalg.norm(points - self.coord, axis=1)
         else:
@@ -196,12 +222,16 @@ class AtomicGaussianDensity:
         return np.array([1.5] * self.ns + [2.5] * self.np)
 
     def evaluate(self, coeffs, expons, deriv=False):
-        """Compute linear combination of Gaussian basis & its derivatives on the grid points.
+        r"""
+        Compute linear combination of Gaussian basis & its derivatives on the grid points.
 
         .. math::
-            f(x) := \sum_i \sum_j c_i e^{-\alpha_i |x - x_j|^2} + d_i |x-x_j|^2 e^{-\beta |x-x_j|^2}
-        where :math:`c_i, d_i \alpha_i, \beta_i, x_j` is the coefficient of S-type,
-            coefficient of P-type, exponents of S and P-type and atom coordinates, respectively.
+            f(x) := \sum_i c_i e^{-\alpha_i |x - c|^2} + d_i |x - c|^2 e^{-\beta |x-c|^2}
+
+        where
+            :math:`c_i, d_i` are the coefficients of S-type and P-type functions.
+            :math:`c` is the center of the Gaussian functions.
+            :math:`x` is the real coordinates, can be multi-dimensional.
 
         Parameters
         ----------
@@ -346,14 +376,30 @@ class AtomicGaussianDensity:
 
 
 class MolecularGaussianDensity:
-    """Molecular Atom-Centered Gaussian Density Model.
+    r"""Molecular Atom-Centered Gaussian Density Model.
+
+    The Molecular Gaussian Density model is based on multiple centers each associated with a
+        Gaussian density model (S or P-type).
+
+    .. math::
+            f(x) := \sum_j \sum_{i =1}^{M_j} c_{ji} e^{-\alpha_{ji} |x - m_j|^2} +
+                                             d_{ji} |x - m_j|^2 e^{-\beta_{ji} |x - m_j|^2}
+
+        where
+            :math:`c_{ji}, d_{ji}` are the ith coefficients of S-type and P-type functions of the
+                jth center.
+            :math:`\alpha_{ji}, \beta_{ji}` are the ith exponents of S-type and P-type functions of
+                the jth center.
+            :math:`M_j` is the total number of basis functions of the jth center.
+            :math:`m_j` is the coordinate of the jth center.
+            :math:`x` is the real coordinates of the point.
 
     Attributes
     ----------
     points : (N, 3) ndarray
         The grid points in a two-dimensional array, where N is the number of points.
     radii : (M, N) ndarray
-        Distance of points from the center of M coordinates.
+        Distance of `points` from each center, where M is the number of centers.
     num_s : int
         Number of S-type Gaussian basis functions.
     num_p : int
@@ -361,15 +407,21 @@ class MolecularGaussianDensity:
     nbasis : int
         Total number of basis functions (including S-type and P-type Gaussians).
     natoms : int
-        Number of atom or number of centers for Gaussian function.
+        Number of atom or number of centers.
 
     Methods
     -------
+    evaluate(deriv='False') :
+        Return Gaussian density function on `radii` by providing coefficients and exponents.
+        If `deriv` is True, then derivative with respect to the coefficient and exponent is
+        also returned.
 
     """
 
     def __init__(self, points, coords, basis, normalize=False):
         """
+        Construct the MolecularGaussianDensity class.
+
         Parameters
         ----------
         points : ndarray, (N, 3)
@@ -377,7 +429,7 @@ class MolecularGaussianDensity:
         coords : ndarray, (M, 3)
             The atomic coordinates (M centers) on which Gaussian basis are centered.
         basis : ndarray, (M, 2)
-            The number of s-type & p-type Gaussian basis functions placed on each center.
+            The number of S-type & P-type Gaussian basis functions placed on each center.
         normalize : bool, optional
             Whether to normalize Gaussian basis functions.
 
@@ -405,27 +457,31 @@ class MolecularGaussianDensity:
 
     @property
     def points(self):
-        """The grid points."""
+        """Get grid points."""
         return self._points
 
     @property
     def nbasis(self):
-        """The total number of Gaussian basis functions."""
+        """Get the total number of Gaussian basis functions."""
         return np.sum(self._basis)
 
     @property
     def radii(self):
-        """The distance of grid points from center of each basis function."""
+        """Get the distance of grid points from center of each basis function."""
         return self._radii
 
     @property
     def natoms(self):
-        """Number of basis functions centers."""
+        """Get number of basis functions centers."""
         return len(self._basis)
 
     @property
     def prefactor(self):
-        """The pre-factor of Gaussian basis functions"""
+        """
+        Get the pre-factor of Gaussian basis functions to make it normalized.
+
+        Only used if attribute `normalize` is true.
+        """
         return np.concatenate([center.prefactor for center in self.center])
 
     def assign_basis_to_center(self, index):
@@ -451,9 +507,25 @@ class MolecularGaussianDensity:
         return index
 
     def evaluate(self, coeffs, expons, deriv=False):
-        """Compute linear combination of Gaussian basis & its derivatives on the grid points.
+        r"""Compute linear combination of Gaussian basis & its derivatives on the grid points.
 
+        The Molecular Gaussian is defined to be:
         .. math::
+            f(x) := \sum_j \sum_{i =1}^{M_j} c_{ji} e^{-\alpha_{ji} |x - m_j|^2} +
+                                             d_{ji} |x - m_j|^2 e^{-\beta_{ji} |x - m_j|^2}
+
+        where
+            :math:`c_{ji}, d_{ji}` are the ith coefficients of S-type and P-type functions of the
+                jth center.
+            :math:`\alpha_{ji}, \beta_{ji}` are the ith exponents of S-type and P-type functions of
+                the jth center.
+            :math:`M_j` is the total number of basis functions of the jth center.
+            :math:`m_j` is the coordinate of the jth center.
+            :math:`x` is the real coordinates of the point.
+
+        Its derivative with respect to exponent of a single Gaussian with center :math:`m_j` is:
+        .. math::
+            \frac{\partial f}{\partial \alpha_{ji}} = -e^{-\alpha_{ji} |x - m_j|^2}.
 
         Parameters
         ----------
