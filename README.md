@@ -1,7 +1,7 @@
-FittingBasisSets <a href='https://docs.python.org/3.5/'><img src='https://img.shields.io/badge/python-3.5-blue.svg'></a>
+BFit <a href='https://docs.python.org/3.5/'><img src='https://img.shields.io/badge/python-3.5-blue.svg'></a>
 ===================
 
-FittingBasisSets is a python program that is used to fit a convex sum of 
+BFit is a python program that is used to fit a convex sum of 
 positive basis functions to any probability distribution. 
 
 Primarily used for ab-intio quantum chemistry calculations, where the basis functions of 
@@ -26,15 +26,18 @@ distribution is the electron density.
 
 
 ## Features 
-* Fitting Radial Gaussian Basis sets to Atomic Densities
+The three main features of this software are:
 
-* Fitting Gaussian Basis sets to Molecular Densities
+* Fitting Gaussian Basis sets to:
+    
+    * Atomic Densities (including core and valence densities),
+    * Molecular Densities.
 
-* Fitting Valence Gaussian Basis Sets to Atomic Densities
+* Fit using the following methods:
+    * Least-squares method,
+    * Kullback-Leibler method.
 
-* Optimize Least-squares of Radial Gaussian Basis Sets via SLSQP
-
-* Optimize Kullback-Leibler of Radial Gaussian Sets via SLSQP
+* Able to construct highly accurate slater electron densities see [data page](data/README.md).
 
 
 ## Dependences 
@@ -52,22 +55,23 @@ distribution is the electron density.
 In your terminal run:
 
 ```python
-git clone https://github.com/Ali-Tehrani/fitting.git
+git clone https://github.com/QuantumElephant/fitting.git
 python ./setup.py install
 ```
 
-Or, if you have pre-requisites already installed:
-```python
-git clone https://github.com/Ali-Tehrani/fitting.git
-```
-
-## Running Tests 
 Run tests to see if it's installed properly:
 ```python
 nosetests -v fitting
 ```
 
 ## Examples
+There are four steps to using BFit.
+
+### 1. Create the Grid Object
+### 2. Create the Model Object
+### 3. Specify which error measure to minimize.
+### 4. Optimize
+
 We assume the gaussian basis set is normalized.
 #### Fit Gaussian set to a specified atom (slater basis set).
 Please see the [atomic_fit.py](examples/atomic_fit.py) file located in the example folder.
@@ -82,6 +86,27 @@ example folder.
 
 
 
+
+
+## Questions
+Either can email, 
+- Alireza Tehrani at "alirezatehrani24@gmail.com"
+- Farnaz Heidar-Zadeh at "".
+- Paul W. Ayers at "". 
+
+## Citing 
+This software was written by Alireza Tehrani and Farnaz Heidar-Zadeh.
+
+Please cite the following.
+TODO: Update PAPER
+
+Alireza Tehrani, Farnaz Heidar-Zadeh, James S.M. Anderson, Toon Verstraelen, Rogelio Cuevas-Saavedra, Ivan Vinogradov, Debajit Chakraborty, Paul W. Ayers. "BFit: Information-Theoretic Approach to Basis-Set Fitting of Electron Densities"
+
+
+## License 
+FittingBasisSets is distributed under the conditions of the GPL License 
+version 3 (GPLv3)
+
 ## FAQ 
 #### Why Gaussian Basis Sets?
 The basis sets of importance are, slater densities and gaussian densities.
@@ -92,9 +117,6 @@ gaussian basis sets are not accurate for modeling atoms, due to the lack of cusp
  at r=0, 
 however 
 are easier to integrate.
-Curve-fitting procedures is used to convert between the two however modeling
-this problem as a standard least-squares does not suffice to solve it, 
-instead a different objective function is used to solve this problem.
 
 
 #### Where did you get the slater coefficients from?
@@ -104,7 +126,7 @@ Please see [Data Readme](data/) in the data folder.
 #### How to implement a different basis set?
 If you want to fit with a different basis set. You will first need
 to write down the formulas for how to update coefficients and 
-function parameters. Please see the paper below.
+function parameters. Please see the section *TODOADDHERE* .
 
 Next you need to create a class inside your own python file, with a parent
 class of [KLDivergenceSCF](fitting/kl_divergence/kull_leib_fitting.py),
@@ -137,12 +159,4 @@ obj = YourOwnBasisSet(your parameters)
 new_params = obj.run()
 print("Updated Parameters ", new_params)
 ```
-
-## More Info
-Please email, whomever. 
-
-## Citing 
-
-## License 
-FittingBasisSets is distributed under the conditions of the GPL License 
-version 3 (GPLv3)
+To see example of this, see the [python file](fitting/model.py).
