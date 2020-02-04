@@ -43,7 +43,14 @@ def test_raises_gaussian_model():
     assert_raises(ValueError, AtomicGaussianDensity, np.array([0.]), [1.], 1, 0, True)
     assert_raises(ValueError, AtomicGaussianDensity, np.array([0.]), np.array([[1.]]), 1, 0, True)
     assert_raises(ValueError, AtomicGaussianDensity, np.array([[0.]]), np.array([1., 2.]), 1)
-
+    # test on molecular density.
+    assert_raises(ValueError, MolecularGaussianDensity, np.array([0.]), np.array([1.]), [1, 1])
+    assert_raises(ValueError, MolecularGaussianDensity,
+                  np.array([0.]), np.array([[1.]]), np.array([1, 1]))
+    assert_raises(ValueError, MolecularGaussianDensity,
+                  np.array([0.]), np.array([[1.], [2.]]), np.array([[1, 1]]))
+    assert_raises(ValueError, MolecularGaussianDensity,
+                  np.array([[0., 1.]]), np.array([[1.]]), np.array([[1, 1]]))
 
 def test_gaussian_1s_origin():
     # test one (un)normalized s-type gaussian on r=0. against sympy
@@ -605,6 +612,7 @@ def test_molecular_gaussian_density_1d_1center_1s():
     # check basis & density
     assert_equal(model.nbasis, 1)
     assert_equal(model.assign_basis_to_center(0), 0)
+    assert_raises(ValueError, model.assign_basis_to_center, 1)
     g = np.array([0.0659054004, 0.486978701, 1.3237453539, 1.3237453539, 0.486978701])
     dg = np.array([[0.0439369336, -0.4119087527], [0.3246524674, -1.0957020773],
                    [0.8824969026, -0.3309363385], [0.8824969026, -0.3309363385],
@@ -764,6 +772,8 @@ def test_molecular_gaussian_density_2d_2center_1s1p_2p():
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=7)
+    assert_raises(ValueError, model.evaluate, np.array([[1.]]), np.array([1.]))
+    assert_raises(ValueError, model.evaluate, np.array([1., 2.]), np.array([1.]))
     # normalized (1s + 1p) & (2p) basis functions
     model = MolecularGaussianDensity(points, coords, basis=basis, normalize=True)
     # check basis & density
@@ -948,11 +958,28 @@ def test_gaussian_model_sp_integrate_uniform():
     assert_almost_equal(grid.integrate(value), np.sum(coeffs), decimal=6)
 
 
+def test_gaussian_model_s_integrate_cubic():
+    grid = CubicGrid(-5, 5., 0.3)
+    coord = None
+    # un-normalized s-type + p-type Gaussian
+    model = AtomicGaussianDensity(grid.points, center=coord, num_s=1)
+    # check center
+    assert_almost_equal(model.coord, np.array([0., 0., 0.]), decimal=8)
+    # check integration
+    value = model.evaluate(np.array([1.]), np.array([4.01]), deriv=False)
+    value = grid.integrate(value)
+    assert_almost_equal(value, (np.pi / 4.01) ** 1.5, decimal=6)
+    # check assertion error on types of coefficients
+    assert_raises(ValueError, model.evaluate, np.array([[1.]]), np.array([1.]))
+    assert_raises(ValueError, model.evaluate, np.array([1., 2.]), np.array([1.]))
+    assert_raises(ValueError, model.evaluate, np.array([1., 2.]), np.array([1., 2.]))
+
+
 def test_gaussian_model_sp_integrate_cubic():
     grid = CubicGrid(0., 20., 0.3)
     coord = np.array([10., 10., 10.])
     # un-normalized s-type + p-type Gaussian
-    model = AtomicGaussianDensity(grid.points, coord=coord, num_s=1, num_p=1)
+    model = AtomicGaussianDensity(grid.points, center=coord, num_s=1, num_p=1)
     # check center
     assert_almost_equal(model.coord, coord, decimal=8)
     # check integration
@@ -960,7 +987,7 @@ def test_gaussian_model_sp_integrate_cubic():
     value = grid.integrate(value)
     assert_almost_equal(value, (np.pi / 4.01)**1.5 + 1.5 * (np.pi**1.5 / 1.25**2.5), decimal=6)
     # normalized s-type + p-type Gaussian
-    model = AtomicGaussianDensity(grid.points, coord=coord, num_s=2, num_p=3, normalize=True)
+    model = AtomicGaussianDensity(grid.points, center=coord, num_s=2, num_p=3, normalize=True)
     # check center
     assert_almost_equal(model.coord, coord, decimal=8)
     # check integration
