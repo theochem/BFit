@@ -29,6 +29,7 @@ Classes
     AtomicGaussianDensity - Gaussian density model for modeling atomic densities
     MolecularGaussianDensity - Gaussian density model for modeling multiple atomic densities.
 
+
 Notes
 -----
 There are two choices of Gaussian functions for both Atomic and Molecular Electronic Densities.
@@ -48,9 +49,10 @@ where :math:`\alpha` is defined to be the exponent and :math:`r` is the radius t
 
 - The class MolecularGaussianDensity depends on AtomicGaussianDensity class.
 
+
 Examples
 --------
-This example shows how to define a single atomic Gaussian density.
+This example shows how to define a single atomic Gaussian density in three dimensions.
 
 First, pick out a grid. Here it is three-dimensional.
 >> grid = np.array([[1., 2., 3.], [1., 2., 2.99], [0., 0., 0.]])
@@ -379,7 +381,7 @@ class MolecularGaussianDensity:
     r"""Molecular Atom-Centered Gaussian Density Model.
 
     The Molecular Gaussian Density model is based on multiple centers each associated with a
-        Gaussian density model (S or P-type).
+        Gaussian density model (S or P-type) of any dimension.
 
     .. math::
             f(x) := \sum_j \sum_{i =1}^{M_j} c_{ji} e^{-\alpha_{ji} |x - m_j|^2} +
@@ -392,7 +394,7 @@ class MolecularGaussianDensity:
                 the jth center.
             :math:`M_j` is the total number of basis functions of the jth center.
             :math:`m_j` is the coordinate of the jth center.
-            :math:`x` is the real coordinates of the point.
+            :math:`x` is the real coordinates of the point. It can be of any dimension.
 
     Attributes
     ----------
@@ -424,9 +426,9 @@ class MolecularGaussianDensity:
 
         Parameters
         ----------
-        points : ndarray, (N, 3)
-            The grid points, where N is the number of grid points.
-        coords : ndarray, (M, 3)
+        points : ndarray, (N, D)
+            The grid points, where N is the number of grid points and D is the dimension.
+        coords : ndarray, (M, D)
             The atomic coordinates (M centers) on which Gaussian basis are centered.
         basis : ndarray, (M, 2)
             The number of S-type & P-type Gaussian basis functions placed on each center.
