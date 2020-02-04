@@ -58,7 +58,7 @@ class AtomicDensity:
         Return the electron configuration of the element.
     orbitals : list, (M,)
         List of strings representing each of the orbitals in the electron configuration. For example, Beryllium has
-        ["1S", "2S"] in its electron configuration.
+        ["1S", "2S"] in its electron configuration. Ordered based on "S", "P", "D", etc.
     orbitals_occupation : ndarray, (M, 1)
         Returns the number of electrons in each of the orbitals in the electron configuration. e.g. Beryllium has two
         electrons in "1S" and two electrons in "2S".
@@ -68,7 +68,7 @@ class AtomicDensity:
     orbital_energy : list, (N, 1)
         Energy of each of the N Slater-type orbital.
     orbitals_cusp : list, (N, 1)
-        Cusp of each of the N Slater-type orbital.
+        Cusp of each of the N Slater-type orbital. Same ordering as `orbitals`.
     orbitals_basis : dict
         Keys are the orbitals in the electron configuration. Each orbital has N Slater-type orbital attached to them.
     orbitals_exp : dict (str : ndarray(N, 1))
@@ -116,7 +116,7 @@ class AtomicDensity:
             Excited States of Neutral and Ionized Atoms, Z <= 54" By E. Clementi and C. Roetti.
 
     """
-    
+
     def __init__(self, element):
         r"""
         Construct AtomicDensity object.

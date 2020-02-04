@@ -89,7 +89,6 @@ def load_slater_wfn(element):
                     out["4D"] = 10
                     out["4F"] = 14
 
-        print("orbitals ", orbitals)
         for x in orbitals:
             if x in electron_config_list:
                 index = electron_config_list.index(x)

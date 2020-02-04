@@ -76,8 +76,10 @@ class BaseFit(object):
         approx = self.model.evaluate(coeffs, expons)
         # compute deviation measure on the grid
         value = self.measure.evaluate(approx, deriv=False)
+        diff = np.abs(self.density - approx)
         return [self.grid.integrate(approx),
-                self.grid.integrate(np.abs(self.density - approx)),
+                self.grid.integrate(diff),
+                np.max(diff),
                 self.grid.integrate(self.weights * value)]
 
 
@@ -239,7 +241,12 @@ class KLDivergenceSCF(BaseFit):
             niter += 1
 
             # compute absolute change in divergence
-            diff_divergence = np.abs(performance[niter - 1][-1] - performance[niter - 2][-1])
+            if niter != 1:
+                diff_divergence = np.abs(performance[niter - 1][-1] - performance[niter - 2][-1])
+            print(diff_divergence, max_diff_coeffs, max_diff_expons)
+            print(niter, performance[-1])
+            print(new_cs, new_es)
+            print("\n")
 
         # check whether convergence is reached
         if maxiter == niter and diff_divergence > d_threshold:

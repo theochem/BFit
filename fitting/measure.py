@@ -120,6 +120,7 @@ class KLDivergence(object):
             raise ValueError("Argument model should be positive.")
 
         # compute ratio & replace masked values by 1.0
+        # TODO: If the grid is too wide
         ratio = self.density / np.ma.masked_less_equal(model, self.mask_value)
         ratio = np.ma.filled(ratio, fill_value=1.0)
         # compute KL divergence
