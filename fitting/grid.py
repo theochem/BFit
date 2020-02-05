@@ -22,7 +22,7 @@
 """
 Grid Module - Model the grid and integration methods of the model and true probability distributions.
 
-Methods
+Classes
 -------
 There are three classes:
 
@@ -50,7 +50,7 @@ import numpy as np
 __all__ = ["ClenshawRadialGrid", "UniformRadialGrid", "CubicGrid"]
 
 
-class _BaseRadialGrid(object):
+class _BaseRadialGrid:
     r"""
     Radial Grid Base Class.
 
@@ -291,7 +291,7 @@ class ClenshawRadialGrid(_BaseRadialGrid):
         return points
 
 
-class CubicGrid(object):
+class CubicGrid:
     r"""
     Equally-Spaced 3D Cubic Grid Class.
 
