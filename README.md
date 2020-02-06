@@ -4,9 +4,8 @@ BFit <a href='https://docs.python.org/3.5/'><img src='https://img.shields.io/bad
 BFit is a python program that is used to fit a convex sum of 
 positive basis functions to any probability distribution. 
 
-Primarily used for ab-intio quantum chemistry calculations, where the basis functions of 
-interest are gaussian-exponential functions and the fitted probability 
-distribution is the electron density.
+Primarily intended for quantum chemistry community, where the basis functions are Gaussian functions and the 
+fitted probability distribution is the electron density.
 
 ## Table of Contents
 1. [Features](#features)
@@ -14,30 +13,30 @@ distribution is the electron density.
 3. [Installation](#installation)
 4. [Running Tests](#runningtests)
 5. [Examples](#examples)  
-    5.1 [Fit Gaussian set to a specified atom (slater basis set)](#fit-gaussian-set-to-your-own-function.)  
-    5.2 [Fit gaussian set to your own function.](#fit-gaussian-set-to-your-own-function.)  
-    5.3 [Fit gaussian set to molecular density instead of atomic density.](#fit-gaussian-set-to-molecular-density-instead-of-atomic-density.)
-6. [FAQ](#faq)  
-    6.1 [Why Gaussian Basis Sets?](#why-gaussian-basis-sets?)  
-    6.2 [Where did you get the slater coefficients from?](#where-did-you-get-the-slater-coefficients-from?)  
-    6.3 [I want to implement a different basis set?](#how-to-implement-a-different-basis-set?)  
-7. [Citing](#citing)
-8. [License](#license)
+6. [Questions/Issues](#questionsissues)
+6. [Citing](#citing)
+7. [License](#license)
+8. [FAQ](#faq)  
+    6.1 [Where did you get the slater coefficients from?](#where-did-you-get-the-slater-coefficients-from?)  
 
 
 ## Features 
-The three main features of this software are:
+The features of this software are:
 
-* Fitting Gaussian Basis sets to:
-    
-    * Atomic Densities (including core and valence densities),
-    * Molecular Densities.
+* Gaussian Basis sets:
+    * Able to handle S-type and P-type Gaussian functions.
+    * Able to handle Atomic Densities or Molecular Densities. 
+    * Able to handle any dimensions.
 
-* Fit using the following methods:
+* Fitting Measures:
     * Least-squares method,
     * Kullback-Leibler method.
 
-* Able to construct highly accurate slater electron densities see [data page](data/README.md).
+* Optimization Procedures
+    * Optimize using "scipy.minimize" procedures.
+    * Optimize Kullback-Leibler using self-consistent iterative method see [paper](#citing).
+
+* Able to construct Slater electron densities, see [data page](data/README.md).
 
 
 ## Dependences 
@@ -54,42 +53,65 @@ The three main features of this software are:
 ## Installation
 In your terminal run:
 
-```python
+```bash
 git clone https://github.com/QuantumElephant/fitting.git
 python ./setup.py install
 ```
 
 Run tests to see if it's installed properly:
-```python
+```bash
 nosetests -v fitting
 ```
 
-## Examples
+## Example
 There are four steps to using BFit.
 
-### 1. Create the Grid Object
-### 2. Create the Model Object
-### 3. Specify which error measure to minimize.
-### 4. Optimize
+### 1. Specify the Grid Object.
+The grid is a uniform one-dimension grid with 100 points from 0. to 50.
+```python
+from fitting.grid import UniformRadialGrid
+grid = UniformRadialGrid(num_pts=100, min_radii=0., max_radii=50.)
+```
+See [grid.py](fitting/grid.py), for different assortment of grids.
 
-We assume the gaussian basis set is normalized.
-#### Fit Gaussian set to a specified atom (slater basis set).
-Please see the [atomic_fit.py](examples/atomic_fit.py) file located in the example folder.
+### 2. Specify the Model Object.
+Here, the model distribution is 5 S-type, normalized Gaussian functions with center at the origin.
+```python
+from fitting.model import AtomicGaussianDensity
+model = AtomicGaussianDensity(grid.points, num_s=5, num_p=0, normalize=True)
+```
+See [model.py](fitting/model.py) for more options of Gaussian models.
 
-#### Fit gaussian set to your own function.
-Please see [fit_gauss_kl.py](examples/fit_gauss_kl.py) file located in the 
-example folder.
+### 3. Specify error measure.
+The algorithm is fitted based on the [paper](#citing).
+```python
+from fitting.fit import KLDivergenceSCF
 
-#### Fit gaussian set to molecular density instead of atomic density.
-Please see [molecular_fit.py](examples/molecular_fit.py) file located in the 
-example folder.
+# What you want fitted to should also be defined on `grid.points`.
+density = np.array([...]) 
+fit = KLDivergenceSCF(grid, density, model)
+```
+See [fit.py](fitting/fit.py) for options of fitting algorithms.
+
+### 4. Run it.
+```python
+# Provide Initial Guesses
+c0 = np.array([1., 1., 1., 1.])
+e0 = np.array([0.001, 0.1, 1., 5., 100.])
+
+# Optimize both coefficients and exponents.
+result = fit.run(c0, e0, opt_coeffs=True, opt_expons=True, maxiter=1000)
+
+print("Optimized coefficients are: ", result["x"][0])
+print("Optimized exponents are: ", result["x"][1])
+print("Final performance measures are: ", result["performance"][-1])
+print("Was it successful? ", result["success"])
+```
+See the [example directory](examples/) for more examples.
 
 
-
-
-
-## Questions
-Either can email, 
+## Questions/Issues
+Please set up an issue or can email the following, 
 - Alireza Tehrani at "alirezatehrani24@gmail.com"
 - Farnaz Heidar-Zadeh at "".
 - Paul W. Ayers at "". 
@@ -108,55 +130,5 @@ FittingBasisSets is distributed under the conditions of the GPL License
 version 3 (GPLv3)
 
 ## FAQ 
-#### Why Gaussian Basis Sets?
-The basis sets of importance are, slater densities and gaussian densities.
-Slater densities are more accurate for modelling atoms, due to the cusp at r=0, 
-however are 
-numerically harder to integrate. On the other hand,
-gaussian basis sets are not accurate for modeling atoms, due to the lack of cusp
- at r=0, 
-however 
-are easier to integrate.
-
-
 #### Where did you get the slater coefficients from?
 Please see [Data Readme](data/) in the data folder.
-
-
-#### How to implement a different basis set?
-If you want to fit with a different basis set. You will first need
-to write down the formulas for how to update coefficients and 
-function parameters. Please see the section *TODOADDHERE* .
-
-Next you need to create a class inside your own python file, with a parent
-class of [KLDivergenceSCF](fitting/kl_divergence/kull_leib_fitting.py),
-implementing the abstract methods provided. In other words,
-```python
-class YourOwnBasisSet(KLDivergenceSCF):
-    def __init__(self, grid_obj, true_model, ...):
-        ...
-        super(YourOwnBasisSet, self).__init__(grid_obj, true_model, ...)
-    
-    # Implement the abstract methods:
-    def get_model(self, coeffs, fparams):
-        return your model
-        
-    def _update_coeffs(self, coeffs, fparams):
-        Update your coefficients 
-        ...
-        
-    def _update_fparams(self, coeffs, fparams):
-        Update your function parameters
-        ...
-        
-    def _get_norm_constant(self, coeffs, fparams):
-        Return normalization constant for one basis function.
-        ...
-```
-Afterwards, you'll need to run it,
-```python
-obj = YourOwnBasisSet(your parameters)
-new_params = obj.run()
-print("Updated Parameters ", new_params)
-```
-To see example of this, see the [python file](fitting/model.py).
