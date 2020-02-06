@@ -50,7 +50,7 @@ import numpy as np
 __all__ = ["ClenshawRadialGrid", "UniformRadialGrid", "CubicGrid"]
 
 
-class _BaseRadialGrid:
+class _BaseRadialGrid(object):
     r"""
     Radial Grid Base Class.
 
@@ -172,7 +172,7 @@ class UniformRadialGrid(_BaseRadialGrid):
             raise ValueError("The max_radii should be greater than the min_radii.")
 
         # compute points
-        points = np.linspace(start=min_radii, stop=max_radii, num=num_pts)
+        points = np.linspace(start=min_radii, stop=max_radii, num=num_pts, dtype=np.float128)
         super(UniformRadialGrid, self).__init__(points, spherical)
 
 
@@ -282,10 +282,10 @@ class ClenshawRadialGrid(_BaseRadialGrid):
 
         """
         if mode.lower() == "core":
-            points = 1. - np.cos(0.5 * np.pi * np.arange(0, num_pts) / num_pts)
+            points = 1. - np.cos(0.5 * np.pi * np.arange(0, num_pts, dtype=np.float128) / num_pts)
             points /= 2 * self._atomic_number
         elif mode.lower() == "diffuse":
-            points = 25. * (1. - np.cos(0.5 * np.pi * np.arange(0, num_pts) / num_pts))
+            points = 25. * (1. - np.cos(0.5 * np.pi * np.arange(0, num_pts, dtype=np.float128) / num_pts))
         else:
             raise ValueError("Arguments mode={0} is not recognized!".format(mode.lower()))
         return points
