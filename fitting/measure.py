@@ -151,6 +151,9 @@ class KLDivergence:
     -----
     - This class does not return the Kullback-Leibler but rather the integrand.
         One would need to integrate this to get the Least Squared.
+    - It using masked values to handle overflow and underflow floating point precision issues. This
+        is due to the division in the Kullback-Leibler formula between two probability
+        distributions.
 
     """
 
@@ -214,6 +217,7 @@ class KLDivergence:
         # compute ratio & replace masked values by 1.0
         ratio = self.density / np.ma.masked_less_equal(model, self.mask_value)
         ratio = np.ma.filled(ratio, fill_value=1.0)
+
         # compute KL divergence
         value = self.density * np.log(ratio)
         # compute derivative
