@@ -64,8 +64,15 @@ Examples
     >> print("Final performance measures are: ", result["performance"][-1])
     >> print("Was it successful? ", result["success"])
 
+
 Notes
 -----
+- The algorithm uses masked value for floating point precision for KLDivergenceSCF.
+    This is due to the division found in the Kullback-Leibler formula. It is recommended to use
+    `np.float64` or `np.float128` when storing the arrays. A higher Mask value will work as well
+    but may cause poor precision. Alternatively, a well-chosen grid and/or initial guesses will
+    avoid overflow/underflow floating-point issues.
+
 
 References
 ----------
@@ -77,6 +84,7 @@ References
 
 
 import numpy as np
+import warnings
 
 from scipy.optimize import minimize
 
@@ -115,7 +123,7 @@ class _BaseFit(object):
 
         Parameters
         ----------
-        grid :
+        grid : (_BaseRadialGrid, CubicGrid)
             The grid class that contains the grid points and a integrate function.
              Located in `grid.py`
         density : ndarray
@@ -230,6 +238,14 @@ class KLDivergenceSCF(_BaseFit):
     >> print("Final performance measures are: ", result["performance"][-1])
     >> print("Was it successful? ", result["success"])
 
+    Notes
+    -----
+    - The algorithm uses masked value for floating point precision. This is due to the division found
+    in the Kullback-Leibler formula. It is recommended to use `np.float64` or `np.float128` when
+    storing the arrays. A higher Mask value will work as well but may cause poor precision.
+    Alternatively, a well-chosen grid and/or initial guesses will avoid overflow/underflow
+    floating-point issues.
+
     References
     ----------
     [1] BFit: Information-Theoretic Approach to Basis-Set Fitting of Electron Densities
@@ -238,18 +254,18 @@ class KLDivergenceSCF(_BaseFit):
 
     """
 
-    def __init__(self, grid, density, model, weights=None, mask_value=1e-10):
+    def __init__(self, grid, density, model, weights=None, mask_value=0.):
         r"""
         Construct the KLDivergenceSCF class.
 
         Parameters
         ----------
-        grid :
-            The grid class.
+        grid : (_BaseRadialGrid, CubicGrid)
+            Grid class that contains the grid points and integration methods on them.
         density : ndarray
             The true density evaluated on the grid points.
-        model :
-            The Gaussian basis model density.
+        model : (AtomicGaussianDensity, MolecularGaussianDensity)
+            The Gaussian basis model density. Located in `model.py`.
         weights : ndarray, optional
             The weights of objective function at each point. If `None`, 1.0 is used.
         mask_value : float, optional
@@ -430,7 +446,9 @@ class GaussianBasisFit(_BaseFit):
     r"""
     Optimizes either least-squares or Kullback-Leibler of Gaussian funcs using `Scipy.optimize`.
 
-    The Gaussian functions are constrained to have their integral be a fixed value.
+    The Gaussian functions can be constrained to have their integral be a fixed value.
+        Although it is not recommended. The coefficients and exponents are always bounded to be
+         positive.
 
     Attributes
     ----------
@@ -481,9 +499,19 @@ class GaussianBasisFit(_BaseFit):
     >> print("Was it successful? ", result["success"])
     >> print("Why it terminated? ", result["message"])
 
+    Notes
+    -----
+    - The coefficients and exponents are bounded to be positive.
+
+    - These methods in this class was found to be extremely hard to optimize. There appears
+        to have many local minimas and Quasi-Newton methods seems inadequate in order to optimize
+        these. Just the mere act of placing the initial guess to be close to the solution causes
+        problems. It is highly recommended to have `with_constraint` to be False.
+
     """
 
-    def __init__(self, grid, density, model, measure="KL", method="SLSQP", mask_value=1e-10):
+    def __init__(self, grid, density, model, measure="KL", method="SLSQP", weights=None,
+                 mask_value=1e-10):
         r"""
         Construct the GaussianBasisFit object.
 
@@ -499,9 +527,10 @@ class GaussianBasisFit(_BaseFit):
             The deviation measure between true density and model density.
             Can be either "KL" (Kullback-Leibler, default) or "LS" (least-squares).
         method : str, optional
-            The method used for optimizing parameters. Default is "slsqp", can be either
-            "COBYLA, SLSQP, "trust-ncg", "trust-exact" and "trust-krylov".
+            The method used for optimizing parameters. Default is "slsqp".
             See "scipy.optimize.minimize" for options.
+        weights : ndarray, optional
+            The weights of objective function at each point. If `None`, 1.0 is used.
         mask_value : float, optional
             The elements less than or equal to this number are masked in a division.
 
@@ -521,9 +550,14 @@ class GaussianBasisFit(_BaseFit):
             measure = SquaredDifference(density)
         else:
             raise ValueError("Argument measure={0} not recognized!".format(measure))
+        # Assign the weights.
+        if weights is None:
+            weights = np.ones(len(density))
+        self.weights = weights
         super(GaussianBasisFit, self).__init__(grid, density, model, measure)
 
-    def run(self, c0, e0, opt_coeffs=True, opt_expons=True, maxiter=1000, ftol=1.e-14, disp=False):
+    def run(self, c0, e0, opt_coeffs=True, opt_expons=True, maxiter=1000, ftol=1.e-14, disp=False,
+            with_constraint=True):
         r"""
         Optimize coefficients and/or exponents of Gaussian basis functions with constraint.
 
@@ -543,6 +577,9 @@ class GaussianBasisFit(_BaseFit):
             Precision goal for the value of objective function in the stopping criterion.
         disp : bool
             If True, then it will print the convergence messages from the optimizer.
+        with_constraint : bool
+            If true, then adds the constraint that the integration of the model density must
+            be equal to the constraint of true density. The default is True.
 
         Returns
         -------
@@ -566,6 +603,7 @@ class GaussianBasisFit(_BaseFit):
         -----
         - This is a constrained optimization such that the integration of the model density is
             a fixed value. Hence, only certain optimization algorithms can be used.
+        - The coefficients and exponents are bounded to be positive.
 
         """
         # set bounds, initial guess & args
@@ -584,7 +622,9 @@ class GaussianBasisFit(_BaseFit):
         else:
             raise ValueError("Nothing to optimize!")
         # set constraints
-        constraints = [{"fun": self.const_norm, "type": "eq", "args": args}]
+        constraints = []
+        if with_constraint:
+            constraints = [{"fun": self.const_norm, "type": "eq", "args": args}]
         # set optimization options
         options = {"ftol": ftol, "maxiter": maxiter, "disp": disp}
         # optimize
@@ -599,7 +639,7 @@ class GaussianBasisFit(_BaseFit):
                        )
         # check successful optimization
         if not res["success"]:
-            raise ValueError("Failed Optimization: {0}".format(res["message"]))
+            warnings.warn("Failed Optimization: {0}".format(res["message"]))
 
         # split optimized coeffs & expons
         if opt_coeffs and opt_expons:
@@ -639,10 +679,10 @@ class GaussianBasisFit(_BaseFit):
         # compute KL divergence
         k, dk = self.measure.evaluate(m, deriv=True)
         # compute objective function & its derivative
-        obj = self.grid.integrate(k)
+        obj = self.grid.integrate(self.weights * k)
         d_obj = np.zeros_like(x)
         for index in range(len(x)):
-            d_obj[index] = self.grid.integrate(dk * dm[:, index])
+            d_obj[index] = self.grid.integrate(self.weights * dk * dm[:, index])
         return obj, d_obj
 
     def const_norm(self, x, *args):
