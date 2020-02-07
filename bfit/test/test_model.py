@@ -25,8 +25,8 @@
 import numpy as np
 from numpy.testing import assert_raises, assert_equal, assert_almost_equal
 
-from fitting.grid import UniformRadialGrid, CubicGrid
-from fitting.model import AtomicGaussianDensity, MolecularGaussianDensity
+from bfit.grid import UniformRadialGrid, CubicGrid
+from bfit.model import AtomicGaussianDensity, MolecularGaussianDensity
 
 
 def test_raises_gaussian_model():

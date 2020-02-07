@@ -19,6 +19,6 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-from fitting.greedy.greedy_strat import GreedyStrategy
-from fitting.greedy.greedy_kl import GreedyKL
-from fitting.greedy.greedy_lq import GreedyLeastSquares
+from bfit.greedy.greedy_strat import GreedyStrategy
+from bfit.greedy.greedy_kl import GreedyKL
+from bfit.greedy.greedy_lq import GreedyLeastSquares

@@ -69,29 +69,29 @@ There are four steps to using BFit.
 ### 1. Specify the Grid Object.
 The grid is a uniform one-dimension grid with 100 points from 0. to 50.
 ```python
-from fitting.grid import UniformRadialGrid
+from bfit.grid import UniformRadialGrid
 grid = UniformRadialGrid(num_pts=100, min_radii=0., max_radii=50.)
 ```
-See [grid.py](fitting/grid.py), for different assortment of grids.
+See [grid.py](bfit/grid.py), for different assortment of grids.
 
 ### 2. Specify the Model Object.
 Here, the model distribution is 5 S-type, normalized Gaussian functions with center at the origin.
 ```python
-from fitting.model import AtomicGaussianDensity
+from bfit.model import AtomicGaussianDensity
 model = AtomicGaussianDensity(grid.points, num_s=5, num_p=0, normalize=True)
 ```
-See [model.py](fitting/model.py) for more options of Gaussian models.
+See [model.py](bfit/model.py) for more options of Gaussian models.
 
 ### 3. Specify error measure.
 The algorithm is fitted based on the [paper](#citing).
 ```python
-from fitting.fit import KLDivergenceSCF
+from bfit.fit import KLDivergenceSCF
 
 # What you want fitted to should also be defined on `grid.points`.
 density = np.array([...]) 
 fit = KLDivergenceSCF(grid, density, model)
 ```
-See [fit.py](fitting/fit.py) for options of fitting algorithms.
+See [fit.py](bfit/fit.py) for options of fitting algorithms.
 
 ### 4. Run it.
 ```python

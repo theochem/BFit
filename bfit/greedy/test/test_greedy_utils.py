@@ -19,15 +19,15 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-r"""Test file for 'fitting.greedy.greedy_utils'. """
+r"""Test file for 'bfit.greedy.greedy_utils'. """
 
 
 import numpy as np
 import numpy.testing as npt
 
-from fitting.greedy.greedy_utils import check_redundancies, get_next_choices
-from fitting.greedy.greedy_utils import get_next_possible_coeffs_and_exps2
-from fitting.greedy.greedy_utils import get_two_next_choices, pick_two_lose_one
+from bfit.greedy.greedy_utils import check_redundancies, get_next_choices
+from bfit.greedy.greedy_utils import get_next_possible_coeffs_and_exps2
+from bfit.greedy.greedy_utils import get_two_next_choices, pick_two_lose_one
 
 
 __all__ = ["test_check_redundancies", "test_get_next_possible_coeffs_and_exps",
@@ -60,7 +60,7 @@ def test_check_redundancies():
 
 
 def test_get_next_possible_coeffs_and_exps():
-    r"""Testing 'fitting.greedy.greedy_utils.get_next_choices'."""
+    r"""Testing 'bfit.greedy.greedy_utils.get_next_choices'."""
     c = np.array([1., 2.])
     e = np.array([3., 4.])
     factor = 2
@@ -83,7 +83,7 @@ def test_get_next_possible_coeffs_and_exps2():
 
 
 def test_get_two_next_possible_coeffs_and_exps():
-    r"""Testing 'fitting.greedy.greedy_utils.get_two_next_choices'."""
+    r"""Testing 'bfit.greedy.greedy_utils.get_two_next_choices'."""
     # One Basis Function
     c = np.array([1.])
     e = np.array([3.])
@@ -114,7 +114,7 @@ def test_get_two_next_possible_coeffs_and_exps():
 
 
 def test_pick_two_lose_one():
-    r"""Testing 'fitting.greedy.greedy_utils.pick_two_lose_one'."""
+    r"""Testing 'bfit.greedy.greedy_utils.pick_two_lose_one'."""
     c = np.array([1])
     e = np.array([3.])
     factor = 2

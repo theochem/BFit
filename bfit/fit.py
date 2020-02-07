@@ -39,14 +39,14 @@ Examples
         return ...
 
     The first step is to define the grid object.
-    >> from fitting.grid import CubicGrid
+    >> from bfit.grid import CubicGrid
     >> grid = CubicGrid(0.01, 0.99, 0.01)
 
     Place the values of `f` on those grid points in an array.
     >> density = f(grid.points)
 
     Define the model, that you want to fit with.
-    >> from fitting.model import AtomicGaussianDensity, MolecularGaussianDensity
+    >> from bfit.model import AtomicGaussianDensity, MolecularGaussianDensity
     >> model = AtomicGaussianDensity(grid.points, num_s=5, num_p=5, normalize=True)
     >> # model = MolecularGaussianDensity(grid.points, np.array([[0., 0., 0.], [1., 1., 1.]]),
                                         # np.array([[5, 5], [5, 5]]))
@@ -89,7 +89,7 @@ import warnings
 
 from scipy.optimize import minimize
 
-from fitting.measure import KLDivergence, SquaredDifference
+from bfit.measure import KLDivergence, SquaredDifference
 
 
 __all__ = ["KLDivergenceSCF", "GaussianBasisFit"]

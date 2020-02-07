@@ -26,7 +26,7 @@ Density Module.
 AtomicDensity:
     Information about atoms obtained from .slater file and able to construct atomic density (total, core and valence)
         from the linear combination of Slater-type orbitals.
-    Elements supported by default from "./fitting/data/examples/" range from Hydrogen to Xenon.
+    Elements supported by default from "./bfit/data/examples/" range from Hydrogen to Xenon.
 
 """
 
@@ -34,7 +34,7 @@ AtomicDensity:
 import numpy as np
 from scipy.misc import factorial
 
-from fitting._slater import load_slater_wfn
+from bfit._slater import load_slater_wfn
 
 
 __all__ = ["AtomicDensity"]
@@ -47,7 +47,7 @@ class AtomicDensity:
     Reads and Parses information from the .slater file of a atom and stores it inside this class.
     It is then able to construct the (total, core and valence) electron density of that element based
     on linear combination of orbitals where each orbital is a linear combination of Slater-type orbitals.
-    Elements supported by default from "./fitting/data/examples/" range from Hydrogen to Xenon.
+    Elements supported by default from "./bfit/data/examples/" range from Hydrogen to Xenon.
 
     Attributes
     ----------

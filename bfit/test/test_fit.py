@@ -25,9 +25,9 @@
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_equal, assert_raises
 
-from fitting.model import AtomicGaussianDensity, MolecularGaussianDensity
-from fitting.fit import KLDivergenceSCF, GaussianBasisFit
-from fitting.grid import UniformRadialGrid, CubicGrid
+from bfit.model import AtomicGaussianDensity, MolecularGaussianDensity
+from bfit.fit import KLDivergenceSCF, GaussianBasisFit
+from bfit.grid import UniformRadialGrid, CubicGrid
 
 
 def test_lagrange_multiplier():

@@ -26,7 +26,7 @@ import numpy as np
 
 from numpy.testing import assert_equal, assert_almost_equal, assert_raises
 
-from fitting.density import AtomicDensity
+from bfit.density import AtomicDensity
 
 
 def slater(e, n, r):

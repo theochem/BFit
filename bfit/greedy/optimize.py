@@ -32,7 +32,7 @@ Functions
 
 from scipy.optimize import nnls, minimize, fmin_l_bfgs_b
 import numpy as np
-from fitting.fit import KLDivergenceSCF
+from bfit.fit import KLDivergenceSCF
 
 __all__ = ["optimize_using_slsqp", "optimize_using_nnls", "optimize_using_l_bfgs",
            "optimize_using_nnls_valence"]

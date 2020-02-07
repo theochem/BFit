@@ -22,10 +22,10 @@
 # ---
 
 
-from fitting.fit import *
-from fitting.grid import *
-from fitting.model import *
-from fitting.density import *
-from fitting.measure import *
-from fitting.greedy import *
-from fitting.utils import *
+from bfit.fit import *
+from bfit.grid import *
+from bfit.model import *
+from bfit.density import *
+from bfit.measure import *
+from bfit.greedy import *
+from bfit.utils import *

@@ -116,7 +116,7 @@ def plot_error(errors, element_name, title, figure_name):
     plt.tight_layout()
     plt.subplots_adjust(top=0.90)
 
-    directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/fitting/results/"
+    directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/bfit/results/"
     if not os.path.exists(directory):
         os.makedirs(directory)
     plt.savefig(directory + "/" + figure_name + ".png")
@@ -124,7 +124,7 @@ def plot_error(errors, element_name, title, figure_name):
 
 
 def create_plots(self, integrate, error1, error2, obj_func):
-    directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/fitting/results/"
+    directory = os.path.dirname(__file__).rsplit('/', 2)[0] + "/bfit/results/"
     if not os.path.exists(directory):
         os.makedirs(directory)
     plt.plot(integrate)

@@ -26,7 +26,7 @@ import numpy as np
 
 from numpy.testing import assert_raises, assert_almost_equal
 
-from fitting.grid import _BaseRadialGrid, UniformRadialGrid, ClenshawRadialGrid, CubicGrid
+from bfit.grid import _BaseRadialGrid, UniformRadialGrid, ClenshawRadialGrid, CubicGrid
 
 
 def test_raises_base():

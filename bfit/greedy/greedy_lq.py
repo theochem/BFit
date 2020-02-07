@@ -25,10 +25,10 @@ r"""
 
 import numpy as np
 
-from fitting.greedy.greedy_strat import GreedyStrategy
-from fitting.greedy.greedy_utils import get_next_choices
-from fitting.greedy.optimize import optimize_using_nnls, optimize_using_slsqp
-from fitting.model import AtomicGaussianDensity
+from bfit.greedy.greedy_strat import GreedyStrategy
+from bfit.greedy.greedy_utils import get_next_choices
+from bfit.greedy.optimize import optimize_using_nnls, optimize_using_slsqp
+from bfit.model import AtomicGaussianDensity
 
 __all__ = ["GreedyLeastSquares"]
 

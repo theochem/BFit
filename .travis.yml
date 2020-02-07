@@ -9,10 +9,10 @@ install:
     - pip install pycodestyle pydocstyle
 
 script:
-    - nosetests --with-coverage --cover-package=fitting -v ./fitting/
-    - pylint ./fitting/ --errors-only
-    - pycodestyle ./fitting/ --max-line-length=100
-    - pydocstyle ./fitting/
+    - nosetests --with-coverage --cover-package=bfit -v ./bfit/
+    - pylint ./bfit/ --errors-only
+    - pycodestyle ./bfit/ --max-line-length=100
+    - pydocstyle ./bfit/
 
 notifications:
   email: false

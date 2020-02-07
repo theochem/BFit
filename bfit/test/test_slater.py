@@ -24,7 +24,7 @@
 
 import numpy as np
 
-from fitting._slater import load_slater_wfn
+from bfit._slater import load_slater_wfn
 
 
 def test_parsing_slater_density_be():
