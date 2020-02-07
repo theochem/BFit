@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-# BFit is a basis-set curve-fitting optimization package.
+# BFit - python program that fits a convex sum of
+# positive basis functions to any probability distribution. .
 #
-# Copyright (C) 2018 The BFit Development Team.
+# Copyright (C) 2020 The BFit Development Team.
 #
 # This file is part of BFit.
 #
