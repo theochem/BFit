@@ -384,6 +384,8 @@ class KLDivergenceSCF(_BaseFit):
 
         """
         # check the shape of initial coeffs and expons
+        if not isinstance(c0, np.ndarray) or not isinstance(e0, np.ndarray):
+            raise TypeError("Initial coefficients or exponents should be numpy arrays.")
         if c0.shape != (self.model.nbasis,):
             raise ValueError("Argument init_coeffs shape != ({0},)".format(self.model.nbasis))
         if e0.shape != (self.model.nbasis,):
@@ -462,6 +464,8 @@ class GaussianBasisFit(_BaseFit):
     measure : str, optional
         The deviation measure between true density and model density that is minimized.
         Can be either be "KL" (Kullback-Leibler, default) or "LS" (least-squares).
+    norm : float
+        The integration of the density over the grid.
 
     Methods
     -------
@@ -540,8 +544,8 @@ class GaussianBasisFit(_BaseFit):
             raise ValueError("The grid.points & model.points are not the same!")
         if len(grid.points) != len(density):
             raise ValueError("Argument density should have ({0},) shape.".format(len(grid.points)))
-        if method.lower() not in ["slsqp"]:
-            raise ValueError("Argument method={0} is not recognized!".format(method))
+        # if method.lower() not in ["slsqp"]:
+        #     raise ValueError("Argument method={0} is not recognized!".format(method))
 
         self.method = method
         # assign measure to measure deviation between density & modeled density.
@@ -555,6 +559,8 @@ class GaussianBasisFit(_BaseFit):
         if weights is None:
             weights = np.ones(len(density))
         self.weights = weights
+        self.norm = grid.integrate(density)
+
         super(GaussianBasisFit, self).__init__(grid, density, model, measure)
 
     def run(self, c0, e0, opt_coeffs=True, opt_expons=True, maxiter=1000, ftol=1.e-14, disp=False,
@@ -703,10 +709,9 @@ class GaussianBasisFit(_BaseFit):
             The deviation of the integrla with the normalization constant.
 
         """
-        norm = self.grid.integrate(self.density)
         # compute linear combination of gaussian basis functions
         m, dm = self.evaluate_model(x, *args)
-        cons = norm - self.grid.integrate(m)
+        cons = self.norm - self.grid.integrate(m)
         return cons
 
     def evaluate_model(self, x, *args):
