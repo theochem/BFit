@@ -161,8 +161,10 @@ class _BaseFit(object):
             Integral of approximate model density, i.e. norm of approximate model density.
         l_1 :
             Integral of absolute difference between density and approximate model density.
+            This is defined to be :math:`L_`(f, g) = \int |f(x) - g(x)| dx`.
         l_infinity :
             The maximum absolute difference between density and approximate model density.
+            This is defined to be :math:`L_\infty(f, g) = \max |f(x) - g(x)|`.
         measure :
             Integral of deviation measure between density and approximate model density.
 
@@ -544,8 +546,8 @@ class GaussianBasisFit(_BaseFit):
             raise ValueError("The grid.points & model.points are not the same!")
         if len(grid.points) != len(density):
             raise ValueError("Argument density should have ({0},) shape.".format(len(grid.points)))
-        # if method.lower() not in ["slsqp"]:
-        #     raise ValueError("Argument method={0} is not recognized!".format(method))
+        if method.lower() not in ["slsqp", "trust-constr"]:
+            raise ValueError("Argument method={0} is not recognized!".format(method))
 
         self.method = method
         # assign measure to measure deviation between density & modeled density.
@@ -563,7 +565,7 @@ class GaussianBasisFit(_BaseFit):
 
         super(GaussianBasisFit, self).__init__(grid, density, model, measure)
 
-    def run(self, c0, e0, opt_coeffs=True, opt_expons=True, maxiter=1000, ftol=1.e-14, disp=False,
+    def run(self, c0, e0, opt_coeffs=True, opt_expons=True, maxiter=1000, tol=1.e-14, disp=False,
             with_constraint=True):
         r"""
         Optimize coefficients and/or exponents of Gaussian basis functions with constraint.
@@ -580,8 +582,9 @@ class GaussianBasisFit(_BaseFit):
             Whether to optimize exponents of Gaussian basis functions.
         maxiter : int, optional
             Maximum number of iterations.
-        ftol : float, optional
-            Precision goal for the value of objective function in the stopping criterion.
+        tol : float, optional
+            For slsqp. precision goal for the value of objective function in the stopping criterion.
+            For trust-constr, it is precision goal for the change in independent variables.
         disp : bool
             If True, then it will print the convergence messages from the optimizer.
         with_constraint : bool
@@ -633,7 +636,10 @@ class GaussianBasisFit(_BaseFit):
         if with_constraint:
             constraints = [{"fun": self.const_norm, "type": "eq", "args": args}]
         # set optimization options
-        options = {"ftol": ftol, "maxiter": maxiter, "disp": disp}
+        if self.method == "slsqp":
+            options = {"ftol": tol, "maxiter": maxiter, "disp": disp}
+        elif self.method == "trust-constr":
+            options = {"xtol": tol, "maxiter": maxiter, "disp":disp, "verbose": 3}
         # optimize
         res = minimize(fun=self.func,
                        x0=x0,
