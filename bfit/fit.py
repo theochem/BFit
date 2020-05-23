@@ -280,6 +280,7 @@ class KLDivergenceSCF(_BaseFit):
         super(KLDivergenceSCF, self).__init__(grid, density, model, measure)
         # compute norm of density
         self.norm = grid.integrate(density)
+
         if weights is None:
             weights = np.ones(len(density))
         self.weights = weights
@@ -336,6 +337,7 @@ class KLDivergenceSCF(_BaseFit):
                     center_index = self.model.assign_basis_to_center(index)
                     radii = self.model.radii[center_index]
                 avrg2[index] = self.grid.integrate(integrand * radii**2)
+
         # compute updated coeffs & expons
         if update_coeffs:
             coeffs = coeffs * avrg1 / self._lm
@@ -361,11 +363,11 @@ class KLDivergenceSCF(_BaseFit):
         maxiter : int, optional
             Maximum number of iterations.
         c_threshold : float
-            The convergence threshold for absolute change in coefficients.
+            The convergence threshold for absolute change in coefficients. Default is 1e-6.
         e_threshold : float
-            The convergence threshold for absolute change in exponents.
+            The convergence threshold for absolute change in exponents. Default is 1e-6.
         d_threshold : float
-            The convergence threshold for absolute change in divergence value.
+            The convergence threshold for absolute change in divergence value. Default is 1e-6.
         disp : bool
             If true, then at each iteration the integral, :math:`L_1`, :math:`L_\infty` and
             Kullback-Leibler measure is printed. Default is False.
@@ -514,6 +516,10 @@ class GaussianBasisFit(_BaseFit):
         to have many local minimas and Quasi-Newton methods seems inadequate in order to optimize
         these. Just the mere act of placing the initial guess to be close to the solution causes
         problems. It is highly recommended to have `with_constraint` to be False.
+
+    - Note that the Kullback-Leibler between two functions f and g is positive if and only if
+        the integrals of f and g are identical.  This constraint must be added for
+        these optimizers.
 
     """
 
