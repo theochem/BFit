@@ -32,7 +32,7 @@ AtomicDensity:
 
 
 import numpy as np
-from scipy.misc import factorial
+from scipy.special import factorial
 
 from bfit._slater import load_slater_wfn
 
@@ -166,7 +166,7 @@ class AtomicDensity:
 
         See Also
         --------
-        The principal quantum number of all of the orbital are stored in the attribute `basis_numbers`.
+        The principal quantum number of all of the orbital are stored in `basis_numbers`.
         The zeta exponents of all of the orbitals are stored in the attribute `orbitals_exp`.
 
         """
@@ -179,12 +179,13 @@ class AtomicDensity:
         slater = norm.T * pref * np.exp(-exponent * points).T
         return slater
 
-    def phi_matrix(self, points):
+    def phi_matrix(self, points, deriv=False):
         r"""
         Compute the linear combination of Slater-type atomic orbitals on the given points.
 
-        Each row corresponds to a point on teh grid, represented as :math:`r` and each column is represented as a
-         linear combination of Slater-type atomic orbitals of the form:
+        Each row corresponds to a point on the grid, represented as :math:`r` and
+         each column is represented as a linear combination of Slater-type atomic orbitals
+         of the form:
 
         .. math::
             \sum c_i R(r, n_i, C_i)
@@ -200,19 +201,29 @@ class AtomicDensity:
         ----------
         points : ndarray, (N,)
             The radial grid points.
+        deriv : bool
+            If true, use the derivative of the slater-orbitals.
 
         Returns
         -------
         phi_matrix : ndarray(N, K)
             The linear combination of Slater-type orbitals evaluated on the grid points, where K is
-            the number of orbitals.
+            the number of orbitals. The order is S orbitals, then P then D.
+
+        Notes
+        -----
+        - At r = 0, the derivative of slater-orbital is undefined and this function returns
+            zero instead. See "derivative_slater_type_orbital".
 
         """
         # compute orbital composed of a linear combination of Slater
         phi_matrix = np.zeros((len(points), len(self.orbitals)))
         for index, orbital in enumerate(self.orbitals):
             exps, number = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
-            slater = self.slater_orbital(exps, number, points)
+            if deriv:
+                slater = self.derivative_slater_type_orbital(exps, number, points)
+            else:
+                slater = self.slater_orbital(exps, number, points)
             phi_matrix[:, index] = np.dot(slater, self.orbitals_coeff[orbital]).ravel()
         return phi_matrix
 
@@ -220,14 +231,15 @@ class AtomicDensity:
         r"""
         Compute atomic density on the given points.
 
-        The total density is written as a linear combination of Slater-type orbital whose coefficients is the orbital
-         occupation number of the electron configuration:
+        The total density is written as a linear combination of Slater-type orbital
+        whose coefficients is the orbital occupation number of the electron configuration:
         .. math::
-            \sum n_i |P(r, n_i, C_i)|
+            \sum n_i |P(r, n_i, C_i)|^2
 
         where,
             :math:`n_i` is the number of electrons in orbital i.
-            :math:`P(r, n_i, C_i)` is a linear combination of Slater-type orbitals evaluated on the point :math:`r`.
+            :math:`P(r, n_i, C_i)` is a linear combination of Slater-type orbitals evaluated
+                on the point :math:`r`.
 
         For core and valence density, please see More Info below.
 
@@ -269,3 +281,94 @@ class AtomicDensity:
         # compute density
         dens = np.dot(self.phi_matrix(points)**2, orb_occs).ravel() / (4 * np.pi)
         return dens
+
+    @staticmethod
+    def derivative_slater_type_orbital(exponent, number, points):
+        r"""
+        Compute the derivative of Slater-type orbitals on the given points.
+
+        A Slater-type orbital is defined as:
+        .. math::
+            \frac{d R(r)}{dr} = \bigg(\frac{n-1}{r} - C \bigg) N r^{n-1} e^{- C r),
+
+        where,
+            :math:`n` is the principal quantum number of that orbital.
+            :math:`N` is the normalizing constant.
+            :math:`r` is the radial point, distance to the origin.
+            :math:`C` is the zeta exponent of that orbital.
+
+        Parameters
+        ----------
+        exponent : ndarray, (M, 1)
+            The zeta exponents of Slater orbitals.
+        number : ndarray, (M, 1)
+            The principle quantum numbers of Slater orbitals.
+        points : ndarray, (N,)
+            The radial grid points. If points contain zero, then it is undefined at those
+            points and set to zero.
+
+        Returns
+        -------
+        slater : ndarray, (N, M)
+            The Slater-type orbitals evaluated on the grid points.
+
+        Notes
+        -----
+        - At r = 0, the derivative is undefined and this function returns zero instead.
+
+        References
+        ----------
+        See wikipedia page on "Slater-Type orbitals".
+
+        """
+        slater = AtomicDensity.slater_orbital(exponent, number, points)
+        # derivative
+        deriv_pref = (number.T - 1.) / np.reshape(points, (points.shape[0], 1)) - exponent.T
+        deriv = deriv_pref * slater
+        return deriv
+
+    def lagrangian_kinetic_energy(self, points):
+        r"""
+        Positive definite or Lagrangian kinectic energy density.
+
+        Parameters
+        ----------
+        points : ndarray,(N,)
+            The radial grid points.
+
+        Returns
+        -------
+        energy : ndarray, (N,)
+            The atomic density on the grid points.
+
+        Notes
+        -----
+        - To integrate this to get kinetic energy in .slater files, it should not be done in
+            spherically, ie the integral is exactly :math:`\int_0^{\infty} T(r) dr`.
+
+        """
+
+        phi_matrix = np.zeros((len(points), len(self.orbitals)))
+        for index, orbital in enumerate(self.orbitals):
+            exps, number = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
+            slater = AtomicDensity.slater_orbital(exps, number, points)
+            # derivative
+            deriv_pref = (number.T - 1.) - exps.T * np.reshape(points, (points.shape[0], 1))
+            deriv = deriv_pref * slater
+            phi_matrix[:, index] = np.dot(deriv, self.orbitals_coeff[orbital]).ravel()
+
+        angular = []  # Angular numbers are l(l + 1)
+        for index, orbital in enumerate(self.orbitals):
+            if "S" in orbital:
+                angular.append(0.)
+            elif "P" in orbital:
+                angular.append(2.)
+            elif "D" in orbital:
+                angular.append(6.)
+
+        orb_occs = self.orbitals_occupation
+        energy = np.dot(phi_matrix**2., orb_occs).ravel() / 2.
+        # Add other term
+        molecular = self.phi_matrix(points)**2. * np.array(angular)
+        energy += np.dot(molecular, orb_occs).ravel() / 2.
+        return energy
