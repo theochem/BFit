@@ -46,7 +46,7 @@ class SquaredDifference:
     Least-squared is the defined to be the integral of the squared difference between
      true and model functions:
     .. math::
-        ||f - g|| = \int_G |f(x) - g(x)|^2 dx
+        ||f - g|| = \int_G (f(x) - g(x))^2 dx
     where,
         :math:`f` is the true function,
         :math:`g` is the model function,
@@ -90,7 +90,7 @@ class SquaredDifference:
     def evaluate(self, model, deriv=False):
         r"""Evaluate squared difference b/w density & model on the grid points.
 
-        This is defined to be :math:`|f(x) - g(x)|^2`.
+        This is defined to be :math:`(f(x) - g(x))^2`.
 
         Parameters
         ----------
