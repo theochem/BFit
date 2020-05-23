@@ -100,7 +100,7 @@ class _BaseRadialGrid(object):
         """Return number of grid points."""
         return self._points.shape[0]
 
-    def integrate(self, arr):
+    def integrate(self, arr, force_no_spherical=False):
         r"""Compute trapezoidal integration of a function evaluated on the radial grid points.
 
         .. math:: \int p * f(r) dr
@@ -112,6 +112,9 @@ class _BaseRadialGrid(object):
         ----------
         arr : ndarray
             The integrand evaluated on the radial grid points.
+        force_no_spherical : bool
+            This forces spherical integration to not occur even if spherical coordinates is
+            True, ie the class attribute `_spherical` is True.
 
         Returns
         -------
@@ -121,7 +124,7 @@ class _BaseRadialGrid(object):
         """
         if arr.shape != self.points.shape:
             raise ValueError("The argument arr should have {0} shape!".format(self.points.shape))
-        if self._spherical:
+        if self._spherical and not force_no_spherical:
             value = 4. * np.pi * np.trapz(y=self.points**2 * arr, x=self.points)
         else:
             value = np.trapz(y=arr, x=self.points)
@@ -283,10 +286,10 @@ class ClenshawRadialGrid(_BaseRadialGrid):
 
         """
         if mode.lower() == "core":
-            points = 1. - np.cos(0.5 * np.pi * np.arange(0, num_pts, dtype=np.float128) / num_pts)
+            points = 1. - np.cos(0.5 * np.pi * np.arange(0., num_pts, dtype=np.float128) / num_pts)
             points /= 2 * self._atomic_number
         elif mode.lower() == "diffuse":
-            points = 25. * (1. - np.cos(0.5 * np.pi * np.arange(0, num_pts, dtype=np.float128) / num_pts))
+            points = 25. * (1. - np.cos(0.5 * np.pi * np.arange(0., num_pts, dtype=np.float128) / num_pts))
         else:
             raise ValueError("Arguments mode={0} is not recognized!".format(mode.lower()))
         return points
