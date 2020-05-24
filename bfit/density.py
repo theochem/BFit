@@ -93,6 +93,8 @@ class AtomicDensity:
     atomic_density(mode="total") :
         Construct the atomic density from the linear combinations of slater-type orbitals.
         Can compute the total (default), core and valence atomic density.
+    lagrangian_kinetic_energy :
+        Construct the Positive Definite Kinetic energy.
 
     Examples
     --------
@@ -347,7 +349,7 @@ class AtomicDensity:
         Returns
         -------
         energy : ndarray, (N,)
-            The atomic density on the grid points.
+            The kinetic energy on the grid points.
 
         Notes
         -----
@@ -380,3 +382,21 @@ class AtomicDensity:
         molecular = self.phi_matrix(points)**2. * np.array(angular)
         energy += np.dot(molecular, orb_occs).ravel() / 2.
         return energy
+
+    def derivative_density(self, points):
+        r"""
+        Return the derivative of the atomic density on a set of points.
+
+        Parameters
+        ----------
+        points : ndarray,(N,)
+            The radial grid points.
+
+        Returns
+        -------
+        deriv : ndarray, (N,)
+            The derivative of atomic density on the grid points.
+        """
+        factor = self.phi_matrix(points) * self.phi_matrix(points, deriv=True)
+        derivative = np.dot(2. * factor, self.orbitals_occupation).ravel() / (4 * np.pi)
+        return derivative
