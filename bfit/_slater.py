@@ -43,6 +43,10 @@ def load_slater_wfn(element, anion=False, cation=False):
     ----------
     file_name : str
         The path to the Slater atomic file.
+    anion : bool
+        If true, then the anion of element is used.
+    cation : bool
+        If true, then the cation of element is used.
 
     """
     # Heavy atoms from atom cs to lr.
