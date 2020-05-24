@@ -295,13 +295,69 @@ def test_atomic_density_c():
 
 
 def test_atomic_density_h():
-    r"""Test integration of atomic density."""
+    r"""Test integration of atomic density of Hydrogen."""
     h = AtomicDensity("h")
     grid = np.arange(0.0, 15.0, 0.0001)
     dens = h.atomic_density(grid, mode="total")
-    print(np.trapz(np.exp(- 0.5641896 * grid) * grid**2. * 4. * np.pi, grid) * (2. * 0.5641896) * np.sqrt(2. * 0.5641896 / 2))
-    print("Asdsa")
     assert_almost_equal((4 * np.pi) * np.trapz(dens * grid**2., grid), 1.0, decimal=6)
+
+
+def test_atomic_density_h_anion():
+    r"""Test integration of atomic density of hydrogen anion."""
+    assert_raises(ValueError, AtomicDensity, "h", cation=True)  # No cations for hydrogen.
+    h = AtomicDensity("h", anion=True)
+    grid = np.arange(0.0, 25.0, 0.00001)
+    dens = h.atomic_density(grid, mode="total")
+    assert_almost_equal((4 * np.pi) * np.trapz(dens * grid ** 2., grid), 2.0, decimal=6)
+
+
+def test_atomic_density_c_anion_cation():
+    r"""Test integration of atomic density of carbon anion and cation."""
+    c = AtomicDensity("c", anion=True)
+    grid = np.arange(0.0, 25.0, 0.00001)
+    dens = c.atomic_density(grid, mode="total")
+    assert_almost_equal((4 * np.pi) * np.trapz(dens * grid ** 2., grid), 7.0, decimal=6)
+
+    c = AtomicDensity("c", cation=True)
+    grid = np.arange(0.0, 25.0, 0.00001)
+    dens = c.atomic_density(grid, mode="total")
+    assert_almost_equal((4 * np.pi) * np.trapz(dens * grid ** 2., grid), 5.0, decimal=6)
+
+
+def test_atomic_density_heavy_cs():
+    r"""Test integration of atomic density of carbon anion and cation."""
+    # These files don't exist.
+    assert_raises(ValueError, AtomicDensity, "cs", cation=True)
+    assert_raises(ValueError, AtomicDensity, "cs", anion=True)
+
+    cs = AtomicDensity("cs")
+    grid = np.arange(0.0, 40.0, 0.0001)
+    dens = cs.atomic_density(grid, mode="total")
+    assert_almost_equal(4 * np.pi * np.trapz(dens * grid ** 2., grid), 55.0, decimal=5)
+
+
+def test_atomic_density_heavy_rn():
+    r"""Test integration of atomic density of carbon anion and cation."""
+    # These files don't exist.
+    assert_raises(ValueError, AtomicDensity, "rn", cation=True)
+    assert_raises(ValueError, AtomicDensity, "rn", anion=True)
+
+    rn = AtomicDensity("rn")
+    grid = np.arange(0.0, 40.0, 0.0001)
+    dens = rn.atomic_density(grid, mode="total")
+    assert_almost_equal(4 * np.pi * np.trapz(dens * grid ** 2., grid), 86, decimal=5)
+
+
+def test_kinetic_energy_cation_anion_c():
+    c = AtomicDensity("c", cation=True)
+    grid = np.arange(0.0, 25.0, 0.0001)
+    dens = c.lagrangian_kinetic_energy(grid)
+    assert_almost_equal(np.trapz(dens, grid), c.energy[0], decimal=6)
+
+    c = AtomicDensity("c", anion=True)
+    grid = np.arange(0.0, 40.0, 0.0001)
+    dens = c.lagrangian_kinetic_energy(grid)
+    assert_almost_equal(np.trapz(dens, grid), c.energy[0], decimal=5)
 
 
 def test_raises():
