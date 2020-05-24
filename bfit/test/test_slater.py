@@ -147,7 +147,7 @@ def test_parsing_slater_density_h():
     assert (abs(h['orbitals_exp']['S'] - exp_s) < 1.e-6).all()
 
     # Check coefficients of 1S orbitals.
-    coeff = np.array([0.5641896])
+    coeff = np.array([1.])
     assert (abs(h['orbitals_coeff']['1S'] - coeff) < 1.e-6).all()
 
 
@@ -189,14 +189,49 @@ def test_parsing_slater_density_i():
 def test_parsing_slater_density_xe():
     # Load the Xe file
     xe = load_slater_wfn("xe")
-    print(xe["configuration"])
     assert xe['configuration'] == "K(2)L(8)M(18)4S(2)4P(6)5S(2)4D(10)5P(6)"
     assert xe['orbitals'] == ["1S", "2S", "3S", "4S", "5S", "2P", "3P", "4P", "5P", "3D", "4D"]
     occupation = np.array([[2], [2], [2], [2], [2], [6], [6], [6], [6], [10], [10]])
     assert (xe["orbitals_occupation"] == occupation).all()
     assert xe['energy'] == [7232.138367196]
 
-    # Check exponents of D orbitals.
-    exps = np.array([-0.0006386, -0.0030974, 0.0445101, -0.1106186, -0.0924762, -0.4855794,
+    # Check coeffs of D orbitals.
+    coeffs = np.array([-0.0006386, -0.0030974, 0.0445101, -0.1106186, -0.0924762, -0.4855794,
                      0.1699923, 0.7240230, 0.3718553, 0.0251152, 0.0001040])
-    assert (abs(xe['orbitals_coeff']["4D"] - exps.reshape((len(exps), 1))) < 1e-10).all()
+    assert (abs(xe['orbitals_coeff']["4D"] - coeffs.reshape((len(coeffs), 1))) < 1e-10).all()
+
+
+def test_parsing_slater_density_xe_cation():
+    # Load the Xe file
+    np.testing.assert_raises(ValueError, load_slater_wfn, "xe", anion=True)
+    xe = load_slater_wfn("xe", cation=True)
+    assert xe['configuration'] == "K(2)L(8)M(18)4S(2)4P(6)5S(2)4D(10)5P(5)"
+    assert xe['orbitals'] == ["1S", "2S", "3S", "4S", "5S", "2P", "3P", "4P", "5P", "3D", "4D"]
+    occupation = np.array([[2], [2], [2], [2], [2], [6], [6], [6], [5], [10], [10]])
+    assert (xe["orbitals_occupation"] == occupation).all()
+    assert xe['energy'] == [7231.708943551]
+
+    # Check coefficients of D orbitals.
+    coeff = np.array([-0.0004316, -0.0016577, -0.0041398, -0.2183952, 0.0051908, -0.2953384,
+                     -0.0095762, 0.6460145, 0.4573096, 0.0431928, -0.0000161])
+    assert (abs(xe['orbitals_coeff']["4D"] - coeff.reshape((len(coeff), 1))) < 1e-10).all()
+
+
+def test_parsing_slater_density_h_anion():
+    # Load the Hydrogen file
+    # There is no cation of hydrogen in data folder.
+    np.testing.assert_raises(ValueError, load_slater_wfn, "h", cation=True)
+    h = load_slater_wfn("h", anion=True)
+    assert h['configuration'] == "1S(2)"
+    assert h['orbitals'] == ["1S"]
+    occupation = np.array([[2]])
+    assert (h["orbitals_occupation"] == occupation).all()
+    assert h['energy'] == [0.487929734]
+
+    # Check coeffs of 1S orbitals.
+    coeff = np.array([0.0005803, 0.0754088, 0.2438040, 0.3476471, 0.3357298, 0.0741188])
+    assert (abs(h['orbitals_coeff']["1S"] - coeff.reshape((len(coeff), 1))) < 1e-10).all()
+
+    # Check exps of 1S orbitals.
+    exps = np.array([3.461036, 1.704290, 1.047762, 0.626983, 0.392736, 0.304047])
+    assert (abs(h['orbitals_exp']["S"] - exps.reshape((len(exps), 1))) < 1e-10).all()
