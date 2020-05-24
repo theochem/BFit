@@ -35,7 +35,10 @@ import numpy as np
 __all__ = ["load_slater_wfn"]
 
 
-def load_slater_wfn(element):
+
+
+
+def load_slater_wfn(element, anion=False, cation=False):
     """
     Return the data recorded in the atomic Slater wave-function file as a dictionary.
 
@@ -45,7 +48,39 @@ def load_slater_wfn(element):
         The path to the Slater atomic file.
 
     """
-    file_name = os.path.join(os.path.dirname(__file__) + "/data/examples/%s.slater" % element.lower())
+    # Heavy atoms from atom cs to lr.
+    HEAVY_ATOMS = ["cs", "ba", "la", "ce", "pr", "nd", "pm", "sm", "eu", "gd", "tb", "dy", "ho",
+                   "er", "tm", "yb", "lu", "hf", "ta", "w", "re", "os", "ir", "pt", "au", "hg",
+                   "ti", "pb", "bi", "po", "at", "rn", "fr", "ra", "ac", "th", "pa", "u", "np",
+                   "pu", "am", "cm", "bk", "cf", "es", "fm", "md", "no", "lr"]
+
+    ANION_ATOMS = ["ag", "al", "as", "b", "br", "c", "cl", "co", "cr", "cu", "f", "fe", "ga",
+                   "ge", "h", "i", "in", "k", "li", "mn", "mo", "n", "na", "nb", "ni", "o",
+                   "p", "pd", "rb", "rh", "ru", "s", "sb", "sc", "se", "si", "sn", "tc", "te",
+                   "ti", "v", "y", "zr"]
+
+    CATION_ATOMS = ["ag", "al", "ar", "as", "b", "be", "br", "c", "ca", "cd", "cl", "co",
+                    "cr", "cs", "cu", "f", "fe", "ga", "ge", "i", "in", "k", "kr", "li",
+                    "mg", "mn", "mo", "n", "na", "nb", "ne", "ni", "o", "p", "pd", "rb",
+                    "rh", "ru", "s", "sb", "sc", "se", "si", "sn", "sr", "tc", "te", "ti",
+                    "v", "xe", "y", "zn", "zr"]
+
+    if (anion or cation) and element in HEAVY_ATOMS:
+        raise ValueError("Both Anion & Cation Slater File for element %s does not exist." % element)
+    if anion:
+        if element in ANION_ATOMS:
+            file_path = "/data/anion/%s.an" % element.lower()
+        else:
+            raise ValueError("Anion Slater File for element %s does not exist." % element)
+    elif cation:
+        if element in CATION_ATOMS:
+            file_path = "/data/cation/%s.cat" % element.lower()
+        else:
+            raise ValueError("Cation Slater File for element %s does not exist." % element)
+    else:
+        file_path = "/data/neutral/%s.slater" % element.lower()
+
+    file_name = os.path.join(os.path.dirname(__file__) + file_path)
 
     def get_number_of_electrons_per_orbital(configuration):
         """
@@ -108,7 +143,8 @@ def load_slater_wfn(element):
         """
         Correct the error in order to retrieve the correct column.
 
-        The Columns are harder to parse since the orbitals start with one while p orbitals start at energy.
+        The Columns are harder to parse as the orbitals start with one while p orbitals start at
+            energy.
 
         Parameters
         ----------
@@ -118,7 +154,7 @@ def load_slater_wfn(element):
         Returns
         -------
         int :
-            Retrieve teh right column index depending on whether it is "S", "P" or "D" orbital.
+            Retrieve the right column index depending on whether it is "S", "P" or "D" orbital.
 
         """
         if t_orbital[1] == "S":
@@ -135,7 +171,10 @@ def load_slater_wfn(element):
         next_line = f.readline()
         while len(next_line.strip()) == 0:
             next_line = f.readline()
-        energy = [float(f.readline().split()[2])] + \
+
+        next_line = f.readline()
+        print(next_line)
+        energy = [float(next_line.split()[2])] + \
                  [float(x) for x in (re.findall(r"[= -]\d+.\d+", f.readline()))[:-1]]
 
         orbitals = []
