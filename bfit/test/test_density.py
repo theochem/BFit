@@ -360,6 +360,29 @@ def test_kinetic_energy_cation_anion_c():
     assert_almost_equal(np.trapz(dens, grid), c.energy[0], decimal=5)
 
 
+def test_derivative_electron_density_c():
+    c = AtomicDensity("c", cation=True)
+    eps = 1e-10
+    grid = np.array([0.1, 0.1 + eps, 0.5, 0.5 + eps])
+    dens = c.atomic_density(grid)
+    actual = c.derivative_density(np.array([0.1, 0.5]))
+    desired_0 = (dens[1] - dens[0]) / eps
+    desired_1 = (dens[3] - dens[2]) / eps
+    assert_almost_equal(actual, np.array([desired_0, desired_1]), decimal=4)
+
+
+def test_derivative_electron_density_cr():
+    cr = AtomicDensity("cr")
+    eps = 1e-10
+    grid = np.array([0.1 - eps, 0.1, 0.1 + eps,
+                     1. - eps, 1., 1. + eps])
+    dens = cr.atomic_density(grid)
+    actual = cr.derivative_density(np.array([0.1, 1.]))
+    desired_0 = (dens[2] - dens[0]) / (2. * eps)
+    desired_1 = (dens[5] - dens[3]) / (2. * eps)
+    assert_almost_equal(actual, np.array([desired_0, desired_1]), decimal=4)
+
+
 def test_raises():
     assert_raises(TypeError, AtomicDensity, 25)
     assert_raises(TypeError, AtomicDensity, "be2")
