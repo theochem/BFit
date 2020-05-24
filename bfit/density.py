@@ -71,7 +71,8 @@ class AtomicDensity:
     orbital_energy : list, (N, 1)
         Energy of each of the N Slater-type orbital.
     orbitals_cusp : list, (N, 1)
-        Cusp of each of the N Slater-type orbital. Same ordering as `orbitals`.
+        Cusp of each of the N Slater-type orbital. Same ordering as `orbitals`. Does not exist
+        for Heavy atoms past Xenon.
     orbitals_basis : dict
         Keys are the orbitals in the electron configuration. Each orbital has N Slater-type orbital
         attached to them.
@@ -121,7 +122,7 @@ class AtomicDensity:
 
     """
 
-    def __init__(self, element):
+    def __init__(self, element, anion=False, cation=False):
         r"""
         Construct AtomicDensity object.
 
@@ -129,12 +130,16 @@ class AtomicDensity:
         ----------
         element : str
             Symbol of element.
+        anion : bool
+            If true, then the anion of element is used.
+        cation : bool
+            If true, then the cation of element is used.
 
         """
         if not isinstance(element, str) or not element.isalpha():
             raise TypeError("The element argument should be all letters string.")
 
-        data = load_slater_wfn(element)
+        data = load_slater_wfn(element, anion, cation)
         for key, value in data.items():
             setattr(self, key, value)
 
