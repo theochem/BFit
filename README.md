@@ -24,9 +24,9 @@ fitted probability distribution is the electron density.
 The features of this software are:
 
 * Gaussian Basis sets:
-    * Able to handle S-type and P-type Gaussian functions.
-    * Able to handle Atomic Densities or Molecular Densities. 
-    * Able to handle any dimensions.
+    * Handle S-type and P-type Gaussian functions.
+    * Handle Atomic Densities or Molecular Densities. 
+    * Handle any dimensions.
 
 * Fitting Measures:
     * Least-squares method,
@@ -36,7 +36,7 @@ The features of this software are:
     * Optimize using "scipy.minimize" procedures.
     * Optimize Kullback-Leibler using self-consistent iterative method see [paper](#citing).
 
-* Able to construct Slater electron densities, see [data page](data/README.md).
+* Construct Slater atomic densities, including anions, cations and heavy elements, see [data page](data/README.md).
 
 
 ## Dependences 
