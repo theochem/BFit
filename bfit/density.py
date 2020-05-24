@@ -24,8 +24,8 @@ r"""
 Density Module.
 
 AtomicDensity:
-    Information about atoms obtained from .slater file and able to construct atomic density (total, core and valence)
-        from the linear combination of Slater-type orbitals.
+    Information about atoms obtained from .slater file and able to construct atomic density
+        (total, core and valence) from the linear combination of Slater-type orbitals.
     Elements supported by default from "./bfit/data/examples/" range from Hydrogen to Xenon.
 
 """
@@ -45,8 +45,9 @@ class AtomicDensity:
     Atomic Density Class.
 
     Reads and Parses information from the .slater file of a atom and stores it inside this class.
-    It is then able to construct the (total, core and valence) electron density of that element based
-    on linear combination of orbitals where each orbital is a linear combination of Slater-type orbitals.
+    It is then able to construct the (total, core and valence) electron density based
+    on linear combination of orbitals where each orbital is a linear combination of
+    Slater-type orbitals.
     Elements supported by default from "./bfit/data/examples/" range from Hydrogen to Xenon.
 
     Attributes
@@ -58,11 +59,12 @@ class AtomicDensity:
     configuration : str
         Return the electron configuration of the element.
     orbitals : list, (M,)
-        List of strings representing each of the orbitals in the electron configuration. For example, Beryllium has
-        ["1S", "2S"] in its electron configuration. Ordered based on "S", "P", "D", etc.
+        List of strings representing each of the orbitals in the electron configuration.
+        For example, Beryllium has ["1S", "2S"] in its electron configuration.
+        Ordered based on "S", "P", "D", etc.
     orbitals_occupation : ndarray, (M, 1)
-        Returns the number of electrons in each of the orbitals in the electron configuration. e.g. Beryllium has two
-        electrons in "1S" and two electrons in "2S".
+        Returns the number of electrons in each of the orbitals in the electron configuration.
+        e.g. Beryllium has two electrons in "1S" and two electrons in "2S".
 
     Attributes relating to representing orbitals as linear combination of Slater-type orbitals.
 
@@ -71,22 +73,25 @@ class AtomicDensity:
     orbitals_cusp : list, (N, 1)
         Cusp of each of the N Slater-type orbital. Same ordering as `orbitals`.
     orbitals_basis : dict
-        Keys are the orbitals in the electron configuration. Each orbital has N Slater-type orbital attached to them.
+        Keys are the orbitals in the electron configuration. Each orbital has N Slater-type orbital
+        attached to them.
     orbitals_exp : dict (str : ndarray(N, 1))
-        Key is the orbital in the electron configuration and the item of that key is the Slater exponents attached
+        Key is the orbital in the electron configuration and the item of that key is the Slater
+         exponents attached
          to each N Slater-type orbital.
     orbitals_coeff : dict (str : ndarray(N, 1))
-        Key is the orbital in the electron configuration (e. 1S, 2S or 2P) and the item is the Slater coefficients
-        attached to each of the N Slater-type orbital.
+        Key is the orbital in the electron configuration (e. 1S, 2S or 2P) and the item is the
+        Slater coefficients attached to each of the N Slater-type orbital.
     basis_numbers : dict (str : ndarray(N, 1))
-        Key is the orbital in the electron configuration and the item is the basis number of each of the N Slater-type
-        orbital. These are the principal quantum number attached to each Slater-type orbital.
+        Key is orbital in electron configuration and the item is the basis number of each of
+        the N Slater-type orbital. These are the principal quantum number to each Slater-type
+        orbital.
 
     Methods
     -------
     atomic_density(mode="total") :
-        Construct the atomic density from the linear combinations of slater-type orbitals. Can compute the
-        total (default), core and valence atomic density.
+        Construct the atomic density from the linear combinations of slater-type orbitals.
+        Can compute the total (default), core and valence atomic density.
 
     Examples
     --------
@@ -111,10 +116,8 @@ class AtomicDensity:
 
     References
     ----------
-    [1] "Even-Tempered Slater-Type Orbitals Revisited: From Hydrogen to Krypton" by P. Chong et al.
-
-    [2] "Roothan-Hartree-Fock Atomic Wavefunctions. Basis functions and Their Coefficients for Ground and Certain
-            Excited States of Neutral and Ionized Atoms, Z <= 54" By E. Clementi and C. Roetti.
+    [1] "Analytical Hartree–Fock wave functions subject to cusp and asymptotic constraints:
+        He to Xe, Li+ to Cs+, H− to I−" by T. Koga, K. Kanayama, S. Watanabe and A.J. Thakkar.
 
     """
 
