@@ -235,3 +235,85 @@ def test_parsing_slater_density_h_anion():
     # Check exps of 1S orbitals.
     exps = np.array([3.461036, 1.704290, 1.047762, 0.626983, 0.392736, 0.304047])
     assert (abs(h['orbitals_exp']["S"] - exps.reshape((len(exps), 1))) < 1e-10).all()
+
+
+def test_parsing_slater_heavy_atom_cs():
+    np.testing.assert_raises(ValueError, load_slater_wfn, "cs", cation=True)
+    np.testing.assert_raises(ValueError, load_slater_wfn, "cs", anion=True)
+    # Load the Xe file
+    cs = load_slater_wfn("cs")
+    assert cs['configuration'] == "K(2)L(8)M(18)4S(2)4P(6)5S(2)4D(10)5P(6)6S(1)"
+    assert cs['orbitals'] == ["1S", "2S", "3S", "4S", "5S", "6S", "2P", "3P", "4P", "5P", "3D",
+                              "4D"]
+    occupation = np.array([[2], [2], [2], [2], [2], [1], [6], [6], [6], [6], [10], [10]])
+    assert (cs["orbitals_occupation"] == occupation).all()
+    assert cs['energy'] == [7553.933539793]
+
+    # Check coeffs of D orbitals.
+    coeffs = np.array([-0.0025615, -0.1930536, -0.2057559, -0.1179374, 0.4341816, 0.6417053,
+                       0.1309576])
+    assert (abs(cs['orbitals_coeff']["4D"] - coeffs.reshape((len(coeffs), 1))) < 1e-10).all()
+
+    # Check Exponents of D orbitals.
+    exps = np.array([32.852137, 18.354403, 14.523221, 10.312620, 7.919345, 5.157647,
+                     3.330606])
+    assert (abs(cs['orbitals_exp']["D"] - exps.reshape((len(exps), 1))) < 1e-10).all()
+
+
+def test_parsing_slater_heavy_atom_rn():
+    # Load the Xe file
+    rn = load_slater_wfn("rn")
+    assert rn['configuration'] == "K(2)L(8)M(18)4S(2)4P(6)5S(2)4D(10)5P(6)4F(14)6S(2)5D(10)6P(6)"
+    print(rn["orbitals"])
+    assert rn['orbitals'] == ["1S", "2S", "3S", "4S", "5S", "6S", "2P", "3P", "4P", "5P", "6P",
+                              "3D", "4D", "5D", "4F"]
+    occupation = np.array([[2], [2], [2], [2], [2], [2], [6], [6], [6], [6], [6], [10], [10],
+                           [10], [14]])
+    assert (rn["orbitals_occupation"] == occupation).all()
+    assert rn['energy'] == [21866.772036482]
+
+    # Check coeffs of 4F orbitals.
+    coeffs = np.array([.0196357, .2541992, .4806186, -.2542278, .5847619, .0099519])
+    assert (abs(rn['orbitals_coeff']["4F"] - coeffs.reshape((len(coeffs), 1))) < 1e-10).all()
+
+
+def test_parsing_slater_heavy_atom_lr():
+    # Load the lr file
+    lr = load_slater_wfn("lr")
+    assert lr['configuration'] == "K(2)L(8)M(18)4S(2)4P(6)5S(2)4D(10)5P(6)4F(14)6S(2)5D(10)6P(6)" \
+                                  "7S(2)6D(1)5F(14)"
+    assert lr['orbitals'] == ["1S", "2S", "3S", "4S", "5S", "6S", "7S",
+                              "2P", "3P", "4P", "5P", "6P",
+                              "3D", "4D", "5D", "6D", "4F", "5F"]
+    occupation = np.array([[2], [2], [2], [2], [2], [2], [2], [6], [6], [6], [6], [6], [10], [10],
+                           [10], [1], [14], [14]])
+    assert (lr["orbitals_occupation"] == occupation).all()
+    assert lr['energy'] == [33557.949960623]
+
+    # Check coeffs of 3D orbitals.
+    coeffs = np.array([0.0017317, 0.4240510, 0.4821228, 0.1753365, -0.0207393, 0.0091584,
+                       -0.0020913, 0.0005398, -0.0001604, 0.0000443, -0.0000124])
+    assert (abs(lr['orbitals_coeff']["3D"] - coeffs.reshape((len(coeffs), 1))) < 1e-10).all()
+
+    # Check coeffs of 2S orbitals.
+    coeffs = np.array([0.0386739, -0.4000069, -0.2570804, 1.2022357, 0.0787866, 0.0002957,
+                       0.0002277, 0.0002397, -0.0005650, 0.0000087, 0.0000031, -0.0000024,
+                       0.0000008, -0.0000002, 0.0000001])
+    assert (abs(lr['orbitals_coeff']["2S"] - coeffs.reshape((len(coeffs), 1))) < 1e-10).all()
+
+
+def test_parsing_slater_heavy_atom_dy():
+    # Load the dy file
+    dy = load_slater_wfn("dy")
+    assert dy['configuration'] == "K(2)L(8)M(18)4S(2)4P(6)5S(2)4D(10)5P(6)6S(2)5D(0)4F(10)"
+    assert dy['orbitals'] == ["1S", "2S", "3S", "4S", "5S", "6S",
+                              "2P", "3P", "4P", "5P",
+                              "3D", "4D", "4F"]
+    occupation = np.array([[2], [2], [2], [2], [2], [2], [6], [6], [6], [6], [10], [10], [10]])
+    assert (dy["orbitals_occupation"] == occupation).all()
+    assert dy['energy'] == [11641.452478555]
+
+    # Check coeffs of 4D orbitals.
+    coeffs = np.array([-0.0016462, -0.2087639, -0.2407385, -0.1008913, 0.4844709, 0.6180159,
+                       0.1070867])
+    assert (abs(dy['orbitals_coeff']["4D"] - coeffs.reshape((len(coeffs), 1))) < 1e-10).all()
