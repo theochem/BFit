@@ -52,7 +52,7 @@ def load_slater_wfn(element, anion=False, cation=False):
     # Heavy atoms from atom cs to lr.
     heavy_atoms = ["cs", "ba", "la", "ce", "pr", "nd", "pm", "sm", "eu", "gd", "tb", "dy", "ho",
                    "er", "tm", "yb", "lu", "hf", "ta", "w", "re", "os", "ir", "pt", "au", "hg",
-                   "ti", "pb", "bi", "po", "at", "rn", "fr", "ra", "ac", "th", "pa", "u", "np",
+                   "tl", "pb", "bi", "po", "at", "rn", "fr", "ra", "ac", "th", "pa", "u", "np",
                    "pu", "am", "cm", "bk", "cf", "es", "fm", "md", "no", "lr"]
 
     anion_atoms = ["ag", "al", "as", "b", "br", "c", "cl", "co", "cr", "cu", "f", "fe", "ga",
@@ -66,16 +66,16 @@ def load_slater_wfn(element, anion=False, cation=False):
                     "rh", "ru", "s", "sb", "sc", "se", "si", "sn", "sr", "tc", "te", "ti",
                     "v", "xe", "y", "zn", "zr"]
 
-    is_heavy_element = element in heavy_atoms
+    is_heavy_element = element.lower() in heavy_atoms
     if (anion or cation) and is_heavy_element:
         raise ValueError("Both Anion & Cation Slater File for element %s does not exist." % element)
     if anion:
-        if element in anion_atoms:
+        if element.lower() in anion_atoms:
             file_path = "/data/anion/%s.an" % element.lower()
         else:
             raise ValueError("Anion Slater File for element %s does not exist." % element)
     elif cation:
-        if element in cation_atoms:
+        if element.lower() in cation_atoms:
             file_path = "/data/cation/%s.cat" % element.lower()
         else:
             raise ValueError("Cation Slater File for element %s does not exist." % element)
