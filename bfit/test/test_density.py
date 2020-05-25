@@ -383,6 +383,13 @@ def test_derivative_electron_density_cr():
     assert_almost_equal(actual, np.array([desired_0, desired_1]), decimal=4)
 
 
+def test_kinetic_energy_heavy_element_ce():
+    c = AtomicDensity("ce")
+    grid = np.arange(0.0, 25.0, 0.0001)
+    dens = c.lagrangian_kinetic_energy(grid)
+    assert_almost_equal(np.trapz(dens, grid), c.energy[0], decimal=3)
+
+
 def test_raises():
     assert_raises(TypeError, AtomicDensity, 25)
     assert_raises(TypeError, AtomicDensity, "be2")

@@ -375,6 +375,8 @@ class AtomicDensity:
                 angular.append(2.)
             elif "D" in orbital:
                 angular.append(6.)
+            elif "F" in orbital:
+                angular.append(12.)
 
         orb_occs = self.orbitals_occupation
         energy = np.dot(phi_matrix**2., orb_occs).ravel() / 2.
