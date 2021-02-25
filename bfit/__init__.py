@@ -20,21 +20,11 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-from setuptools import setup, find_packages
 
-setup(
-    name="BFit",
-    version="0.1",
-    description="Curve fitting algorithms for fitting basis-set functions to probabiity "
-                "distributions.",
-    author="Ali Tehrani, Farnaz Heidar-Zadeh and Paul Ayers",
-    author_email="alirezatehrani24@gmail.com and ayers@mcmaster.ca",
-    install_requires=[
-        "numpy", "scipy", "matplotlib", "nose"
-    ],
-    packages=find_packages('bfit'),
-    package_data={
-        # If any package contains *.slater files, include them:
-        '': ['*.slater', '*.nwchem']
-    }
-)
+
+from bfit.fit import *
+from bfit.grid import *
+from bfit.model import *
+from bfit.density import *
+from bfit.measure import *
+from bfit.greedy import *
