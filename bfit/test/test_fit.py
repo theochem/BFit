@@ -35,8 +35,6 @@ def test_lagrange_multiplier():
     e = np.exp(-g.points)
     kl = KLDivergenceSCF(g, e, None)
     assert_almost_equal(kl.lagrange_multiplier, 1., decimal=8)
-    kl = KLDivergenceSCF(g, e, None, weights=2 * np.ones_like(e))
-    assert_almost_equal(kl.lagrange_multiplier, 2., decimal=8)
     assert_raises(RuntimeError, KLDivergenceSCF, g, e, None, 0. * g.points)
 
 
@@ -78,7 +76,7 @@ def test_run_normalized_1s_gaussian():
     g = UniformRadialGrid(150, 0.0, 15.0, spherical=True)
     e = (1. / np.pi)**1.5 * np.exp(-g.points**2.)
     model = AtomicGaussianDensity(g.points, num_s=1, num_p=0, normalize=True)
-    kl = KLDivergenceSCF(g, e, model, weights=None)
+    kl = KLDivergenceSCF(g, e, model)
 
     # fit density with initial coeff=1. & expon=1.
     res = kl.run(np.array([1.]), np.array([1.]), True, True, 500, 1.e-4, 1.e-4, 1.e-4)
