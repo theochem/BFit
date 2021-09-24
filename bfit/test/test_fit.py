@@ -35,7 +35,6 @@ def test_lagrange_multiplier():
     e = np.exp(-g.points)
     kl = KLDivergenceSCF(g, e, None)
     assert_almost_equal(kl.lagrange_multiplier, 1., decimal=8)
-    assert_raises(RuntimeError, KLDivergenceSCF, g, e, None, 0. * g.points)
 
 
 def test_goodness_of_fit():
@@ -558,7 +557,7 @@ def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
     # fit total density
     kl = GaussianBasisFit(grid, dens_s + dens_p, model, measure="kl", method="slsqp")
     # opt. coeffs & expons
-    result = kl.run(np.ones(2), np.array([0.1, 0.2]), True, True, ftol=1e-20, disp=True)
+    result = kl.run(np.ones(2), np.array([0.1, 0.2]), True, True, tol=1e-20, disp=True)
     print(result)
     assert_almost_equal(cs0, result["x"][0], decimal=6)
     assert_almost_equal(es0, result["x"][1], decimal=6)
@@ -666,14 +665,14 @@ def test_ls_fit_normalized_dens_normalized_5s_gaussian():
     initial_cs = np.array([1., 0., 3., 0., 5.])
     initial_es = np.array([0.1, 1.2, 1., 20., 10.])
     # opt. coeffs
-    result = ls.run(initial_cs, es0, True, False, ftol=1e-15)
+    result = ls.run(initial_cs, es0, True, False, tol=1e-15)
     assert_almost_equal(np.sort(cs0), np.sort(result["x"][0]), decimal=6)
     assert_almost_equal(np.sort(es0), np.sort(result["x"][1]), decimal=6)
     assert_almost_equal(0., result["fun"], decimal=10)
     # opt. expons, by re-arranging the exponents and coefficients.
     initial_cs = np.array([0.12, 0.97,  3.67, 1.57, 5.05])
     initial_es = np.array([1.2, 19., 1., 0.1, 10.])
-    result = ls.run(initial_cs, initial_es, False, True, ftol=1e-20, with_constraint=False)
+    result = ls.run(initial_cs, initial_es, False, True, tol=1e-20, with_constraint=False)
     assert_almost_equal(np.sort(initial_cs), np.sort(result["x"][0]), decimal=6)
     assert_almost_equal(np.sort(es0), np.sort(result["x"][1]), decimal=1)
     assert_almost_equal(0., result["fun"], decimal=10)
