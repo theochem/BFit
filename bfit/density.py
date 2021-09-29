@@ -342,7 +342,7 @@ class AtomicDensity:
 
     def lagrangian_kinetic_energy(self, points):
         r"""
-        Positive definite or Lagrangian kinectic energy density.
+        Positive definite or Lagrangian kinetic energy density.
 
         Parameters
         ----------
