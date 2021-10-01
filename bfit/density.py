@@ -332,14 +332,17 @@ class AtomicDensity:
 
         """
         slater = AtomicDensity.slater_orbital(exponent, number, points)
-        # derivative
-        deriv_pref = (number.T - 1.) / np.reshape(points, (points.shape[0], 1)) - exponent.T
+        # Consider the case when dividing by zero.
+        with np.errstate(divide='ignore'):
+            # derivative
+            deriv_pref = (number.T - 1.) / np.reshape(points, (points.shape[0], 1)) - exponent.T
+            deriv_pref[np.abs(points) < 1e-10, :] = 0.0
         deriv = deriv_pref * slater
         return deriv
 
     def lagrangian_kinetic_energy(self, points):
         r"""
-        Positive definite or Lagrangian kinectic energy density.
+        Positive definite or Lagrangian kinetic energy density.
 
         Parameters
         ----------
@@ -351,16 +354,11 @@ class AtomicDensity:
         energy : ndarray, (N,)
             The kinetic energy on the grid points.
 
-        Notes
-        -----
-        - To integrate this to get kinetic energy in .slater files, it should not be done in
-            spherically, ie the integral is exactly :math:`\int_0^{\infty} T(r) dr`.
-
         """
-
         phi_matrix = np.zeros((len(points), len(self.orbitals)))
         for index, orbital in enumerate(self.orbitals):
             exps, number = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
+            # Take second derivative of the Slater-Type Orbitals without division by r^2 (added this below)
             slater = AtomicDensity.slater_orbital(exps, number, points)
             # derivative
             deriv_pref = (number.T - 1.) - exps.T * np.reshape(points, (points.shape[0], 1))
@@ -383,7 +381,11 @@ class AtomicDensity:
         # Add other term
         molecular = self.phi_matrix(points)**2. * np.array(angular)
         energy += np.dot(molecular, orb_occs).ravel() / 2.
-        return energy
+        # Divide by r^2 and set division by zero to zero.
+        with np.errstate(divide='ignore'):
+            energy /= (points**2.0)
+            energy[np.abs(points) < 1e-10] = 0.
+        return energy / (4.0 * np.pi)
 
     def derivative_density(self, points):
         r"""

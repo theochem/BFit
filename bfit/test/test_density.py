@@ -67,6 +67,10 @@ def test_derivative_slater_type_orbital_be():
     orbital = be.derivative_slater_type_orbital(np.array([[0.821620]]), np.array([[2]]),
                                                 np.array([2]))
     assert_almost_equal(orbital, slater(0.821620, 2, 2.0, derivative=True), decimal=6)
+    # check value of single orbital at r = 0.0
+    orbital = be.derivative_slater_type_orbital(np.array([[0.821620]]), np.array([[2]]),
+                                                np.array([0.]))
+    assert_almost_equal(orbital, 0.0, decimal=6)
     # check value of tow orbitals at r=1.0 & r=2.0
     exps, nums = np.array([[12.683501], [0.821620]]), np.array([[1], [2]])
     orbitals = be.derivative_slater_type_orbital(exps, nums, np.array([1., 2.]))
@@ -83,7 +87,7 @@ def test_positive_definite_kinetic_energy_he():
     # compute density on an equally distant grid
     grid = np.arange(0., 30.0, 0.0001)
     energ = he.lagrangian_kinetic_energy(grid)
-    integral = np.trapz(energ, grid)
+    integral = np.trapz(energ * 4 * np.pi * grid**2.0, grid)
     assert np.all(np.abs(integral - he.energy[0]) < 1e-4)
 
 
@@ -93,7 +97,7 @@ def test_positive_definite_kinetic_energy_be():
     # compute density on an equally distant grid
     grid = np.arange(0., 30.0, 0.0001)
     energ = be.lagrangian_kinetic_energy(grid)
-    integral = np.trapz(energ, grid)
+    integral = np.trapz(energ * 4 * np.pi * grid**2.0, grid)
     assert np.all(np.abs(integral - be.energy[0]) < 1e-5)
 
 
@@ -102,9 +106,9 @@ def test_positive_definite_kinetic_energy_most_atoms():
     for atom in ["b", "cl", "ag"]:
         adens = AtomicDensity(atom)
         # compute density on an equally distant grid
-        grid = np.arange(0., 30., 0.0005)
+        grid = np.arange(0., 30., 0.0001)
         energ = adens.lagrangian_kinetic_energy(grid)
-        integral = np.trapz(energ, grid)
+        integral = np.trapz(energ * 4.0 * np.pi * grid**2.0, grid)
         assert np.all(np.abs(integral - adens.energy[0]) < 1e-3)
 
 
@@ -351,13 +355,15 @@ def test_atomic_density_heavy_rn():
 def test_kinetic_energy_cation_anion_c():
     c = AtomicDensity("c", cation=True)
     grid = np.arange(0.0, 25.0, 0.0001)
-    dens = c.lagrangian_kinetic_energy(grid)
-    assert_almost_equal(np.trapz(dens, grid), c.energy[0], decimal=6)
+    energ = c.lagrangian_kinetic_energy(grid)
+    integral = np.trapz(energ * 4.0 * np.pi * grid**2.0, grid)
+    assert_almost_equal(integral, c.energy[0], decimal=6)
 
     c = AtomicDensity("c", anion=True)
     grid = np.arange(0.0, 40.0, 0.0001)
-    dens = c.lagrangian_kinetic_energy(grid)
-    assert_almost_equal(np.trapz(dens, grid), c.energy[0], decimal=5)
+    energ = c.lagrangian_kinetic_energy(grid)
+    integral = np.trapz(energ * 4.0 * np.pi * grid**2.0, grid)
+    assert_almost_equal(integral, c.energy[0], decimal=5)
 
 
 def test_derivative_electron_density_c():
@@ -386,8 +392,8 @@ def test_derivative_electron_density_cr():
 def test_kinetic_energy_heavy_element_ce():
     c = AtomicDensity("ce")
     grid = np.arange(0.0, 25.0, 0.0001)
-    dens = c.lagrangian_kinetic_energy(grid)
-    assert_almost_equal(np.trapz(dens, grid), c.energy[0], decimal=3)
+    energ = c.lagrangian_kinetic_energy(grid)
+    assert_almost_equal(np.trapz(energ * 4 * np.pi * grid**2.0, grid), c.energy[0], decimal=3)
 
 
 def test_raises():
