@@ -177,7 +177,7 @@ class _BaseFit(object):
         return [self.grid.integrate(approx),
                 self.grid.integrate(diff),
                 np.max(diff),
-                self.grid.integrate(self.weights * value)]
+                self.grid.integrate(value)]
 
 
 class KLDivergenceSCF(_BaseFit):
@@ -197,8 +197,6 @@ class KLDivergenceSCF(_BaseFit):
         The Gaussian basis model density. Located in `model.py`.
     measure : (SquaredDifference, KLDivergence)
         The deviation measure between true density and model density. Located in `measure.py`
-    weights : ndarray(N,)
-        The weights placed on each grid point. Default option is to not have them.
     norm : float
         The integral of the attribute `density`.
     lagrange_multiplier : float
@@ -257,7 +255,7 @@ class KLDivergenceSCF(_BaseFit):
 
     """
 
-    def __init__(self, grid, density, model, weights=None, mask_value=0.):
+    def __init__(self, grid, density, model, mask_value=0.):
         r"""
         Construct the KLDivergenceSCF class.
 
@@ -269,8 +267,6 @@ class KLDivergenceSCF(_BaseFit):
             The true density evaluated on the grid points.
         model : (AtomicGaussianDensity, MolecularGaussianDensity)
             The Gaussian basis model density. Located in `model.py`.
-        weights : ndarray, optional
-            The weights of objective function at each point. If `None`, 1.0 is used.
         mask_value : float, optional
             The elements less than or equal to this number are masked in a division.
 
@@ -280,12 +276,8 @@ class KLDivergenceSCF(_BaseFit):
         super(KLDivergenceSCF, self).__init__(grid, density, model, measure)
         # compute norm of density
         self.norm = grid.integrate(density)
-
-        if weights is None:
-            weights = np.ones(len(density))
-        self.weights = weights
         # compute lagrange multiplier
-        self._lm = self.grid.integrate(self.density * self.weights) / self.norm
+        self._lm = self.grid.integrate(self.density) / self.norm
         if self._lm == 0. or np.isnan(self._lm):
             raise RuntimeError("Lagrange multiplier cannot be {0}.".format(self._lm))
 
@@ -326,7 +318,7 @@ class KLDivergenceSCF(_BaseFit):
         # compute averages needed to update parameters
         avrg1, avrg2 = np.zeros(self.model.nbasis), np.zeros(self.model.nbasis)
         for index in range(self.model.nbasis):
-            integrand = self.weights * -dk * dm[:, index]
+            integrand = -dk * dm[:, index]
             avrg1[index] = self.grid.integrate(integrand)
             if update_expons:
                 if self.model.natoms == 1:
