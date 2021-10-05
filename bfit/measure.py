@@ -188,6 +188,9 @@ class KLDivergence:
             :math:`g` is the model probability distribution,
             :math:`G` is the grid.
 
+        If the model density is negative, then this function will return extremely large values,
+        for optimization purposes.
+
         Parameters
         ----------
         model : ndarray, (N,)
@@ -213,7 +216,9 @@ class KLDivergence:
         if not isinstance(model, np.ndarray) or model.shape != self.density.shape:
             raise ValueError("Argument model should be {0} array.".format(self.density.shape))
         if np.any(model < 0.):
-            raise ValueError("Argument model should be positive.")
+            # If the model density is negative, then return large values for optimization to favour
+            #  positive model densities.
+            return np.array([100000.] * len(self.density)), np.array([100000.] * len(self.density))
 
         # compute ratio & replace masked values by 1.0
         ratio = self.density / np.ma.masked_less_equal(model, self.mask_value)
