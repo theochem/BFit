@@ -1,5 +1,12 @@
-BFit <a href='https://docs.python.org/3.5/'><img src='https://img.shields.io/badge/python-3.5-blue.svg'></a>
-===================
+BFit
+====
+<a href='https://docs.python.org/3.6/'><img src='https://img.shields.io/badge/python-3.6-blue.svg'></a>
+<a href='https://docs.python.org/3.7/'><img src='https://img.shields.io/badge/python-3.7-blue.svg'></a>
+<a href='https://docs.python.org/3.8/'><img src='https://img.shields.io/badge/python-3.8-blue.svg'></a>
+<a href='https://docs.python.org/3.9/'><img src='https://img.shields.io/badge/python-3.9-blue.svg'></a>
+[![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/theochem/procrustes/master?filepath=docs%2Fnotebooks%2F)
+
 
 BFit is a python program that is used to fit a convex sum of 
 positive basis functions to any probability distribution. 
@@ -7,20 +14,10 @@ positive basis functions to any probability distribution.
 Primarily intended for quantum chemistry community, where the basis functions are Gaussian functions and the 
 fitted probability distribution is the electron density.
 
-## Table of Contents
-1. [Features](#features)
-2. [Dependences](#dependences)
-3. [Installation](#installation)
-4. [Running Tests](#runningtests)
-5. [Examples](#examples)  
-6. [Questions/Issues](#questionsissues)
-6. [Citing](#citing)
-7. [License](#license)
-8. [FAQ](#faq)  
-    6.1 [Where did you get the slater coefficients from?](#where-did-you-get-the-slater-coefficients-from?)  
 
+Features 
+--------
 
-## Features 
 The features of this software are:
 
 * Gaussian Basis sets:
@@ -39,18 +36,17 @@ The features of this software are:
 * Construct Slater atomic densities, including anions, cations and heavy elements, see [data page](data/README.md).
 
 
-## Dependences 
-* [Numpy](http://www.numpy.org/) 
+Dependences 
+-----------
+* Python >= 3.0: http://www.python.org/
+* NumPy >= 1.18.5: http://www.numpy.org/
+* SciPy >= 1.5.0: http://www.scipy.org/
+* PyTest >= 5.3.4: https://docs.pytest.org/
+* PyTest-Cov >= 2.8.0: https://pypi.org/project/pytest-cov/
+* PIP >= 19.0: https://pip.pypa.io/
 
-* [Scipy](https://www.scipy.org/)
-
-* [Matplotlib](https://matplotlib.org/)
-
-* [Nose](http://nose.readthedocs.io/en/latest/)
-
-* [Horton](https://theochem.github.io/horton/2.1.0/index.html) (optional)
-
-## Installation
+Installation
+-------------
 In your terminal run:
 
 ```bash
@@ -109,25 +105,14 @@ print("Was it successful? ", result["success"])
 ```
 See the [example directory](examples/) for more examples.
 
-
-## Questions/Issues
-Please set up an issue or can email the following, 
-- Alireza Tehrani at "alirezatehrani24@gmail.com"
-- Farnaz Heidar-Zadeh at "".
-- Paul W. Ayers at "". 
-
-## Citing 
-This software was written by Alireza Tehrani and Farnaz Heidar-Zadeh.
+Citation
+--------
 
 Please cite the following.
 TODO: Update PAPER
 
 Alireza Tehrani, Farnaz Heidar-Zadeh, James S.M. Anderson, Toon Verstraelen, Rogelio Cuevas-Saavedra, Ivan Vinogradov, Debajit Chakraborty, Paul W. Ayers. "BFit: Information-Theoretic Approach to Basis-Set Fitting of Electron Densities"
 
-
-## License 
-FittingBasisSets is distributed under the conditions of the GPL License 
-version 3 (GPLv3)
 
 ## FAQ 
 #### Where did you get the slater coefficients from?
