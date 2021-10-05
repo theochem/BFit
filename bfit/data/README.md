@@ -1,12 +1,5 @@
-These folders contain the highly accurate
-slater files (.slater) containing information
-regarding the coefficients and exponents of the slater basis
-set for a specified atom.
-
-
-Note: In order to obtain the slater densities for the corresponding atom,
-one must create a [AtomicDensity](bfit/density.py) object with the
-specified element name and grid points.
+These folders contain the highly accurate slater files (.slater) containing information
+regarding the coefficients and exponents of the slater basis set for a specified atom including its anion, cation and neutral state.
 
 The slater files, both anion, cation and neutral, were obtained from the paper,
 
