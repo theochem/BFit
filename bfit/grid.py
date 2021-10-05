@@ -44,14 +44,14 @@ CubicGrid -
 
 """
 
-
+from grid.onedgrid import OneDGrid
 import numpy as np
 
 
 __all__ = ["ClenshawRadialGrid", "UniformRadialGrid", "CubicGrid"]
 
 
-class _BaseRadialGrid(object):
+class _BaseRadialGrid(OneDGrid):
     r"""
     Radial Grid Base Class.
 
@@ -313,7 +313,7 @@ class CubicGrid:
 
     """
 
-    def __init__(self, smallest_pnt, largest_pnt, step_size):
+    def __init__(self, origin, axes, shape):
         """
         Construct the CubicGrid object.
 
@@ -327,35 +327,120 @@ class CubicGrid:
             The step-size between two consecutive points on any axis in the 3D cubic grid.
 
         """
-        if not isinstance(smallest_pnt, (int, float)):
-            raise TypeError("Argument smallest_pt should be a positive number.")
-        if not isinstance(largest_pnt, (int, float)):
-            raise TypeError("Argument largest_pnt should be a positive number.")
-        if not isinstance(step_size, (int, float)) or step_size <= 0:
-            raise TypeError("The argument step_size should be a positive number")
-        if largest_pnt <= smallest_pnt:
-            raise ValueError("The largest_pnt should be greater than the smallest_pnt.")
-
-        # compute points in one dimension
-        points_1d = np.arange(smallest_pnt, largest_pnt + step_size, step_size)
-        npoints = points_1d.size
-        points = np.zeros((npoints**3, 3))
-        # assign x, y & z coordinates
-        points[:, 0] = np.repeat(points_1d, npoints**2)
-        points[:, 1] = np.tile(np.repeat(points_1d, npoints), npoints)
-        points[:, 2] = np.tile(points_1d, npoints**2)
+        self._axes = axes
+        self._origin = origin
+        dim = self._origin.size
+        # Make an array to store coordinates of grid points
+        self._points = np.zeros((np.prod(shape), dim))
+        coords = np.array(
+            np.meshgrid(
+                np.arange(shape[0]), np.arange(shape[1]), np.arange(shape[2])
+            )
+        )
+        coords = np.swapaxes(coords, 1, 2)
+        coords = coords.reshape(3, -1)
+        points = coords.T.dot(self._axes) + origin
+        # assign the weights
+        weights = self._choose_weight_scheme(shape)
+        self._weights = weights
         self._points = np.array(points)
-        self._step = step_size
+
+    @property
+    def axes(self):
+        return self._axes
+
+    @classmethod
+    def from_molecule(
+            cls,
+            atcorenums,
+            atcoords,
+            spacing=0.2,
+            extension=5.0,
+            rotate=True,
+    ):
+        r"""
+        Construct a uniform grid given the molecular pseudo-numbers and coordinates.
+        Parameters
+        ----------
+        atcorenums : np.ndarray, shape (M,)
+            Pseudo-number of :math:`M` atoms in the molecule.
+        atcoords : np.ndarray, shape (M, 3)
+            Cartesian coordinates of :math:`M` atoms in the molecule.
+        spacing : float, optional
+            Increment between grid points along :math:`x`, :math:`y`, and :math:`z` direction.
+        extension : float, optional
+            The extension of the length of the cube on each side of the molecule.
+        rotate : bool, optional
+            When True, the molecule is rotated so the axes of the cube file are
+            aligned with the principle axes of rotation of the molecule.
+            If False, generates axes based on the x,y,z-axis and the spacing parameter, and
+            the origin is defined by the maximum/minimum of the atomic coordinates.
+        """
+        # calculate center of mass of the nuclear charges:
+        totz = np.sum(atcorenums)
+        com = np.dot(atcorenums, atcoords) / totz
+        # Determine best axes and coordinates to calculate the lower and upper bound of grid.
+        if rotate:
+            # calculate moment of inertia tensor:
+            itensor = np.zeros([3, 3])
+            for i in range(atcorenums.shape[0]):
+                xyz = atcoords[i] - com
+                r = np.linalg.norm(xyz) ** 2.0
+                tempitens = np.diag([r, r, r])
+                tempitens -= np.outer(xyz.T, xyz)
+                itensor += atcorenums[i] * tempitens
+            # Eigenvectors define the new axes of the grid with spacing
+            _, v = np.linalg.eigh(itensor)
+            # Project the coordinates of atoms centered at the center of mass to the eigenvectors
+            new_coordinates = np.dot((atcoords - com), v)
+            axes = spacing * v
+        else:
+            # Just use the original coordinates
+            new_coordinates = atcoords
+            # Compute the unit vectors of the cubic grid's coordinate system
+            axes = np.diag([spacing, spacing, spacing])
+
+        # maximum and minimum value of x, y and z coordinates/grid.
+        max_coordinate = np.amax(new_coordinates, axis=0)
+        min_coordinate = np.amin(new_coordinates, axis=0)
+        # Compute the required number of points along x, y, and z axis
+        shape = (max_coordinate - min_coordinate + 2.0 * extension) / spacing
+        # Add one to include the upper-bound as well.
+        shape = np.ceil(shape)
+        shape = np.array(shape, int)
+        # Compute origin by taking the center of mass then subtracting the half of the number
+        #    of points in the direction of the axes.
+        origin = com - np.dot((0.5 * shape), axes)
+        return cls(origin, axes, shape)
+
+    def _calculate_volume(self, shape):
+        r"""Return the volume of the Uniform Grid."""
+        # Shape needs to be an argument, because I need to calculate the weights before
+        #       initializing the _HyperRectangleGrid (where shape is set there).
+        # Three-Dims: Volume of a parallelepiped spanned by a, b, c is  | (a x b) dot c|.
+        if len(shape) == 3:
+            volume = np.dot(
+                np.cross(shape[0] * self.axes[0], shape[1] * self.axes[1]),
+                shape[2] * self.axes[2],
+            )
+        else:
+            # Two-Dims: Volume of a parallelogram is the absolute value of the determinant |a x b|
+            volume = np.linalg.det(
+                np.array([shape[0] * self.axes[0], shape[1] * self.axes[1]])
+            )
+        return np.abs(volume)
+
+    def _choose_weight_scheme(self, shape):
+        # Choose different weighting schemes.
+        volume = self._calculate_volume(shape)
+        numpnt = 1.0 * np.prod(shape)
+        weights = np.full(np.prod(shape), volume / numpnt)
+        return weights
 
     @property
     def points(self):
         """Return cubic grid points."""
         return self._points
-
-    @property
-    def step(self):
-        """Return the step size between to consecutive points."""
-        return self._step
 
     def __len__(self):
         """Return the number of grid points."""
@@ -381,5 +466,5 @@ class CubicGrid:
         """
         if arr.shape != (len(self),):
             raise ValueError("Argument arr should have ({0},) shape.".format(len(self)))
-        value = np.power(self._step, 3) * np.sum(arr)
+        value = np.sum(self._weights * arr)
         return value
