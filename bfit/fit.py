@@ -87,7 +87,8 @@ References
 import numpy as np
 import warnings
 
-from scipy.optimize import minimize
+from scipy.optimize import minimize, NonlinearConstraint
+from timeit import default_timer as timer
 
 from bfit.measure import KLDivergence, SquaredDifference
 
@@ -377,6 +378,8 @@ class KLDivergenceSCF(_BaseFit):
             "performance" : ndarray
                 Values of various performance measures of modeled density at each iteration,
                 as computed by `goodness_of_fit()` method.
+            "time" : float
+                The time in seconds it took to complete the algorithm.
 
         """
         # check the shape of initial coeffs and expons
@@ -395,6 +398,7 @@ class KLDivergenceSCF(_BaseFit):
 
         fun, performance = [], []
         niter = 0
+        start = timer()
         while ((max_diff_expons > e_threshold or max_diff_coeffs > c_threshold) and
                diff_divergence > d_threshold) and maxiter > niter:
 
@@ -426,6 +430,8 @@ class KLDivergenceSCF(_BaseFit):
                 print(diff_divergence, max_diff_coeffs, max_diff_expons)
                 print(new_cs, new_es)
                 print("\n")
+        end = timer()
+        time = end - start
 
         # check whether convergence is reached.
         if maxiter == niter and diff_divergence > d_threshold:
@@ -436,7 +442,8 @@ class KLDivergenceSCF(_BaseFit):
         results = {"x": (new_cs, new_es),
                    "fun": np.array(fun),
                    "success": success,
-                   "performance": np.array(performance)}
+                   "performance": np.array(performance),
+                   "time": time}
 
         return results
 
@@ -547,7 +554,7 @@ class GaussianBasisFit(_BaseFit):
         if method.lower() not in ["slsqp", "trust-constr"]:
             raise ValueError("Argument method={0} is not recognized!".format(method))
 
-        self.method = method
+        self.method = method.lower()
         # assign measure to measure deviation between density & modeled density.
         if measure.lower() == "kl":
             measure = KLDivergence(density, mask_value=mask_value)
@@ -606,6 +613,8 @@ class GaussianBasisFit(_BaseFit):
             "performance" : list
                 Values of various performance measures of modeled density at each iteration,
                 as computed by `_BaseFit.goodness_of_fit` method.
+            "time" : float
+                The time in seconds it took to optimize.
 
         Notes
         -----
@@ -632,13 +641,28 @@ class GaussianBasisFit(_BaseFit):
         # set constraints
         constraints = []
         if with_constraint:
-            constraints = [{"fun": self.const_norm, "type": "eq", "args": args}]
+            if self.method == "slsqp":
+                constraints = [{"fun": self.const_norm, "type": "eq", "args": args}]
+            elif self.method == "trust-constr":
+                constraints = [NonlinearConstraint(self.const_norm, 0, 0, keep_feasible=True)]
         # set optimization options
         if self.method == "slsqp":
             options = {"ftol": tol, "maxiter": maxiter, "disp": disp}
         elif self.method == "trust-constr":
-            options = {"xtol": tol, "maxiter": maxiter, "disp":disp, "verbose": 3}
+            # If the display is true then increase verbosity.
+            verbose = 0
+            if disp:
+                verbose = 3
+            options = {"xtol": tol, "maxiter": maxiter, "disp": disp, "verbose": verbose}
+        # Set callback to computing the error measures we care about
+        callback = None
+        if disp:
+            if self.method == "slsqp":
+                callback = lambda xk : print(self.goodness_of_fit(xk[:len(c0)], xk[len(c0):]))
+            elif self.method == "trust-constr":
+                callback = lambda xk, res: print(self.goodness_of_fit(xk[:len(c0)], xk[len(c0):]))
         # optimize
+        start = timer()  # Start timer
         res = minimize(fun=self.func,
                        x0=x0,
                        args=args,
@@ -647,7 +671,11 @@ class GaussianBasisFit(_BaseFit):
                        bounds=bounds,
                        constraints=constraints,
                        options=options,
+                       callback=callback,
                        )
+        end = timer()
+        time = end - start
+
         # check successful optimization
         if not res["success"]:
             warnings.warn("Failed Optimization: {0}".format(res["message"]))
@@ -665,7 +693,8 @@ class GaussianBasisFit(_BaseFit):
                    "success": res["success"],
                    "message": res["message"],
                    "jacobian": res["jac"],
-                   "performance": np.array(self.goodness_of_fit(coeffs, expons))}
+                   "performance": np.array(self.goodness_of_fit(coeffs, expons)),
+                   "time" : time}
         return results
 
     def func(self, x, *args):
@@ -714,7 +743,7 @@ class GaussianBasisFit(_BaseFit):
 
         """
         # compute linear combination of gaussian basis functions
-        m, dm = self.evaluate_model(x, *args)
+        m, _ = self.evaluate_model(x, *args)
         cons = self.norm - self.grid.integrate(m)
         return cons
 
