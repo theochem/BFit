@@ -272,8 +272,9 @@ class KLDivergenceSCF(_BaseFit):
             The elements less than or equal to this number are masked in a division.
         integration_val : float, optional
             If this is provided, then the model is constrained to integrate to this value.
-            If not, then the model would integrate to the numerical integration of the density.
-            Useful when one knows the actual integration value of the density.
+            If not, then the integration of the model is constrained to the numerical
+            integration of the density. Useful when one knows the actual integration
+            value of the density.
 
         """
         # initialize KL deviation measure
