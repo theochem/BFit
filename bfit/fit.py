@@ -280,7 +280,7 @@ class KLDivergenceSCF(_BaseFit):
         measure = KLDivergence(density, mask_value=mask_value)
         super(KLDivergenceSCF, self).__init__(grid, density, model, measure)
         # compute norm of density
-        if integration_val is  None:
+        if integration_val is None:
             self.norm = grid.integrate(density)
         else:
             self.norm = integration_val
