@@ -256,7 +256,7 @@ class KLDivergenceSCF(_BaseFit):
 
     """
 
-    def __init__(self, grid, density, model, mask_value=0.):
+    def __init__(self, grid, density, model, mask_value=0., integration_val=None):
         r"""
         Construct the KLDivergenceSCF class.
 
@@ -270,13 +270,20 @@ class KLDivergenceSCF(_BaseFit):
             The Gaussian basis model density. Located in `model.py`.
         mask_value : float, optional
             The elements less than or equal to this number are masked in a division.
+        integration_val : float, optional
+            If this is provided, then the model is constrained to integrate to this value.
+            If not, then the model would integrate to the numerical integration of the density.
+            Useful when one knows the actual integration value of the density.
 
         """
         # initialize KL deviation measure
         measure = KLDivergence(density, mask_value=mask_value)
         super(KLDivergenceSCF, self).__init__(grid, density, model, measure)
         # compute norm of density
-        self.norm = grid.integrate(density)
+        if integration_val is  None:
+            self.norm = grid.integrate(density)
+        else:
+            self.norm = integration_val
         # compute lagrange multiplier
         self._lm = self.grid.integrate(self.density) / self.norm
         if self._lm == 0. or np.isnan(self._lm):
