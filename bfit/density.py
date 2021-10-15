@@ -357,17 +357,14 @@ class AtomicDensity:
         """
         phi_matrix = np.zeros((len(points), len(self.orbitals)))
         for index, orbital in enumerate(self.orbitals):
-            print(orbital)
             exps, number = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
             # Take second derivative of the Slater-Type Orbitals without division by r^2 (added this below)
             slater = AtomicDensity.slater_orbital(exps, number, points)
-            # derivative and set division by zero (occurs at the origin r=0) to zero.
-            with np.errstate(divide='ignore'):
-                deriv_pref = (number.T - 1.) / np.reshape(points, (points.shape[0], 1)) - exps.T
-                deriv_pref[np.abs(points) < 1e-10] = 0.0
+            # derivative
+            deriv_pref = (number.T - 1.) - exps.T * np.reshape(points, (points.shape[0], 1))
             deriv = deriv_pref * slater
             phi_matrix[:, index] = np.dot(deriv, self.orbitals_coeff[orbital]).ravel()
-        phi_matrix = self.phi_matrix(points, deriv=True)
+
         angular = []  # Angular numbers are l(l + 1)
         for index, orbital in enumerate(self.orbitals):
             if "S" in orbital:
@@ -378,10 +375,16 @@ class AtomicDensity:
                 angular.append(6.)
             elif "F" in orbital:
                 angular.append(12.)
-        energy = np.dot(phi_matrix**2.0, self.orbitals_occupation).ravel() / 2.0
+
+        orb_occs = self.orbitals_occupation
+        energy = np.dot(phi_matrix**2., orb_occs).ravel() / 2.
         # Add other term
         molecular = self.phi_matrix(points)**2. * np.array(angular)
-        energy += np.dot(molecular, angular).ravel() / 2.
+        energy += np.dot(molecular, orb_occs).ravel() / 2.
+        # Divide by r^2 and set division by zero to zero.
+        with np.errstate(divide='ignore'):
+            energy /= (points**2.0)
+            energy[np.abs(points) < 1e-10] = 0.
         return energy / (4.0 * np.pi)
 
     def derivative_density(self, points):
