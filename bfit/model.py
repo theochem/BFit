@@ -224,6 +224,22 @@ class AtomicGaussianDensity:
         r"""Obtain list of exponents for the prefactors."""
         return np.array([1.5] * self.ns + [2.5] * self.np)
 
+    def change_numb_s_and_numb_p(self, new_s, new_p):
+        r"""
+        Change the number of
+
+        Parameters
+        ----------
+        new_s
+        new_p
+
+        Returns
+        -------
+
+        """
+        self.ns = new_s
+        self.np = new_p
+
     def evaluate(self, coeffs, expons, deriv=False):
         r"""
         Compute linear combination of Gaussian basis & its derivatives on the grid points.

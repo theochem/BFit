@@ -98,24 +98,22 @@ def get_next_choices(factor, coeffs, fparams, coeff_val=100.):
                 [a1 / factor, a2, a3, .., an] & coeffs = [c1, c1, c2, ..., cn],
                 [a1, a2, ..., (ai + a(i+1)/2, a(i+1), ..., an] & similar coeffs,
                 [a1, a2, ..., factor * an] & coeffs = [c1 c2, ..., cn, cn].
+
     Parameters
     ----------
     factor : float
              Number used to give two choices by multiplying each end point.
-    
     coeffs : np.ndarray
              Coefficients of the basis functions.
-    
     fparams : np.ndarray
               Function parameters.
-    
     coeff_val : float
                 Number used to fill in the coefficient value for each guess.
     
     Returns
     -------
-    list
-        List of the next possible initial choices for greedy based on factor.
+    List[List[np.ndarray, np.ndarray]]
+        List of lists where the next possible initial choices for greedy based on factor.
 
     """
     size = fparams.shape[0]
@@ -145,26 +143,23 @@ def get_two_next_choices(factor, coeffs, fparams, coeff_val=100.):
     midpoint, or two mid point guess or two endpoint guess. In other words:
         [a1 / factor, ..., (ai + a(i+1))/2, ..., an],
         [a1, ..., (aj + a(j+1))/2, a(j+1) ..., (ai + a(i+1))/2, a(i+1), .., an],
-        [a1 / factor, a2, a3, ..., a(n-1), factor * an], respetively.
+        [a1 / factor, a2, a3, ..., a(n-1), factor * an], respectively.
 
     Parameters
     ----------
     factor : float
              Number used to give two choices by multiplying each end point.
-    
     coeffs : np.ndarray
              Coefficients of the basis functions.
-    
     fparams : np.ndarray
               Function parameters.
-    
     coeff_val : float
                 Number used to fill in the coefficient value for each guess.
     
     Returns
     -------
-    list
-        List of the next possible initial choices for greedy based on factor.
+    List[List[np.ndarray, np.ndarray]]
+        List of lists where the next possible initial choices for greedy based on factor.
 
     """
     size = len(fparams)
@@ -240,8 +235,8 @@ def pick_two_lose_one(factor, coeffs, exps, coeff_val=100.):
     
     Returns
     -------
-    list
-        List of the next possible initial choices for greedy based on factor.
+    List[List[np.ndarray, np.ndarray]]
+        List of lists where the next possible initial choices for greedy based on factor.
 
     """
     all_choices = []
