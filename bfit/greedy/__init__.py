@@ -20,5 +20,3 @@
 #
 # ---
 from bfit.greedy.greedy_strat import GreedyStrategy
-from bfit.greedy.greedy_kl import GreedyKL
-from bfit.greedy.greedy_lq import GreedyLeastSquares
