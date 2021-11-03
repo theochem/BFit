@@ -34,28 +34,10 @@ from scipy.optimize import nnls, minimize, fmin_l_bfgs_b
 import numpy as np
 from bfit.fit import KLDivergenceSCF
 
-__all__ = ["optimize_using_slsqp", "optimize_using_nnls", "optimize_using_l_bfgs",
-           "optimize_using_nnls_valence"]
+__all__ = ["optimize_using_slsqp", "optimize_using_nnls", "optimize_using_l_bfgs"]
 
 
-def optimize_using_nnls(true_dens, cofactor_matrix):
-    r"""
-
-    """
-    b_vector = np.copy(true_dens)
-    b_vector = np.ravel(b_vector)
-    row_nnls_coefficients = nnls(cofactor_matrix, b_vector)
-    return row_nnls_coefficients[0]
-
-
-def optimize_using_nnls_valence(true_val_dens, cofactor_matrix):
-    b_vector = np.copy(true_val_dens)
-    b_vector = np.ravel(b_vector)
-    row_nnls_coefficients = nnls(cofactor_matrix, b_vector)
-    return row_nnls_coefficients[0]
-
-
-def optimize_using_slsqp(density_model, initial_guess, bounds=None, *args):
+def optimize_using_slsqp(self, density_model, initial_guess, bounds=None, *args):
     r"""Optimize the model via SLSQP.
 
     Works for Kullback-leibler class or DensityModel class.
@@ -92,7 +74,7 @@ def optimize_using_slsqp(density_model, initial_guess, bounds=None, *args):
     return parameters
 
 
-def optimize_using_l_bfgs(density_model, initial_guess, bounds=None, *args):
+def optimize_using_l_bfgs(self, density_model, initial_guess, bounds=None, *args):
     r"""Optimize the DensityModel class via L-BFGS.
 
     Parameters
