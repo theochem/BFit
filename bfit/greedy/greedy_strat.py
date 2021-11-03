@@ -27,6 +27,7 @@ TODO
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
+from scipy.optimize import nnls, minimize, fmin_l_bfgs_b
 
 from bfit.greedy.greedy_utils import (
     check_redundancies, get_next_choices, get_two_next_choices, pick_two_lose_one
@@ -115,7 +116,7 @@ class GreedyStrategy(metaclass=ABCMeta):
             for i, x in enumerate(err):
                 self.err_arr[i].append(x)
 
-    def _find_best_lparams(self, param_list):
+    def _find_best_lparams(self, param_list, num_s_choices, num_p_choices):
         r"""
         Return the best initial guess from a list of potential model parameter choices.
 
@@ -123,21 +124,39 @@ class GreedyStrategy(metaclass=ABCMeta):
         ----------
         param_list : List[TODO]
 
+        num_s_choices : int
+
+        num_p_choices : int
+
         Returns
         -------
-        (float, List) :
+        (float, List, bool) :
             Returns the value of the cost-function and the best parameters.
+            True if adding S-type is the most optimal, False otherwise.
 
         """
         best_local_value = 1e10
         best_local_param = None
-        for param in param_list:
+        is_s_optimal = False
+        for i in range(0, num_s_choices + num_p_choices):
+            param = param_list[i]
+
+            # Update model for the new number of S-type and P-type functions.
+            if i < num_s_choices:
+                self.model.change_numb_s_and_numb_p(self.num_s + self.numb_func_increase, self.num_p)
+            else:
+                self.model.change_numb_s_and_numb_p(self.num_s, self.num_p + self.numb_func_increase)
+
             local_param = self.get_optimization_routine(param, local=True)
             cost_func = self.get_cost_function(local_param)
             if cost_func < best_local_value:
                 best_local_value = self.get_cost_function(local_param)
                 best_local_param = local_param
-        return best_local_value, best_local_param
+                if i < num_s_choices:
+                    is_s_optimal = True
+                else:
+                    is_s_optimal = False
+        return best_local_value, best_local_param, is_s_optimal
 
     def _split_parameters(self, params):
         r"""
@@ -147,10 +166,9 @@ class GreedyStrategy(metaclass=ABCMeta):
         p_coeffs = params[self.num_s:self.num_s + self.num_p]
         s_exps = params[self.num_s + self.num_p:2 * self.num_s + self.num_p]
         p_exps = params[2 * self.num_s + self.num_p:]
-        return s_coeffs, s_exps, p_coeffs ,p_exps
+        return s_coeffs, s_exps, p_coeffs, p_exps
 
-    def __call__(self, factor, max_numb_funcs=30, backward_elim_funcs=None,
-                 add_extra_choices=None, ioutput=False):
+    def __call__(self, factor, d_threshold=1e-8, max_numb_funcs=30, add_extra_choices=None, ioutput=False):
         # Initialize all the variables
         gparams = self.get_best_one_function_solution()
         self.store_errors(gparams)
@@ -162,94 +180,100 @@ class GreedyStrategy(metaclass=ABCMeta):
         factor0 = factor  # Scaling parameter that changes.
 
         # Start the greedy algorithm
-        add_p_type = True
-        while numb_funcs < max_numb_funcs - 1 and np.abs(best_gval - prev_gval) >= 1e-8 and \
-                numb_redum < 5:
-            # Get the next list of choices of parameters for S-type and P-type orbitals.
+        success = True
+        while numb_funcs < max_numb_funcs - 1 and np.abs(best_gval - prev_gval) >= d_threshold and numb_redum < 5:
             s_coeffs, s_exps, p_coeffs, p_exps = self._split_parameters(gparams)
             print("S params", s_coeffs, s_exps)
             print("P params", p_coeffs, p_exps)
-            if add_p_type:
-                #  Add new P-type
-                if self.num_p == 0:
-                    choices_parameters = [np.array([2, 100])]
-                else:
-                    choices_parameters = self.next_param_func(factor, p_coeffs, p_exps)
-                add_p_type = False
-                choices_parameters = [
-                    np.hstack((s_coeffs, x[:self.num_p], s_exps, x[self.num_p:])) for x in choices_parameters
-                ]
-                self.num_p += self.numb_func_increase
-            else:
-                # Add new S-type
-                choices_parameters = self.next_param_func(factor, s_coeffs, s_exps)
-                add_p_type = True
-                choices_parameters = [
-                    np.hstack((x[:self.num_s], p_coeffs, x[self.num_s:], p_exps)) for x in choices_parameters
-                ]
-                self.num_s += self.numb_func_increase
 
+            # Get the next list of choices of parameters for S-type and P-type orbitals.
+            # Add new S-type
+            choices_parameters_s = self.next_param_func(factor, s_coeffs, s_exps)
+            choices_parameters_s = [
+                np.hstack((x[:self.num_s], p_coeffs, x[self.num_s:], p_exps)) for x in choices_parameters_s
+            ]
+            #  Add new P-type
+            if self.num_p == 0:
+                # Default choices for the first P-type guess. Coefficient of 2 with exponent 100.
+                choices_parameters_p = [np.array([2, 100])]
+            else:
+                choices_parameters_p = self.next_param_func(factor, p_coeffs, p_exps)
+            choices_parameters_p = [
+                np.hstack((s_coeffs, x[:self.num_p], s_exps, x[self.num_p:])) for x in choices_parameters_p
+            ]
+            num_s_choices = len(choices_parameters_s)
+            num_p_choices = len(choices_parameters_p)
+            total_choices = choices_parameters_s + choices_parameters_p
             if callable(add_extra_choices):
                 # When you want extra choices to be added.
                 # ie fitting the left-over density.
-                choices_parameters.append(add_extra_choices(gparams))
-            # Update model for the new number of S-type and P-type functions.
-            self.model.change_numb_s_and_numb_p(self.num_s, self.num_p)
-            numb_funcs += self.numb_func_increase
+                total_choices.append(add_extra_choices(gparams))
 
             # Run fast, quick optimization and find the best parameter out of the choices.
-            best_lval, best_lparam = self._find_best_lparams(choices_parameters)
-            print(best_lparam)
+            best_lval, best_lparam, is_s_optimal = self._find_best_lparams(total_choices, num_s_choices, num_p_choices)
+            print("Is S-Type optimal", is_s_optimal)
+
+            # Update model for the new number of S-type and P-type functions.
+            if is_s_optimal:
+                self.num_s += self.numb_func_increase
+                self.model.change_numb_s_and_numb_p(self.num_s, self.num_p)
+            else:
+                self.num_p += self.numb_func_increase
+                self.model.change_numb_s_and_numb_p(self.num_s, self.num_p)
+            numb_funcs += self.numb_func_increase
 
             # Check if redundancies were found in the coefficients and exponents, remove them,
             #   change the factor and try again.
             s_coeffs, s_exps, p_coeffs, p_exps = self._split_parameters(best_lparam)
             s_coeffs_new, s_exps_new = check_redundancies(s_coeffs, s_exps)
             p_coeffs_new, p_exps_new = check_redundancies(p_coeffs, p_exps)
-            if not add_p_type and self.num_s != len(s_coeffs_new):
+            if is_s_optimal and self.num_s != len(s_coeffs_new):
+                # Found S-type Redundancies, remove them and change factor for different choices.
                 print("Found S-type Redudancies")
                 self.redudan_info.append([numb_funcs, self.num_s, "Go Back a Iteration with new factor"])
                 numb_funcs -= 1
                 self.num_s -= 1
                 numb_redum += 1  # Update the termination criteria
-                factor += 5  # Increase the factor that changes the kinds of potential choices.
+                factor += 5      # Increase the factor that changes the kinds of potential choices.
                 self.model.change_numb_s_and_numb_p(self.num_s, self.num_p)
-            elif add_p_type and self.num_p != len(p_coeffs_new):
+            elif not is_s_optimal and self.num_p != len(p_coeffs_new):
+                # Found P-type Redundancies, remove them and change factor for different choices.
                 print("Found P-type Redudancies")
                 self.redudan_info.append([numb_funcs, self.num_p, "Go Back a Iteration with new factor"])
                 numb_funcs -= 1
                 self.num_p -= 1
                 numb_redum += 1  # Update the termination criteria
-                factor += 5  # Increase the factor that changes the kinds of potential choices.
+                factor += 5      # Increase the factor that changes the kinds of potential choices.
                 self.model.change_numb_s_and_numb_p(self.num_s, self.num_p)
-            # Take the best local choice and optimization even further.
             elif best_lval <= best_gval:
+                # Take the best local choice and optimization even further.
                 prev_gval, best_gval = best_gval, best_lval
                 gparams = self.get_optimization_routine(best_lparam, local=False)
                 self.store_errors(gparams)
                 print("errors", self.err_arr)
                 params_iter.append(gparams)
-                numb_redum = 0  # Reset the number of redundancies.
-                factor = factor0  # Reset Factor.
-
+                numb_redum = 0    # Reset the number of redundancies.
+                factor = factor0  # Reset Original Factor.
             else:
+                success = False
                 exit_info = "Next Iteration Did Not Find The Best Choice"
                 break
-            if backward_elim_funcs is not None:
-                gparams = backward_elim_funcs(best_lparam)
+            print("")
+
+        if numb_funcs == max_numb_funcs - 1 or numb_redum == 5:
+            success = False
 
         # "Next Iteration Did Not Find The Best Choice":
         if exit_info is None:
             exit_info = self._final_exit_info(numb_funcs, max_numb_funcs, best_gval, prev_gval, numb_redum)
 
-        # Get the error message.
-
         results = {"x": gparams,
-                   "fun": np.array(fun),
+                   "fun": np.array(self.err_arr).T[:, -1],
+                   "success" : success,
                    "parameters_iteration": params_iter,
-                   "performance": np.array(performance),
+                   "performance": np.array(self.err_arr).T,
                    "exit_information": exit_info}
-        return gparams, params_iter, exit_info
+        return results
 
     def _final_exit_info(self, num_func, max_func, best_val, prev_gval, redum):
         if not num_func < max_func - 1:
@@ -263,17 +287,33 @@ class GreedyStrategy(metaclass=ABCMeta):
 
 
 class GreedyLeastSquares(GreedyStrategy):
-    def __init__(self, grid, density, choice="pick-one", scale=2):
-        self.gauss_obj = AtomicGaussianDensity(grid.points, num_s=density)
+    def __init__(self, grid, density, choice="pick-one", local_tol=1e-5, global_tol=1e-8, scale=2.0, method="SLSQP"):
+        self.gauss_obj = AtomicGaussianDensity(grid.points, num_s=1)
         self.grid = grid
-        super(GreedyStrategy, self).__init__(choice, scale)
+        self.local_tol = local_tol
+        self.global_tol = global_tol
+        self.successful = None
+        super(GreedyLeastSquares, self).__init__(grid, choice, scale)
+        self.gaussian_obj = GaussianBasisFit(grid, density, self.model, measure="LS", method=method)
 
     @property
     def density(self):
-        return self.gauss_obj._density
+        return self.gaussian_obj.density
+
+    def get_model(self, params):
+        return self.model.evaluate(params[:len(params)//2], params[len(params)//2:])
 
     def get_cost_function(self, params):
-        self.gauss_obj.cost_function(params)
+        model = self.get_model(params)
+        return self.grid.integrate(self.gaussian_obj.measure.evaluate(model))
+
+    def optimize_using_nnls(self, true_dens, cofactor_matrix):
+        r"""
+        """
+        b_vector = np.copy(true_dens)
+        b_vector = np.ravel(b_vector)
+        row_nnls_coefficients = nnls(cofactor_matrix, b_vector)
+        return row_nnls_coefficients[0]
 
     def _solve_one_function_weight(self, weight):
         a = 2.0 * np.sum(weight)
@@ -283,8 +323,7 @@ class GreedyLeastSquares(GreedyStrategy):
         c = 2.0 * sum_ln_electron_density
         d = b
         e = 2.0 * np.sum(weight * np.power(self.grid.points, 4))
-        f = 2.0 * np.sum(weight * np.power(self.grid.points, 2) *
-                         np.log(self.density))
+        f = 2.0 * np.sum(weight * np.power(self.grid.points, 2) * np.log(self.density))
         big_a = (b * f - c * e) / (b * d - a * e)
         big_b = (a * f - c * d) / (a * e - b * d)
         coefficient = np.exp(big_a)
@@ -296,75 +335,53 @@ class GreedyLeastSquares(GreedyStrategy):
         weight1 = np.ones(len(self.grid.points))
         weight3 = np.power(self.density, 2.)
         p1 = self._solve_one_function_weight(weight1)
-        cost_func1 = self.gauss_obj.cost_function(p1)
+        cost_func1 = self.get_cost_function(p1)
 
         p2 = self._solve_one_function_weight(self.density)
-        cost_func2 = self.gauss_obj.cost_function(p2)
+        cost_func2 = self.get_cost_function(p2)
 
         p3 = self._solve_one_function_weight(weight3)
-        cost_func3 = self.gauss_obj.cost_function(p3)
+        cost_func3 = self.get_cost_function(p3)
 
-        p_min = min([(cost_func1, p1), (cost_func2, p2), (cost_func3, p3)],
-                    key=lambda t: t[0])
+        p_min = min(
+            [(cost_func1, p1), (cost_func2, p2), (cost_func3, p3)], key=lambda t: t[0]
+        )
+        return p_min[1]
 
-        # Minimize by analytically finding coefficient.
-        val = 1e10
-        if self.gauss_obj.element is not None:
-            exp_choice1 = self.gauss_obj.generation_of_UGBS_exponents(1.25,
-                                                                      self.ugbs)
-            exp_choice2 = self.gauss_obj.generation_of_UGBS_exponents(1.5,
-                                                                      self.ugbs)
-            exp_choice3 = self.gauss_obj.generation_of_UGBS_exponents(1.75,
-                                                                      self.ugbs)
-            grid_squared = self.grid.points**2.
-            best_found = None
-            for exp in np.append((exp_choice1, exp_choice2, exp_choice3)):
-                num = np.sum(self.density * np.exp(-exp * grid_squared))
-                den = np.sum(np.exp(-2. * exp * grid_squared))
-                c = num / den
-                p = np.array([c, exp])
-                p = self.get_optimization_routine(p)
-                cost_func = self.gauss_obj.cost_function(p)
-                if cost_func < val:
-                    val = cost_func
-                    best_found = p
+    def create_cofactor_matrix(self, exponents):
+        exponents_s = exponents[:self.model.num_s]
+        grid_squared_col = np.power(self.grid.points, 2.0).reshape((len(self.grid.points), 1))
+        exponential = np.exp(-exponents_s * grid_squared_col)
 
-        if p_min[0] < val:
-            return p_min[1]
-        return best_found
+        if self.model.num_p != 0:
+            exponents_p = exponents[self.model.num_s:]
+            exponential = np.hstack(
+                (exponential, grid_squared_col * np.exp(-exponents_p * grid_squared_col))
+            )
+        assert(exponential.shape[1] == len(np.ravel(exponents)))
+        assert(exponential.shape[0] == len(np.ravel(self.grid.points)))
+        assert np.ndim(exponential) == 2
+        return exponential
 
-    def get_optimization_routine(self, params):
+    def get_optimization_routine(self, params, local=False):
         exps = params[len(params)//2:]
-        cofac_matrix = self.gauss_obj.create_cofactor_matrix(exps)
-        coeffs = optimize_using_nnls(self.density, cofac_matrix)
-
-        p = np.append(coeffs, exps)
-        params = optimize_using_slsqp(self.gauss_obj, p)
-        return params
+        cofac_matrix = self.create_cofactor_matrix(exps)
+        coeffs = self.optimize_using_nnls(self.density, cofac_matrix)
+        if local:
+            results = self.gaussian_obj.run(coeffs, exps, tol=self.local_tol, maxiter=1000)["x"]
+        else:
+            results = self.gaussian_obj.run(coeffs, exps, tol=self.global_tol, maxiter=1000, disp=True,
+                                            with_constraint=True)["x"]
+        return np.hstack((results[0], results[1]))
 
     def get_errors_from_model(self, params):
-        model = self.gauss_obj.create_model(params)
-        err1 = self.gauss_obj.integrate_model_trapz(model)
-        err2 = self.gauss_obj.get_integration_error(self.density, model)
-        err3 = self.gauss_obj.get_error_diffuse(self.density, model)
-        return [err1, err2, err3]
+        coeffs, exps = params[:len(params)//2], params[len(params)//2:]
+        return self.gaussian_obj.goodness_of_fit(coeffs, exps)
 
 
 class GreedyKL(GreedyStrategy):
-    r"""
-
-    """
     def __init__(self, grid, density, choice="pick-one", eps_coeff=1e-4, eps_exp=1e-5, scale=2.0,
                  mask_value=1e-12, integration_val=None, normalize=True):
-        r"""
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-
-        """
         self.threshold_coeff = eps_coeff
         self.threshold_exp = eps_exp
         self.successful = None
@@ -398,18 +415,14 @@ class GreedyKL(GreedyStrategy):
 
     def get_optimization_routine(self, params, local=False):
         coeffs, exps = params[:len(params)//2], params[len(params)//2:]
-        # Update Model if it doesn't match shape. This is due to poor design of the classes.
-        if True:
-            self.mbis_obj.model.change_numb_s_and_numb_p(len(coeffs), 0)
-
         if local:
             result = self.mbis_obj.run(coeffs, exps, opt_coeffs=True, opt_expons=True,
                                      maxiter=500, c_threshold=1e-2, e_threshold=1e-3,
                                      disp=False)['x']
             return np.hstack((result[0], result[1]))
-        result = self.mbis_obj.run(coeffs, exps, opt_coeffs=True, opt_expons=True, maxiter=500,
+        result = self.mbis_obj.run(coeffs, exps, opt_coeffs=True, opt_expons=True, maxiter=1000,
                                  c_threshold=self.threshold_coeff, e_threshold=self.threshold_exp,
-                                 disp=False)['x']
+                                   d_threshold=1e-6, disp=True)['x']
         return np.hstack((result[0], result[1]))
 
     def get_errors_from_model(self, params):
@@ -420,9 +433,10 @@ class GreedyKL(GreedyStrategy):
 if __name__ == "__main__":
     from bfit.grid import ClenshawRadialGrid
     from bfit.density import AtomicDensity
-    grid_obj = ClenshawRadialGrid(4, 1000, 1000)
+    grid = ClenshawRadialGrid(4, num_core_pts=10000, num_diffuse_pts=900, extra_pts=[50, 75, 100])
     dens_obj = AtomicDensity("be")
-    dens = dens_obj.atomic_density(grid_obj.points)
+    dens = dens_obj.atomic_density(grid.points)
 
-    greedy = GreedyKL(grid_obj, dens, integration_val=4.0)
+    # greedy = GreedyKL(grid, dens, integration_val=4.0, eps_coeff=1e-5, eps_exp=1e-6)
+    greedy = GreedyLeastSquares(grid, dens, choice="pick-one", method="SLSQP")
     greedy(2.0)
