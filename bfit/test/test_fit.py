@@ -199,7 +199,8 @@ def test_kl_scf_update_params_1s1p_gaussian():
 
 def test_kl_scf_update_params_3d_molecular_dens_1s_1s_gaussian():
     # actual density is a 1s Gaussian at origin
-    grid = CubicGrid(-2., 2., 0.1)
+    axes = np.array([[0.1, 0.0, 0.0], [0.0, 0.1, 0.0], [0.0, 0.0, 0.1]])
+    grid = CubicGrid(np.array([-2.0, -2.0, -2.0]), axes, (40, 40, 40))
     dens = np.exp(-np.sum(grid.points ** 2., axis=1))
     # model density is a normalized 1s Gassuain on each center
     coord = np.array([[0., 0., 0.], [0., 0., 1.]])
@@ -234,7 +235,8 @@ def test_kl_scf_update_params_3d_molecular_dens_1s_1s_gaussian():
 
 def test_kl_scf_run_3d_molecular_dens_1s_1p_gaussian():
     # make cubic grid
-    grid = CubicGrid(-10., 10., 0.3)
+    axes = np.array([[0.3, 0.0, 0.0], [0.0, 0.3, 0.0], [0.0, 0.0, 0.3]])
+    grid = CubicGrid(np.array([-10.0, -10.0, -10.0]), axes, (65, 65, 65))
     # actual density is a 1s Gaussian at x=0.5 & 1p Gaussian at y=0.25
     c, e = np.array([0.53, 2.07]), np.array([0.67, 1.92])
     coord = np.array([[0.5, 0., 0.], [0., 0.25, 0.]])
