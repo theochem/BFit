@@ -53,6 +53,7 @@ def test_raises_gaussian_model():
     assert_raises(ValueError, MolecularGaussianDensity,
                   np.array([[0., 1.]]), np.array([[1.]]), np.array([[1, 1]]))
 
+
 def test_gaussian_1s_origin():
     # test one (un)normalized s-type gaussian on r=0. against sympy
     coeffs, expons = np.array([0.]), np.array([0.])
@@ -960,7 +961,8 @@ def test_gaussian_model_sp_integrate_uniform():
 
 
 def test_gaussian_model_s_integrate_cubic():
-    grid = CubicGrid(-5, 5., 0.3)
+    axes = np.array([[0.3, 0.0, 0.0], [0.0, 0.3, 0.0], [0.0, 0.0, 0.3]])
+    grid = CubicGrid(np.array([-5.0, -5.0, -5.0]), axes, (65, 65, 65))
     coord = None
     # un-normalized s-type + p-type Gaussian
     model = AtomicGaussianDensity(grid.points, center=coord, num_s=1)
@@ -977,7 +979,8 @@ def test_gaussian_model_s_integrate_cubic():
 
 
 def test_gaussian_model_sp_integrate_cubic():
-    grid = CubicGrid(0., 20., 0.3)
+    axes = np.array([[0.3, 0.0, 0.0], [0.0, 0.3, 0.0], [0.0, 0.0, 0.3]])
+    grid = CubicGrid(np.zeros(3), axes, (65, 65, 65))
     coord = np.array([10., 10., 10.])
     # un-normalized s-type + p-type Gaussian
     model = AtomicGaussianDensity(grid.points, center=coord, num_s=1, num_p=1)
@@ -999,7 +1002,8 @@ def test_gaussian_model_sp_integrate_cubic():
 
 
 def test_molecular_gaussian_model_sp_integrate_cubic():
-    grid = CubicGrid(0., 20., 0.3)
+    axes = np.array([[0.3, 0.0, 0.0], [0.0, 0.3, 0.0], [0.0, 0.0, 0.3]])
+    grid = CubicGrid(np.zeros(3), axes, (75, 75, 75))
     coord = np.array([[10., 10., 9.5], [10., 10., 10.5]])
     # un-normalized s-type & p-type Gaussian
     basis = np.array([[0, 1], [1, 0]])
