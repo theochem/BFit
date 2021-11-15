@@ -8,14 +8,50 @@ BFit
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/theochem/procrustes/master?filepath=docs%2Fnotebooks%2F)
 
 
-BFit is a python program that is used to fit a convex sum of 
-positive basis functions to any probability distribution. 
+BFit is a python library for (best) fitting a convex sum of positive basis functions to any
+probability distribution. It is primarily intended for quantum chemistry applications, where the
+basis functions are Gaussians and the fitted probability distribution is a scalar function like
+the electron density.
 
-Primarily intended for quantum chemistry community, where the basis functions are Gaussian functions and the 
-fitted probability distribution is the electron density.
+To report any issues or ask questions, either [open an issue](
+https://github.com/QuantumElephant/bfit/issues/new) or email [qcdevs@gmail.com]().
 
 
-Features 
+Citation
+--------
+Please use the following citation in any publication using BFit library:
+
+> **"BFit: Information-Theoretic Approach to Basis-Set Fitting of Electron Densities."**,
+> A. Tehrani, F. Heidar-Zadeh, J. S. M. Anderson, T. Verstraelen, R. Cuevas-Saavedra,
+> I. Vinogradov, D. Chakraborty, P. W. Ayers
+> `REFERENCE <https://doi.org/10.1002/jcc.26468>`__.
+
+
+Dependencies
+------------
+* Python >= 3.0: http://www.python.org/
+* NumPy >= 1.18.5: http://www.numpy.org/
+* SciPy >= 1.5.0: http://www.scipy.org/
+* PyTest >= 5.3.4: https://docs.pytest.org/
+* PyTest-Cov >= 2.8.0: https://pypi.org/project/pytest-cov/
+* PIP >= 19.0: https://pip.pypa.io/
+
+
+Installation
+------------
+On your terminal run:
+
+```bash
+# install BFit from source
+git clone https://github.com/theochem/bfit.git
+python ./setup.py install
+
+# run tests to make sure BFit was installed properly
+nosetests -v bfit
+```
+
+
+Features
 --------
 
 The features of this software are:
@@ -35,29 +71,6 @@ The features of this software are:
 
 * Construct Slater atomic densities, including anions, cations and heavy elements, see [data page](data/README.md).
 
-
-Dependences 
------------
-* Python >= 3.0: http://www.python.org/
-* NumPy >= 1.18.5: http://www.numpy.org/
-* SciPy >= 1.5.0: http://www.scipy.org/
-* PyTest >= 5.3.4: https://docs.pytest.org/
-* PyTest-Cov >= 2.8.0: https://pypi.org/project/pytest-cov/
-* PIP >= 19.0: https://pip.pypa.io/
-
-Installation
--------------
-In your terminal run:
-
-```bash
-git clone https://github.com/QuantumElephant/fitting.git
-python ./setup.py install
-```
-
-Run tests to see if it's installed properly:
-```bash
-pytest -v fitting
-```
 
 ## Example
 There are four steps to using BFit.
@@ -105,15 +118,3 @@ print("Was it successful? ", result["success"])
 ```
 See the [example directory](examples/) for more examples.
 
-Citation
---------
-
-Please cite the following.
-TODO: Update PAPER
-
-Alireza Tehrani, Farnaz Heidar-Zadeh, James S.M. Anderson, Toon Verstraelen, Rogelio Cuevas-Saavedra, Ivan Vinogradov, Debajit Chakraborty, Paul W. Ayers. "BFit: Information-Theoretic Approach to Basis-Set Fitting of Electron Densities"
-
-
-## FAQ 
-#### Where did you get the slater coefficients from?
-Please see [Data Readme](data/) in the data folder.
