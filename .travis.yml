@@ -9,7 +9,7 @@ install:
     - pip install git+https://github.com/theochem/grid.git@master
 
 script:
-    - tar -xvf bfit/data/data.tar
+    - tar -xvf bfit/data/data.tar -C bfit/data/
     - nosetests --with-coverage --cover-package=bfit -v ./bfit/
     - pylint ./bfit/ --errors-only
     - pycodestyle ./bfit/ --max-line-length=100
