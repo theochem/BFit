@@ -1,12 +1,12 @@
 language: python
 python:
-    - 2.7
-    - 3.5
+    - 3.6
 
 install:
     - pip install numpy scipy nose matplotlib
     - pip install pylint
     - pip install pycodestyle pydocstyle
+    - pip install git+https://github.com/theochem/grid.git@master
 
 script:
     - nosetests --with-coverage --cover-package=bfit -v ./bfit/
