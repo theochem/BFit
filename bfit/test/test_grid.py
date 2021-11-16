@@ -222,7 +222,7 @@ def test_integration_clenshaw_gaussian():
 
 
 def test_raises_cubic():
-    assert_raises(TypeError, CubicGrid, "blah", 2., 3.)
+    assert_raises(AttributeError, CubicGrid, "blah", 2., 3.)
     assert_raises(TypeError, CubicGrid, -1., "blah", 3.)
     assert_raises(TypeError, CubicGrid, -1., 2., "blah")
     assert_raises(TypeError, CubicGrid, -1., 2., -5.)
