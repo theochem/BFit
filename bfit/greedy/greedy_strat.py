@@ -181,7 +181,7 @@ class GreedyStrategy(metaclass=ABCMeta):
 
         # Start the greedy algorithm
         success = True
-        while numb_funcs < max_numb_funcs - 1 and np.abs(best_gval - prev_gval) >= d_threshold and numb_redum < 5:
+        while numb_funcs < max_numb_funcs - 1  and numb_redum < 5 and np.abs(best_gval - prev_gval) >= d_threshold:
             s_coeffs, s_exps, p_coeffs, p_exps = self._split_parameters(gparams)
             print("S params", s_coeffs, s_exps)
             print("P params", p_coeffs, p_exps)
@@ -250,7 +250,7 @@ class GreedyStrategy(metaclass=ABCMeta):
                 prev_gval, best_gval = best_gval, best_lval
                 gparams = self.get_optimization_routine(best_lparam, local=False)
                 self.store_errors(gparams)
-                print("errors", self.err_arr)
+                print("errors", [x[-1] for x in self.err_arr])
                 params_iter.append(gparams)
                 numb_redum = 0    # Reset the number of redundancies.
                 factor = factor0  # Reset Original Factor.
@@ -265,6 +265,7 @@ class GreedyStrategy(metaclass=ABCMeta):
 
         # "Next Iteration Did Not Find The Best Choice":
         if exit_info is None:
+            # TODO check if these are well-define, when the while statements don't go through, it will fail.
             exit_info = self._final_exit_info(numb_funcs, max_numb_funcs, best_gval, prev_gval, numb_redum)
 
         results = {"x": gparams,
@@ -422,7 +423,7 @@ class GreedyKL(GreedyStrategy):
             return np.hstack((result[0], result[1]))
         result = self.mbis_obj.run(coeffs, exps, opt_coeffs=True, opt_expons=True, maxiter=1000,
                                  c_threshold=self.threshold_coeff, e_threshold=self.threshold_exp,
-                                   d_threshold=1e-6, disp=True)['x']
+                                   d_threshold=1e-6, disp=False)['x']
         return np.hstack((result[0], result[1]))
 
     def get_errors_from_model(self, params):
@@ -437,6 +438,6 @@ if __name__ == "__main__":
     dens_obj = AtomicDensity("be")
     dens = dens_obj.atomic_density(grid.points)
 
-    # greedy = GreedyKL(grid, dens, integration_val=4.0, eps_coeff=1e-5, eps_exp=1e-6)
-    greedy = GreedyLeastSquares(grid, dens, choice="pick-one", method="SLSQP")
+    greedy = GreedyKL(grid, dens, integration_val=4.0, eps_coeff=1e-7, eps_exp=1e-8)
+    # greedy = GreedyLeastSquares(grid, dens, choice="pick-one", method="SLSQP")
     greedy(2.0)
