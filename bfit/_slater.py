@@ -20,14 +20,6 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-r"""Module responsible for reading and storing information from '.slater' files.
-
-Functions
----------
-load_slater_wfn : Function for reading and returning information from '.slater' files.
-
-"""
-
 import os
 import re
 import numpy as np
@@ -37,17 +29,16 @@ __all__ = ["load_slater_wfn"]
 
 def load_slater_wfn(element, anion=False, cation=False):
     """
-    Return the data recorded in the atomic Slater wave-function file as a dictionary.
+    Return the data recorded in the atomic Slater '.slater' files wave-function file as a dictionary.
 
     Parameters
     ----------
-    file_name : str
-        The path to the Slater atomic file.
+    element : str
+        The atom/element.
     anion : bool
         If true, then the anion of element is used.
     cation : bool
         If true, then the cation of element is used.
-
     """
     # Heavy atoms from atom cs to lr.
     heavy_atoms = ["cs", "ba", "la", "ce", "pr", "nd", "pm", "sm", "eu", "gd", "tb", "dy", "ho",
