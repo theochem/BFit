@@ -26,7 +26,7 @@ import numpy as np
 
 from numpy.testing import assert_equal, assert_almost_equal, assert_raises
 
-from bfit.density import AtomicDensity
+from bfit.density import SlaterAtoms
 
 
 def slater(e, n, r, derivative=False):
@@ -41,7 +41,7 @@ def slater(e, n, r, derivative=False):
 
 def test_slater_type_orbital_be():
     # load Be atomic wave function
-    be = AtomicDensity("Be")
+    be = SlaterAtoms("Be")
     # check values of a single orbital at r=1.0
     orbital = be.slater_orbital(np.array([[12.683501]]), np.array([[1]]), np.array([1]))
     assert_almost_equal(orbital, slater(12.683501, 1, 1.0), decimal=6)
@@ -58,7 +58,7 @@ def test_slater_type_orbital_be():
 
 def test_derivative_slater_type_orbital_be():
     # load Be atomic wave function
-    be = AtomicDensity("Be")
+    be = SlaterAtoms("Be")
     # check values of a single orbital at r=1.0
     orbital = be.derivative_slater_type_orbital(np.array([[12.683501]]),
                                                 np.array([[1]]), np.array([1]))
@@ -83,7 +83,7 @@ def test_derivative_slater_type_orbital_be():
 
 def test_positive_definite_kinetic_energy_he():
     # load he atomic wave function
-    he = AtomicDensity("he")
+    he = SlaterAtoms("he")
     # compute density on an equally distant grid
     grid = np.arange(0., 30.0, 0.0001)
     energ = he.lagrangian_kinetic_energy(grid)
@@ -93,7 +93,7 @@ def test_positive_definite_kinetic_energy_he():
 
 def test_positive_definite_kinetic_energy_be():
     # load be atomic wave function
-    be = AtomicDensity("be")
+    be = SlaterAtoms("be")
     # compute density on an equally distant grid
     grid = np.arange(0., 30.0, 0.0001)
     energ = be.lagrangian_kinetic_energy(grid)
@@ -104,7 +104,7 @@ def test_positive_definite_kinetic_energy_be():
 def test_positive_definite_kinetic_energy_most_atoms():
     # load c atomic wave function
     for atom in ["b", "cl", "ag"]:
-        adens = AtomicDensity(atom)
+        adens = SlaterAtoms(atom)
         # compute density on an equally distant grid
         grid = np.arange(0., 30., 0.0001)
         energ = adens.lagrangian_kinetic_energy(grid)
@@ -114,7 +114,7 @@ def test_positive_definite_kinetic_energy_most_atoms():
 
 def test_phi_derivative_lcao_b():
     # load Be atomic wave function
-    b = AtomicDensity("b")
+    b = SlaterAtoms("b")
     # check the values of the phi_matrix at point 1.0
     phi_matrix = b.phi_matrix(np.array([1]), deriv=True)
     def _slater_deriv(r):
@@ -148,7 +148,7 @@ def test_phi_derivative_lcao_b():
 
 def test_coeff_matrix_be():
     # load Be atomic wave function
-    be = AtomicDensity("be")
+    be = SlaterAtoms("be")
     # using one _grid point at 1.0
     coeff_1s = np.array([-0.0024917, 0.0314015, 0.0849694, 0.8685562,
                          0.0315855, -0.0035284, -0.0004149, .0012299])[:, None]
@@ -160,7 +160,7 @@ def test_coeff_matrix_be():
 
 def test_phi_lcao_be():
     # load Be atomic wave function
-    be = AtomicDensity("BE")
+    be = SlaterAtoms("BE")
     # check the values of the phi_matrix at point 1.0
     phi_matrix = be.phi_matrix(np.array([1]))
     # compute expected value of 1S
@@ -185,7 +185,7 @@ def test_phi_lcao_be():
 
 def test_orbitals_function_be():
     # load Be atomic wave function
-    be = AtomicDensity("bE")
+    be = SlaterAtoms("bE")
     # check the values of the phi_matrix at point 1.0
     phi_matrix = be.phi_matrix(np.array([1]))
     # compute expected value of 1S
@@ -205,7 +205,7 @@ def test_orbitals_function_be():
 
 def test_orbitals_norm_be():
     # load Be atomic wave function
-    be = AtomicDensity("be")
+    be = SlaterAtoms("be")
     # compute orbital density on an equally distant grid
     grid = np.arange(0.0, 15.0, 0.0001)
     dens = be.phi_matrix(grid)**2
@@ -218,7 +218,7 @@ def test_orbitals_norm_be():
 
 def test_orbitals_norm_ne():
     # load Ne atomic wave function
-    ne = AtomicDensity("ne")
+    ne = SlaterAtoms("ne")
     # compute orbital density on an equally distant grid
     grid = np.arange(0.0, 10.0, 0.0001)
     dens = ne.phi_matrix(grid)**2
@@ -232,7 +232,7 @@ def test_orbitals_norm_ne():
 
 def test_orbitals_norm_c():
     # load C atomic wave function
-    c = AtomicDensity("c")
+    c = SlaterAtoms("c")
     # compute orbital density on an equally distant grid
     grid = np.arange(0.0, 15.0, 0.0001)
     dens = c.phi_matrix(grid)**2
@@ -246,7 +246,7 @@ def test_orbitals_norm_c():
 
 def test_atomic_density_be():
     # load Be atomic wave function
-    be = AtomicDensity("be")
+    be = SlaterAtoms("be")
     # compute density on an equally distant grid
     grid = np.arange(0.0, 15.0, 0.0001)
     dens = be.atomic_density(grid, mode="total")
@@ -264,7 +264,7 @@ def test_atomic_density_be():
 
 def test_atomic_density_ne():
     # load Ne atomic wave function
-    ne = AtomicDensity("ne")
+    ne = SlaterAtoms("ne")
     # compute density on an equally distant grid
     grid = np.arange(0.0, 10.0, 0.0001)
     dens = ne.atomic_density(grid, mode="total")
@@ -282,7 +282,7 @@ def test_atomic_density_ne():
 
 def test_atomic_density_c():
     # load C atomic wave function
-    c = AtomicDensity("c")
+    c = SlaterAtoms("c")
     # compute density on an equally distant grid
     grid = np.arange(0.0, 15.0, 0.0001)
     dens = c.atomic_density(grid, mode="total")
@@ -300,7 +300,7 @@ def test_atomic_density_c():
 
 def test_atomic_density_h():
     r"""Test integration of atomic density of Hydrogen."""
-    h = AtomicDensity("h")
+    h = SlaterAtoms("h")
     grid = np.arange(0.0, 15.0, 0.0001)
     dens = h.atomic_density(grid, mode="total")
     assert_almost_equal((4 * np.pi) * np.trapz(dens * grid**2., grid), 1.0, decimal=6)
@@ -308,8 +308,8 @@ def test_atomic_density_h():
 
 def test_atomic_density_h_anion():
     r"""Test integration of atomic density of hydrogen anion."""
-    assert_raises(ValueError, AtomicDensity, "h", cation=True)  # No cations for hydrogen.
-    h = AtomicDensity("h", anion=True)
+    assert_raises(ValueError, SlaterAtoms, "h", cation=True)  # No cations for hydrogen.
+    h = SlaterAtoms("h", anion=True)
     grid = np.arange(0.0, 25.0, 0.00001)
     dens = h.atomic_density(grid, mode="total")
     assert_almost_equal((4 * np.pi) * np.trapz(dens * grid ** 2., grid), 2.0, decimal=6)
@@ -317,12 +317,12 @@ def test_atomic_density_h_anion():
 
 def test_atomic_density_c_anion_cation():
     r"""Test integration of atomic density of carbon anion and cation."""
-    c = AtomicDensity("c", anion=True)
+    c = SlaterAtoms("c", anion=True)
     grid = np.arange(0.0, 25.0, 0.00001)
     dens = c.atomic_density(grid, mode="total")
     assert_almost_equal((4 * np.pi) * np.trapz(dens * grid ** 2., grid), 7.0, decimal=6)
 
-    c = AtomicDensity("c", cation=True)
+    c = SlaterAtoms("c", cation=True)
     grid = np.arange(0.0, 25.0, 0.00001)
     dens = c.atomic_density(grid, mode="total")
     assert_almost_equal((4 * np.pi) * np.trapz(dens * grid ** 2., grid), 5.0, decimal=6)
@@ -331,10 +331,10 @@ def test_atomic_density_c_anion_cation():
 def test_atomic_density_heavy_cs():
     r"""Test integration of atomic density of carbon anion and cation."""
     # These files don't exist.
-    assert_raises(ValueError, AtomicDensity, "cs", cation=True)
-    assert_raises(ValueError, AtomicDensity, "cs", anion=True)
+    assert_raises(ValueError, SlaterAtoms, "cs", cation=True)
+    assert_raises(ValueError, SlaterAtoms, "cs", anion=True)
 
-    cs = AtomicDensity("cs")
+    cs = SlaterAtoms("cs")
     grid = np.arange(0.0, 40.0, 0.0001)
     dens = cs.atomic_density(grid, mode="total")
     assert_almost_equal(4 * np.pi * np.trapz(dens * grid ** 2., grid), 55.0, decimal=5)
@@ -343,23 +343,23 @@ def test_atomic_density_heavy_cs():
 def test_atomic_density_heavy_rn():
     r"""Test integration of atomic density of carbon anion and cation."""
     # These files don't exist.
-    assert_raises(ValueError, AtomicDensity, "rn", cation=True)
-    assert_raises(ValueError, AtomicDensity, "rn", anion=True)
+    assert_raises(ValueError, SlaterAtoms, "rn", cation=True)
+    assert_raises(ValueError, SlaterAtoms, "rn", anion=True)
 
-    rn = AtomicDensity("rn")
+    rn = SlaterAtoms("rn")
     grid = np.arange(0.0, 40.0, 0.0001)
     dens = rn.atomic_density(grid, mode="total")
     assert_almost_equal(4 * np.pi * np.trapz(dens * grid ** 2., grid), 86, decimal=5)
 
 
 def test_kinetic_energy_cation_anion_c():
-    c = AtomicDensity("c", cation=True)
+    c = SlaterAtoms("c", cation=True)
     grid = np.arange(0.0, 25.0, 0.0001)
     energ = c.lagrangian_kinetic_energy(grid)
     integral = np.trapz(energ * 4.0 * np.pi * grid**2.0, grid)
     assert_almost_equal(integral, c.energy[0], decimal=6)
 
-    c = AtomicDensity("c", anion=True)
+    c = SlaterAtoms("c", anion=True)
     grid = np.arange(0.0, 40.0, 0.0001)
     energ = c.lagrangian_kinetic_energy(grid)
     integral = np.trapz(energ * 4.0 * np.pi * grid**2.0, grid)
@@ -367,7 +367,7 @@ def test_kinetic_energy_cation_anion_c():
 
 
 def test_derivative_electron_density_c():
-    c = AtomicDensity("c", cation=True)
+    c = SlaterAtoms("c", cation=True)
     eps = 1e-10
     grid = np.array([0.1, 0.1 + eps, 0.5, 0.5 + eps])
     dens = c.atomic_density(grid)
@@ -378,7 +378,7 @@ def test_derivative_electron_density_c():
 
 
 def test_derivative_electron_density_cr():
-    cr = AtomicDensity("cr")
+    cr = SlaterAtoms("cr")
     eps = 1e-10
     grid = np.array([0.1 - eps, 0.1, 0.1 + eps,
                      1. - eps, 1., 1. + eps])
@@ -390,16 +390,16 @@ def test_derivative_electron_density_cr():
 
 
 def test_kinetic_energy_heavy_element_ce():
-    c = AtomicDensity("ce")
+    c = SlaterAtoms("ce")
     grid = np.arange(0.0, 25.0, 0.0001)
     energ = c.lagrangian_kinetic_energy(grid)
     assert_almost_equal(np.trapz(energ * 4 * np.pi * grid**2.0, grid), c.energy[0], decimal=3)
 
 
 def test_raises():
-    assert_raises(TypeError, AtomicDensity, 25)
-    assert_raises(TypeError, AtomicDensity, "be2")
-    assert_raises(ValueError, AtomicDensity.slater_orbital, np.array([[1]]), np.array([[2]]),
+    assert_raises(TypeError, SlaterAtoms, 25)
+    assert_raises(TypeError, SlaterAtoms, "be2")
+    assert_raises(ValueError, SlaterAtoms.slater_orbital, np.array([[1]]), np.array([[2]]),
                   np.array([[1.]]))
-    c = AtomicDensity("c")
+    c = SlaterAtoms("c")
     assert_raises(ValueError, c.atomic_density, np.array([[1.]]), "not total")
