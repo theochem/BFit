@@ -27,36 +27,18 @@ __all__ = ["KLDivergence", "SquaredDifference"]
 
 class SquaredDifference:
     r"""
-    Squared Difference Class for performing the Least-Squared method.
+    Squared Difference Measure.
 
-    Least-squared is the defined to be the integral of the squared difference between
-     true and model functions:
+    This the defined to be the square of the :math:`L_2` norm:
+
     .. math::
-        ||f - g|| = \int_G (f(x) - g(x))^2 dx
+        ||f - g||_2^2 = \int_G (f(x) - g(x))^2 dx
     where,
         :math:`f` is the true function,
         :math:`g` is the model function,
-        :math:`G` is the grid.
+        :math:`G` is the domain of the grid.
 
     The term :math:`|f(x) - g(x)|^2` is called the Squared Difference between f and g on a point x.
-
-    Attributes
-    ----------
-    density : ndarray(N,)
-        The true function (being approximated) evaluated on `N` points.
-
-    Methods
-    -------
-    evaluate(deriv=False)
-        Return the squared difference between model and true functions. Note that it does not
-        integrate the model but rather only computes f(x) - g(x). If `deriv` is True,
-        then the derivative with respect to model function is returned.
-
-    Notes
-    -----
-    - This class does not return the Least-Squared but rather the squared difference.
-        One would need to integrate this to get the Least Squared.
-
     """
 
     def __init__(self, density):
@@ -66,12 +48,17 @@ class SquaredDifference:
         Parameters
         ----------
         density : ndarray, (N,)
-            The exact density evaluated on the grid points.
+            The exact density (to be fitted) evaluated on the grid points.
 
         """
         if not isinstance(density, np.ndarray) or density.ndim != 1:
             raise ValueError("Arguments density should be a 1D numpy array.")
-        self.density = density
+        self._density = density
+
+    @property
+    def density(self):
+        r"""Array of size :math:`N` of the true density evaluated on `N` points."""
+        return self._density
 
     def evaluate(self, model, deriv=False):
         r"""Evaluate squared difference b/w density & model on the grid points.
