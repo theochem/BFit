@@ -56,7 +56,7 @@ python ./setup.py install
 
 Run tests to see if it's installed properly:
 ```bash
-nosetests -v fitting
+pytest -v fitting
 ```
 
 ## Example
