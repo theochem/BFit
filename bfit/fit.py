@@ -188,7 +188,7 @@ class KLDivergenceSCF(_BaseFit):
 
     def _update_params(self, coeffs, expons, update_coeffs=True, update_expons=False):
         r"""
-        Compute updated coefficients & exponents of Gaussian basis functions.
+        Update coefficients & exponents of the Gaussian density model.
 
         Parameters
         ----------
@@ -198,15 +198,19 @@ class KLDivergenceSCF(_BaseFit):
             The initial exponents of Gaussian basis functions.
         update_coeffs : bool, optional
             Whether to optimize coefficients of Gaussian basis functions.
+            Default is true.
         update_expons : bool, optional
             Whether to optimize exponents of Gaussian basis functions.
+            Default is true.
 
         Returns
         -------
         coeffs : ndarray
-            The updated coefficients of Gaussian basis functions. Only returned if `deriv=True`.
+            The updated coefficients of Gaussian basis functions. Only returned if
+            `update_coeffs=True`.
         expons : ndarray
-            The updated exponents of Gaussian basis functions. Only returned if `deriv=True`.
+            The updated exponents of Gaussian basis functions. Only returned if
+            `update_expones=True`.
 
         """
         if not update_coeffs and not update_expons:
@@ -250,19 +254,21 @@ class KLDivergenceSCF(_BaseFit):
             The initial exponents of Gaussian basis functions.
         opt_coeffs : bool, optional
             Whether to optimize coefficients of Gaussian basis functions.
+            Default is true.
         opt_expons : bool, optional
             Whether to optimize exponents of Gaussian basis functions.
+            Default is true.
         maxiter : int, optional
             Maximum number of iterations.
         c_threshold : float
-            The convergence threshold for absolute change in coefficients. Default is 1e-6.
+            The termination threshold for absolute change in coefficients. Default is 1e-6.
         e_threshold : float
-            The convergence threshold for absolute change in exponents. Default is 1e-6.
+            The termination threshold for absolute change in exponents. Default is 1e-6.
         d_threshold : float
-            The convergence threshold for absolute change in divergence value. Default is 1e-6.
+            The termination threshold for absolute change in divergence value. Default is 1e-6.
         disp : bool
-            If true, then at each iteration the integral, :math:`L_1`, :math:`L_\infty` and
-            Kullback-Leibler measure is printed. Default is False.
+            If true, then at each iteration the error measures, :math:`L_1`, :math:`L_\infty`
+            and Kullback-Leibler measure is printed. Default is False.
 
         Returns
         -------
@@ -347,64 +353,13 @@ class KLDivergenceSCF(_BaseFit):
         return results
 
 
-class GaussianBasisFit(_BaseFit):
+class ScipyFit(_BaseFit):
     r"""
-    Optimizes either least-squares or Kullback-Leibler of Gaussian funcs using `Scipy.optimize`.
+    Optimizes either least-squares or Kullback-Leibler of Gaussian functions using `Scipy.optimize`.
 
     The Gaussian functions can be constrained to have their integral be a fixed value.
         Although it is not recommended. The coefficients and exponents are always bounded to be
-         positive.
-
-    Attributes
-    ----------
-    grid : (_BaseRadialGrid, CubicGrid)
-        Grid class that contains the grid points and integration methods on them.
-    density : ndarray(N,)
-        The true function evaluated on the grid points from `grid`.
-    model : (AtomicGaussianDensity, MolecularGaussianDensity)
-        The Gaussian basis model density. Located in `model.py`.
-    measure : str, optional
-        The deviation measure between true density and model density that is minimized.
-        Can be either be "KL" (Kullback-Leibler, default) or "LS" (least-squares).
-    norm : float
-        The integration of the density over the grid.
-
-    Methods
-    -------
-    run() :
-    func() :
-    evaluate_model() :
-
-    Examples
-    --------
-    The goal is to fit a Gaussian density to some function.
-    def f(x) :
-        # Insert what it does here.
-        return ...
-
-    The first step is to define the grid object.
-    >> grid = CubicGrid(0.01, 0.99, 0.01)
-
-    Place the values of `f` on those grid points in an array.
-    >> density = f(grid.points)
-
-    Define the model, that you want to fit with.
-    >> model = AtomicGaussianDensity(grid.points, num_s=5, num_p=5, normalize=True)
-
-    Define which measure (least-squares) and "scipy.optimize" algorithm to use.
-    >> fit = GaussianBasisFit(grid, density, model, measure="LS", method="SLSQP")
-
-    Optimize the coefficients and exponents but give an initial guess.
-    >> initc = [1.] * 10
-    >> inite = np.array([0.001, 0.01, 0.1, 1., 2., 5., 10., 50., 75., 100.])
-    >> result = fit.run(initc, inite)
-
-    Print out the results.
-    >> print("Optimized coefficients are: ", result["x"][0])
-    >> print("Optimized exponents are: ", result["x"][1])
-    >> print("Final performance measures are: ", result["performance"])
-    >> print("Was it successful? ", result["success"])
-    >> print("Why it terminated? ", result["message"])
+        positive.
 
     Notes
     -----
