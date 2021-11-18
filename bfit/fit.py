@@ -376,10 +376,9 @@ class ScipyFit(_BaseFit):
 
     """
 
-    def __init__(self, grid, density, model, measure="KL", method="SLSQP", weights=None,
-                 mask_value=1e-10):
+    def __init__(self, grid, density, model, measure="KL", method="SLSQP", weights=None, mask_value=1e-10):
         r"""
-        Construct the GaussianBasisFit object.
+        Construct the ScipyFit object.
 
         Parameters
         ----------
@@ -399,6 +398,7 @@ class ScipyFit(_BaseFit):
             The weights of objective function at each point. If `None`, 1.0 is used.
         mask_value : float, optional
             The elements less than or equal to this number are masked in a division.
+            Used only when Kullback-Leibler is used.
 
         """
         if np.any(abs(grid.points - model.points) > 1.e-12):
@@ -422,7 +422,7 @@ class ScipyFit(_BaseFit):
         self.weights = weights
         self.norm = grid.integrate(density)
 
-        super(GaussianBasisFit, self).__init__(grid, density, model, measure)
+        super(ScipyFit, self).__init__(grid, density, model, measure)
 
     def run(self, c0, e0, opt_coeffs=True, opt_expons=True, maxiter=1000, tol=1.e-14, disp=False,
             with_constraint=True):
@@ -564,7 +564,7 @@ class ScipyFit(_BaseFit):
 
         Returns
         -------
-        float, ndarray :
+        (float, ndarray) :
             The objective function value and its derivative wrt to coefficients and exponents.
 
         """
