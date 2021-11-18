@@ -130,8 +130,21 @@ class KLDivergence:
             raise ValueError("Arguments density should be a 1D numpy array.")
         if np.any(density < 0.):
             raise ValueError("Argument density should be positive.")
-        self.density = density
-        self.mask_value = mask_value
+        self._density = density
+        self._mask_value = mask_value
+
+    @property
+    def density(self):
+        r"""Array of size :math:`N` of the true density evaluated on `N` points."""
+        return self._density
+
+    @property
+    def mask_value(self):
+        r"""float
+        Values of model density `g` that are less than `mask_value` are masked when used in division
+         and then replaced with the value of 1 so that logarithm of one is zero.
+        """
+        return self._mask_value
 
     def evaluate(self, model, deriv=False):
         r"""
