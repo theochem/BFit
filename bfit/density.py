@@ -20,15 +20,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-r"""
-Density Module.
-
-AtomicDensity:
-    Information about atoms obtained from .slater file and able to construct atomic density
-        (total, core and valence) from the linear combination of Slater-type orbitals.
-    Elements supported by default from "./bfit/data/examples/" range from Hydrogen to Xenon.
-
-"""
+r"""Slater Atomic Density Module."""
 
 
 import numpy as np
@@ -50,83 +42,11 @@ class AtomicDensity:
     Slater-type orbitals.
     Elements supported by default from "./bfit/data/examples/" range from Hydrogen to Xenon.
 
-    Attributes
-    ----------
-    Attributes relating to the standard electron configuration.
-
-    energy : list
-        Energy of that atom.
-    configuration : str
-        Return the electron configuration of the element.
-    orbitals : list, (M,)
-        List of strings representing each of the orbitals in the electron configuration.
-        For example, Beryllium has ["1S", "2S"] in its electron configuration.
-        Ordered based on "S", "P", "D", etc.
-    orbitals_occupation : ndarray, (M, 1)
-        Returns the number of electrons in each of the orbitals in the electron configuration.
-        e.g. Beryllium has two electrons in "1S" and two electrons in "2S".
-
-    Attributes relating to representing orbitals as linear combination of Slater-type orbitals.
-
-    orbital_energy : list, (N, 1)
-        Energy of each of the N Slater-type orbital.
-    orbitals_cusp : list, (N, 1)
-        Cusp of each of the N Slater-type orbital. Same ordering as `orbitals`. Does not exist
-        for Heavy atoms past Xenon.
-    orbitals_basis : dict
-        Keys are the orbitals in the electron configuration. Each orbital has N Slater-type orbital
-        attached to them.
-    orbitals_exp : dict (str : ndarray(N, 1))
-        Key is the orbital in the electron configuration and the item of that key is the Slater
-         exponents attached
-         to each N Slater-type orbital.
-    orbitals_coeff : dict (str : ndarray(N, 1))
-        Key is the orbital in the electron configuration (e. 1S, 2S or 2P) and the item is the
-        Slater coefficients attached to each of the N Slater-type orbital.
-    basis_numbers : dict (str : ndarray(N, 1))
-        Key is orbital in electron configuration and the item is the basis number of each of
-        the N Slater-type orbital. These are the principal quantum number to each Slater-type
-        orbital.
-
-    Methods
-    -------
-    atomic_density(mode="total") :
-        Construct the atomic density from the linear combinations of slater-type orbitals.
-        Can compute the total (default), core and valence atomic density.
-    lagrangian_kinetic_energy :
-        Construct the Positive Definite Kinetic energy.
-
-    Examples
-    --------
-    Grab information about Beryllium.
-    >> be =  AtomicDensity("be")
-
-    Some of the attributes are the following.
-    >> print(be.configuration) #  Should "1S(2)2S(2)".
-    >> print(be.orbitals)  # ['1S', '2S'].
-    >> print(be.orbitals_occupation) # [[2], [2]] Two electrons in each orbital.
-    >> print(be.orbitals_cusp)  # [1.0001235, 0.9998774].
-
-    The Slatar coefficients and exponents of the 1S orbital can be obtained as:
-    >> print(be.orbital_coeff["1S"])
-    >> print(be.orbitals_exp["1S"])
-
-    The total, core and valence electron density can be obtained as:
-    >> points = np.arange(0., 25., 0.01)
-    >> total_density = be.atomic_density(points, "total")
-    >> core_density = be.atomic_density(points, "core")
-    >> valence_density = be.atomic_density(points, "valence")
-
-    References
-    ----------
-    [1] "Analytical Hartree–Fock wave functions subject to cusp and asymptotic constraints:
-        He to Xe, Li+ to Cs+, H− to I−" by T. Koga, K. Kanayama, S. Watanabe and A.J. Thakkar.
-
     """
 
     def __init__(self, element, anion=False, cation=False):
         r"""
-        Construct AtomicDensity object.
+        Construct SlaterAtoms object.
 
         Parameters
         ----------
