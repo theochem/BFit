@@ -61,16 +61,19 @@ class SquaredDifference:
         return self._density
 
     def evaluate(self, model, deriv=False):
-        r"""Evaluate squared difference b/w density & model on the grid points.
+        r"""
+        Evaluate squared difference b/w density & model on each of the points.
 
         This is defined to be :math:`(f(x) - g(x))^2`.
 
         Parameters
         ----------
         model : ndarray, (N,)
-            The model density evaluated on the grid points.
+            The model density evaluated on the grid points. Needs to be evaluated
+            at the same points as the `density` attribute.
         deriv : bool, optional
             Whether to compute the derivative of squared difference w.r.t. model density.
+            Default is false.
 
         Returns
         -------
@@ -78,7 +81,12 @@ class SquaredDifference:
             The squared difference between density & model on the grid points.
         dm : ndarray, (N,)
             The derivative of squared difference w.r.t. model density evaluated on the
-            grid points. Only returned if `deriv=True`.
+            grid points, only returned if `deriv=True`.
+
+        Notes
+        -----
+        - This class returns the squared difference at each point in the domain.
+        One would need to integrate this to get the desired measure.
 
         """
         if not isinstance(model, np.ndarray) or model.shape != self.density.shape:
@@ -95,42 +103,17 @@ class SquaredDifference:
 
 class KLDivergence:
     r"""
-    Kullback-Leibler Divergence Class.
+    Kullback-Leibler Divergence Measure.
 
     This is defined as the integral:
     .. math::
-        D(f, g) := \int_G f(x) \ln ( \frac{f(x)}{g(x)} ) dx
+        KL(f, g) := \int_G f(x) \ln ( \frac{f(x)}{g(x)} ) dx
     where,
         :math:`f` is the true probability distribution,
         :math:`g` is the model probability distribution,
-        :math:`G` is the grid.
-
-    Attributes
-    ----------
-    density : ndarray(N,)
-        The true function (being approximated) evaluated on `N` points.
-    mask_value : float
-        Values of model density `g` that are less than `mask_value` are masked when used in division
-         and then replaced with the value of 1 so that logarithm of one is zero.
-
-    Methods
-    -------
-    evaluate(deriv=False)
-        Return the integrand :math:`f(x) \ln(f(x)/g(x))` between model and true functions.
-        Note that it does not integrate the model, and so it doesn't exactly return the
-        Kullback-Leibler. If `deriv` is True, then the derivative with respect to model function
-        is returned.
-
-    Notes
-    -----
-    - This class does not return the Kullback-Leibler but rather the integrand.
-        One would need to integrate this to get the Least Squared.
-    - It using masked values to handle overflow and underflow floating point precision issues. This
-        is due to the division in the Kullback-Leibler formula between two probability
-        distributions.
+        :math:`G` is the domain of the grid.
 
     """
-
     def __init__(self, density, mask_value=1.e-12):
         r"""
         Construct the Kullback-Leibler class.
