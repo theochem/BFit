@@ -29,10 +29,10 @@ from scipy.special import factorial
 from bfit._slater import load_slater_wfn
 
 
-__all__ = ["AtomicDensity"]
+__all__ = ["SlaterAtoms"]
 
 
-class AtomicDensity:
+class SlaterAtoms:
     r"""
     Atomic Density Class.
 
@@ -255,7 +255,7 @@ class AtomicDensity:
         See wikipedia page on "Slater-Type orbitals".
 
         """
-        slater = AtomicDensity.slater_orbital(exponent, number, points)
+        slater = SlaterAtoms.slater_orbital(exponent, number, points)
         # Consider the case when dividing by zero.
         with np.errstate(divide='ignore'):
             # derivative
@@ -283,7 +283,7 @@ class AtomicDensity:
         for index, orbital in enumerate(self.orbitals):
             exps, number = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
             # Take second derivative of the Slater-Type Orbitals without division by r^2 (added this below)
-            slater = AtomicDensity.slater_orbital(exps, number, points)
+            slater = SlaterAtoms.slater_orbital(exps, number, points)
             # derivative
             deriv_pref = (number.T - 1.) - exps.T * np.reshape(points, (points.shape[0], 1))
             deriv = deriv_pref * slater
