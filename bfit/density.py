@@ -67,7 +67,96 @@ class SlaterAtoms:
 
         data = load_slater_wfn(element, anion, cation)
         for key, value in data.items():
-            setattr(self, key, value)
+            setattr(self, "_" + key, value)
+
+    @property
+    def energy(self):
+        r"""Energy of atom."""
+        return self._energy
+
+    @property
+    def configuration(self):
+        r"""
+        The electron configuration of the element.
+
+        For example, Beryllium returns "1S(2)2S(2)".
+        """
+        return self._configuration
+
+    @property
+    def orbitals(self):
+        r"""
+        List of strings representing each of the orbitals in the electron configuration.
+
+        For example, Beryllium returns ["1S", "2S"] in its electron configuration.
+        Ordered based on "S", "P", "D", etc.
+        """
+        return self._orbitals
+
+    @property
+    def orbitals_occupation(self):
+        r"""
+        Array returning number of electrons in each of the orbitals in the electron configuration.
+
+        For example, Beryllium returns ndarray([[2], [2]]).
+        """
+        return self._orbitals_occupation
+
+    @property
+    def orbitals_basis(self):
+        r"""
+        Grouping of Slater-type orbitals to the type ("S", "P", ...).
+
+        Dictionary mapping type of orbital (e.g. "S", "P") to the number
+        and type of the :math:`N` Slater-type orbitals. For example, Helium could
+        map "S" to ['2S', '1S', '1S', '1S', '2S'].
+        """
+        return self._orbitals_basis
+
+    @property
+    def basis_numbers(self):
+        r"""
+        The type of Slater-type orbital to the type, e.g. "S".
+
+        Dictionary mapping type of orbital (e.g. "S", "P") to array
+        containing :math:`n` of the :math:`N` Slater-type orbital. These play the
+        role of the principal quantum number to each Slater-type orbital.
+        """
+        return self._basis_numbers
+
+    @property
+    def orbitals_exp(self):
+        r"""
+        Exponent of each Slater-type orbital grouped by type of orbital.
+
+        Dictionary mapping type of orbitals (e.g. "S", "P") to the
+        exponent of each of the :math:`N` Slater-type orbital.
+        """
+        return self._orbitals_exp
+
+    @property
+    def orbitals_coeff(self):
+        r"""
+        Coefficients of each Slater-type orbital grouped by type of orbital.
+
+        Dictionary mapping type of orbitals (e.g. "S", "P") to
+        the coefficients of the :math:`N` Slater-type orbitals.
+        """
+        return self._orbitals_coeff
+
+    @property
+    def orbital_energy(self):
+        r"""Energy of each of the :math:`N` Slater-type orbital."""
+        return self._orbital_energy
+
+    @property
+    def orbitals_cusp(self):
+        r"""
+        Cusp values of each of the N Slater-type orbital.
+
+        Same ordering as `orbitals`. Does not exist for Heavy atoms past Xenon.
+        """
+        return self._orbitals_cusp
 
     @staticmethod
     def slater_orbital(exponent, number, points):
