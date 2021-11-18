@@ -58,8 +58,6 @@ def load_slater_wfn(element, anion=False, cation=False):
                     "v", "xe", "y", "zn", "zr"]
 
     is_heavy_element = element.lower() in heavy_atoms
-    if (anion or cation) and is_heavy_element:
-        raise ValueError("Both Anion & Cation Slater File for element %s does not exist." % element)
     if anion:
         if element.lower() in anion_atoms:
             file_path = "/data/anion/%s.an" % element.lower()

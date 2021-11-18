@@ -133,13 +133,17 @@ class AtomicDensity:
         element : str
             Symbol of element.
         anion : bool
-            If true, then the anion of element is used.
+            If true, then the anion of element is used. Some elements do not have
+            anion information.
         cation : bool
-            If true, then the cation of element is used.
+            If true, then the cation of element is used. Some elements do not
+            have cation information.
 
         """
         if not isinstance(element, str) or not element.isalpha():
             raise TypeError("The element argument should be all letters string.")
+        if anion and cation:
+            raise ValueError("Both anion and cation cannot be true.")
 
         data = load_slater_wfn(element, anion, cation)
         for key, value in data.items():
