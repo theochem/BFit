@@ -163,9 +163,11 @@ class KLDivergence:
         Parameters
         ----------
         model : ndarray, (N,)
-            The model density evaluated on the grid points.
+            The model density evaluated on the grid points. Needs to be evaluated
+            at the same points as the `density` attribute.
         deriv : bool, optional
-            Whether to compute the derivative of divergence w.r.t. model density.
+            Whether to return the derivative of divergence w.r.t. model density, as well.
+            Default is false.
 
         Returns
         -------
@@ -175,19 +177,29 @@ class KLDivergence:
             The derivative of divergence w.r.t. model density evaluated on the grid points.
             Only returned if `deriv=True`.
 
+        Raises
+        ------
+        ValueError :
+            If the model density is negative, then the integrand is un-defined.
+
         Notes
         -----
         - Values of Model density that are less than `mask_value` are masked when used in
             division and then replaced with the value of 1 so that logarithm of one is zero.
+        - This class does not return the Kullback-Leibler but rather the integrand.
+            One would need to integrate this to get the Least Squared.
 
         """
         # check model density
-        if not isinstance(model, np.ndarray) or model.shape != self.density.shape:
+        if not isinstance(model, np.ndarray):
             raise ValueError("Argument model should be {0} array.".format(self.density.shape))
+        if model.shape != self.density.shape:
+            raise ValueError(
+                f"Number of points in the model {len(model)} should be the same "
+                f"as the number of points in the density {len(self.density)}."
+            )
         if np.any(model < 0.):
-            # If the model density is negative, then return large values for optimization to favour
-            #  positive model densities.
-            return np.array([100000.] * len(self.density)), np.array([100000.] * len(self.density))
+            raise ValueError("Model density is negative and should be non-negative.")
 
         # compute ratio & replace masked values by 1.0
         ratio = self.density / np.ma.masked_less_equal(model, self.mask_value)
