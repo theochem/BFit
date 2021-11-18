@@ -171,26 +171,26 @@ class SlaterAtoms:
             :math:`n` is the principal quantum number of that orbital.
             :math:`N` is the normalizing constant.
             :math:`r` is the radial point, distance to the origin.
-            :math:`C` is the zeta exponent of that orbital.
+            :math:`\zeta` is the zeta exponent of that orbital.
 
         Parameters
         ----------
         exponent : ndarray, (M, 1)
-            The zeta exponents of Slater orbitals.
+            The zeta exponents :math:`\zeta` of :math:`M` Slater orbitals.
         number : ndarray, (M, 1)
-            The principle quantum numbers of Slater orbitals.
+            The principal quantum numbers :math:`n` of :math:`M` Slater orbitals.
         points : ndarray, (N,)
-            The radial grid points.
+            The radial :math:`r` grid points.
 
         Returns
         -------
         slater : ndarray, (N, M)
-            The Slater-type orbitals evaluated on the grid points.
+            The :math:`M` Slater-type orbitals evaluated on :math:`N` grid points.
 
         See Also
         --------
-        The principal quantum number of all of the orbital are stored in `basis_numbers`.
-        The zeta exponents of all of the orbitals are stored in the attribute `orbitals_exp`.
+        - The principal quantum number of all of the orbital are stored in `basis_numbers`.
+        - The zeta exponents of all of the orbitals are stored in the attribute `orbitals_exp`.
 
         """
         if points.ndim != 1:
@@ -211,14 +211,14 @@ class SlaterAtoms:
          of the form:
 
         .. math::
-            \sum c_i R(r, n_i, C_i)
+            \sum_{i=1}^{K-1} c_i R(r, n_i, C_i)
 
         where,
-            :math:`c_i` is the coefficient of the Slater-type orbital.
-            :math:`C_i` is the zeta exponent attached to the Slater-type orbital.
-            :math:`n_i` is the principal quantum number attached to the Slater-type orbital.
-            :math:`R(r, n_i, C_i)` is the Slater-type orbital.
-            i ranges from 0 to K-1 where K is the number of orbitals in electron configuration.
+            :math:`c_i` is the coefficient of the Slater-type orbital,
+            :math:`\zeta_i` is the zeta exponent attached to the Slater-type orbital,
+            :math:`n_i` is the principal quantum number attached to the Slater-type orbital,
+            :math:`R(r, n_i, C_i)` is the Slater-type orbital,
+            :math:`K` is the number of orbitals.
 
         Parameters
         ----------
@@ -230,8 +230,8 @@ class SlaterAtoms:
         Returns
         -------
         phi_matrix : ndarray(N, K)
-            The linear combination of Slater-type orbitals evaluated on the grid points, where K is
-            the number of orbitals. The order is S orbitals, then P then D.
+            The linear combination of Slater-type orbitals evaluated on the grid points.
+            The order is S orbitals, then P then D.
 
         Notes
         -----
@@ -287,7 +287,7 @@ class SlaterAtoms:
 
         where,
             :math:`e_i` is the energy of the orbital i.
-            :math:`e_{homo}` is the energy of the highest occupying orbital.
+            :math:`e_{HOMO}` is the energy of the highest occupying orbital.
 
         """
         if mode not in ["total", "valence", "core"]:
