@@ -1,0 +1,499 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>bfit.grid &mdash; BFit  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> BFit
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BFit</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">bfit.grid</span></code></li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/autoapi/bfit/grid/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="module-bfit.grid">
+<span id="bfit-grid"></span><h1><a class="reference internal" href="#module-bfit.grid" title="bfit.grid"><code class="xref py py-mod docutils literal notranslate"><span class="pre">bfit.grid</span></code></a><a class="headerlink" href="#module-bfit.grid" title="Permalink to this headline">¶</a></h1>
+<p>Grid Module - Model the grid and integration methods of the model and true probability distributions.</p>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<p>There are three classes:</p>
+<dl class="simple">
+<dt>ClenshawRadialGrid -</dt><dd><p>Models a One-dimensional grid via Clenshaw-Curtis pattern.
+Integration is done via ‘np.trapz’ method (spherical coordinates, optional).
+Intended for Atomic fitting.</p>
+</dd>
+<dt>UniformRadialGrid -</dt><dd><p>Uniform (equal spacing), one-dimensional grid.
+Integration is done via ‘np.trapz’ method (spherical coordinates, optional).
+Intended for Atomic fitting.</p>
+</dd>
+<dt>CubicGrid -</dt><dd><p>Uniform (equal spacing), three-dimensional grid.
+Integration is done via Riemannian sums.
+Intended for Molecular fitting.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>Classes<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bfit.grid.UniformRadialGrid" title="bfit.grid.UniformRadialGrid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UniformRadialGrid</span></code></a></p></td>
+<td><p>Uniformly Distributed Radial Grid Class.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bfit.grid.ClenshawRadialGrid" title="bfit.grid.ClenshawRadialGrid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ClenshawRadialGrid</span></code></a></p></td>
+<td><p>Clenshaw-Curtis Radial Grid Class.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bfit.grid.CubicGrid" title="bfit.grid.CubicGrid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CubicGrid</span></code></a></p></td>
+<td><p>Equally-Spaced 3D Cubic Grid Class.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt id="bfit.grid.UniformRadialGrid">
+<em class="property">class </em><code class="sig-prename descclassname">bfit.grid.</code><code class="sig-name descname">UniformRadialGrid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">num_pts</span></em>, <em class="sig-param"><span class="n">min_radii</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">max_radii</span><span class="o">=</span><span class="default_value">100.0</span></em>, <em class="sig-param"><span class="n">spherical</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/grid.html#UniformRadialGrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.grid.UniformRadialGrid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">_BaseRadialGrid</span></code></p>
+<p>Uniformly Distributed Radial Grid Class.</p>
+<p>The grid points are equally-spaced in <span class="math notranslate nohighlight">\([0, max_points)\)</span> interval.</p>
+<dl class="py attribute">
+<dt id="bfit.grid.UniformRadialGrid.points">
+<code class="sig-name descname">points</code><a class="reference internal" href="../../../_modules/bfit/grid.html#UniformRadialGrid.points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.grid.UniformRadialGrid.points" title="Permalink to this definition">¶</a></dt>
+<dd><p>The radial grid points of a one-dimensional grid with N points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>ndarray, (N,)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="bfit.grid.UniformRadialGrid.spherical">
+<code class="sig-name descname">spherical</code><a class="reference internal" href="../../../_modules/bfit/grid.html#UniformRadialGrid.spherical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.grid.UniformRadialGrid.spherical" title="Permalink to this definition">¶</a></dt>
+<dd><p>If true, then trapezoidal integration is done spherically (ie with a factor of <span class="math notranslate nohighlight">\(4 \pi r^2\)</span>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="bfit.grid.UniformRadialGrid.integrate">
+<code class="sig-name descname">integrate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">arr</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/grid.html#UniformRadialGrid.integrate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.grid.UniformRadialGrid.integrate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Integrate array <cite>arr</cite> defined over “point” array using trapezoidal integration.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="bfit.grid.ClenshawRadialGrid">
+<em class="property">class </em><code class="sig-prename descclassname">bfit.grid.</code><code class="sig-name descname">ClenshawRadialGrid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">atomic_number</span></em>, <em class="sig-param"><span class="n">num_core_pts</span></em>, <em class="sig-param"><span class="n">num_diffuse_pts</span></em>, <em class="sig-param"><span class="n">extra_pts</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">spherical</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/grid.html#ClenshawRadialGrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.grid.ClenshawRadialGrid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">_BaseRadialGrid</span></code></p>
+<p>Clenshaw-Curtis Radial Grid Class.</p>
+<p>The Clenshaw-Curtis grid places more points closer to the origin of the interval <span class="math notranslate nohighlight">\([0, \inf).\)</span>
+It is defined as follows. Let <span class="math notranslate nohighlight">\(Z, m, n\)</span> be the atomic number, number of points near origin,
+and the number of points far from the origin, respectively.</p>
+<p>Then each point <span class="math notranslate nohighlight">\(r_p\)</span> of the Clenshaw radial grid is defined as:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{eqnarray}
+    r_p = \frac{1}{2Z} \bigg(1 - \cos\bigg(\frac{\pi p}{400} \bigg)\bigg)  &amp; p = 0, 1, \cdots, m - 1 \\
+    r_p = 25 \bigg(1 - \cos\bigg(\frac{\pi p}{600} \bigg)\bigg) &amp; p = 0, 1, \cdocts, n - 1\\
+\end{eqnarray}\end{split}\]</div>
+<dl class="py attribute">
+<dt id="bfit.grid.ClenshawRadialGrid.points">
+<code class="sig-name descname">points</code><a class="reference internal" href="../../../_modules/bfit/grid.html#ClenshawRadialGrid.points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.grid.ClenshawRadialGrid.points" title="Permalink to this definition">¶</a></dt>
+<dd><p>The radial grid points of a one-dimensional grid with N points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>ndarray, (N,)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="bfit.grid.ClenshawRadialGrid.atomic_number">
+<code class="sig-name descname">atomic_number</code><a class="reference internal" href="../../../_modules/bfit/grid.html#ClenshawRadialGrid.atomic_number"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.grid.ClenshawRadialGrid.atomic_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the atomic number.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="bfit.grid.ClenshawRadialGrid.spherical">
+<code class="sig-name descname">spherical</code><a class="reference internal" href="../../../_modules/bfit/grid.html#ClenshawRadialGrid.spherical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.grid.ClenshawRadialGrid.spherical" title="Permalink to this definition">¶</a></dt>
+<dd><p>If true, then trapezoidal integration is done spherically (ie with a factor of <span class="math notranslate nohighlight">\(4 \pi r^2\)</span>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="bfit.grid.ClenshawRadialGrid.integrate">
+<code class="sig-name descname">integrate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">arr</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/grid.html#ClenshawRadialGrid.integrate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.grid.ClenshawRadialGrid.integrate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Integrate array <cite>arr</cite> defined over “point” array using trapezoidal integration.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id0">
+<em class="property">property </em><code class="sig-name descname">atomic_number</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/grid.html#ClenshawRadialGrid.atomic_number"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the atomic number.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="bfit.grid.ClenshawRadialGrid._get_points">
+<code class="sig-name descname">_get_points</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">num_pts</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'core'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/grid.html#ClenshawRadialGrid._get_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.grid.ClenshawRadialGrid._get_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate radial points on [0, inf) based on Clenshaw-Curtis grid.</p>
+<p>The “core” points are concentrated near the origin based on:</p>
+<div class="math notranslate nohighlight">
+\[r_p = 25 (1 - cos(\frac{\pi p}{2N})) for p =0,1..N-1\]</div>
+<p>The “diffuse” points are concentrated away from the origin based on:</p>
+<div class="math notranslate nohighlight">
+\[r_p = \frac{1}[2Z} (1 - cos(\frac{\pi p}{2N})) for p=0,1...N-1,\]</div>
+<p>where <span class="math notranslate nohighlight">\(Z\)</span> is the atomic number and <span class="math notranslate nohighlight">\(N\)</span> is the number of points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_pts</strong> (<em>int</em>) – The number of points.</p></li>
+<li><p><strong>mode</strong> (<em>str</em><em>, </em><em>optional</em>) – If “core”, the points are placed closer to the origin. If “diffuse”, the points are
+placed far away from origin.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>points</strong> – The 1D array of grid points.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray, (N,)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="bfit.grid.CubicGrid">
+<em class="property">class </em><code class="sig-prename descclassname">bfit.grid.</code><code class="sig-name descname">CubicGrid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">origin</span></em>, <em class="sig-param"><span class="n">axes</span></em>, <em class="sig-param"><span class="n">shape</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/grid.html#CubicGrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.grid.CubicGrid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Equally-Spaced 3D Cubic Grid Class.</p>
+<dl class="py attribute">
+<dt id="bfit.grid.CubicGrid.points">
+<code class="sig-name descname">points</code><a class="reference internal" href="../../../_modules/bfit/grid.html#CubicGrid.points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.grid.CubicGrid.points" title="Permalink to this definition">¶</a></dt>
+<dd><p>The three-dimensional array containing the <cite>N</cite> grid points that are uniform.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>ndarray, (N, 3)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="bfit.grid.CubicGrid.step">
+<code class="sig-name descname">step</code><a class="headerlink" href="#bfit.grid.CubicGrid.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>The positive number representing the step-size of any two consequent grid points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">integrate(arr) :</code></dt>
+<dd><p>Integrate an array <cite>arr</cite> defined over the <cite>points</cite> using Riemannian sum.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="bfit.grid.CubicGrid.axes">
+<em class="property">property </em><code class="sig-name descname">axes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/grid.html#CubicGrid.axes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.grid.CubicGrid.axes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="bfit.grid.CubicGrid.from_molecule">
+<em class="property">classmethod </em><code class="sig-name descname">from_molecule</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cls</span></em>, <em class="sig-param"><span class="n">atcorenums</span></em>, <em class="sig-param"><span class="n">atcoords</span></em>, <em class="sig-param"><span class="n">spacing</span><span class="o">=</span><span class="default_value">0.2</span></em>, <em class="sig-param"><span class="n">extension</span><span class="o">=</span><span class="default_value">5.0</span></em>, <em class="sig-param"><span class="n">rotate</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/grid.html#CubicGrid.from_molecule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.grid.CubicGrid.from_molecule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a uniform grid given the molecular pseudo-numbers and coordinates.
+:param atcorenums: Pseudo-number of <span class="math notranslate nohighlight">\(M\)</span> atoms in the molecule.
+:type atcorenums: np.ndarray, shape (M,)
+:param atcoords: Cartesian coordinates of <span class="math notranslate nohighlight">\(M\)</span> atoms in the molecule.
+:type atcoords: np.ndarray, shape (M, 3)
+:param spacing: Increment between grid points along <span class="math notranslate nohighlight">\(x\)</span>, <span class="math notranslate nohighlight">\(y\)</span>, and <span class="math notranslate nohighlight">\(z\)</span> direction.
+:type spacing: float, optional
+:param extension: The extension of the length of the cube on each side of the molecule.
+:type extension: float, optional
+:param rotate: When True, the molecule is rotated so the axes of the cube file are</p>
+<blockquote>
+<div><p>aligned with the principle axes of rotation of the molecule.
+If False, generates axes based on the x,y,z-axis and the spacing parameter, and
+the origin is defined by the maximum/minimum of the atomic coordinates.</p>
+</div></blockquote>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="bfit.grid.CubicGrid._calculate_volume">
+<code class="sig-name descname">_calculate_volume</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">shape</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/grid.html#CubicGrid._calculate_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.grid.CubicGrid._calculate_volume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the volume of the Uniform Grid.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="bfit.grid.CubicGrid._choose_weight_scheme">
+<code class="sig-name descname">_choose_weight_scheme</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">shape</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/grid.html#CubicGrid._choose_weight_scheme"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.grid.CubicGrid._choose_weight_scheme" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="id2">
+<em class="property">property </em><code class="sig-name descname">points</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/grid.html#CubicGrid.points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#id2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return cubic grid points.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="bfit.grid.CubicGrid.__len__">
+<code class="sig-name descname">__len__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/grid.html#CubicGrid.__len__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.grid.CubicGrid.__len__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of grid points.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="bfit.grid.CubicGrid.integrate">
+<code class="sig-name descname">integrate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">arr</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/grid.html#CubicGrid.integrate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.grid.CubicGrid.integrate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the integral of a function evaluated on the grid points based on Riemann sums.</p>
+<div class="math notranslate nohighlight">
+\[\int\int\int f(x, y, z) dx dy dz\]</div>
+<p>where :math:’f(r)’ is the integrand.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>arr</strong> (<em>ndarray</em>) – The integrand evaluated on the grid points.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>value</strong> – The value of integral.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2021, The QC-Devs Community
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

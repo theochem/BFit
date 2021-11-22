@@ -1,0 +1,613 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>bfit.density &mdash; BFit  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> BFit
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BFit</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../bfit.html">bfit</a> &raquo;</li>
+        
+      <li>bfit.density</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for bfit.density</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># BFit - python program that fits a convex sum of</span>
+<span class="c1"># positive basis functions to any probability distribution. .</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2020 The BFit Development Team.</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of BFit.</span>
+<span class="c1">#</span>
+<span class="c1"># BFit is free software; you can redistribute it and/or</span>
+<span class="c1"># modify it under the terms of the GNU General Public License</span>
+<span class="c1"># as published by the Free Software Foundation; either version 3</span>
+<span class="c1"># of the License, or (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># BFit is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program; if not, see &lt;http://www.gnu.org/licenses/&gt;</span>
+<span class="c1">#</span>
+<span class="c1"># ---</span>
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Density Module.</span>
+
+<span class="sd">AtomicDensity:</span>
+<span class="sd">    Information about atoms obtained from .slater file and able to construct atomic density</span>
+<span class="sd">        (total, core and valence) from the linear combination of Slater-type orbitals.</span>
+<span class="sd">    Elements supported by default from &quot;./bfit/data/examples/&quot; range from Hydrogen to Xenon.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">factorial</span>
+
+<span class="kn">from</span> <span class="nn">bfit._slater</span> <span class="kn">import</span> <span class="n">load_slater_wfn</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;AtomicDensity&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="AtomicDensity"><a class="viewcode-back" href="../../autoapi/bfit/index.html#bfit.density.AtomicDensity">[docs]</a><span class="k">class</span> <span class="nc">AtomicDensity</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Atomic Density Class.</span>
+
+<span class="sd">    Reads and Parses information from the .slater file of a atom and stores it inside this class.</span>
+<span class="sd">    It is then able to construct the (total, core and valence) electron density based</span>
+<span class="sd">    on linear combination of orbitals where each orbital is a linear combination of</span>
+<span class="sd">    Slater-type orbitals.</span>
+<span class="sd">    Elements supported by default from &quot;./bfit/data/examples/&quot; range from Hydrogen to Xenon.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Attributes relating to the standard electron configuration.</span>
+
+<span class="sd">    energy : list</span>
+<span class="sd">        Energy of that atom.</span>
+<span class="sd">    configuration : str</span>
+<span class="sd">        Return the electron configuration of the element.</span>
+<span class="sd">    orbitals : list, (M,)</span>
+<span class="sd">        List of strings representing each of the orbitals in the electron configuration.</span>
+<span class="sd">        For example, Beryllium has [&quot;1S&quot;, &quot;2S&quot;] in its electron configuration.</span>
+<span class="sd">        Ordered based on &quot;S&quot;, &quot;P&quot;, &quot;D&quot;, etc.</span>
+<span class="sd">    orbitals_occupation : ndarray, (M, 1)</span>
+<span class="sd">        Returns the number of electrons in each of the orbitals in the electron configuration.</span>
+<span class="sd">        e.g. Beryllium has two electrons in &quot;1S&quot; and two electrons in &quot;2S&quot;.</span>
+
+<span class="sd">    Attributes relating to representing orbitals as linear combination of Slater-type orbitals.</span>
+
+<span class="sd">    orbital_energy : list, (N, 1)</span>
+<span class="sd">        Energy of each of the N Slater-type orbital.</span>
+<span class="sd">    orbitals_cusp : list, (N, 1)</span>
+<span class="sd">        Cusp of each of the N Slater-type orbital. Same ordering as `orbitals`. Does not exist</span>
+<span class="sd">        for Heavy atoms past Xenon.</span>
+<span class="sd">    orbitals_basis : dict</span>
+<span class="sd">        Keys are the orbitals in the electron configuration. Each orbital has N Slater-type orbital</span>
+<span class="sd">        attached to them.</span>
+<span class="sd">    orbitals_exp : dict (str : ndarray(N, 1))</span>
+<span class="sd">        Key is the orbital in the electron configuration and the item of that key is the Slater</span>
+<span class="sd">         exponents attached</span>
+<span class="sd">         to each N Slater-type orbital.</span>
+<span class="sd">    orbitals_coeff : dict (str : ndarray(N, 1))</span>
+<span class="sd">        Key is the orbital in the electron configuration (e. 1S, 2S or 2P) and the item is the</span>
+<span class="sd">        Slater coefficients attached to each of the N Slater-type orbital.</span>
+<span class="sd">    basis_numbers : dict (str : ndarray(N, 1))</span>
+<span class="sd">        Key is orbital in electron configuration and the item is the basis number of each of</span>
+<span class="sd">        the N Slater-type orbital. These are the principal quantum number to each Slater-type</span>
+<span class="sd">        orbital.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    atomic_density(mode=&quot;total&quot;) :</span>
+<span class="sd">        Construct the atomic density from the linear combinations of slater-type orbitals.</span>
+<span class="sd">        Can compute the total (default), core and valence atomic density.</span>
+<span class="sd">    lagrangian_kinetic_energy :</span>
+<span class="sd">        Construct the Positive Definite Kinetic energy.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Grab information about Beryllium.</span>
+<span class="sd">    &gt;&gt; be =  AtomicDensity(&quot;be&quot;)</span>
+
+<span class="sd">    Some of the attributes are the following.</span>
+<span class="sd">    &gt;&gt; print(be.configuration) #  Should &quot;1S(2)2S(2)&quot;.</span>
+<span class="sd">    &gt;&gt; print(be.orbitals)  # [&#39;1S&#39;, &#39;2S&#39;].</span>
+<span class="sd">    &gt;&gt; print(be.orbitals_occupation) # [[2], [2]] Two electrons in each orbital.</span>
+<span class="sd">    &gt;&gt; print(be.orbitals_cusp)  # [1.0001235, 0.9998774].</span>
+
+<span class="sd">    The Slatar coefficients and exponents of the 1S orbital can be obtained as:</span>
+<span class="sd">    &gt;&gt; print(be.orbital_coeff[&quot;1S&quot;])</span>
+<span class="sd">    &gt;&gt; print(be.orbitals_exp[&quot;1S&quot;])</span>
+
+<span class="sd">    The total, core and valence electron density can be obtained as:</span>
+<span class="sd">    &gt;&gt; points = np.arange(0., 25., 0.01)</span>
+<span class="sd">    &gt;&gt; total_density = be.atomic_density(points, &quot;total&quot;)</span>
+<span class="sd">    &gt;&gt; core_density = be.atomic_density(points, &quot;core&quot;)</span>
+<span class="sd">    &gt;&gt; valence_density = be.atomic_density(points, &quot;valence&quot;)</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    [1] &quot;Analytical Hartree–Fock wave functions subject to cusp and asymptotic constraints:</span>
+<span class="sd">        He to Xe, Li+ to Cs+, H− to I−&quot; by T. Koga, K. Kanayama, S. Watanabe and A.J. Thakkar.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">element</span><span class="p">,</span> <span class="n">anion</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cation</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct AtomicDensity object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        element : str</span>
+<span class="sd">            Symbol of element.</span>
+<span class="sd">        anion : bool</span>
+<span class="sd">            If true, then the anion of element is used.</span>
+<span class="sd">        cation : bool</span>
+<span class="sd">            If true, then the cation of element is used.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">element</span><span class="o">.</span><span class="n">isalpha</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The element argument should be all letters string.&quot;</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">load_slater_wfn</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">anion</span><span class="p">,</span> <span class="n">cation</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AtomicDensity.slater_orbital"><a class="viewcode-back" href="../../autoapi/bfit/density/index.html#bfit.density.AtomicDensity.slater_orbital">[docs]</a>    <span class="k">def</span> <span class="nf">slater_orbital</span><span class="p">(</span><span class="n">exponent</span><span class="p">,</span> <span class="n">number</span><span class="p">,</span> <span class="n">points</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the Slater-type orbitals on the given points.</span>
+
+<span class="sd">        A Slater-type orbital is defined as:</span>
+<span class="sd">        .. math::</span>
+<span class="sd">            R(r) = N r^{n-1} e^{- C r)</span>
+
+<span class="sd">        where,</span>
+<span class="sd">            :math:`n` is the principal quantum number of that orbital.</span>
+<span class="sd">            :math:`N` is the normalizing constant.</span>
+<span class="sd">            :math:`r` is the radial point, distance to the origin.</span>
+<span class="sd">            :math:`C` is the zeta exponent of that orbital.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        exponent : ndarray, (M, 1)</span>
+<span class="sd">            The zeta exponents of Slater orbitals.</span>
+<span class="sd">        number : ndarray, (M, 1)</span>
+<span class="sd">            The principle quantum numbers of Slater orbitals.</span>
+<span class="sd">        points : ndarray, (N,)</span>
+<span class="sd">            The radial grid points.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        slater : ndarray, (N, M)</span>
+<span class="sd">            The Slater-type orbitals evaluated on the grid points.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        The principal quantum number of all of the orbital are stored in `basis_numbers`.</span>
+<span class="sd">        The zeta exponents of all of the orbitals are stored in the attribute `orbitals_exp`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">points</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The argument point should be a 1D array.&quot;</span><span class="p">)</span>
+        <span class="c1"># compute norm &amp; pre-factor</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">number</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">exponent</span><span class="p">)</span> <span class="o">/</span> <span class="n">factorial</span><span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">number</span><span class="p">))</span>
+        <span class="n">pref</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">number</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="c1"># compute slater function</span>
+        <span class="n">slater</span> <span class="o">=</span> <span class="n">norm</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">pref</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">exponent</span> <span class="o">*</span> <span class="n">points</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">return</span> <span class="n">slater</span></div>
+
+<div class="viewcode-block" id="AtomicDensity.phi_matrix"><a class="viewcode-back" href="../../autoapi/bfit/density/index.html#bfit.density.AtomicDensity.phi_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">phi_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">deriv</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the linear combination of Slater-type atomic orbitals on the given points.</span>
+
+<span class="sd">        Each row corresponds to a point on the grid, represented as :math:`r` and</span>
+<span class="sd">         each column is represented as a linear combination of Slater-type atomic orbitals</span>
+<span class="sd">         of the form:</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \sum c_i R(r, n_i, C_i)</span>
+
+<span class="sd">        where,</span>
+<span class="sd">            :math:`c_i` is the coefficient of the Slater-type orbital.</span>
+<span class="sd">            :math:`C_i` is the zeta exponent attached to the Slater-type orbital.</span>
+<span class="sd">            :math:`n_i` is the principal quantum number attached to the Slater-type orbital.</span>
+<span class="sd">            :math:`R(r, n_i, C_i)` is the Slater-type orbital.</span>
+<span class="sd">            i ranges from 0 to K-1 where K is the number of orbitals in electron configuration.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        points : ndarray, (N,)</span>
+<span class="sd">            The radial grid points.</span>
+<span class="sd">        deriv : bool</span>
+<span class="sd">            If true, use the derivative of the slater-orbitals.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        phi_matrix : ndarray(N, K)</span>
+<span class="sd">            The linear combination of Slater-type orbitals evaluated on the grid points, where K is</span>
+<span class="sd">            the number of orbitals. The order is S orbitals, then P then D.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        - At r = 0, the derivative of slater-orbital is undefined and this function returns</span>
+<span class="sd">            zero instead. See &quot;derivative_slater_type_orbital&quot;.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># compute orbital composed of a linear combination of Slater</span>
+        <span class="n">phi_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">orbitals</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">orbital</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">orbitals</span><span class="p">):</span>
+            <span class="n">exps</span><span class="p">,</span> <span class="n">number</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">orbitals_exp</span><span class="p">[</span><span class="n">orbital</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis_numbers</span><span class="p">[</span><span class="n">orbital</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+            <span class="k">if</span> <span class="n">deriv</span><span class="p">:</span>
+                <span class="n">slater</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">derivative_slater_type_orbital</span><span class="p">(</span><span class="n">exps</span><span class="p">,</span> <span class="n">number</span><span class="p">,</span> <span class="n">points</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">slater</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slater_orbital</span><span class="p">(</span><span class="n">exps</span><span class="p">,</span> <span class="n">number</span><span class="p">,</span> <span class="n">points</span><span class="p">)</span>
+            <span class="n">phi_matrix</span><span class="p">[:,</span> <span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">slater</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">orbitals_coeff</span><span class="p">[</span><span class="n">orbital</span><span class="p">])</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">phi_matrix</span></div>
+
+<div class="viewcode-block" id="AtomicDensity.atomic_density"><a class="viewcode-back" href="../../autoapi/bfit/density/index.html#bfit.density.AtomicDensity.atomic_density">[docs]</a>    <span class="k">def</span> <span class="nf">atomic_density</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;total&quot;</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute atomic density on the given points.</span>
+
+<span class="sd">        The total density is written as a linear combination of Slater-type orbital</span>
+<span class="sd">        whose coefficients is the orbital occupation number of the electron configuration:</span>
+<span class="sd">        .. math::</span>
+<span class="sd">            \sum n_i |P(r, n_i, C_i)|^2</span>
+
+<span class="sd">        where,</span>
+<span class="sd">            :math:`n_i` is the number of electrons in orbital i.</span>
+<span class="sd">            :math:`P(r, n_i, C_i)` is a linear combination of Slater-type orbitals evaluated</span>
+<span class="sd">                on the point :math:`r`.</span>
+
+<span class="sd">        For core and valence density, please see More Info below.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        points : ndarray, (N,)</span>
+<span class="sd">            The radial grid points.</span>
+<span class="sd">        mode : str</span>
+<span class="sd">            The type of atomic density, which can be &quot;total&quot;, &quot;valence&quot; or &quot;core&quot;.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dens : ndarray, (N,)</span>
+<span class="sd">            The atomic density on the grid points.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The core density and valence density is respectively written as:</span>
+<span class="sd">        .. math::</span>
+<span class="sd">            \sum n_i (1 - e^{-|e_i - e_{homo}|^2}) |P(r, n_i, C_i)|</span>
+<span class="sd">            \sum n_i e^{-|e_i - e_{homo}|^2}) |P(r, n_i. C_i)|</span>
+
+<span class="sd">        where,</span>
+<span class="sd">            :math:`e_i` is the energy of the orbital i.</span>
+<span class="sd">            :math:`e_{homo}` is the energy of the highest occupying orbital.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;total&quot;</span><span class="p">,</span> <span class="s2">&quot;valence&quot;</span><span class="p">,</span> <span class="s2">&quot;core&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Argument mode not recognized!&quot;</span><span class="p">)</span>
+
+        <span class="c1"># compute orbital occupation numbers</span>
+        <span class="n">orb_occs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">orbitals_occupation</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;valence&quot;</span><span class="p">:</span>
+            <span class="n">orb_homo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">orbitals_energy</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">orbitals_occupation</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">orb_occs</span> <span class="o">=</span> <span class="n">orb_occs</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">orbitals_energy</span> <span class="o">-</span> <span class="n">orb_homo</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;core&quot;</span><span class="p">:</span>
+            <span class="n">orb_homo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">orbitals_energy</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">orbitals_occupation</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">orb_occs</span> <span class="o">=</span> <span class="n">orb_occs</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">orbitals_energy</span> <span class="o">-</span> <span class="n">orb_homo</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+        <span class="c1"># compute density</span>
+        <span class="n">dens</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">phi_matrix</span><span class="p">(</span><span class="n">points</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">orb_occs</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dens</span></div>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AtomicDensity.derivative_slater_type_orbital"><a class="viewcode-back" href="../../autoapi/bfit/density/index.html#bfit.density.AtomicDensity.derivative_slater_type_orbital">[docs]</a>    <span class="k">def</span> <span class="nf">derivative_slater_type_orbital</span><span class="p">(</span><span class="n">exponent</span><span class="p">,</span> <span class="n">number</span><span class="p">,</span> <span class="n">points</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the derivative of Slater-type orbitals on the given points.</span>
+
+<span class="sd">        A Slater-type orbital is defined as:</span>
+<span class="sd">        .. math::</span>
+<span class="sd">            \frac{d R(r)}{dr} = \bigg(\frac{n-1}{r} - C \bigg) N r^{n-1} e^{- C r),</span>
+
+<span class="sd">        where,</span>
+<span class="sd">            :math:`n` is the principal quantum number of that orbital.</span>
+<span class="sd">            :math:`N` is the normalizing constant.</span>
+<span class="sd">            :math:`r` is the radial point, distance to the origin.</span>
+<span class="sd">            :math:`C` is the zeta exponent of that orbital.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        exponent : ndarray, (M, 1)</span>
+<span class="sd">            The zeta exponents of Slater orbitals.</span>
+<span class="sd">        number : ndarray, (M, 1)</span>
+<span class="sd">            The principle quantum numbers of Slater orbitals.</span>
+<span class="sd">        points : ndarray, (N,)</span>
+<span class="sd">            The radial grid points. If points contain zero, then it is undefined at those</span>
+<span class="sd">            points and set to zero.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        slater : ndarray, (N, M)</span>
+<span class="sd">            The Slater-type orbitals evaluated on the grid points.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        - At r = 0, the derivative is undefined and this function returns zero instead.</span>
+
+<span class="sd">        References</span>
+<span class="sd">        ----------</span>
+<span class="sd">        See wikipedia page on &quot;Slater-Type orbitals&quot;.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">slater</span> <span class="o">=</span> <span class="n">AtomicDensity</span><span class="o">.</span><span class="n">slater_orbital</span><span class="p">(</span><span class="n">exponent</span><span class="p">,</span> <span class="n">number</span><span class="p">,</span> <span class="n">points</span><span class="p">)</span>
+        <span class="c1"># Consider the case when dividing by zero.</span>
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">):</span>
+            <span class="c1"># derivative</span>
+            <span class="n">deriv_pref</span> <span class="o">=</span> <span class="p">(</span><span class="n">number</span><span class="o">.</span><span class="n">T</span> <span class="o">-</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="p">(</span><span class="n">points</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span> <span class="o">-</span> <span class="n">exponent</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">deriv_pref</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">points</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">deriv</span> <span class="o">=</span> <span class="n">deriv_pref</span> <span class="o">*</span> <span class="n">slater</span>
+        <span class="k">return</span> <span class="n">deriv</span></div>
+
+<div class="viewcode-block" id="AtomicDensity.lagrangian_kinetic_energy"><a class="viewcode-back" href="../../autoapi/bfit/density/index.html#bfit.density.AtomicDensity.lagrangian_kinetic_energy">[docs]</a>    <span class="k">def</span> <span class="nf">lagrangian_kinetic_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Positive definite or Lagrangian kinetic energy density.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        points : ndarray,(N,)</span>
+<span class="sd">            The radial grid points.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        energy : ndarray, (N,)</span>
+<span class="sd">            The kinetic energy on the grid points.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">phi_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">orbitals</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">orbital</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">orbitals</span><span class="p">):</span>
+            <span class="n">exps</span><span class="p">,</span> <span class="n">number</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">orbitals_exp</span><span class="p">[</span><span class="n">orbital</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis_numbers</span><span class="p">[</span><span class="n">orbital</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+            <span class="c1"># Take second derivative of the Slater-Type Orbitals without division by r^2 (added this below)</span>
+            <span class="n">slater</span> <span class="o">=</span> <span class="n">AtomicDensity</span><span class="o">.</span><span class="n">slater_orbital</span><span class="p">(</span><span class="n">exps</span><span class="p">,</span> <span class="n">number</span><span class="p">,</span> <span class="n">points</span><span class="p">)</span>
+            <span class="c1"># derivative</span>
+            <span class="n">deriv_pref</span> <span class="o">=</span> <span class="p">(</span><span class="n">number</span><span class="o">.</span><span class="n">T</span> <span class="o">-</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">-</span> <span class="n">exps</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="p">(</span><span class="n">points</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">deriv</span> <span class="o">=</span> <span class="n">deriv_pref</span> <span class="o">*</span> <span class="n">slater</span>
+            <span class="n">phi_matrix</span><span class="p">[:,</span> <span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">deriv</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">orbitals_coeff</span><span class="p">[</span><span class="n">orbital</span><span class="p">])</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+        <span class="n">angular</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># Angular numbers are l(l + 1)</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">orbital</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">orbitals</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s2">&quot;S&quot;</span> <span class="ow">in</span> <span class="n">orbital</span><span class="p">:</span>
+                <span class="n">angular</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">0.</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s2">&quot;P&quot;</span> <span class="ow">in</span> <span class="n">orbital</span><span class="p">:</span>
+                <span class="n">angular</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">2.</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s2">&quot;D&quot;</span> <span class="ow">in</span> <span class="n">orbital</span><span class="p">:</span>
+                <span class="n">angular</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">6.</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s2">&quot;F&quot;</span> <span class="ow">in</span> <span class="n">orbital</span><span class="p">:</span>
+                <span class="n">angular</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">12.</span><span class="p">)</span>
+
+        <span class="n">orb_occs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">orbitals_occupation</span>
+        <span class="n">energy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">phi_matrix</span><span class="o">**</span><span class="mf">2.</span><span class="p">,</span> <span class="n">orb_occs</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="o">/</span> <span class="mf">2.</span>
+        <span class="c1"># Add other term</span>
+        <span class="n">molecular</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phi_matrix</span><span class="p">(</span><span class="n">points</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">angular</span><span class="p">)</span>
+        <span class="n">energy</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">molecular</span><span class="p">,</span> <span class="n">orb_occs</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="o">/</span> <span class="mf">2.</span>
+        <span class="c1"># Divide by r^2 and set division by zero to zero.</span>
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">):</span>
+            <span class="n">energy</span> <span class="o">/=</span> <span class="p">(</span><span class="n">points</span><span class="o">**</span><span class="mf">2.0</span><span class="p">)</span>
+            <span class="n">energy</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">points</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="k">return</span> <span class="n">energy</span> <span class="o">/</span> <span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AtomicDensity.derivative_density"><a class="viewcode-back" href="../../autoapi/bfit/density/index.html#bfit.density.AtomicDensity.derivative_density">[docs]</a>    <span class="k">def</span> <span class="nf">derivative_density</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the derivative of the atomic density on a set of points.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        points : ndarray,(N,)</span>
+<span class="sd">            The radial grid points.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        deriv : ndarray, (N,)</span>
+<span class="sd">            The derivative of atomic density on the grid points.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phi_matrix</span><span class="p">(</span><span class="n">points</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">phi_matrix</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">deriv</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">derivative</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">factor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">orbitals_occupation</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">derivative</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2021, The QC-Devs Community
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
