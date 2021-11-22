@@ -90,7 +90,9 @@ import warnings
 from scipy.optimize import minimize, NonlinearConstraint
 from timeit import default_timer as timer
 
-from bfit.measure import KLDivergence, SquaredDifference
+from bfit.measure import (
+    KLDivergence, Measure, SquaredDifference, TsallisDivergence
+)
 
 
 __all__ = ["KLDivergenceSCF", "GaussianBasisFit"]
@@ -108,8 +110,9 @@ class _BaseFit(object):
         The true function evaluated on the grid points from `grid`.
     model : (AtomicGaussianDensity, MolecularGaussianDensity)
         The Gaussian basis model density. Located in `model.py`.
-    measure : (SquaredDifference, KLDivergence)
-        The deviation measure between true density and model density. Located in `measure.py`
+    measure : Measure
+        The deviation measure between true density and model density.
+        See bfit.measure.py for examples of measures to use.
 
     Methods
     -------
