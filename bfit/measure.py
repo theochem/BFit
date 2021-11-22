@@ -22,6 +22,7 @@
 # ---
 """Measure Module."""
 
+from abc import ABC, abstractmethod
 
 import numpy as np
 
@@ -29,79 +30,86 @@ import numpy as np
 __all__ = ["KLDivergence", "SquaredDifference"]
 
 
-class SquaredDifference:
-    r"""
-    Squared Difference Class for performing the Least-Squared method.
+class Measure(ABC):
+    r"""Abstract base class for the measures."""
 
-    Least-squared is the defined to be the integral of the squared difference between
-     true and model functions:
-    .. math::
-        ||f - g|| = \int_G (f(x) - g(x))^2 dx
-    where,
-        :math:`f` is the true function,
-        :math:`g` is the model function,
-        :math:`G` is the grid.
-
-    The term :math:`|f(x) - g(x)|^2` is called the Squared Difference between f and g on a point x.
-
-    Attributes
-    ----------
-    density : ndarray(N,)
-        The true function (being approximated) evaluated on `N` points.
-
-    Methods
-    -------
-    evaluate(deriv=False)
-        Return the squared difference between model and true functions. Note that it does not
-        integrate the model but rather only computes f(x) - g(x). If `deriv` is True,
-        then the derivative with respect to model function is returned.
-
-    Notes
-    -----
-    - This class does not return the Least-Squared but rather the squared difference.
-        One would need to integrate this to get the Least Squared.
-
-    """
-
-    def __init__(self, density):
-        """
-        Construct the SquaredDifference class.
+    @abstractmethod
+    def evaluate(self, density, model, deriv=False):
+        r"""
+        Abstract method for evaluating the measure.
 
         Parameters
         ----------
-        density : ndarray, (N,)
+        density : ndarray(N,)
             The exact density evaluated on the grid points.
+        model : ndarray(N,)
+            The model evaluated on the same :math:`N` points that `density` is
+            evaluated on.
+        deriv : bool, optional
+            Whether it should return the derivatives of the  measure w.r.t. to the
+            model parameters.
+
+        Returns
+        -------
+        m : ndarray(N,)
+            The measure between density & model on the grid points.
+        dm : ndarray(N,)
+            The derivative of measure w.r.t. model evaluated on the
+            grid points. Only returned if `deriv=True`.
 
         """
-        if not isinstance(density, np.ndarray) or density.ndim != 1:
-            raise ValueError("Arguments density should be a 1D numpy array.")
-        self.density = density
+        raise NotImplementedError("Evaluate function should be implemented.")
 
-    def evaluate(self, model, deriv=False):
-        r"""Evaluate squared difference b/w density & model on the grid points.
 
-        This is defined to be :math:`(f(x) - g(x))^2`.
+class SquaredDifference(Measure):
+    r"""Squared Difference Class for performing the Least-Squared method."""
+    def __init__(self):
+        r"""Construct the SquaredDifference class."""
+        super(SquaredDifference, self).__init__()
+
+    def evaluate(self, density, model, deriv=False):
+        r"""
+        Evaluate squared difference b/w density & model on the grid points.
+
+        This is defined to be :math:`(f(x) - g(x))^2`,
+        where,
+            :math:`f` is the true function, and
+            :math:`g` is the model function,
 
         Parameters
         ----------
-        model : ndarray, (N,)
+        density : ndarray(N,)
+            The exact density evaluated on the grid points.
+        model : ndarray(N,)
             The model density evaluated on the grid points.
         deriv : bool, optional
             Whether to compute the derivative of squared difference w.r.t. model density.
 
         Returns
         -------
-        m : ndarray, (N,)
+        m : ndarray(N,)
             The squared difference between density & model on the grid points.
-        dm : ndarray, (N,)
+        dm : ndarray(N,)
             The derivative of squared difference w.r.t. model density evaluated on the
             grid points. Only returned if `deriv=True`.
 
+        Notes
+        -----
+        - This class does not return the Least-Squared but rather the squared difference.
+            One would need to integrate this to get the Least Squared.
+
         """
-        if not isinstance(model, np.ndarray) or model.shape != self.density.shape:
-            raise ValueError("Argument model should be {0} array.".format(self.density.shape))
+        if not isinstance(model, np.ndarray):
+            raise ValueError("Argument model should be {0} array.".format(density.shape))
+        if not isinstance(density, np.ndarray) or density.ndim != 1:
+            raise ValueError("Arguments density should be a 1D numpy array.")
+        if model.shape != density.shape:
+            raise ValueError(f"Model shape {model.shape} should be the same as density"
+                             f" {density.shape}.")
+        if not isinstance(deriv, bool):
+            raise TypeError(f"Deriv {type(deriv)} should be Boolean type.")
         # compute residual
-        residual = self.density - model
+        residual = density - model
         # compute squared residual
         value = np.power(residual, 2)
         # compute derivative of squared residual w.r.t. model
@@ -110,64 +118,29 @@ class SquaredDifference:
         return value
 
 
-class KLDivergence:
-    r"""
-    Kullback-Leibler Divergence Class.
+class KLDivergence(Measure):
+    r"""Kullback-Leibler Divergence Class."""
 
-    This is defined as the integral:
-    .. math::
-        D(f, g) := \int_G f(x) \ln ( \frac{f(x)}{g(x)} ) dx
-    where,
-        :math:`f` is the true probability distribution,
-        :math:`g` is the model probability distribution,
-        :math:`G` is the grid.
-
-    Attributes
-    ----------
-    density : ndarray(N,)
-        The true function (being approximated) evaluated on `N` points.
-    mask_value : float
-        Values of model density `g` that are less than `mask_value` are masked when used in division
-         and then replaced with the value of 1 so that logarithm of one is zero.
-
-    Methods
-    -------
-    evaluate(deriv=False)
-        Return the integrand :math:`f(x) \ln(f(x)/g(x))` between model and true functions.
-        Note that it does not integrate the model, and so it doesn't exactly return the
-        Kullback-Leibler. If `deriv` is True, then the derivative with respect to model function
-        is returned.
-
-    Notes
-    -----
-    - This class does not return the Kullback-Leibler but rather the integrand.
-        One would need to integrate this to get the Least Squared.
-    - It using masked values to handle overflow and underflow floating point precision issues. This
-        is due to the division in the Kullback-Leibler formula between two probability
-        distributions.
-
-    """
-
-    def __init__(self, density, mask_value=1.e-12):
+    def __init__(self, mask_value=1.e-12):
         r"""
         Construct the Kullback-Leibler class.
 
         Parameters
         ----------
-        density : ndarray, (N,)
-            The exact density evaluated on the grid points.
         mask_value : float, optional
-            The elements less than or equal to this number are masked in a division.
+            The elements less than or equal to this number are masked in a division,
+            and then replaced with the value of one so that logarithm of one is zero.
 
         """
-        if not isinstance(density, np.ndarray) or density.ndim != 1:
-            raise ValueError("Arguments density should be a 1D numpy array.")
-        if np.any(density < 0.):
-            raise ValueError("Argument density should be positive.")
-        self.density = density
-        self.mask_value = mask_value
+        super(KLDivergence, self).__init__()
+        self._mask_value = mask_value
 
-    def evaluate(self, model, deriv=False):
+    @property
+    def mask_value(self):
+        r"""Masking value used when evaluating the measure."""
+        return self._mask_value
+
+    def evaluate(self, density, model, deriv=False):
         r"""
         Evaluate the integrand of Kullback-Leibler divergence b/w true & model.
 
@@ -176,23 +149,25 @@ class KLDivergence:
         where,
             :math:`f` is the true probability distribution,
             :math:`g` is the model probability distribution,
-            :math:`G` is the grid.
+            :math:`G` is the grid being integrated on.
 
         If the model density is negative, then this function will return extremely large values,
         for optimization purposes.
 
         Parameters
         ----------
-        model : ndarray, (N,)
+        density : ndarray(N,)
+            The exact density evaluated on the grid points.
+        model : ndarray(N,)
             The model density evaluated on the grid points.
         deriv : bool, optional
             Whether to compute the derivative of divergence w.r.t. model density.
 
         Returns
         -------
-        m : ndarray, (N,)
-            The divergence between density & model on the grid points.
-        dm : ndarray, (N,)
+        m : ndarray(N,)
+            The Kullback-Leibler divergence between density & model on the grid points.
+        dm : ndarray(N,)
             The derivative of divergence w.r.t. model density evaluated on the grid points.
             Only returned if `deriv=True`.
 
@@ -200,22 +175,29 @@ class KLDivergence:
         -----
         - Values of Model density that are less than `mask_value` are masked when used in
             division and then replaced with the value of 1 so that logarithm of one is zero.
+        - This class does not return the Kullback-Leibler but rather the integrand.
+            One would need to integrate this to get the Least Squared.
 
         """
         # check model density
-        if not isinstance(model, np.ndarray) or model.shape != self.density.shape:
-            raise ValueError("Argument model should be {0} array.".format(self.density.shape))
+        if not isinstance(model, np.ndarray):
+            raise ValueError("Argument model should be {0} array.".format(density.shape))
+        if not isinstance(density, np.ndarray) or density.ndim != 1:
+            raise ValueError("Arguments density should be a 1D numpy array.")
+        if model.shape != density.shape:
+            raise ValueError(f"Model shape {model.shape} should be the same as density"
+                             f" {density.shape}.")
+        if not isinstance(deriv, bool):
+            raise TypeError(f"Deriv {type(deriv)} should be Boolean type.")
         if np.any(model < 0.):
-            # If the model density is negative, then return large values for optimization to favour
-            #  positive model densities.
-            return np.array([100000.] * len(self.density)), np.array([100000.] * len(self.density))
+            raise ValueError("Model density should be positive.")
 
         # compute ratio & replace masked values by 1.0
-        ratio = self.density / np.ma.masked_less_equal(model, self.mask_value)
+        ratio = density / np.ma.masked_less_equal(model, self.mask_value)
         ratio = np.ma.filled(ratio, fill_value=1.0)
 
         # compute KL divergence
-        value = self.density * np.log(ratio)
+        value = density * np.log(ratio)
         # compute derivative
         if deriv:
             return value, -ratio
