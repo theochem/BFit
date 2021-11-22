@@ -386,8 +386,10 @@ class KLDivergenceSCF(_BaseFit):
         -------
         result : dict
             The optimization results presented as a dictionary containing:
-            "x" : (ndarray, ndarray)
-                The optimized coefficients and exponents.
+            "coeffs" : ndarray
+                The optimized coefficients of Gaussian model.
+            "exps" : ndarray
+                The optimized exponents of Gaussian model.
             "success": bool
                 Whether or not the optimization exited successfully.
             "fun" : ndarray
@@ -456,7 +458,8 @@ class KLDivergenceSCF(_BaseFit):
         else:
             success = True
 
-        results = {"x": (new_cs, new_es),
+        results = {"coeffs": new_cs,
+                   "exps" : new_es,
                    "fun": np.array(fun),
                    "success": success,
                    "performance": np.array(performance),
@@ -612,8 +615,10 @@ class GaussianBasisFit(_BaseFit):
         -------
         result : dict
             The optimization results presented as a dictionary containing:
-            "x" : (ndarray, ndarray)
-                The optimized coefficients and exponents, respectively.
+            "coeffs" : ndarray
+                The optimized coefficients of Gaussian model.
+            "exps" : ndarray
+                The optimized exponents of Gaussian model.
             "success": bool
                 Whether or not the optimization exited successfully.
             "message" : str
@@ -700,7 +705,8 @@ class GaussianBasisFit(_BaseFit):
         else:
             coeffs, expons = c0, res["x"]
 
-        results = {"x": (coeffs, expons),
+        results = {"coeffs": coeffs,
+                   "exps" : expons,
                    "fun": res["fun"],
                    "success": res["success"],
                    "message": res["message"],
