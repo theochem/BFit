@@ -37,27 +37,34 @@ __all__ = ["KLDivergenceSCF", "ScipyFit"]
 class _BaseFit:
     r"""Base Fitting Class."""
 
-    def __init__(self, grid, density, model, measure):
+    def __init__(self, grid, density, model, measure, integral_dens=None):
         """
         Construct the base fitting class.
 
         Parameters
         ----------
         grid : (_BaseRadialGrid, CubicGrid)
-            Grid object containing points and integration method.
-        density : ndarray
-            The true function evaluated on the grid points from `grid`.
+            The grid class that contains the grid points and a integrate function.
+             Located in `grid.py`
+        density : ndarray(N,)
+            The true density evaluated on :math:`N` grid points.
         model : (AtomicGaussianDensity, MolecularGaussianDensity)
             The Gaussian basis model density. See `model.py`.
         measure : (SquaredDifference, KLDivergence)
             The deviation measure between true density and model density. See `measure.py`.
 
         """
-        #TODO: Update the grid in teh doc once I change the grid classes.
-        self._grid = grid
-        self._density = density
-        self._model = model
-        self._measure = measure
+        if np.any(density < 0.):
+            raise ValueError("Density should be positive.")
+        self.grid = grid
+        self.density = density
+        self.model = model
+        self.measure = measure
+        # compute norm of density
+        if integral_dens is None:
+            self._integral_dens = grid.integrate(density)
+        else:
+            self._integral_dens = integral_dens
 
     @property
     def grid(self):
@@ -78,6 +85,11 @@ class _BaseFit:
     def measure(self):
         r"""The deviation measure between true density and model density."""
         return self._measure
+
+    @property
+    def integral_dens(self):
+        r"""Integration value of the density."""
+        return self._integral_dens
 
     def goodness_of_fit(self, coeffs, expons):
         r"""
@@ -139,7 +151,7 @@ class KLDivergenceSCF(_BaseFit):
 
     """
 
-    def __init__(self, grid, density, model, mask_value=0., integration_val=None):
+    def __init__(self, grid, density, model, mask_value=0., integral_dens=None):
         r"""
         Construct the KLDivergenceSCF class.
 
@@ -153,23 +165,17 @@ class KLDivergenceSCF(_BaseFit):
             The Gaussian basis model density. Located in `model.py`.
         mask_value : float, optional
             The elements less than or equal to this number are masked in a division.
-        integration_val : float, optional
+        integral_dens : float, optional
             If this is provided, then the model is constrained to integrate to this value.
-            If not, then the integration of the model is constrained to the numerical
-            integration of the density. Useful when one knows the actual integration
-            value of the density.
+            If not, then the model is constrained to the numerical integration of the
+            density. Useful when one knows the actual integration value of the density.
 
         """
         # initialize KL deviation measure
         measure = KLDivergence(density, mask_value=mask_value)
-        super(KLDivergenceSCF, self).__init__(grid, density, model, measure)
-        # compute norm of density
-        if integration_val is None:
-            self._norm = grid.integrate(density)
-        else:
-            self._norm = integration_val
+        super(KLDivergenceSCF, self).__init__(grid, density, model, measure, integral_dens)
         # compute lagrange multiplier
-        self._lm = self.grid.integrate(self.density) / self.norm
+        self._lm = self.grid.integrate(self.density) / self.integral_dens
         if self._lm == 0. or np.isnan(self._lm):
             raise RuntimeError("Lagrange multiplier cannot be {0}.".format(self._lm))
 
@@ -378,7 +384,8 @@ class ScipyFit(_BaseFit):
 
     """
 
-    def __init__(self, grid, density, model, measure="KL", method="SLSQP", weights=None, mask_value=1e-10):
+    def __init__(self, grid, density, model, measure=KLDivergence, method="SLSQP", weights=None,
+                 integral_dens=None):
         r"""
         Construct the ScipyFit object.
 
@@ -390,17 +397,18 @@ class ScipyFit(_BaseFit):
             The true density evaluated on the grid points.
         model : (AtomicGaussianDensity, MolecularGaussianDensity)
             The Gaussian basis model density.
-        measure : str, optional
+        measure : bfit.measure.Measure
             The deviation measure between true density and model density.
-            Can be either "KL" (Kullback-Leibler, default) or "LS" (least-squares).
+            See bfit.measure.py for examples of measures to use.
         method : str, optional
             The method used for optimizing parameters. Default is "slsqp".
             See "scipy.optimize.minimize" for options.
         weights : ndarray, optional
             The weights of objective function at each point. If `None`, 1.0 is used.
-        mask_value : float, optional
-            The elements less than or equal to this number are masked in a division.
-            Used only when Kullback-Leibler is used.
+        integral_dens : float, optional
+            If this is provided, then the model is constrained to integrate to this value.
+            If not, then the model is constrained to the numerical integration of the
+            density. Useful when one knows the actual integration value of the density.
 
         """
         if np.any(abs(grid.points - model.points) > 1.e-12):
@@ -409,22 +417,15 @@ class ScipyFit(_BaseFit):
             raise ValueError("Argument density should have ({0},) shape.".format(len(grid.points)))
         if method.lower() not in ["slsqp", "trust-constr"]:
             raise ValueError("Argument method={0} is not recognized!".format(method))
+        if not isinstance(measure, Measure):
+            raise TypeError(f"Measure {type(measure)} needs to be a children of the class Measure.")
 
         self.method = method.lower()
-        # assign measure to measure deviation between density & modeled density.
-        if measure.lower() == "kl":
-            measure = KLDivergence(density, mask_value=mask_value)
-        elif measure.lower() == "ls":
-            measure = SquaredDifference(density)
-        else:
-            raise ValueError("Argument measure={0} not recognized!".format(measure))
         # Assign the weights.
         if weights is None:
             weights = np.ones(len(density))
         self.weights = weights
-        self.norm = grid.integrate(density)
-
-        super(ScipyFit, self).__init__(grid, density, model, measure)
+        super(ScipyFit, self).__init__(grid, density, model, measure, integral_dens)
 
     def run(self, c0, e0, opt_coeffs=True, opt_expons=True, maxiter=1000, tol=1.e-14, disp=False,
             with_constraint=True):
@@ -600,7 +601,7 @@ class ScipyFit(_BaseFit):
         """
         # compute linear combination of gaussian basis functions
         m, _ = self.evaluate_model(x, *args)
-        cons = self.norm - self.grid.integrate(m)
+        cons = self.integral_dens - self.grid.integrate(m)
         return cons
 
     def evaluate_model(self, x, *args):
