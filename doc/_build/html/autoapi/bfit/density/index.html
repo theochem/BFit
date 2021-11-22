@@ -1,0 +1,638 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>bfit.density &mdash; BFit  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> BFit
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BFit</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">bfit.density</span></code></li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/autoapi/bfit/density/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="module-bfit.density">
+<span id="bfit-density"></span><h1><a class="reference internal" href="#module-bfit.density" title="bfit.density"><code class="xref py py-mod docutils literal notranslate"><span class="pre">bfit.density</span></code></a><a class="headerlink" href="#module-bfit.density" title="Permalink to this headline">¶</a></h1>
+<p>Density Module.</p>
+<dl>
+<dt>AtomicDensity:</dt><dd><dl class="simple">
+<dt>Information about atoms obtained from .slater file and able to construct atomic density</dt><dd><p>(total, core and valence) from the linear combination of Slater-type orbitals.</p>
+</dd>
+</dl>
+<p>Elements supported by default from “./bfit/data/examples/” range from Hydrogen to Xenon.</p>
+</dd>
+</dl>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h3>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bfit.density.AtomicDensity" title="bfit.density.AtomicDensity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AtomicDensity</span></code></a></p></td>
+<td><p>Atomic Density Class.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt id="bfit.density.AtomicDensity">
+<em class="property">class </em><code class="sig-prename descclassname">bfit.density.</code><code class="sig-name descname">AtomicDensity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">element</span></em>, <em class="sig-param"><span class="n">anion</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">cation</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/density.html#AtomicDensity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.density.AtomicDensity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Atomic Density Class.</p>
+<p>Reads and Parses information from the .slater file of a atom and stores it inside this class.
+It is then able to construct the (total, core and valence) electron density based
+on linear combination of orbitals where each orbital is a linear combination of
+Slater-type orbitals.
+Elements supported by default from “./bfit/data/examples/” range from Hydrogen to Xenon.</p>
+<dl class="py attribute">
+<dt>
+<code class="sig-name descname">Attributes relating to the standard electron configuration.</code></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="bfit.density.AtomicDensity.energy">
+<code class="sig-name descname">energy</code><a class="headerlink" href="#bfit.density.AtomicDensity.energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Energy of that atom.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="bfit.density.AtomicDensity.configuration">
+<code class="sig-name descname">configuration</code><a class="headerlink" href="#bfit.density.AtomicDensity.configuration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the electron configuration of the element.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="bfit.density.AtomicDensity.orbitals">
+<code class="sig-name descname">orbitals</code><a class="headerlink" href="#bfit.density.AtomicDensity.orbitals" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of strings representing each of the orbitals in the electron configuration.
+For example, Beryllium has [“1S”, “2S”] in its electron configuration.
+Ordered based on “S”, “P”, “D”, etc.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list, (M,)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="bfit.density.AtomicDensity.orbitals_occupation">
+<code class="sig-name descname">orbitals_occupation</code><a class="headerlink" href="#bfit.density.AtomicDensity.orbitals_occupation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the number of electrons in each of the orbitals in the electron configuration.
+e.g. Beryllium has two electrons in “1S” and two electrons in “2S”.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>ndarray, (M, 1)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt>
+<code class="sig-name descname">Attributes relating to representing orbitals as linear combination of Slater-type orbitals.</code></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="bfit.density.AtomicDensity.orbital_energy">
+<code class="sig-name descname">orbital_energy</code><a class="headerlink" href="#bfit.density.AtomicDensity.orbital_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Energy of each of the N Slater-type orbital.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list, (N, 1)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="bfit.density.AtomicDensity.orbitals_cusp">
+<code class="sig-name descname">orbitals_cusp</code><a class="headerlink" href="#bfit.density.AtomicDensity.orbitals_cusp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cusp of each of the N Slater-type orbital. Same ordering as <cite>orbitals</cite>. Does not exist
+for Heavy atoms past Xenon.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list, (N, 1)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="bfit.density.AtomicDensity.orbitals_basis">
+<code class="sig-name descname">orbitals_basis</code><a class="headerlink" href="#bfit.density.AtomicDensity.orbitals_basis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Keys are the orbitals in the electron configuration. Each orbital has N Slater-type orbital
+attached to them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="bfit.density.AtomicDensity.orbitals_exp">
+<code class="sig-name descname">orbitals_exp</code><a class="headerlink" href="#bfit.density.AtomicDensity.orbitals_exp" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Key is the orbital in the electron configuration and the item of that key is the Slater</dt><dd><p>exponents attached
+to each N Slater-type orbital.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict (str : ndarray(N, 1))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="bfit.density.AtomicDensity.orbitals_coeff">
+<code class="sig-name descname">orbitals_coeff</code><a class="headerlink" href="#bfit.density.AtomicDensity.orbitals_coeff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Key is the orbital in the electron configuration (e. 1S, 2S or 2P) and the item is the
+Slater coefficients attached to each of the N Slater-type orbital.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict (str : ndarray(N, 1))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="bfit.density.AtomicDensity.basis_numbers">
+<code class="sig-name descname">basis_numbers</code><a class="headerlink" href="#bfit.density.AtomicDensity.basis_numbers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Key is orbital in electron configuration and the item is the basis number of each of
+the N Slater-type orbital. These are the principal quantum number to each Slater-type
+orbital.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict (str : ndarray(N, 1))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">atomic_density(mode=&quot;total&quot;) :</code></dt>
+<dd><p>Construct the atomic density from the linear combinations of slater-type orbitals.
+Can compute the total (default), core and valence atomic density.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">lagrangian_kinetic_energy :</code></dt>
+<dd><p>Construct the Positive Definite Kinetic energy.</p>
+</dd></dl>
+
+<p class="rubric">Examples</p>
+<p>Grab information about Beryllium.
+&gt;&gt; be =  AtomicDensity(“be”)</p>
+<p>Some of the attributes are the following.
+&gt;&gt; print(be.configuration) #  Should “1S(2)2S(2)”.
+&gt;&gt; print(be.orbitals)  # [‘1S’, ‘2S’].
+&gt;&gt; print(be.orbitals_occupation) # [[2], [2]] Two electrons in each orbital.
+&gt;&gt; print(be.orbitals_cusp)  # [1.0001235, 0.9998774].</p>
+<p>The Slatar coefficients and exponents of the 1S orbital can be obtained as:
+&gt;&gt; print(be.orbital_coeff[“1S”])
+&gt;&gt; print(be.orbitals_exp[“1S”])</p>
+<p>The total, core and valence electron density can be obtained as:
+&gt;&gt; points = np.arange(0., 25., 0.01)
+&gt;&gt; total_density = be.atomic_density(points, “total”)
+&gt;&gt; core_density = be.atomic_density(points, “core”)
+&gt;&gt; valence_density = be.atomic_density(points, “valence”)</p>
+<p class="rubric">References</p>
+<dl class="simple">
+<dt>[1] “Analytical Hartree–Fock wave functions subject to cusp and asymptotic constraints:</dt><dd><p>He to Xe, Li+ to Cs+, H− to I−” by T. Koga, K. Kanayama, S. Watanabe and A.J. Thakkar.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="bfit.density.AtomicDensity.slater_orbital">
+<em class="property">static </em><code class="sig-name descname">slater_orbital</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">exponent</span></em>, <em class="sig-param"><span class="n">number</span></em>, <em class="sig-param"><span class="n">points</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/density.html#AtomicDensity.slater_orbital"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.density.AtomicDensity.slater_orbital" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the Slater-type orbitals on the given points.</p>
+<p>A Slater-type orbital is defined as:
+.. math:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">R</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">=</span> <span class="n">N</span> <span class="n">r</span><span class="o">^</span><span class="p">{</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">}</span> <span class="n">e</span><span class="o">^</span><span class="p">{</span><span class="o">-</span> <span class="n">C</span> <span class="n">r</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>where,</dt><dd><p><span class="math notranslate nohighlight">\(n\)</span> is the principal quantum number of that orbital.
+<span class="math notranslate nohighlight">\(N\)</span> is the normalizing constant.
+<span class="math notranslate nohighlight">\(r\)</span> is the radial point, distance to the origin.
+<span class="math notranslate nohighlight">\(C\)</span> is the zeta exponent of that orbital.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>exponent</strong> (<em>ndarray</em><em>, </em><em>(</em><em>M</em><em>, </em><em>1</em><em>)</em>) – The zeta exponents of Slater orbitals.</p></li>
+<li><p><strong>number</strong> (<em>ndarray</em><em>, </em><em>(</em><em>M</em><em>, </em><em>1</em><em>)</em>) – The principle quantum numbers of Slater orbitals.</p></li>
+<li><p><strong>points</strong> (<em>ndarray</em><em>, </em><em>(</em><em>N</em><em>,</em><em>)</em>) – The radial grid points.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>slater</strong> – The Slater-type orbitals evaluated on the grid points.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray, (N, M)</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><code class="xref py py-meth docutils literal notranslate"><span class="pre">The()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">The()</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="bfit.density.AtomicDensity.phi_matrix">
+<code class="sig-name descname">phi_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">points</span></em>, <em class="sig-param"><span class="n">deriv</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/density.html#AtomicDensity.phi_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.density.AtomicDensity.phi_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the linear combination of Slater-type atomic orbitals on the given points.</p>
+<dl class="simple">
+<dt>Each row corresponds to a point on the grid, represented as <span class="math notranslate nohighlight">\(r\)</span> and</dt><dd><p>each column is represented as a linear combination of Slater-type atomic orbitals
+of the form:</p>
+</dd>
+</dl>
+<div class="math notranslate nohighlight">
+\[\sum c_i R(r, n_i, C_i)\]</div>
+<dl class="simple">
+<dt>where,</dt><dd><p><span class="math notranslate nohighlight">\(c_i\)</span> is the coefficient of the Slater-type orbital.
+<span class="math notranslate nohighlight">\(C_i\)</span> is the zeta exponent attached to the Slater-type orbital.
+<span class="math notranslate nohighlight">\(n_i\)</span> is the principal quantum number attached to the Slater-type orbital.
+<span class="math notranslate nohighlight">\(R(r, n_i, C_i)\)</span> is the Slater-type orbital.
+i ranges from 0 to K-1 where K is the number of orbitals in electron configuration.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<em>ndarray</em><em>, </em><em>(</em><em>N</em><em>,</em><em>)</em>) – The radial grid points.</p></li>
+<li><p><strong>deriv</strong> (<em>bool</em>) – If true, use the derivative of the slater-orbitals.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>phi_matrix</strong> – The linear combination of Slater-type orbitals evaluated on the grid points, where K is
+the number of orbitals. The order is S orbitals, then P then D.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray(N, K)</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>At r = 0, the derivative of slater-orbital is undefined and this function returns</dt><dd><p>zero instead. See “derivative_slater_type_orbital”.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt id="bfit.density.AtomicDensity.atomic_density">
+<code class="sig-name descname">atomic_density</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">points</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'total'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/density.html#AtomicDensity.atomic_density"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.density.AtomicDensity.atomic_density" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute atomic density on the given points.</p>
+<p>The total density is written as a linear combination of Slater-type orbital
+whose coefficients is the orbital occupation number of the electron configuration:
+.. math:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>\<span class="nb">sum</span> <span class="n">n_i</span> <span class="o">|</span><span class="n">P</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">n_i</span><span class="p">,</span> <span class="n">C_i</span><span class="p">)</span><span class="o">|^</span><span class="mi">2</span>
+</pre></div>
+</div>
+<dl>
+<dt>where,</dt><dd><p><span class="math notranslate nohighlight">\(n_i\)</span> is the number of electrons in orbital i.
+<span class="math notranslate nohighlight">\(P(r, n_i, C_i)\)</span> is a linear combination of Slater-type orbitals evaluated</p>
+<blockquote>
+<div><p>on the point <span class="math notranslate nohighlight">\(r\)</span>.</p>
+</div></blockquote>
+</dd>
+</dl>
+<p>For core and valence density, please see More Info below.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<em>ndarray</em><em>, </em><em>(</em><em>N</em><em>,</em><em>)</em>) – The radial grid points.</p></li>
+<li><p><strong>mode</strong> (<em>str</em>) – The type of atomic density, which can be “total”, “valence” or “core”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>dens</strong> – The atomic density on the grid points.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray, (N,)</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The core density and valence density is respectively written as:
+.. math:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>\<span class="nb">sum</span> <span class="n">n_i</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">e</span><span class="o">^</span><span class="p">{</span><span class="o">-|</span><span class="n">e_i</span> <span class="o">-</span> <span class="n">e_</span><span class="p">{</span><span class="n">homo</span><span class="p">}</span><span class="o">|^</span><span class="mi">2</span><span class="p">})</span> <span class="o">|</span><span class="n">P</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">n_i</span><span class="p">,</span> <span class="n">C_i</span><span class="p">)</span><span class="o">|</span>
+\<span class="nb">sum</span> <span class="n">n_i</span> <span class="n">e</span><span class="o">^</span><span class="p">{</span><span class="o">-|</span><span class="n">e_i</span> <span class="o">-</span> <span class="n">e_</span><span class="p">{</span><span class="n">homo</span><span class="p">}</span><span class="o">|^</span><span class="mi">2</span><span class="p">})</span> <span class="o">|</span><span class="n">P</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">n_i</span><span class="o">.</span> <span class="n">C_i</span><span class="p">)</span><span class="o">|</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>where,</dt><dd><p><span class="math notranslate nohighlight">\(e_i\)</span> is the energy of the orbital i.
+<span class="math notranslate nohighlight">\(e_{homo}\)</span> is the energy of the highest occupying orbital.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="bfit.density.AtomicDensity.derivative_slater_type_orbital">
+<em class="property">static </em><code class="sig-name descname">derivative_slater_type_orbital</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">exponent</span></em>, <em class="sig-param"><span class="n">number</span></em>, <em class="sig-param"><span class="n">points</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/density.html#AtomicDensity.derivative_slater_type_orbital"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.density.AtomicDensity.derivative_slater_type_orbital" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the derivative of Slater-type orbitals on the given points.</p>
+<p>A Slater-type orbital is defined as:
+.. math:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>\<span class="n">frac</span><span class="p">{</span><span class="n">d</span> <span class="n">R</span><span class="p">(</span><span class="n">r</span><span class="p">)}{</span><span class="n">dr</span><span class="p">}</span> <span class="o">=</span> \<span class="n">bigg</span><span class="p">(</span>\<span class="n">frac</span><span class="p">{</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">}{</span><span class="n">r</span><span class="p">}</span> <span class="o">-</span> <span class="n">C</span> \<span class="n">bigg</span><span class="p">)</span> <span class="n">N</span> <span class="n">r</span><span class="o">^</span><span class="p">{</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">}</span> <span class="n">e</span><span class="o">^</span><span class="p">{</span><span class="o">-</span> <span class="n">C</span> <span class="n">r</span><span class="p">),</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>where,</dt><dd><p><span class="math notranslate nohighlight">\(n\)</span> is the principal quantum number of that orbital.
+<span class="math notranslate nohighlight">\(N\)</span> is the normalizing constant.
+<span class="math notranslate nohighlight">\(r\)</span> is the radial point, distance to the origin.
+<span class="math notranslate nohighlight">\(C\)</span> is the zeta exponent of that orbital.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>exponent</strong> (<em>ndarray</em><em>, </em><em>(</em><em>M</em><em>, </em><em>1</em><em>)</em>) – The zeta exponents of Slater orbitals.</p></li>
+<li><p><strong>number</strong> (<em>ndarray</em><em>, </em><em>(</em><em>M</em><em>, </em><em>1</em><em>)</em>) – The principle quantum numbers of Slater orbitals.</p></li>
+<li><p><strong>points</strong> (<em>ndarray</em><em>, </em><em>(</em><em>N</em><em>,</em><em>)</em>) – The radial grid points. If points contain zero, then it is undefined at those
+points and set to zero.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>slater</strong> – The Slater-type orbitals evaluated on the grid points.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray, (N, M)</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>At r = 0, the derivative is undefined and this function returns zero instead.</p></li>
+</ul>
+<p class="rubric">References</p>
+<p>See wikipedia page on “Slater-Type orbitals”.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="bfit.density.AtomicDensity.lagrangian_kinetic_energy">
+<code class="sig-name descname">lagrangian_kinetic_energy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">points</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/density.html#AtomicDensity.lagrangian_kinetic_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.density.AtomicDensity.lagrangian_kinetic_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Positive definite or Lagrangian kinetic energy density.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>points</strong> (<em>ndarray</em><em>,</em><em>(</em><em>N</em><em>,</em><em>)</em>) – The radial grid points.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>energy</strong> – The kinetic energy on the grid points.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray, (N,)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="bfit.density.AtomicDensity.derivative_density">
+<code class="sig-name descname">derivative_density</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">points</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/density.html#AtomicDensity.derivative_density"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.density.AtomicDensity.derivative_density" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the derivative of the atomic density on a set of points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>points</strong> (<em>ndarray</em><em>,</em><em>(</em><em>N</em><em>,</em><em>)</em>) – The radial grid points.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>deriv</strong> – The derivative of atomic density on the grid points.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray, (N,)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2021, The QC-Devs Community
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

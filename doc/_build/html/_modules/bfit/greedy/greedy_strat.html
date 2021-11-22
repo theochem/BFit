@@ -1,0 +1,371 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>bfit.greedy.greedy_strat &mdash; BFit  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> BFit
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">BFit</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../../bfit.html">bfit</a> &raquo;</li>
+        
+          <li><a href="../greedy.html">bfit.greedy</a> &raquo;</li>
+        
+      <li>bfit.greedy.greedy_strat</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for bfit.greedy.greedy_strat</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># FittingBasisSets is a basis-set curve-fitting optimization package.</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2018 The FittingBasisSets Development Team.</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of FittingBasisSets.</span>
+<span class="c1">#</span>
+<span class="c1"># FittingBasisSets is free software; you can redistribute it and/or</span>
+<span class="c1"># modify it under the terms of the GNU General Public License</span>
+<span class="c1"># as published by the Free Software Foundation; either version 3</span>
+<span class="c1"># of the License, or (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># FittingBasisSets is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program; if not, see &lt;http://www.gnu.org/licenses/&gt;</span>
+<span class="c1">#</span>
+<span class="c1"># ---</span>
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">bfit.greedy.greedy_utils</span> <span class="kn">import</span> <span class="n">check_redundancies</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;GreedyStrategy&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="GreedyStrategy"><a class="viewcode-back" href="../../../autoapi/bfit/greedy/index.html#bfit.greedy.greedy_strat.GreedyStrategy">[docs]</a><span class="k">class</span> <span class="nc">GreedyStrategy</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="GreedyStrategy.__metaclass__"><a class="viewcode-back" href="../../../autoapi/bfit/greedy/greedy_strat/index.html#bfit.greedy.greedy_strat.GreedyStrategy.__metaclass__">[docs]</a>    <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">ABCMeta</span></div>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">err_arr</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">redudan_info</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="GreedyStrategy.get_cost_function"><a class="viewcode-back" href="../../../autoapi/bfit/greedy/greedy_strat/index.html#bfit.greedy.greedy_strat.GreedyStrategy.get_cost_function">[docs]</a>    <span class="k">def</span> <span class="nf">get_cost_function</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="GreedyStrategy.get_best_one_function_solution"><a class="viewcode-back" href="../../../autoapi/bfit/greedy/greedy_strat/index.html#bfit.greedy.greedy_strat.GreedyStrategy.get_best_one_function_solution">[docs]</a>    <span class="k">def</span> <span class="nf">get_best_one_function_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="GreedyStrategy.get_next_iter_params"><a class="viewcode-back" href="../../../autoapi/bfit/greedy/greedy_strat/index.html#bfit.greedy.greedy_strat.GreedyStrategy.get_next_iter_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_next_iter_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="GreedyStrategy.get_optimization_routine"><a class="viewcode-back" href="../../../autoapi/bfit/greedy/greedy_strat/index.html#bfit.greedy.greedy_strat.GreedyStrategy.get_optimization_routine">[docs]</a>    <span class="k">def</span> <span class="nf">get_optimization_routine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">local</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="GreedyStrategy.get_errors_from_model"><a class="viewcode-back" href="../../../autoapi/bfit/greedy/greedy_strat/index.html#bfit.greedy.greedy_strat.GreedyStrategy.get_errors_from_model">[docs]</a>    <span class="k">def</span> <span class="nf">get_errors_from_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="GreedyStrategy.store_errors"><a class="viewcode-back" href="../../../autoapi/bfit/greedy/greedy_strat/index.html#bfit.greedy.greedy_strat.GreedyStrategy.store_errors">[docs]</a>    <span class="k">def</span> <span class="nf">store_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="n">err</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_errors_from_model</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">err_arr</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">err_arr</span> <span class="o">=</span> <span class="p">[[</span><span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">err</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">err</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">err_arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GreedyStrategy._find_best_lparams"><a class="viewcode-back" href="../../../autoapi/bfit/greedy/greedy_strat/index.html#bfit.greedy.greedy_strat.GreedyStrategy._find_best_lparams">[docs]</a>    <span class="k">def</span> <span class="nf">_find_best_lparams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_list</span><span class="p">):</span>
+        <span class="n">best_local_value</span> <span class="o">=</span> <span class="mf">1e10</span>
+        <span class="n">best_local_param</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">param_list</span><span class="p">:</span>
+            <span class="n">local_param</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_optimization_routine</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">local</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">cost_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cost_function</span><span class="p">(</span><span class="n">local_param</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">cost_func</span> <span class="o">&lt;</span> <span class="n">best_local_value</span><span class="p">:</span>
+                <span class="n">best_local_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cost_function</span><span class="p">(</span><span class="n">local_param</span><span class="p">)</span>
+                <span class="n">best_local_param</span> <span class="o">=</span> <span class="n">local_param</span>
+        <span class="k">return</span> <span class="n">best_local_value</span><span class="p">,</span> <span class="n">best_local_param</span></div>
+
+<div class="viewcode-block" id="GreedyStrategy.__call__"><a class="viewcode-back" href="../../../autoapi/bfit/greedy/greedy_strat/index.html#bfit.greedy.greedy_strat.GreedyStrategy.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">max_numb_funcs</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">backward_elim_funcs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">add_choice_funcs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ioutput</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="c1"># Initialize all the variables</span>
+        <span class="n">gparams</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_best_one_function_solution</span><span class="p">()</span>
+        <span class="n">numb_one_func_params</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gparams</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">store_errors</span><span class="p">(</span><span class="n">gparams</span><span class="p">)</span>
+        <span class="n">exit_info</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">numb_funcs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gparams</span><span class="p">)</span> <span class="o">/</span> <span class="n">numb_one_func_params</span>
+        <span class="n">prev_gval</span><span class="p">,</span> <span class="n">best_gval</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1e10</span>
+        <span class="n">params_iter</span> <span class="o">=</span> <span class="p">[</span><span class="n">gparams</span><span class="p">]</span>
+        <span class="n">numb_redum</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">factor0</span> <span class="o">=</span> <span class="n">factor</span>
+
+        <span class="c1"># Start the greedy algorithm</span>
+        <span class="k">while</span> <span class="n">numb_funcs</span> <span class="o">&lt;</span> <span class="n">max_numb_funcs</span> <span class="o">-</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">best_gval</span> <span class="o">-</span> <span class="n">prev_gval</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mf">1e-5</span> <span class="ow">and</span> \
+                <span class="n">numb_redum</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="n">choices_parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_next_iter_params</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">gparams</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">add_choice_funcs</span><span class="p">):</span>
+                <span class="c1"># When you want extra choices to be added.</span>
+                <span class="c1"># ie fitting the left-over density.</span>
+                <span class="n">choices_parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">add_choice_funcs</span><span class="p">(</span><span class="n">gparams</span><span class="p">))</span>
+
+            <span class="n">best_lval</span><span class="p">,</span> <span class="n">best_lparam</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_best_lparams</span><span class="p">(</span><span class="n">choices_parameters</span><span class="p">)</span>
+
+            <span class="n">numb_funcs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gparams</span><span class="p">)</span> <span class="o">/</span> <span class="n">numb_one_func_params</span>
+            <span class="n">coeffs</span><span class="p">,</span> <span class="n">fparams</span> <span class="o">=</span> <span class="n">check_redundancies</span><span class="p">(</span><span class="n">gparams</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">gparams</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">],</span>
+                                                 <span class="n">gparams</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">gparams</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">:])</span>
+            <span class="c1"># If Redudancies Found</span>
+            <span class="k">if</span> <span class="n">numb_funcs</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">coeffs</span><span class="p">):</span>
+                <span class="n">new_params</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coeffs</span><span class="p">,</span> <span class="n">fparams</span><span class="p">)</span>
+                <span class="n">redudan_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cost_function</span><span class="p">(</span><span class="n">new_params</span><span class="p">)</span>
+                <span class="c1"># If Removing Redundancies gave a better answer.</span>
+                <span class="k">if</span> <span class="n">redudan_obj</span> <span class="o">&lt;</span> <span class="n">best_gval</span><span class="p">:</span>
+                    <span class="n">gparams</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coeffs</span><span class="p">,</span> <span class="n">fparams</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">redudan_info</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">numb_funcs</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">coeffs</span><span class="p">),</span> <span class="s2">&quot;Gave Better Answer&quot;</span><span class="p">])</span>
+                    <span class="n">numb_funcs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">coeffs</span><span class="p">)</span>
+                    <span class="n">prev_gval</span><span class="p">,</span> <span class="n">best_gval</span> <span class="o">=</span> <span class="n">best_gval</span><span class="p">,</span> <span class="n">redudan_obj</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">store_errors</span><span class="p">(</span><span class="n">gparams</span><span class="p">)</span>
+                    <span class="n">params_iter</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gparams</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">redudan_info</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">numb_funcs</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">coeffs</span><span class="p">),</span>
+                                              <span class="s2">&quot;Go Back a Iteration with new factor&quot;</span><span class="p">])</span>
+                    <span class="n">numb_funcs</span> <span class="o">-=</span> <span class="mi">1</span>
+                <span class="n">numb_redum</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">factor</span> <span class="o">+=</span> <span class="mi">5</span>
+
+            <span class="c1"># Local choice is best so far.</span>
+            <span class="k">elif</span> <span class="n">best_lval</span> <span class="o">&lt;=</span> <span class="n">best_gval</span><span class="p">:</span>
+                <span class="n">prev_gval</span><span class="p">,</span> <span class="n">best_gval</span> <span class="o">=</span> <span class="n">best_gval</span><span class="p">,</span> <span class="n">best_lval</span>
+                <span class="n">gparams</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_optimization_routine</span><span class="p">(</span><span class="n">best_lparam</span><span class="p">,</span> <span class="n">local</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">store_errors</span><span class="p">(</span><span class="n">gparams</span><span class="p">)</span>
+                <span class="n">params_iter</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gparams</span><span class="p">)</span>
+                <span class="n">numb_redum</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">factor</span> <span class="o">=</span> <span class="n">factor0</span>  <span class="c1"># Reset Factor.</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">exit_info</span> <span class="o">=</span> <span class="s2">&quot;Next Iteration Did Not Find The Best Choice&quot;</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="n">backward_elim_funcs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">gparams</span> <span class="o">=</span> <span class="n">backward_elim_funcs</span><span class="p">(</span><span class="n">best_lparam</span><span class="p">)</span>
+
+        <span class="c1"># &quot;Next Iteration Did Not Find THe Best Choice&quot;:</span>
+        <span class="k">if</span> <span class="n">exit_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">exit_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_final_exit_info</span><span class="p">(</span><span class="n">numb_funcs</span><span class="p">,</span> <span class="n">max_numb_funcs</span><span class="p">,</span> <span class="n">best_gval</span><span class="p">,</span> <span class="n">prev_gval</span><span class="p">,</span> 
+                                              <span class="n">numb_redum</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">gparams</span><span class="p">,</span> <span class="n">params_iter</span><span class="p">,</span> <span class="n">exit_info</span></div>
+
+<div class="viewcode-block" id="GreedyStrategy._final_exit_info"><a class="viewcode-back" href="../../../autoapi/bfit/greedy/greedy_strat/index.html#bfit.greedy.greedy_strat.GreedyStrategy._final_exit_info">[docs]</a>    <span class="k">def</span> <span class="nf">_final_exit_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_func</span><span class="p">,</span> <span class="n">max_func</span><span class="p">,</span> <span class="n">best_val</span><span class="p">,</span> <span class="n">prev_gval</span><span class="p">,</span> <span class="n">redum</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">num_func</span> <span class="o">&lt;</span> <span class="n">max_func</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">exit_info</span> <span class="o">=</span> <span class="s2">&quot;Max number of functions reached,  &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">num_func</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">best_val</span> <span class="o">-</span> <span class="n">prev_gval</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mf">1e-5</span><span class="p">:</span>
+            <span class="n">exit_info</span> <span class="o">=</span> <span class="s2">&quot;Cost function is less than some epsilon &quot;</span> <span class="o">+</span> \
+                             <span class="nb">str</span><span class="p">(</span><span class="n">best_val</span> <span class="o">-</span> <span class="n">prev_gval</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &lt;= &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="mf">1e-5</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">redum</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="n">exit_info</span> <span class="o">=</span> <span class="s2">&quot; Number of redudancies &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">redum</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; found in a row is more than 5, &quot;</span>
+        <span class="k">return</span> <span class="n">exit_info</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2021, The QC-Devs Community
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,356 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>bfit.greedy.greedy_utils &mdash; BFit  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/language_data.js"></script>
+        <script src="../../../../_static/clipboard.min.js"></script>
+        <script src="../../../../_static/copybutton.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home" alt="Documentation Home"> BFit
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">BFit</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">bfit.greedy.greedy_utils</span></code></li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../../_sources/autoapi/bfit/greedy/greedy_utils/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="module-bfit.greedy.greedy_utils">
+<span id="bfit-greedy-greedy-utils"></span><h1><a class="reference internal" href="#module-bfit.greedy.greedy_utils" title="bfit.greedy.greedy_utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">bfit.greedy.greedy_utils</span></code></a><a class="headerlink" href="#module-bfit.greedy.greedy_utils" title="Permalink to this headline">¶</a></h1>
+<p>Contains utility functions that are used by any greedy-fitting algorithms.</p>
+<p>As of know, most of these functions rely on the basis function to depend on
+only one parameters. E.g. e^(-x) or e^(-x^2) but not e^(-x - y).</p>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h3>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bfit.greedy.greedy_utils.check_redundancies" title="bfit.greedy.greedy_utils.check_redundancies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_redundancies</span></code></a>(coeffs, fparams, simi=0.001)</p></td>
+<td><p>Check if the fparams have similar values and groups them together.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bfit.greedy.greedy_utils.get_next_choices" title="bfit.greedy.greedy_utils.get_next_choices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_next_choices</span></code></a>(factor, coeffs, fparams, coeff_val=100.0)</p></td>
+<td><p>Get the next set of (n+1) fparams, used by the greedy-fitting algorithm.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bfit.greedy.greedy_utils.get_two_next_choices" title="bfit.greedy.greedy_utils.get_two_next_choices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_two_next_choices</span></code></a>(factor, coeffs, fparams, coeff_val=100.0)</p></td>
+<td><p>Return a list of (n+2) set of initial guess for fparams for greedy.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bfit.greedy.greedy_utils.get_next_possible_coeffs_and_exps2" title="bfit.greedy.greedy_utils.get_next_possible_coeffs_and_exps2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_next_possible_coeffs_and_exps2</span></code></a>(factor, coeffs, exps, coeff_val=100.0)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py function">
+<dt id="bfit.greedy.greedy_utils.check_redundancies">
+<code class="sig-prename descclassname">bfit.greedy.greedy_utils.</code><code class="sig-name descname">check_redundancies</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">coeffs</span></em>, <em class="sig-param"><span class="n">fparams</span></em>, <em class="sig-param"><span class="n">simi</span><span class="o">=</span><span class="default_value">0.001</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/bfit/greedy/greedy_utils.html#check_redundancies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.greedy.greedy_utils.check_redundancies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the fparams have similar values and groups them together.</p>
+<p>If any two function parameters have similar values, then one of the
+function parameters is removed, and the corresponding coefficient,
+is doubled.
+Note: as of now this only works if each basis function depends on only one
+parameters e.g. e^(-x), not e^(-x + y).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coeffs</strong> (<em>np.ndarray</em>) – Coefficients of the basis function set.</p></li>
+<li><p><strong>fparams</strong> (<em>np.ndarray</em>) – Function Parameters of the basis function set.</p></li>
+<li><p><strong>simi</strong> (<em>float</em>) – Value that indicates the treshold for how close two parameters are.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>New coefficients and new exponents, where close
+values are grouped together.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(np.ndarray, np.ndarray)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="bfit.greedy.greedy_utils.get_next_choices">
+<code class="sig-prename descclassname">bfit.greedy.greedy_utils.</code><code class="sig-name descname">get_next_choices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">coeffs</span></em>, <em class="sig-param"><span class="n">fparams</span></em>, <em class="sig-param"><span class="n">coeff_val</span><span class="o">=</span><span class="default_value">100.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/bfit/greedy/greedy_utils.html#get_next_choices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.greedy.greedy_utils.get_next_choices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the next set of (n+1) fparams, used by the greedy-fitting algorithm.</p>
+<p>Given a set of n fparams and n coeffs, this method gets the next (n+1)
+fparams by using the factor.
+A list of (n+1) choices are returned. They are determined as follows,
+if fparams = [a1, a2, …, an] and coeffs = [c1, c2, …, cn].
+Then each choice is either</p>
+<blockquote>
+<div><p>[a1 / factor, a2, a3, .., an] &amp; coeffs = [c1, c1, c2, …, cn],
+[a1, a2, …, (ai + a(i+1)/2, a(i+1), …, an] &amp; similar coeffs,
+[a1, a2, …, factor * an] &amp; coeffs = [c1 c2, …, cn, cn].</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>factor</strong> (<em>float</em>) – Number used to give two choices by multiplying each end point.</p></li>
+<li><p><strong>coeffs</strong> (<em>np.ndarray</em>) – Coefficients of the basis functions.</p></li>
+<li><p><strong>fparams</strong> (<em>np.ndarray</em>) – Function parameters.</p></li>
+<li><p><strong>coeff_val</strong> (<em>float</em>) – Number used to fill in the coefficient value for each guess.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of the next possible initial choices for greedy based on factor.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="bfit.greedy.greedy_utils.get_two_next_choices">
+<code class="sig-prename descclassname">bfit.greedy.greedy_utils.</code><code class="sig-name descname">get_two_next_choices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">coeffs</span></em>, <em class="sig-param"><span class="n">fparams</span></em>, <em class="sig-param"><span class="n">coeff_val</span><span class="o">=</span><span class="default_value">100.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/bfit/greedy/greedy_utils.html#get_two_next_choices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.greedy.greedy_utils.get_two_next_choices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of (n+2) set of initial guess for fparams for greedy.</p>
+<p>Assuming coeffs=[c1, c2 ,… ,cn] and fparams =[a1, a2, …, an]. The
+next (n+2) choice is either a combination of a endpoint guess and a
+midpoint, or two mid point guess or two endpoint guess. In other words:</p>
+<blockquote>
+<div><p>[a1 / factor, …, (ai + a(i+1))/2, …, an],
+[a1, …, (aj + a(j+1))/2, a(j+1) …, (ai + a(i+1))/2, a(i+1), .., an],
+[a1 / factor, a2, a3, …, a(n-1), factor * an], respetively.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>factor</strong> (<em>float</em>) – Number used to give two choices by multiplying each end point.</p></li>
+<li><p><strong>coeffs</strong> (<em>np.ndarray</em>) – Coefficients of the basis functions.</p></li>
+<li><p><strong>fparams</strong> (<em>np.ndarray</em>) – Function parameters.</p></li>
+<li><p><strong>coeff_val</strong> (<em>float</em>) – Number used to fill in the coefficient value for each guess.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of the next possible initial choices for greedy based on factor.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="bfit.greedy.greedy_utils.get_next_possible_coeffs_and_exps2">
+<code class="sig-prename descclassname">bfit.greedy.greedy_utils.</code><code class="sig-name descname">get_next_possible_coeffs_and_exps2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">coeffs</span></em>, <em class="sig-param"><span class="n">exps</span></em>, <em class="sig-param"><span class="n">coeff_val</span><span class="o">=</span><span class="default_value">100.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/bfit/greedy/greedy_utils.html#get_next_possible_coeffs_and_exps2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.greedy.greedy_utils.get_next_possible_coeffs_and_exps2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2021, The QC-Devs Community
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
