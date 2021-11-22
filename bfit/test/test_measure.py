@@ -25,7 +25,7 @@
 import numpy as np
 from numpy.testing import assert_raises, assert_almost_equal
 
-from bfit.measure import KLDivergence, SquaredDifference
+from bfit.measure import KLDivergence, SquaredDifference, TsallisDivergence
 
 
 def test_raises_kl():
@@ -120,6 +120,77 @@ def test_evaluate_squared_difference():
     dm = np.array([0.0, 0.2857142857, 0.5714285714, 0.8571428571, 1.1428571429,
                    1.4285714286, 1.7142857143, 2.0, 2.2857142857, 2.5714285714,
                    2.8571428571, 3.1428571429, 3.4285714286, 3.7142857143, 4.0])
-    assert_almost_equal(m, measure.evaluate(model, deriv=False), decimal=8)
-    assert_almost_equal(m, measure.evaluate(model, deriv=True)[0], decimal=8)
-    assert_almost_equal(dm, measure.evaluate(model, deriv=True)[1], decimal=8)
+    assert_almost_equal(m, measure.evaluate(dens, model, deriv=False), decimal=8)
+    assert_almost_equal(m, measure.evaluate(dens, model, deriv=True)[0], decimal=8)
+    assert_almost_equal(dm, measure.evaluate(dens, model, deriv=True)[1], decimal=8)
+
+
+def test_raises_error_tsallis():
+    r"""Test raises error when using Tsallis measure."""
+    measure = TsallisDivergence()
+    # check density argument
+    assert_raises(ValueError, measure.evaluate, 3.5, np.ones((10,)))
+    assert_raises(ValueError, measure.evaluate, np.array([[1., 2., 3.]]), np.ones((10,)))
+    assert_raises(ValueError, measure.evaluate, np.array([[1.], [2.], [3.]]), np.ones((10,)))
+    # check model argument
+    assert_raises(ValueError, measure.evaluate, np.ones((10,)), 1.75)
+    assert_raises(ValueError, measure.evaluate, np.ones((10,)), np.array([[1.], [2.], [3.]]))
+    # check alpha parameter
+    assert_raises(ValueError, TsallisDivergence, -10.)
+    assert_raises(ValueError, TsallisDivergence, 1.0)
+
+
+def test_evaluate_tsallis():
+    r"""Test evaluating the Tsallis measure."""
+    # Test close to one so masking plays a role.
+    num_pts = 10000
+    dens = np.linspace(0.0, 1., num_pts)
+    # KL divergence measure
+    alpha = 1.001
+    measure = TsallisDivergence(alpha=alpha, mask_value=1e-8)
+    # Test when model is equal to density
+    assert_almost_equal(np.zeros(num_pts), measure.evaluate(dens, dens, deriv=False), decimal=8)
+    # Test against brute force
+    model = np.random.random(num_pts)
+    # First first element to be zero, so that masking plays an important role
+    model[0] = 0.
+    result = []
+    for i in range(num_pts):
+        # Set any model values to zero if it is zero.
+        if model[i] < 1e-8:
+            return 0.0
+        result.append(dens[i] * ((dens[i] / model[i])**(alpha - 1) - 1.0) / (alpha - 1))
+    assert_almost_equal(result, measure.evaluate(dens, model, deriv=False), decimal=8)
+
+
+def test_evaluating_tsallis_derivative_against_finite_difference():
+    r"""Test evalauting the Tsallis measure against finite-difference."""
+    num_pts = 10000
+    eps = 1e-8
+    dens = np.linspace(0.0, 1., num_pts)
+    model = np.random.random(num_pts)
+    measure = TsallisDivergence(alpha=1.001, mask_value=1e-8)
+
+    # Approximate it with central finite difference with accuracy 4.
+    measure_pt_minus_2 = measure.evaluate(dens, model - 2.0 * eps, deriv=False)
+    measure_pt_minus_1 = measure.evaluate(dens, model - eps, deriv=False)
+    _, actual_deriv = measure.evaluate(dens, model, deriv=True)
+    measure_pt_plus_1 = measure.evaluate(dens, model + eps, deriv=False)
+    measure_pt_plus_2 = measure.evaluate(dens, model + 2.0 * eps, deriv=False)
+    desired = (measure_pt_minus_2 / 12.0 - (2.0 / 3.0) * measure_pt_minus_1)
+    desired += ((2.0 / 3.0) * measure_pt_plus_1 - measure_pt_plus_2 / 12.0)
+    assert_almost_equal(actual_deriv, desired / eps, decimal=4)
+
+
+def test_evaluating_tsallis_derivative_against_kullback_leibler():
+    r"""Test evaluating Tsallis derivative against Kullback-Leibler."""
+    num_pts = 10000
+    dens = np.linspace(0.0, 1., num_pts)
+    alpha = 1.000000001  # Make alpha small to approximate Kullback-Leibler
+    measure = TsallisDivergence(alpha=alpha, mask_value=1e-8)
+    measure_kl = KLDivergence(mask_value=1e-8)
+
+    model = np.random.random(num_pts)
+    _, deriv_tsallis = measure.evaluate(dens, model, deriv=True)
+    _, deriv_kl = measure_kl.evaluate(dens, model, deriv=True)
+    assert_almost_equal(deriv_tsallis, deriv_kl, decimal=2)
