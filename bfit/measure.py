@@ -20,6 +20,8 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
+"""Measure Module."""
+
 import numpy as np
 
 __all__ = ["KLDivergence", "SquaredDifference"]
