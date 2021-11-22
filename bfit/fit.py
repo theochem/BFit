@@ -26,7 +26,9 @@ import warnings
 from scipy.optimize import minimize, NonlinearConstraint
 from timeit import default_timer as timer
 
-from bfit.measure import KLDivergence, SquaredDifference
+from bfit.measure import (
+    KLDivergence, Measure, SquaredDifference, TsallisDivergence
+)
 
 
 __all__ = ["KLDivergenceSCF", "ScipyFit"]
