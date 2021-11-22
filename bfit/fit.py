@@ -56,10 +56,10 @@ class _BaseFit:
         """
         if np.any(density < 0.):
             raise ValueError("Density should be positive.")
-        self.grid = grid
-        self.density = density
-        self.model = model
-        self.measure = measure
+        self._grid = grid
+        self._density = density
+        self._model = model
+        self._measure = measure
         # compute norm of density
         if integral_dens is None:
             self._integral_dens = grid.integrate(density)
