@@ -20,17 +20,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-"""
-Deviation Measure Module.
-
-Classes that measure the deviation between true and model probability distributions.
-
-Classes
--------
-    KLDivergence - Kullback-Leibler divergence measure.
-    SquaredDifference - Square-Difference measure for Least-Squared method.
-
-"""
+"""Measure Module."""
 
 
 import numpy as np
