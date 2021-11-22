@@ -172,7 +172,7 @@ class KLDivergenceSCF(_BaseFit):
 
         """
         # initialize KL deviation measure
-        measure = KLDivergence(density, mask_value=mask_value)
+        measure = KLDivergence(mask_value=mask_value)
         super(KLDivergenceSCF, self).__init__(grid, density, model, measure, integral_dens)
         # compute lagrange multiplier
         self._lm = self.grid.integrate(self.density) / self.integral_dens
@@ -226,7 +226,7 @@ class KLDivergenceSCF(_BaseFit):
         # compute model density & its derivative
         m, dm = self.model.evaluate(coeffs, expons, deriv=True)
         # compute KL divergence & its derivative
-        k, dk = self.measure.evaluate(m, deriv=True)
+        k, dk = self.measure.evaluate(self.density, m, deriv=True)
         # compute averages needed to update parameters
         avrg1, avrg2 = np.zeros(self.model.nbasis), np.zeros(self.model.nbasis)
         for index in range(self.model.nbasis):
@@ -580,7 +580,7 @@ class ScipyFit(_BaseFit):
         # compute linear combination of gaussian basis functions
         m, dm = self.evaluate_model(x, *args)
         # compute KL divergence
-        k, dk = self.measure.evaluate(m, deriv=True)
+        k, dk = self.measure.evaluate(self.density, m, deriv=True)
         # compute objective function & its derivative
         obj = self.grid.integrate(self.weights * k)
         d_obj = np.zeros_like(x)
