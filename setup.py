@@ -20,21 +20,45 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
+"""Setup and Install Script."""
+
 from setuptools import setup, find_packages
+import os
+
+def get_readme():
+    """Load README.rst for display on PyPI."""
+    with open('README.md') as fhandle:
+        return fhandle.read()
+
 
 setup(
     name="BFit",
-    version="0.1",
+    version="0.0.1",
     description="Curve fitting algorithms for fitting basis-set functions to probabiity "
                 "distributions.",
-    author="Ali Tehrani, Farnaz Heidar-Zadeh and Paul Ayers",
-    author_email="alirezatehrani24@gmail.com and ayers@mcmaster.ca",
+    url="https://github.com/theochem/bfit",
+    long_description=get_readme(),
+    long_description_content_type="text/markdown",
+    license="GNU General Public License v3.0",
+    author="QC-Devs Community",
+    author_email="qcdevs@gmail.com",
     install_requires=[
-        "numpy", "scipy", "matplotlib", "nose"
+        "numpy>=1.18.5", "scipy>=1.5.0", "pytest>=5.4.3", "sphinx>=2.3.0"
     ],
-    packages=find_packages('bfit'),
+    package_dir={"bfit" : "bfit"},
+    packages=["bfit"],
     package_data={
         # If any package contains *.slater files, include them:
         '': ['*.slater', '*.nwchem']
-    }
+    },
+    classifiers=[
+         'Development Status :: 0 - Released',
+        'Environment :: Console',
+        'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
+        'Operating System :: POSIX :: Linux',
+        'Programming Language :: Python :: 3',
+        'Topic :: Scientific/Engineering :: Physics',
+        'Topic :: Scientific/Engineering :: Chemistry',
+        'Intended Audience :: Science/Research',
+    ],
 )
