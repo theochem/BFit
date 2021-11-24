@@ -1,0 +1,677 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>bfit.grid &mdash; BFit  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> BFit
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BFit</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../bfit.html">bfit</a> &raquo;</li>
+        
+      <li>bfit.grid</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for bfit.grid</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># BFit - python program that fits a convex sum of</span>
+<span class="c1"># positive basis functions to any probability distribution. .</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2020 The BFit Development Team.</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of BFit.</span>
+<span class="c1">#</span>
+<span class="c1"># BFit is free software; you can redistribute it and/or</span>
+<span class="c1"># modify it under the terms of the GNU General Public License</span>
+<span class="c1"># as published by the Free Software Foundation; either version 3</span>
+<span class="c1"># of the License, or (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># BFit is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program; if not, see &lt;http://www.gnu.org/licenses/&gt;</span>
+<span class="c1">#</span>
+<span class="c1"># ---</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Grid Module - Model the grid and integration methods of the model and true probability distributions.</span>
+
+<span class="sd">Classes</span>
+<span class="sd">-------</span>
+<span class="sd">There are three classes:</span>
+
+<span class="sd">ClenshawRadialGrid -</span>
+<span class="sd">    Models a One-dimensional grid via Clenshaw-Curtis pattern.</span>
+<span class="sd">    Integration is done via &#39;np.trapz&#39; method (spherical coordinates, optional).</span>
+<span class="sd">    Intended for Atomic fitting.</span>
+
+<span class="sd">UniformRadialGrid -</span>
+<span class="sd">    Uniform (equal spacing), one-dimensional grid.</span>
+<span class="sd">    Integration is done via &#39;np.trapz&#39; method (spherical coordinates, optional).</span>
+<span class="sd">    Intended for Atomic fitting.</span>
+
+<span class="sd">CubicGrid -</span>
+<span class="sd">    Uniform (equal spacing), three-dimensional grid.</span>
+<span class="sd">    Integration is done via Riemannian sums.</span>
+<span class="sd">    Intended for Molecular fitting.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">grid.onedgrid</span> <span class="kn">import</span> <span class="n">OneDGrid</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ClenshawRadialGrid&quot;</span><span class="p">,</span> <span class="s2">&quot;UniformRadialGrid&quot;</span><span class="p">,</span> <span class="s2">&quot;CubicGrid&quot;</span><span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">_BaseRadialGrid</span><span class="p">(</span><span class="n">OneDGrid</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Radial Grid Base Class.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    points : ndarray, (N,)</span>
+<span class="sd">        The radial grid points of a one-dimensional grid with N points.</span>
+<span class="sd">    spherical : bool</span>
+<span class="sd">        If true, then trapezoidal integration is done spherically (ie with a factor of :math:`4 \pi r^2`).</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    integrate(arr)</span>
+<span class="sd">        Integrate array `arr` defined over &quot;point&quot; array using trapezoidal integration.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">spherical</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct BaseRadialGrid object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        points : ndarray, (N,)</span>
+<span class="sd">            The radial grid points.</span>
+<span class="sd">        spherical : bool, optional</span>
+<span class="sd">            If `True`, the spherical integration of function is computed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">or</span> <span class="n">points</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Argument points should be a 1D numpy array.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spherical</span> <span class="o">=</span> <span class="n">spherical</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ClenshawRadialGrid.points"><a class="viewcode-back" href="../../autoapi/bfit/grid/index.html#bfit.grid.ClenshawRadialGrid.points">[docs]</a><div class="viewcode-block" id="UniformRadialGrid.points"><a class="viewcode-back" href="../../autoapi/bfit/grid/index.html#bfit.grid.UniformRadialGrid.points">[docs]</a>    <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Radial grid points.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_points</span></div></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ClenshawRadialGrid.spherical"><a class="viewcode-back" href="../../autoapi/bfit/grid/index.html#bfit.grid.ClenshawRadialGrid.spherical">[docs]</a><div class="viewcode-block" id="UniformRadialGrid.spherical"><a class="viewcode-back" href="../../autoapi/bfit/grid/index.html#bfit.grid.UniformRadialGrid.spherical">[docs]</a>    <span class="k">def</span> <span class="nf">spherical</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Whether to perform spherical integration.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spherical</span></div></div>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return number of grid points.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_points</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<div class="viewcode-block" id="ClenshawRadialGrid.integrate"><a class="viewcode-back" href="../../autoapi/bfit/grid/index.html#bfit.grid.ClenshawRadialGrid.integrate">[docs]</a><div class="viewcode-block" id="UniformRadialGrid.integrate"><a class="viewcode-back" href="../../autoapi/bfit/grid/index.html#bfit.grid.UniformRadialGrid.integrate">[docs]</a>    <span class="k">def</span> <span class="nf">integrate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">,</span> <span class="n">force_no_spherical</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute trapezoidal integration of a function evaluated on the radial grid points.</span>
+
+<span class="sd">        .. math:: \int p * f(r) dr</span>
+
+<span class="sd">        where :math:&#39;f(r)&#39; is the integrand and :math:`p=4 \times \pi` if `spherical=True`,</span>
+<span class="sd">        otherwise :math:`p=1.0`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        arr : ndarray</span>
+<span class="sd">            The integrand evaluated on the radial grid points.</span>
+<span class="sd">        force_no_spherical : bool</span>
+<span class="sd">            This forces spherical integration to not occur even if spherical coordinates is</span>
+<span class="sd">            True, ie the class attribute `_spherical` is True.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        value : float</span>
+<span class="sd">            The value of integral.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The argument arr should have </span><span class="si">{0}</span><span class="s2"> shape!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spherical</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force_no_spherical</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="mf">4.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">arr</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">arr</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span></div></div>
+
+
+<div class="viewcode-block" id="UniformRadialGrid"><a class="viewcode-back" href="../../autoapi/bfit/index.html#bfit.grid.UniformRadialGrid">[docs]</a><span class="k">class</span> <span class="nc">UniformRadialGrid</span><span class="p">(</span><span class="n">_BaseRadialGrid</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Uniformly Distributed Radial Grid Class.</span>
+
+<span class="sd">    The grid points are equally-spaced in :math:`[0, max_points)` interval.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    points : ndarray, (N,)</span>
+<span class="sd">        The radial grid points of a one-dimensional grid with N points.</span>
+<span class="sd">    spherical : bool</span>
+<span class="sd">        If true, then trapezoidal integration is done spherically (ie with a factor of :math:`4 \pi r^2`).</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    integrate(arr)</span>
+<span class="sd">        Integrate array `arr` defined over &quot;point&quot; array using trapezoidal integration.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_pts</span><span class="p">,</span> <span class="n">min_radii</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">max_radii</span><span class="o">=</span><span class="mf">100.</span><span class="p">,</span> <span class="n">spherical</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct the UniformRadialGrid object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        num_pts : int</span>
+<span class="sd">            The number of grid points.</span>
+<span class="sd">        min_radii : float, optional</span>
+<span class="sd">            The smallest radial grid point.</span>
+<span class="sd">        max_radii : float, optional</span>
+<span class="sd">            The largest radial grid point.</span>
+<span class="sd">        spherical : bool, optional</span>
+<span class="sd">            If `True`, the spherical integration of function is computed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">num_pts</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">num_pts</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Argument num_pts should be a number.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">min_radii</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Argument min_radii should be a number.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">max_radii</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Argument max_radii should be a positive number.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">max_radii</span> <span class="o">&lt;=</span> <span class="n">min_radii</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The max_radii should be greater than the min_radii.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># compute points</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">min_radii</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">max_radii</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">num_pts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float128</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">UniformRadialGrid</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">spherical</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ClenshawRadialGrid"><a class="viewcode-back" href="../../autoapi/bfit/index.html#bfit.grid.ClenshawRadialGrid">[docs]</a><span class="k">class</span> <span class="nc">ClenshawRadialGrid</span><span class="p">(</span><span class="n">_BaseRadialGrid</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Clenshaw-Curtis Radial Grid Class.</span>
+
+<span class="sd">    The Clenshaw-Curtis grid places more points closer to the origin of the interval :math:`[0, \inf).`</span>
+<span class="sd">    It is defined as follows. Let :math:`Z, m, n` be the atomic number, number of points near origin,</span>
+<span class="sd">    and the number of points far from the origin, respectively.</span>
+
+<span class="sd">    Then each point :math:`r_p` of the Clenshaw radial grid is defined as:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \begin{eqnarray}</span>
+<span class="sd">            r_p = \frac{1}{2Z} \bigg(1 - \cos\bigg(\frac{\pi p}{400} \bigg)\bigg)  &amp; p = 0, 1, \cdots, m - 1 \\</span>
+<span class="sd">            r_p = 25 \bigg(1 - \cos\bigg(\frac{\pi p}{600} \bigg)\bigg) &amp; p = 0, 1, \cdocts, n - 1\\</span>
+<span class="sd">        \end{eqnarray}</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    points : ndarray, (N,)</span>
+<span class="sd">        The radial grid points of a one-dimensional grid with N points.</span>
+<span class="sd">    atomic_number :</span>
+<span class="sd">        Return the atomic number.</span>
+<span class="sd">    spherical : bool</span>
+<span class="sd">        If true, then trapezoidal integration is done spherically (ie with a factor of :math:`4 \pi r^2`).</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    integrate(arr)</span>
+<span class="sd">        Integrate array `arr` defined over &quot;point&quot; array using trapezoidal integration.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atomic_number</span><span class="p">,</span> <span class="n">num_core_pts</span><span class="p">,</span> <span class="n">num_diffuse_pts</span><span class="p">,</span> <span class="n">extra_pts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">spherical</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct ClenshawRadialGrid grid object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        atomic_number : int</span>
+<span class="sd">            The atomic number of the atom for which the grid is generated.</span>
+<span class="sd">        num_core_pts : int</span>
+<span class="sd">            The number of points near the origin/core region.</span>
+<span class="sd">        num_diffuse_pts : int</span>
+<span class="sd">            The number of points far from the origin/core region.</span>
+<span class="sd">        extra_pts : list</span>
+<span class="sd">            Additional points to be added to the grid, commonly points far away from origin.</span>
+<span class="sd">        spherical : bool, optional</span>
+<span class="sd">            If `True`, the spherical integration of function is computed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">atomic_number</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">atomic_number</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Argument atomic_number should be a positive integer.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">num_core_pts</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">num_core_pts</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Argument numb_core_pts should be a non-negative integer.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">num_diffuse_pts</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">num_diffuse_pts</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Argument num_diffuse_pts should be a non-negative integer.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_number</span> <span class="o">=</span> <span class="n">atomic_number</span>
+
+        <span class="c1"># compute core and diffuse points</span>
+        <span class="n">core_points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_points</span><span class="p">(</span><span class="n">num_core_pts</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;core&quot;</span><span class="p">)</span>
+        <span class="n">diff_points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_points</span><span class="p">(</span><span class="n">num_diffuse_pts</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;diffuse&quot;</span><span class="p">)</span>
+
+        <span class="c1"># put all points together (0.0 is also contained in diff_points, so it should be removed)</span>
+        <span class="k">if</span> <span class="n">extra_pts</span><span class="p">:</span>
+            <span class="c1"># check extra points</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">extra_pts</span><span class="p">,</span> <span class="s1">&#39;__iter__&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">extra_pts</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Argument extra_pts should be an iterable.&quot;</span><span class="p">)</span>
+            <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">core_points</span><span class="p">,</span> <span class="n">diff_points</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">extra_pts</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">core_points</span><span class="p">,</span> <span class="n">diff_points</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">ClenshawRadialGrid</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">points</span><span class="p">),</span> <span class="n">spherical</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ClenshawRadialGrid.atomic_number"><a class="viewcode-back" href="../../autoapi/bfit/grid/index.html#bfit.grid.ClenshawRadialGrid.atomic_number">[docs]</a>    <span class="k">def</span> <span class="nf">atomic_number</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the atomic number.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_number</span></div>
+
+<div class="viewcode-block" id="ClenshawRadialGrid._get_points"><a class="viewcode-back" href="../../autoapi/bfit/grid/index.html#bfit.grid.ClenshawRadialGrid._get_points">[docs]</a>    <span class="k">def</span> <span class="nf">_get_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_pts</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;core&quot;</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generate radial points on [0, inf) based on Clenshaw-Curtis grid.</span>
+
+<span class="sd">        The &quot;core&quot; points are concentrated near the origin based on:</span>
+
+<span class="sd">        .. math:: r_p = 25 (1 - cos(\frac{\pi p}{2N})) for p =0,1..N-1</span>
+
+<span class="sd">        The &quot;diffuse&quot; points are concentrated away from the origin based on:</span>
+
+<span class="sd">        .. math:: r_p = \frac{1}[2Z} (1 - cos(\frac{\pi p}{2N})) for p=0,1...N-1,</span>
+
+<span class="sd">        where :math:`Z` is the atomic number and :math:`N` is the number of points.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        num_pts : int</span>
+<span class="sd">            The number of points.</span>
+<span class="sd">        mode : str, optional</span>
+<span class="sd">            If &quot;core&quot;, the points are placed closer to the origin. If &quot;diffuse&quot;, the points are</span>
+<span class="sd">            placed far away from origin.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        points : ndarray, (N,)</span>
+<span class="sd">            The 1D array of grid points.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;core&quot;</span><span class="p">:</span>
+            <span class="n">points</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="n">num_pts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float128</span><span class="p">)</span> <span class="o">/</span> <span class="n">num_pts</span><span class="p">)</span>
+            <span class="n">points</span> <span class="o">/=</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_number</span>
+        <span class="k">elif</span> <span class="n">mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;diffuse&quot;</span><span class="p">:</span>
+            <span class="n">points</span> <span class="o">=</span> <span class="mf">25.</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="n">num_pts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float128</span><span class="p">)</span> <span class="o">/</span> <span class="n">num_pts</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Arguments mode=</span><span class="si">{0}</span><span class="s2"> is not recognized!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()))</span>
+        <span class="k">return</span> <span class="n">points</span></div></div>
+
+
+<div class="viewcode-block" id="CubicGrid"><a class="viewcode-back" href="../../autoapi/bfit/index.html#bfit.grid.CubicGrid">[docs]</a><span class="k">class</span> <span class="nc">CubicGrid</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Equally-Spaced 3D Cubic Grid Class.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    points : ndarray, (N, 3)</span>
+<span class="sd">        The three-dimensional array containing the `N` grid points that are uniform.</span>
+<span class="sd">    step : float</span>
+<span class="sd">        The positive number representing the step-size of any two consequent grid points.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    integrate(arr) :</span>
+<span class="sd">        Integrate an array `arr` defined over the `points` using Riemannian sum.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">axes</span><span class="p">,</span> <span class="n">shape</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct the CubicGrid object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        smallest_pnt : float</span>
+<span class="sd">            The smallest point on any axis in the 3D cubic grid.</span>
+<span class="sd">        largest_pnt : float</span>
+<span class="sd">            The largest point on any axis in the 3D cubic grid.</span>
+<span class="sd">        step_size : float</span>
+<span class="sd">            The step-size between two consecutive points on any axis in the 3D cubic grid.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_axes</span> <span class="o">=</span> <span class="n">axes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_origin</span> <span class="o">=</span> <span class="n">origin</span>
+        <span class="n">dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_origin</span><span class="o">.</span><span class="n">size</span>
+        <span class="c1"># Make an array to store coordinates of grid points</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">shape</span><span class="p">),</span> <span class="n">dim</span><span class="p">))</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_axes</span><span class="p">)</span> <span class="o">+</span> <span class="n">origin</span>
+        <span class="c1"># assign the weights</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_choose_weight_scheme</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_weights</span> <span class="o">=</span> <span class="n">weights</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="CubicGrid.axes"><a class="viewcode-back" href="../../autoapi/bfit/grid/index.html#bfit.grid.CubicGrid.axes">[docs]</a>    <span class="k">def</span> <span class="nf">axes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_axes</span></div>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="CubicGrid.from_molecule"><a class="viewcode-back" href="../../autoapi/bfit/grid/index.html#bfit.grid.CubicGrid.from_molecule">[docs]</a>    <span class="k">def</span> <span class="nf">from_molecule</span><span class="p">(</span>
+            <span class="bp">cls</span><span class="p">,</span>
+            <span class="n">atcorenums</span><span class="p">,</span>
+            <span class="n">atcoords</span><span class="p">,</span>
+            <span class="n">spacing</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+            <span class="n">extension</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
+            <span class="n">rotate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct a uniform grid given the molecular pseudo-numbers and coordinates.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        atcorenums : np.ndarray, shape (M,)</span>
+<span class="sd">            Pseudo-number of :math:`M` atoms in the molecule.</span>
+<span class="sd">        atcoords : np.ndarray, shape (M, 3)</span>
+<span class="sd">            Cartesian coordinates of :math:`M` atoms in the molecule.</span>
+<span class="sd">        spacing : float, optional</span>
+<span class="sd">            Increment between grid points along :math:`x`, :math:`y`, and :math:`z` direction.</span>
+<span class="sd">        extension : float, optional</span>
+<span class="sd">            The extension of the length of the cube on each side of the molecule.</span>
+<span class="sd">        rotate : bool, optional</span>
+<span class="sd">            When True, the molecule is rotated so the axes of the cube file are</span>
+<span class="sd">            aligned with the principle axes of rotation of the molecule.</span>
+<span class="sd">            If False, generates axes based on the x,y,z-axis and the spacing parameter, and</span>
+<span class="sd">            the origin is defined by the maximum/minimum of the atomic coordinates.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># calculate center of mass of the nuclear charges:</span>
+        <span class="n">totz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">atcorenums</span><span class="p">)</span>
+        <span class="n">com</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">atcorenums</span><span class="p">,</span> <span class="n">atcoords</span><span class="p">)</span> <span class="o">/</span> <span class="n">totz</span>
+        <span class="c1"># Determine best axes and coordinates to calculate the lower and upper bound of grid.</span>
+        <span class="k">if</span> <span class="n">rotate</span><span class="p">:</span>
+            <span class="c1"># calculate moment of inertia tensor:</span>
+            <span class="n">itensor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">atcorenums</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="n">xyz</span> <span class="o">=</span> <span class="n">atcoords</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">com</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">xyz</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.0</span>
+                <span class="n">tempitens</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="n">r</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">r</span><span class="p">])</span>
+                <span class="n">tempitens</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">xyz</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">xyz</span><span class="p">)</span>
+                <span class="n">itensor</span> <span class="o">+=</span> <span class="n">atcorenums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">tempitens</span>
+            <span class="c1"># Eigenvectors define the new axes of the grid with spacing</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">itensor</span><span class="p">)</span>
+            <span class="c1"># Project the coordinates of atoms centered at the center of mass to the eigenvectors</span>
+            <span class="n">new_coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">((</span><span class="n">atcoords</span> <span class="o">-</span> <span class="n">com</span><span class="p">),</span> <span class="n">v</span><span class="p">)</span>
+            <span class="n">axes</span> <span class="o">=</span> <span class="n">spacing</span> <span class="o">*</span> <span class="n">v</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Just use the original coordinates</span>
+            <span class="n">new_coordinates</span> <span class="o">=</span> <span class="n">atcoords</span>
+            <span class="c1"># Compute the unit vectors of the cubic grid&#39;s coordinate system</span>
+            <span class="n">axes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="n">spacing</span><span class="p">,</span> <span class="n">spacing</span><span class="p">,</span> <span class="n">spacing</span><span class="p">])</span>
+
+        <span class="c1"># maximum and minimum value of x, y and z coordinates/grid.</span>
+        <span class="n">max_coordinate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">new_coordinates</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">min_coordinate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">new_coordinates</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># Compute the required number of points along x, y, and z axis</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">max_coordinate</span> <span class="o">-</span> <span class="n">min_coordinate</span> <span class="o">+</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">extension</span><span class="p">)</span> <span class="o">/</span> <span class="n">spacing</span>
+        <span class="c1"># Add one to include the upper-bound as well.</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="c1"># Compute origin by taking the center of mass then subtracting the half of the number</span>
+        <span class="c1">#    of points in the direction of the axes.</span>
+        <span class="n">origin</span> <span class="o">=</span> <span class="n">com</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">((</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">shape</span><span class="p">),</span> <span class="n">axes</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">axes</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CubicGrid._calculate_volume"><a class="viewcode-back" href="../../autoapi/bfit/grid/index.html#bfit.grid.CubicGrid._calculate_volume">[docs]</a>    <span class="k">def</span> <span class="nf">_calculate_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return the volume of the Uniform Grid.&quot;&quot;&quot;</span>
+        <span class="c1"># Shape needs to be an argument, because I need to calculate the weights before</span>
+        <span class="c1">#       initializing the _HyperRectangleGrid (where shape is set there).</span>
+        <span class="c1"># Three-Dims: Volume of a parallelepiped spanned by a, b, c is  | (a x b) dot c|.</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                <span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Two-Dims: Volume of a parallelogram is the absolute value of the determinant |a x b|</span>
+            <span class="n">volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CubicGrid._choose_weight_scheme"><a class="viewcode-back" href="../../autoapi/bfit/grid/index.html#bfit.grid.CubicGrid._choose_weight_scheme">[docs]</a>    <span class="k">def</span> <span class="nf">_choose_weight_scheme</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">):</span>
+        <span class="c1"># Choose different weighting schemes.</span>
+        <span class="n">volume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_volume</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">numpnt</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">shape</span><span class="p">),</span> <span class="n">volume</span> <span class="o">/</span> <span class="n">numpnt</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">weights</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="CubicGrid.points"><a class="viewcode-back" href="../../autoapi/bfit/grid/index.html#bfit.grid.CubicGrid.points">[docs]</a>    <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return cubic grid points.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_points</span></div>
+
+<div class="viewcode-block" id="CubicGrid.__len__"><a class="viewcode-back" href="../../autoapi/bfit/grid/index.html#bfit.grid.CubicGrid.__len__">[docs]</a>    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the number of grid points.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_points</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="CubicGrid.integrate"><a class="viewcode-back" href="../../autoapi/bfit/grid/index.html#bfit.grid.CubicGrid.integrate">[docs]</a>    <span class="k">def</span> <span class="nf">integrate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute the integral of a function evaluated on the grid points based on Riemann sums.</span>
+
+<span class="sd">        .. math:: \int\int\int f(x, y, z) dx dy dz</span>
+
+<span class="sd">        where :math:&#39;f(r)&#39; is the integrand.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        arr : ndarray</span>
+<span class="sd">            The integrand evaluated on the grid points.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        value : float</span>
+<span class="sd">            The value of integral.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">),):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Argument arr should have (</span><span class="si">{0}</span><span class="s2">,) shape.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)))</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_weights</span> <span class="o">*</span> <span class="n">arr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2021, The QC-Devs Community
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

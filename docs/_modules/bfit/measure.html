@@ -1,0 +1,439 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>bfit.measure &mdash; BFit  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> BFit
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BFit</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../bfit.html">bfit</a> &raquo;</li>
+        
+      <li>bfit.measure</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for bfit.measure</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># BFit - python program that fits a convex sum of</span>
+<span class="c1"># positive basis functions to any probability distribution. .</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2020 The BFit Development Team.</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of BFit.</span>
+<span class="c1">#</span>
+<span class="c1"># BFit is free software; you can redistribute it and/or</span>
+<span class="c1"># modify it under the terms of the GNU General Public License</span>
+<span class="c1"># as published by the Free Software Foundation; either version 3</span>
+<span class="c1"># of the License, or (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># BFit is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program; if not, see &lt;http://www.gnu.org/licenses/&gt;</span>
+<span class="c1">#</span>
+<span class="c1"># ---</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Deviation Measure Module.</span>
+
+<span class="sd">Classes that measure the deviation between true and model probability distributions.</span>
+
+<span class="sd">Classes</span>
+<span class="sd">-------</span>
+<span class="sd">    KLDivergence - Kullback-Leibler divergence measure.</span>
+<span class="sd">    SquaredDifference - Square-Difference measure for Least-Squared method.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;KLDivergence&quot;</span><span class="p">,</span> <span class="s2">&quot;SquaredDifference&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="SquaredDifference"><a class="viewcode-back" href="../../autoapi/bfit/measure/index.html#bfit.SquaredDifference">[docs]</a><span class="k">class</span> <span class="nc">SquaredDifference</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Squared Difference Class for performing the Least-Squared method.</span>
+
+<span class="sd">    Least-squared is the defined to be the integral of the squared difference between</span>
+<span class="sd">     true and model functions:</span>
+<span class="sd">    .. math::</span>
+<span class="sd">        ||f - g|| = \int_G (f(x) - g(x))^2 dx</span>
+<span class="sd">    where,</span>
+<span class="sd">        :math:`f` is the true function,</span>
+<span class="sd">        :math:`g` is the model function,</span>
+<span class="sd">        :math:`G` is the grid.</span>
+
+<span class="sd">    The term :math:`|f(x) - g(x)|^2` is called the Squared Difference between f and g on a point x.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    density : ndarray(N,)</span>
+<span class="sd">        The true function (being approximated) evaluated on `N` points.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    evaluate(deriv=False)</span>
+<span class="sd">        Return the squared difference between model and true functions. Note that it does not</span>
+<span class="sd">        integrate the model but rather only computes f(x) - g(x). If `deriv` is True,</span>
+<span class="sd">        then the derivative with respect to model function is returned.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - This class does not return the Least-Squared but rather the squared difference.</span>
+<span class="sd">        One would need to integrate this to get the Least Squared.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">density</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct the SquaredDifference class.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        density : ndarray, (N,)</span>
+<span class="sd">            The exact density evaluated on the grid points.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">or</span> <span class="n">density</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Arguments density should be a 1D numpy array.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">density</span> <span class="o">=</span> <span class="n">density</span>
+
+<div class="viewcode-block" id="SquaredDifference.evaluate"><a class="viewcode-back" href="../../autoapi/bfit/measure/index.html#bfit.SquaredDifference.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">deriv</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Evaluate squared difference b/w density &amp; model on the grid points.</span>
+
+<span class="sd">        This is defined to be :math:`(f(x) - g(x))^2`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model : ndarray, (N,)</span>
+<span class="sd">            The model density evaluated on the grid points.</span>
+<span class="sd">        deriv : bool, optional</span>
+<span class="sd">            Whether to compute the derivative of squared difference w.r.t. model density.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        m : ndarray, (N,)</span>
+<span class="sd">            The squared difference between density &amp; model on the grid points.</span>
+<span class="sd">        dm : ndarray, (N,)</span>
+<span class="sd">            The derivative of squared difference w.r.t. model density evaluated on the</span>
+<span class="sd">            grid points. Only returned if `deriv=True`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">or</span> <span class="n">model</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Argument model should be </span><span class="si">{0}</span><span class="s2"> array.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+        <span class="c1"># compute residual</span>
+        <span class="n">residual</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">density</span> <span class="o">-</span> <span class="n">model</span>
+        <span class="c1"># compute squared residual</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">residual</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="c1"># compute derivative of squared residual w.r.t. model</span>
+        <span class="k">if</span> <span class="n">deriv</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">value</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">residual</span>
+        <span class="k">return</span> <span class="n">value</span></div></div>
+
+
+<div class="viewcode-block" id="KLDivergence"><a class="viewcode-back" href="../../autoapi/bfit/measure/index.html#bfit.KLDivergence">[docs]</a><span class="k">class</span> <span class="nc">KLDivergence</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Kullback-Leibler Divergence Class.</span>
+
+<span class="sd">    This is defined as the integral:</span>
+<span class="sd">    .. math::</span>
+<span class="sd">        D(f, g) := \int_G f(x) \ln ( \frac{f(x)}{g(x)} ) dx</span>
+<span class="sd">    where,</span>
+<span class="sd">        :math:`f` is the true probability distribution,</span>
+<span class="sd">        :math:`g` is the model probability distribution,</span>
+<span class="sd">        :math:`G` is the grid.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    density : ndarray(N,)</span>
+<span class="sd">        The true function (being approximated) evaluated on `N` points.</span>
+<span class="sd">    mask_value : float</span>
+<span class="sd">        Values of model density `g` that are less than `mask_value` are masked when used in division</span>
+<span class="sd">         and then replaced with the value of 1 so that logarithm of one is zero.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    evaluate(deriv=False)</span>
+<span class="sd">        Return the integrand :math:`f(x) \ln(f(x)/g(x))` between model and true functions.</span>
+<span class="sd">        Note that it does not integrate the model, and so it doesn&#39;t exactly return the</span>
+<span class="sd">        Kullback-Leibler. If `deriv` is True, then the derivative with respect to model function</span>
+<span class="sd">        is returned.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - This class does not return the Kullback-Leibler but rather the integrand.</span>
+<span class="sd">        One would need to integrate this to get the Least Squared.</span>
+<span class="sd">    - It using masked values to handle overflow and underflow floating point precision issues. This</span>
+<span class="sd">        is due to the division in the Kullback-Leibler formula between two probability</span>
+<span class="sd">        distributions.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">mask_value</span><span class="o">=</span><span class="mf">1.e-12</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct the Kullback-Leibler class.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        density : ndarray, (N,)</span>
+<span class="sd">            The exact density evaluated on the grid points.</span>
+<span class="sd">        mask_value : float, optional</span>
+<span class="sd">            The elements less than or equal to this number are masked in a division.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">or</span> <span class="n">density</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Arguments density should be a 1D numpy array.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">density</span> <span class="o">&lt;</span> <span class="mf">0.</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Argument density should be positive.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">density</span> <span class="o">=</span> <span class="n">density</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask_value</span> <span class="o">=</span> <span class="n">mask_value</span>
+
+<div class="viewcode-block" id="KLDivergence.evaluate"><a class="viewcode-back" href="../../autoapi/bfit/measure/index.html#bfit.KLDivergence.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">deriv</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate the integrand of Kullback-Leibler divergence b/w true &amp; model.</span>
+
+<span class="sd">        .. math ::</span>
+<span class="sd">            D(f, g) := \int_G f(x) \ln ( \frac{f(x)}{g(x)} ) dx</span>
+<span class="sd">        where,</span>
+<span class="sd">            :math:`f` is the true probability distribution,</span>
+<span class="sd">            :math:`g` is the model probability distribution,</span>
+<span class="sd">            :math:`G` is the grid.</span>
+
+<span class="sd">        If the model density is negative, then this function will return extremely large values,</span>
+<span class="sd">        for optimization purposes.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model : ndarray, (N,)</span>
+<span class="sd">            The model density evaluated on the grid points.</span>
+<span class="sd">        deriv : bool, optional</span>
+<span class="sd">            Whether to compute the derivative of divergence w.r.t. model density.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        m : ndarray, (N,)</span>
+<span class="sd">            The divergence between density &amp; model on the grid points.</span>
+<span class="sd">        dm : ndarray, (N,)</span>
+<span class="sd">            The derivative of divergence w.r.t. model density evaluated on the grid points.</span>
+<span class="sd">            Only returned if `deriv=True`.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        - Values of Model density that are less than `mask_value` are masked when used in</span>
+<span class="sd">            division and then replaced with the value of 1 so that logarithm of one is zero.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># check model density</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">or</span> <span class="n">model</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Argument model should be </span><span class="si">{0}</span><span class="s2"> array.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">model</span> <span class="o">&lt;</span> <span class="mf">0.</span><span class="p">):</span>
+            <span class="c1"># If the model density is negative, then return large values for optimization to favour</span>
+            <span class="c1">#  positive model densities.</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">100000.</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">100000.</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">))</span>
+
+        <span class="c1"># compute ratio &amp; replace masked values by 1.0</span>
+        <span class="n">ratio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">density</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_less_equal</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_value</span><span class="p">)</span>
+        <span class="n">ratio</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">ratio</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+        <span class="c1"># compute KL divergence</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">density</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ratio</span><span class="p">)</span>
+        <span class="c1"># compute derivative</span>
+        <span class="k">if</span> <span class="n">deriv</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">value</span><span class="p">,</span> <span class="o">-</span><span class="n">ratio</span>
+        <span class="k">return</span> <span class="n">value</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2021, The QC-Devs Community
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

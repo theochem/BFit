@@ -1,0 +1,59 @@
+:py:mod:`bfit._slater`
+======================
+
+.. py:module:: bfit._slater
+
+.. autoapi-nested-parse::
+
+   Module responsible for reading and storing information from '.slater' files.
+
+   Functions
+   ---------
+   load_slater_wfn : Function for reading and returning information from '.slater' files.
+
+   ..
+       !! processed by numpydoc !!
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   bfit._slater.load_slater_wfn
+
+
+
+.. py:function:: load_slater_wfn(element, anion=False, cation=False)
+
+   
+   Return the data recorded in the atomic Slater wave-function file as a dictionary.
+
+   :param file_name: The path to the Slater atomic file.
+   :type file_name: str
+   :param anion: If true, then the anion of element is used.
+   :type anion: bool
+   :param cation: If true, then the cation of element is used.
+   :type cation: bool
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
