@@ -379,13 +379,13 @@ def test_derivative_electron_density_c():
 
 def test_derivative_electron_density_cr():
     cr = SlaterAtoms("cr")
-    eps = 1e-10
+    eps = 2.0e-8
     grid = np.array([0.1 - eps, 0.1, 0.1 + eps, 1. - eps, 1., 1. + eps])
     dens = cr.atomic_density(grid)
     actual = cr.derivative_density(np.array([0.1, 1.]))
     desired_0 = (dens[2] - dens[0]) / (2. * eps)
     desired_1 = (dens[5] - dens[3]) / (2. * eps)
-    assert_almost_equal(actual, np.array([desired_0, desired_1]), decimal=3)
+    assert_almost_equal(actual, np.array([desired_0, desired_1]), decimal=4)
 
 
 def test_kinetic_energy_heavy_element_ce():
