@@ -145,9 +145,9 @@ class SlaterAtoms:
         return self._orbitals_coeff
 
     @property
-    def orbital_energy(self):
+    def orbitals_energy(self):
         r"""Energy of each of the :math:`N` Slater-type orbital."""
-        return self._orbital_energy
+        return self._orbitals_energy
 
     @property
     def orbitals_cusp(self):
