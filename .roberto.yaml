@@ -3,7 +3,7 @@ project:
   name: bfit
   # requirements: [[numpydoc, numpydoc], [sphinx-autoapi, sphinx-autoapi], [sphinxcontrib-bibtex, sphinxcontrib-bibtex]]
   packages:
-    - dist_name: bfit
+    - dist_name: qc-bfit
       tools:
         - write-py-version
         # - cardboardlint-static
