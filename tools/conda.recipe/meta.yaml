@@ -1,0 +1,52 @@
+package:
+  version: "{{ PROJECT_VERSION }}"
+  name: 'qc-procrustes'
+
+source:
+  path: ../../
+
+build:
+  number: 0
+  noarch: python
+  script: "{{ PYTHON }} -m pip install . --no-deps"
+
+requirements:
+  host:
+    - python >=3.6
+    - numpy >=1.18.5
+    - scipy >=1.5.0
+    - pytest >=5.4.3
+    - setuptools
+  run:
+    - python >=3.6
+    - numpy >=1.18.5
+    - scipy >=1.5.0
+    - pytest >=5.4.3
+    - sphinx >=2.3.0
+
+test:
+  requires:
+    - python
+    - pytest
+    - pytest-xdist
+  imports:
+    - bfit
+  commands:
+    - pytest --pyargs bfit -v -n auto
+
+about:
+  summary: "Fit a convex sum of positive basis functions to any probability distribution."
+  description: |
+     BFit is a Python library for (best) fitting a convex sum of positive basis functions to any
+     probability distribution. It is primarily intended for quantum chemistry applications, where
+     the basis functions are Gaussians and the fitted probability distribution is a scalar function
+     like the electron density.
+  home: https://bfit.qcdevs.org/
+  doc_url: https://bfit.qcdevs.org/
+  dev_url: https://github.com/theochem/bfit/
+  license: GNU Version 3
+  license_family: GPL
+  license_file: LICENSE
+
+extra:
+  maintainers: QC-Dev community  <qcdevs@gmail.com>
