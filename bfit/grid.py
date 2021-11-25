@@ -327,6 +327,7 @@ class CubicGrid:
             The step-size between two consecutive points on any axis in the 3D cubic grid.
 
         """
+        # TODO: Add raise error for Type and Values here for origin, axes.
         self._axes = axes
         self._origin = origin
         dim = self._origin.size
