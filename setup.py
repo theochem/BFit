@@ -22,8 +22,22 @@
 # ---
 """Setup and Install Script."""
 
-from setuptools import setup, find_packages
+
 import os
+
+from setuptools import setup
+
+
+def get_version_info():
+    """Read __version__ and DEV_CLASSIFIER from version.py, using exec, not import."""
+    fn_version = os.path.join("bfit", "_version.py")
+    if os.path.isfile(fn_version):
+        myglobals = {}
+        with open(fn_version, "r") as f:
+            exec(f.read(), myglobals)  # pylint: disable=exec-used
+        return myglobals["__version__"], myglobals["DEV_CLASSIFIER"]
+    return "0.0.0.post0", "Development Status :: 2 - Pre-Alpha"
+
 
 def get_readme():
     """Load README.rst for display on PyPI."""
@@ -31,22 +45,27 @@ def get_readme():
         return fhandle.read()
 
 
+VERSION, DEV_CLASSIFIER = get_version_info()
+
+
 setup(
-    name="BFit",
-    version="0.0.1",
-    description="Curve fitting algorithms for fitting basis-set functions to probabiity "
-                "distributions.",
-    url="https://github.com/theochem/bfit",
+    name="qc-bfit",
+    version=VERSION,
+    description="BFit Package",
+    # description="Curve fitting algorithms for fitting basis-set functions to probabiity "
+    #             "distributions.",
     long_description=get_readme(),
     long_description_content_type="text/markdown",
+    url="https://github.com/theochem/bfit",
     license="GNU General Public License v3.0",
     author="QC-Devs Community",
     author_email="qcdevs@gmail.com",
+    package_dir={"bfit": "bfit"},
+    packages=["bfit", "bfit.test"],
+    include_package_data=True,
     install_requires=[
         "numpy>=1.18.5", "scipy>=1.5.0", "pytest>=5.4.3", "sphinx>=2.3.0"
     ],
-    package_dir={"bfit" : "bfit"},
-    packages=["bfit"],
     package_data={
         # If any package contains *.slater files, include them:
         '': ['*.slater', '*.nwchem']
