@@ -43,9 +43,10 @@ def test_goodness_of_fit():
     m = AtomicGaussianDensity(g.points, num_s=1, num_p=0, normalize=False)
     kl = KLDivergenceSCF(g, e, m, mask_value=0.)
     gf = kl.goodness_of_fit(np.array([1.]), np.array([1.]))
-    expected = [5.56833, 4 * np.pi * 1.60909, 0.128, 4. * np.pi * 17.360]
-    assert_almost_equal(expected[:3], gf[:3], decimal=1)
-    assert_almost_equal(expected[-1], gf[-1], decimal=1)
+    expected = [
+        5.56833, 4 * np.pi * 1.60909, 0.128, 4.0 * np.pi * 0.0882922, 4. * np.pi * 17.360
+    ]
+    assert_almost_equal(expected, gf, decimal=1)
 
 
 def test_assertion_raises():
@@ -67,8 +68,6 @@ def test_assertion_raises():
     gb = ScipyFit(g, e, m, measure="KL")
     assert_raises(ValueError, gb.run, [], [], False, False)
     assert_raises(ValueError, gb.evaluate_model, [], ("not fixed", 2))
-
-
 
 
 def test_run_normalized_1s_gaussian():
