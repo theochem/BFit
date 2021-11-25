@@ -8,7 +8,7 @@ BFit
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/theochem/procrustes/master?filepath=docs%2Fnotebooks%2F)
 
 
-BFit is a python library for (best) fitting a convex sum of positive basis functions to any
+BFit is a Python library for (best) fitting a convex sum of positive basis functions to any
 probability distribution. It is primarily intended for quantum chemistry applications, where the
 basis functions are Gaussians and the fitted probability distribution is a scalar function like
 the electron density.
@@ -35,7 +35,6 @@ Dependencies
 * Grid VERSION: https://grid.qcdevs.org/
 * PyTest >= 5.3.4: https://docs.pytest.org/
 * PyTest-Cov >= 2.8.0: https://pypi.org/project/pytest-cov/
-* PIP >= 19.0: https://pip.pypa.io/
 
 
 Installation
