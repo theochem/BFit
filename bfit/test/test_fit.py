@@ -44,7 +44,8 @@ def test_goodness_of_fit():
     kl = KLDivergenceSCF(g, e, m, mask_value=0.)
     gf = kl.goodness_of_fit(np.array([1.]), np.array([1.]))
     expected = [5.56833, 4 * np.pi * 1.60909, 0.128, 4. * np.pi * 17.360]
-    assert_almost_equal(expected, gf, decimal=1)
+    assert_almost_equal(expected[:3], gf[:3], decimal=1)
+    assert_almost_equal(expected[-1], gf[-1], decimal=1)
 
 
 def test_assertion_raises():
