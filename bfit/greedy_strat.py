@@ -33,7 +33,7 @@ from bfit.greedy_utils import (
     check_redundancies, get_next_choices, get_two_next_choices, pick_two_lose_one
 )
 from bfit.model import AtomicGaussianDensity
-from bfit.fit import GaussianBasisFit, KLDivergenceSCF
+from bfit.fit import ScipyFit, KLDivergenceSCF
 
 __all__ = ["GreedyLeastSquares", "GreedyKL"]
 
