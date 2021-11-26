@@ -27,9 +27,9 @@ TODO
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
-from scipy.optimize import nnls, minimize, fmin_l_bfgs_b
+from scipy.optimize import nnls
 
-from bfit.greedy.greedy_utils import (
+from bfit.greedy_utils import (
     check_redundancies, get_next_choices, get_two_next_choices, pick_two_lose_one
 )
 from bfit.model import AtomicGaussianDensity
