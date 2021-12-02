@@ -184,16 +184,6 @@ class KLDivergenceSCF(_BaseFit):
         """Lagrange multiplier of Kullback-Leibler optimization problem."""
         return self._lm
 
-    @property
-    def norm(self):
-        r"""
-        The integral of the true density attribute `density`.
-
-        This is precisely: :math:`\int_{\mathbb{R}} f(x) dx,` where :math:`f` is
-        the density to be fitted.
-        """
-        return self._norm
-
     def _update_params(self, coeffs, expons, update_coeffs=True, update_expons=False):
         r"""
         Update coefficients & exponents of the Gaussian density model.
