@@ -27,7 +27,7 @@ from numpy.testing import assert_almost_equal, assert_equal, assert_raises
 
 from bfit.model import AtomicGaussianDensity, MolecularGaussianDensity
 from bfit.measure import KLDivergence, SquaredDifference
-from bfit.fit import KLDivergenceSCF, GaussianBasisFit
+from bfit.fit import KLDivergenceSCF, ScipyFit
 from bfit.grid import UniformRadialGrid, CubicGrid
 
 
@@ -44,7 +44,9 @@ def test_goodness_of_fit():
     m = AtomicGaussianDensity(g.points, num_s=1, num_p=0, normalize=False)
     kl = KLDivergenceSCF(g, e, m, mask_value=0.)
     gf = kl.goodness_of_fit(np.array([1.]), np.array([1.]))
-    expected = [5.56833, 4 * np.pi * 1.60909, 0.128, 4. * np.pi * 17.360]
+    expected = [
+        5.56833, 4 * np.pi * 1.60909, 0.128, 4.0 * np.pi * 0.0882922, 4. * np.pi * 17.360
+    ]
     assert_almost_equal(expected, gf, decimal=1)
 
 
@@ -61,15 +63,13 @@ def test_assertion_raises():
 
     m2 = AtomicGaussianDensity(g.points * 2., num_s=1, num_p=0, normalize=False)
     measure = KLDivergence()
-    assert_raises(ValueError, GaussianBasisFit, g, e, m2)
-    assert_raises(ValueError, GaussianBasisFit, g, np.append(e, 2.), m)
-    assert_raises(ValueError, GaussianBasisFit, g, e, m, measure, "non slsqp")
-    assert_raises(TypeError, GaussianBasisFit, g, e, m, "not kl")
-    gb = GaussianBasisFit(g, e, m, measure=measure)
+    assert_raises(ValueError, ScipyFit, g, e, m2)
+    assert_raises(ValueError, ScipyFit, g, np.append(e, 2.), m)
+    assert_raises(ValueError, ScipyFit, g, e, m, measure, "non slsqp")
+    assert_raises(TypeError, ScipyFit, g, e, m, "not kl")
+    gb = ScipyFit(g, e, m, measure=measure)
     assert_raises(ValueError, gb.run, [], [], False, False)
     assert_raises(ValueError, gb.evaluate_model, [], ("not fixed", 2))
-
-
 
 
 def test_run_normalized_1s_gaussian():
@@ -201,7 +201,8 @@ def test_kl_scf_update_params_1s1p_gaussian():
 
 def test_kl_scf_update_params_3d_molecular_dens_1s_1s_gaussian():
     # actual density is a 1s Gaussian at origin
-    grid = CubicGrid(-2., 2., 0.1)
+    axes = np.array([[0.1, 0.0, 0.0], [0.0, 0.1, 0.0], [0.0, 0.0, 0.1]])
+    grid = CubicGrid(np.array([-2.0, -2.0, -2.0]), axes, (40, 40, 40))
     dens = np.exp(-np.sum(grid.points ** 2., axis=1))
     # model density is a normalized 1s Gassuain on each center
     coord = np.array([[0., 0., 0.], [0., 0., 1.]])
@@ -236,7 +237,8 @@ def test_kl_scf_update_params_3d_molecular_dens_1s_1s_gaussian():
 
 def test_kl_scf_run_3d_molecular_dens_1s_1p_gaussian():
     # make cubic grid
-    grid = CubicGrid(-10., 10., 0.3)
+    axes = np.array([[0.3, 0.0, 0.0], [0.0, 0.3, 0.0], [0.0, 0.0, 0.3]])
+    grid = CubicGrid(np.array([-10.0, -10.0, -10.0]), axes, (65, 65, 65))
     # actual density is a 1s Gaussian at x=0.5 & 1p Gaussian at y=0.25
     c, e = np.array([0.53, 2.07]), np.array([0.67, 1.92])
     coord = np.array([[0.5, 0., 0.], [0., 0.25, 0.]])
@@ -278,7 +280,7 @@ def test_kl_fit_unnormalized_dens_normalized_1s_gaussian():
     dens = 1.57 * np.exp(-0.51 * grid.points**2.)
     model = AtomicGaussianDensity(grid.points, num_s=1, num_p=0, normalize=True)
     measure = KLDivergence()
-    kl = GaussianBasisFit(grid, dens, model, measure=measure, method="slsqp")
+    kl = ScipyFit(grid, dens, model, measure=measure, method="slsqp")
     # expected coeffs & expons
     expected_cs = np.array([1.57 / (0.51 / np.pi)**1.5])
     expected_es = np.array([0.51])
@@ -315,7 +317,7 @@ def test_kl_fit_normalized_dens_unnormalized_1s_gaussian():
     # un-normalized 1s basis function
     model = AtomicGaussianDensity(grid.points, num_s=1, num_p=0, normalize=False)
     measure = KLDivergence()
-    kl = GaussianBasisFit(grid, dens, model, measure=measure, method="slsqp")
+    kl = ScipyFit(grid, dens, model, measure=measure, method="slsqp")
     # expected coeffs & expons
     expected_cs = np.array([2.06]) * (0.88 / np.pi)**1.5
     expected_es = np.array([0.88])
@@ -355,7 +357,7 @@ def test_kl_fit_normalized_dens_normalized_1s_gaussian():
     # normalized 1s basis function
     model = AtomicGaussianDensity(grid.points, num_s=1, num_p=0, normalize=True)
     measure = KLDivergence()
-    kl = GaussianBasisFit(grid, dens, model, measure=measure, method="slsqp")
+    kl = ScipyFit(grid, dens, model, measure=measure, method="slsqp")
     # expected coeffs & expons
     expected_cs = np.array([2.06])
     expected_es = np.array([0.88])
@@ -397,7 +399,7 @@ def test_kl_fit_normalized_dens_unnormalized_2p_gaussian():
     # un-normalized 2p functions
     model = AtomicGaussianDensity(points, num_s=0, num_p=2, normalize=False)
     measure = KLDivergence()
-    kl = GaussianBasisFit(grid, dens, model, measure=measure, method="slsqp")
+    kl = ScipyFit(grid, dens, model, measure=measure, method="slsqp")
     # expected coeffs & expons
     expected_cs = cs0 * es0**2.5 * 2. / (3. * np.pi**1.5)
     expected_es = es0
@@ -435,7 +437,7 @@ def test_kl_fit_normalized_dens_normalized_2p_gaussian():
     # normalized 2p functions
     model = AtomicGaussianDensity(points, num_s=0, num_p=2, normalize=True)
     measure = KLDivergence()
-    kl = GaussianBasisFit(grid, dens, model, measure=measure, method="slsqp")
+    kl = ScipyFit(grid, dens, model, measure=measure, method="slsqp")
     # initial coeff=cs0 & expon=es0, opt coeffs
     result = kl.run(cs0, es0, True, False)
     assert_almost_equal(cs0, result["coeffs"], decimal=6)
@@ -474,7 +476,7 @@ def test_kl_fit_normalized_dens_normalized_1s2p_gaussian():
     # un-normalized 1s + 2p functions
     model = AtomicGaussianDensity(points, num_s=1, num_p=2, normalize=True)
     measure = KLDivergence()
-    kl = GaussianBasisFit(grid, dens, model, measure=measure, method="slsqp")
+    kl = ScipyFit(grid, dens, model, measure=measure, method="slsqp")
     # initial coeff=1. & expon=1.
     result = kl.run(np.array([1., 1., 1.]), np.array([1., 1., 1.]), True, True)
     assert_almost_equal(np.sort(cs0), np.sort(result["coeffs"]), decimal=5)
@@ -515,7 +517,7 @@ def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1s_gaussian():
     model = MolecularGaussianDensity(points, coords, np.array([[1, 0], [1, 0]]), False)
     # fit total density
     measure = KLDivergence()
-    kl = GaussianBasisFit(grid, dens1 + dens2, model, measure=measure, method="slsqp")
+    kl = ScipyFit(grid, dens1 + dens2, model, measure=measure, method="slsqp")
     # initial coeff=1. & expon=1.
     result = kl.run(np.ones(2), np.ones(2), True, True)
     assert_almost_equal(cs0, result["coeffs"], decimal=4)
@@ -533,7 +535,7 @@ def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1s_gaussian():
     assert_almost_equal(0., result["fun"], decimal=10)
     # fit 1s density on center 1
     measure = KLDivergence()
-    kl = GaussianBasisFit(grid, dens1, model, measure=measure, method="slsqp")
+    kl = ScipyFit(grid, dens1, model, measure=measure, method="slsqp")
     # initial coeff=1. & expon=1.
     result = kl.run(np.ones(2), np.ones(2), True, True)
     assert_almost_equal(np.array([result["coeffs"][0], 0.]), result["coeffs"], decimal=4)
@@ -566,7 +568,7 @@ def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
     model = MolecularGaussianDensity(points, coords, np.array([[1, 0], [0, 1]]), True)
     # fit total density
     measure = KLDivergence()
-    kl = GaussianBasisFit(grid, dens_s + dens_p, model, measure=measure, method="slsqp")
+    kl = ScipyFit(grid, dens_s + dens_p, model, measure=measure, method="slsqp")
     # opt. coeffs & expons
     result = kl.run(np.ones(2), np.array([0.1, 0.2]), True, True, tol=1e-20, disp=True)
     assert_almost_equal(cs0, result["coeffs"], decimal=6)
@@ -584,7 +586,7 @@ def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
     assert_almost_equal(0., result["fun"], decimal=10)
     # fit 1s density on center 1
     measure = KLDivergence()
-    kl = GaussianBasisFit(grid, dens_s, model, measure=measure, method="slsqp")
+    kl = ScipyFit(grid, dens_s, model, measure=measure, method="slsqp")
     # opt. coeffs & expons
     result = kl.run(np.ones(2), np.ones(2), True, True)
     assert_almost_equal(np.array([cs0[0], 0.]), result["coeffs"], decimal=6)
@@ -592,7 +594,7 @@ def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
     assert_almost_equal(0., result["fun"], decimal=10)
     # # fit 1p density on center 2
     measure = KLDivergence(mask_value=1e-12)
-    kl = GaussianBasisFit(grid, dens_p, model, measure=measure, method="slsqp")
+    kl = ScipyFit(grid, dens_p, model, measure=measure, method="slsqp")
     # opt. expons
     result = kl.run(np.array([0., cs0[1]]), np.ones(2), False, True)
     assert_almost_equal(np.array([0., cs0[1]]), result["coeffs"], decimal=6)
@@ -609,7 +611,7 @@ def test_ls_fit_normalized_dens_normalized_1s_gaussian():
     # model density is a normalized 1s Gaussian
     model = AtomicGaussianDensity(grid.points, num_s=1, num_p=0, normalize=True)
     measure = SquaredDifference()
-    ls = GaussianBasisFit(grid, dens, model, measure=measure, method="slsqp")
+    ls = ScipyFit(grid, dens, model, measure=measure, method="slsqp")
     # opt. coeffs & expons
     result = ls.run(np.array([0.1]), np.array([3.5]), True, True)
     assert_almost_equal(cs0, result["coeffs"], decimal=8)
@@ -622,7 +624,7 @@ def test_ls_fit_normalized_dens_normalized_1s_gaussian():
     assert_almost_equal(0., result["fun"], decimal=10)
     # model density is two normalized 1s Gaussian
     model = AtomicGaussianDensity(grid.points, num_s=2, num_p=0, normalize=True)
-    ls = GaussianBasisFit(grid, dens, model, measure=measure, method="slsqp")
+    ls = ScipyFit(grid, dens, model, measure=measure, method="slsqp")
     # opt. coeffs & expons
     result = ls.run(np.array([0.1, 3.0]), np.array([5.1, 7.8]), True, True)
     assert_almost_equal(np.array([1.57, 0.]), result["coeffs"], decimal=6)
@@ -644,7 +646,7 @@ def test_ls_fit_normalized_dens_normalized_2s_gaussian():
     # model density is a normalized 2s Gaussian
     model = AtomicGaussianDensity(grid.points, num_s=2, num_p=0, normalize=True)
     measure = SquaredDifference()
-    ls = GaussianBasisFit(grid, dens, model, measure=measure, method="slsqp")
+    ls = ScipyFit(grid, dens, model, measure=measure, method="slsqp")
     initial_cs = np.array([0.57, 0.98])
     initial_es = np.array([1.67, 0.39])
     # opt. coeffs & expons
@@ -676,7 +678,7 @@ def test_ls_fit_normalized_dens_normalized_5s_gaussian():
     # model density is a normalized 1s Gaussian
     model = AtomicGaussianDensity(grid.points, num_s=5, num_p=0, normalize=True)
     measure = SquaredDifference()
-    ls = GaussianBasisFit(grid, dens, model, measure=measure, method="slsqp")
+    ls = ScipyFit(grid, dens, model, measure=measure, method="slsqp")
     initial_cs = np.array([1., 0., 3., 0., 5.])
     initial_es = np.array([0.1, 1.2, 1., 20., 10.])
     # opt. coeffs
@@ -705,7 +707,7 @@ def test_ls_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1s_gaussian():
     model = MolecularGaussianDensity(grid.points, coords, np.array([[1, 0], [1, 0]]), False)
     # fit total density
     measure = SquaredDifference()
-    ls = GaussianBasisFit(grid, dens1 + dens2, model, measure=measure, method="slsqp")
+    ls = ScipyFit(grid, dens1 + dens2, model, measure=measure, method="slsqp")
     # initial coeff=1. & expon=1.
     result = ls.run(np.ones(2), np.ones(2), True, True)
     assert_almost_equal(cs0, result["coeffs"], decimal=6)
@@ -713,7 +715,7 @@ def test_ls_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1s_gaussian():
     assert_almost_equal(0., result["fun"], decimal=10)
     # fit 1s density on center 1
     measure = SquaredDifference()
-    ls = GaussianBasisFit(grid, dens1, model, measure=measure, method="slsqp")
+    ls = ScipyFit(grid, dens1, model, measure=measure, method="slsqp")
     # initial coeff=1. & expon=1.
     result = ls.run(np.ones(2), np.ones(2), True, True)
     assert_almost_equal(np.array([1.52, 0.0]), result["coeffs"], decimal=6)
@@ -721,7 +723,7 @@ def test_ls_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1s_gaussian():
     assert_almost_equal(0., result["fun"], decimal=10)
     # fit 1s density on center 2
     measure = SquaredDifference()
-    ls = GaussianBasisFit(grid, dens2, model, measure=measure, method="slsqp")
+    ls = ScipyFit(grid, dens2, model, measure=measure, method="slsqp")
     # initial coeff=1. & expon=1.
     result = ls.run(np.ones(2), np.ones(2), True, True)
     assert_almost_equal(np.array([0.0, 2.67]), result["coeffs"], decimal=6)
@@ -743,7 +745,7 @@ def test_ls_fit_normalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
     expected_cs = cs0 * np.array([(es0[0] / np.pi)**1.5, 2. * es0[1]**2.5 / (3. * np.pi**1.5)])
     # fit total density
     measure = SquaredDifference()
-    ls = GaussianBasisFit(grid, dens_s + dens_p, model, measure=measure, method="slsqp")
+    ls = ScipyFit(grid, dens_s + dens_p, model, measure=measure, method="slsqp")
     # opt. coeffs & expons
     result = ls.run(np.ones(2), np.ones(2), True, True)
     assert_almost_equal(expected_cs, result["coeffs"], decimal=6)
@@ -761,7 +763,7 @@ def test_ls_fit_normalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
     assert_almost_equal(0., result["fun"], decimal=10)
     # fit 1s density on center 1
     measure = SquaredDifference()
-    ls = GaussianBasisFit(grid, dens_s, model, measure=measure, method="slsqp")
+    ls = ScipyFit(grid, dens_s, model, measure=measure, method="slsqp")
     # opt. coeffs & expons
     result = ls.run(np.ones(2), np.ones(2), True, True)
     assert_almost_equal(np.array([expected_cs[0], 0.]), result["coeffs"], decimal=6)
@@ -774,7 +776,7 @@ def test_ls_fit_normalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
     assert_almost_equal(0., result["fun"], decimal=10)
     # fit 1s density on center 1
     measure = SquaredDifference()
-    ls = GaussianBasisFit(grid, dens_p, model, measure=measure, method="slsqp")
+    ls = ScipyFit(grid, dens_p, model, measure=measure, method="slsqp")
     result = ls.run(np.array([0.05, 5.01]), es0, True, False, with_constraint=False)
     assert_almost_equal([0., expected_cs[1]], result["coeffs"], decimal=6)
     assert_almost_equal(es0, result["exps"], decimal=6)

@@ -222,29 +222,16 @@ def test_integration_clenshaw_gaussian():
 
 
 def test_raises_cubic():
-    assert_raises(TypeError, CubicGrid, "blah", 2., 3.)
-    assert_raises(TypeError, CubicGrid, -1., "blah", 3.)
-    assert_raises(TypeError, CubicGrid, -1., 2., "blah")
-    assert_raises(TypeError, CubicGrid, -1., 2., -5.)
-    assert_raises(ValueError, CubicGrid, 5., -5., 3.)
-
-
-def test_points_cubic():
-    grid = CubicGrid(0., 1., 0.5)
-    desired_answer = [[0.0, 0.0, 0.], [0.0, 0.0, 0.5], [0.0, 0.0, 1.],
-                      [0.0, 0.5, 0.], [0.0, 0.5, 0.5], [0.0, 0.5, 1.],
-                      [0.0, 1.0, 0.], [0.0, 1.0, 0.5], [0.0, 1.0, 1.],
-                      [0.5, 0.0, 0.], [0.5, 0.0, 0.5], [0.5, 0.0, 1.],
-                      [0.5, 0.5, 0.], [0.5, 0.5, 0.5], [0.5, 0.5, 1.],
-                      [0.5, 1.0, 0.], [0.5, 1.0, 0.5], [0.5, 1.0, 1.],
-                      [1.0, 0.0, 0.], [1.0, 0.0, 0.5], [1.0, 0.0, 1.],
-                      [1.0, 0.5, 0.], [1.0, 0.5, 0.5], [1.0, 0.5, 1.],
-                      [1.0, 1.0, 0.], [1.0, 1.0, 0.5], [1.0, 1.0, 1.]]
-    assert_almost_equal(grid.points, desired_answer, decimal=8)
+    assert_raises(AttributeError, CubicGrid, "blah", 2., 3.)
+    assert_raises(AttributeError, CubicGrid, -1., "blah", 3.)
+    assert_raises(AttributeError, CubicGrid, -1., 2., "blah")
+    assert_raises(AttributeError, CubicGrid, -1., 2., -5.)
+    assert_raises(AttributeError, CubicGrid, 5., -5., 3.)
 
 
 def test_integration_cubic():
-    grid = CubicGrid(0., 0.25, 0.001)
+    axes = np.array([[0.01, 0.0, 0.0], [0.0, 0.01, 0.0], [0.0, 0.0, 0.01]])
+    grid = CubicGrid(np.zeros(3), axes, (25, 25, 25))
     # integrate constant value of 1.
     value = grid.integrate(np.ones(len(grid)))
     assert_almost_equal(value, 0.25**3, decimal=3)
@@ -256,7 +243,8 @@ def test_integration_cubic():
 
 
 def test_integration_cubic_gaussian():
-    grid = CubicGrid(-15.0, 15.0, 0.25)
+    axes = np.array([[0.25, 0.0, 0.0], [0.0, 0.25, 0.0], [0.0, 0.0, 0.25]])
+    grid = CubicGrid(np.array([-15.0, -15.0, -15.0]), axes, (120, 120, 120))
     dist = np.linalg.norm(grid.points, axis=1)
     # integrate s-type gaussian functions
     value = grid.integrate(np.exp(-dist**2))
@@ -283,8 +271,9 @@ def test_integration_cubic_gaussian():
 
 
 def test_integration_cubic_gaussian_shifted():
+    axes = np.array([[0.25, 0.0, 0.0], [0.0, 0.25, 0.0], [0.0, 0.0, 0.25]])
+    grid = CubicGrid(np.zeros(3), axes, (120, 120, 120))
     # place the function at the center of cubic grid with coordinates of [15, 15, 15]
-    grid = CubicGrid(0.0, 30.0, 0.25)
     dist = np.linalg.norm(grid.points - np.array([15., 15., 15.]), axis=1)
     # integrate s-type gaussian functions
     value = grid.integrate(np.exp(-dist**2))

@@ -20,70 +20,6 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-r"""
-Fitting Algorithms Module.
-
-Contains the optimization algorithms for fitting a linear combination of Gaussian functions.
-
-Classes
--------
-    KLDivergenceSCF : Optimizes coefficients and exponents using self-consistent method.
-    GaussianBasisFit : Optimizes coefficients and exponents using `Scipy.optimize` function.
-
-
-Examples
---------
-    The goal is to fit a Gaussian density to some function.
-    def f(x) :
-        # Insert what it does here.
-        return ...
-
-    The first step is to define the grid object.
-    >> from bfit.grid import CubicGrid
-    >> grid = CubicGrid(0.01, 0.99, 0.01)
-
-    Place the values of `f` on those grid points in an array.
-    >> density = f(grid.points)
-
-    Define the model, that you want to fit with.
-    >> from bfit.model import AtomicGaussianDensity, MolecularGaussianDensity
-    >> model = AtomicGaussianDensity(grid.points, num_s=5, num_p=5, normalize=True)
-    >> # model = MolecularGaussianDensity(grid.points, np.array([[0., 0., 0.], [1., 1., 1.]]),
-                                        # np.array([[5, 5], [5, 5]]))
-
-    Define which algorithm you want to optmize.
-    >> fit = KLDivergenceSCF(grid, density, model)
-
-    Optimize the coefficients and exponents but give an initial guess.
-    >> initc = [1.] * 10
-    >> inite = np.array([0.001, 0.01, 0.1, 1., 2., 5., 10., 50., 75., 100.])
-    >> result = fit.run(initc, inite)
-
-    Print out the results.
-    >> print("Optimized coefficients are: ", result["x"][0])
-    >> print("Optimized exponents are: ", result["x"][1])
-    >> print("Final performance measures are: ", result["performance"][-1])
-    >> print("Was it successful? ", result["success"])
-
-
-Notes
------
-- The algorithm uses masked value for floating point precision for KLDivergenceSCF.
-    This is due to the division found in the Kullback-Leibler formula. It is recommended to use
-    `np.float64` or `np.float128` when storing the arrays. A higher Mask value will work as well
-    but may cause poor precision. Alternatively, a well-chosen grid and/or initial guesses will
-    avoid overflow/underflow floating-point issues.
-
-
-References
-----------
-[1] BFit: Information-Theoretic Approach to Basis-Set Fitting of Electron Densities
-            Alireza Tehrani, Farnaz Heidar-Zadeh, James S. M. Anderson, Toon Verstraelen, and
-             TODO Add more authors if needed ... Paul W. Ayers.
-
-"""
-
-
 import numpy as np
 import warnings
 
@@ -95,32 +31,11 @@ from bfit.measure import (
 )
 
 
-__all__ = ["KLDivergenceSCF", "GaussianBasisFit"]
+__all__ = ["KLDivergenceSCF", "ScipyFit"]
 
 
-class _BaseFit(object):
-    """
-    Base Fitting Class.
-
-    Attributes
-    ----------
-    grid : (_BaseRadialGrid, CubicGrid)
-        Grid class that contains the grid points and integration methods on them.
-    density : ndarray
-        The true function evaluated on the grid points from `grid`.
-    model : (AtomicGaussianDensity, MolecularGaussianDensity)
-        The Gaussian basis model density. Located in `model.py`.
-    measure : Measure
-        The deviation measure between true density and model density.
-        See bfit.measure.py for examples of measures to use.
-
-    Methods
-    -------
-    goodness_of_fit() :
-        Given the parametersof the attribute `model`, computes various error measures to determine
-        the accuracy of the model versus the attribute `density`.
-
-    """
+class _BaseFit:
+    r"""Base Fitting Class."""
 
     def __init__(self, grid, density, model, measure, integral_dens=None):
         """
@@ -134,9 +49,9 @@ class _BaseFit(object):
         density : ndarray(N,)
             The true density evaluated on :math:`N` grid points.
         model : (AtomicGaussianDensity, MolecularGaussianDensity)
-            The Gaussian basis model density. Located in `model.py`.
+            The Gaussian basis model density. See `model.py`.
         measure : (SquaredDifference, KLDivergence)
-            The deviation measure between true density and model density. Located in `measure.py`
+            The deviation measure between true density and model density. See `measure.py`.
 
         """
         if np.any(density < 0.):
@@ -156,6 +71,26 @@ class _BaseFit(object):
         r"""Integration value of the density."""
         return self._integral_dens
 
+    @property
+    def grid(self):
+        r"""Grid object containing points and integration method."""
+        return self._grid
+
+    @property
+    def density(self):
+        r"""The true density evaluated on the grid points."""
+        return self._density
+
+    @property
+    def model(self):
+        r"""The Gaussian basis model density."""
+        return self._model
+
+    @property
+    def measure(self):
+        r"""The deviation measure between true density and model density."""
+        return self._measure
+
     def goodness_of_fit(self, coeffs, expons):
         r"""
         Compute various measures over the grid to determine the accuracy of the fitted model.
@@ -173,101 +108,49 @@ class _BaseFit(object):
 
         Returns
         -------
-        integral :
+        integral : float
             Integral of approximate model density, i.e. norm of approximate model density.
-        l_1 :
+        l_1 : float
             Integral of absolute difference between density and approximate model density.
             This is defined to be :math:`L_`(f, g) = \int |f(x) - g(x)| dx`.
-        l_infinity :
+        l_infinity : float
             The maximum absolute difference between density and approximate model density.
             This is defined to be :math:`L_\infty(f, g) = \max |f(x) - g(x)|`.
-        measure :
-            Integral of deviation measure between density and approximate model density.
+        least_squares : float
+            Square of the :math:`L_2` norm between density and approximate model density.
+            This is defined to be :math:`L_2^2(f, g) = \int (f(x) - g(x))^2 dx`.
+        kullback_leibler : float
+            Kullback-Leibler divergence between density and approximate model density.
+            This is defined to be :math:`KL(f, g) = \int f(x) \log\bigg(\frac{f(x)}{g(x)}\bigg) dx`.
 
         """
         # evaluate approximate model density
         approx = self.model.evaluate(coeffs, expons)
         # compute deviation measure on the grid
         value = self.measure.evaluate(self.density, approx, deriv=False)
+
         diff = np.abs(self.density - approx)
-        return [self.grid.integrate(approx),
-                self.grid.integrate(diff),
-                np.max(diff),
-                self.grid.integrate(value)]
+        return [
+            self.grid.integrate(approx),
+            self.grid.integrate(diff),
+            np.max(diff),
+            self.grid.integrate(diff**2.0),
+            # TODO: Once measure.py converts classess to functions, then update this.
+            self.grid.integrate(self.density * np.log(self.density / approx))
+        ]
 
 
 class KLDivergenceSCF(_BaseFit):
     r"""
-    Kullback-Leiber Divergence Self-Consistent Fitting.
+    Kullback-Leibler Divergence Self-Consistent Fitting.
 
-    Optimizes the coefficients and exponents of the Gaussian Model to a function using the
-    Kullback-Leibler divergence measure with the constraint that it is normalized.
-
-    Attributes
-    ----------
-    grid : (_BaseRadialGrid, CubicGrid)
-        Grid class that contains the grid points and integration methods on them.
-    density : ndarray(N,)
-        The true function evaluated on the grid points from `grid`.
-    model : (AtomicGaussianDensity, MolecularGaussianDensity)
-        The Gaussian basis model density. Located in `model.py`.
-    measure : (SquaredDifference, KLDivergence)
-        The deviation measure between true density and model density. Located in `measure.py`
-    norm : float
-        The integral of the attribute `density`.
-    lagrange_multiplier : float
-        Lagrange multiplier.
-
-    Methods
-    -------
-    run(): dict
-        Runs the optimizing algorithm for optimizing coefficients and exponents to a linear
-        combination of Gaussian functions.
-
-
-    Examples
-    --------
-    The goal is to fit a Gaussian density to some function.
-    def f(x) :
-        # Insert what it does here.
-        return ...
-
-    The first step is to define the grid object.
-    >> grid = CubicGrid(0.01, 0.99, 0.01)
-
-    Place the values of `f` on those grid points in an array.
-    >> density = f(grid.points)
-
-    Define the model, that you want to fit with.
-    >> model = AtomicGaussianDensity(grid.points, num_s=5, num_p=5, normalize=True)
-
-    Define which algorithm you want to optmize.
-    >> fit = KLDivergenceSCF(grid, density, model)
-
-    Optimize the coefficients and exponents but give an initial guess.
-    >> initc = [1.] * 10
-    >> inite = np.array([0.001, 0.01, 0.1, 1., 2., 5., 10., 50., 75., 100.])
-    >> result = fit.run(initc, inite)
-
-    Print out the results.
-    >> print("Optimized coefficients are: ", result["x"][0])
-    >> print("Optimized exponents are: ", result["x"][1])
-    >> print("Final performance measures are: ", result["performance"][-1])
-    >> print("Was it successful? ", result["success"])
-
-    Notes
-    -----
-    - The algorithm uses masked value for floating point precision. This is due to the division found
-    in the Kullback-Leibler formula. It is recommended to use `np.float64` or `np.float128` when
-    storing the arrays. A higher Mask value will work as well but may cause poor precision.
-    Alternatively, a well-chosen grid and/or initial guesses will avoid overflow/underflow
-    floating-point issues.
-
-    References
-    ----------
-    [1] BFit: Information-Theoretic Approach to Basis-Set Fitting of Electron Densities
-            Alireza Tehrani, Farnaz Heidar-Zadeh, James S. M. Anderson, Toon Verstraelen, and
-             TODO Add more authors if needed ... Paul W. Ayers.
+    This class optimizes the following objective function using self-consistent fitting method
+    .. math::
+        \min_{\{c_i\}, \{\alpha\}} f(x) \log \bigg(\frac{f(x)}{\sum c_i b_k(x)} \bigg)dx + \lambda(N - \sum c_i)
+    where,
+        :math:`f` is the true density to be fitted,
+        :math:`c_i` is the coefficients of the model that sum to a constant number :math:`N`,
+        :math:`\alpha_i` is the exponent of the basis function :math:`b_k`.
 
     """
 
@@ -301,12 +184,22 @@ class KLDivergenceSCF(_BaseFit):
 
     @property
     def lagrange_multiplier(self):
-        """Obtain the lagrange multiplier."""
+        """Lagrange multiplier of Kullback-Leibler optimization problem."""
         return self._lm
+
+    @property
+    def norm(self):
+        r"""
+        The integral of the true density attribute `density`.
+
+        This is precisely: :math:`\int_{\mathbb{R}} f(x) dx,` where :math:`f` is
+        the density to be fitted.
+        """
+        return self._norm
 
     def _update_params(self, coeffs, expons, update_coeffs=True, update_expons=False):
         r"""
-        Compute updated coefficients & exponents of Gaussian basis functions.
+        Update coefficients & exponents of the Gaussian density model.
 
         Parameters
         ----------
@@ -316,15 +209,19 @@ class KLDivergenceSCF(_BaseFit):
             The initial exponents of Gaussian basis functions.
         update_coeffs : bool, optional
             Whether to optimize coefficients of Gaussian basis functions.
+            Default is true.
         update_expons : bool, optional
             Whether to optimize exponents of Gaussian basis functions.
+            Default is true.
 
         Returns
         -------
         coeffs : ndarray
-            The updated coefficients of Gaussian basis functions. Only returned if `deriv=True`.
+            The updated coefficients of Gaussian basis functions. Only returned if
+            `update_coeffs=True`.
         expons : ndarray
-            The updated exponents of Gaussian basis functions. Only returned if `deriv=True`.
+            The updated exponents of Gaussian basis functions. Only returned if
+            `update_expones=True`.
 
         """
         if not update_coeffs and not update_expons:
@@ -368,19 +265,21 @@ class KLDivergenceSCF(_BaseFit):
             The initial exponents of Gaussian basis functions.
         opt_coeffs : bool, optional
             Whether to optimize coefficients of Gaussian basis functions.
+            Default is true.
         opt_expons : bool, optional
             Whether to optimize exponents of Gaussian basis functions.
+            Default is true.
         maxiter : int, optional
             Maximum number of iterations.
         c_threshold : float
-            The convergence threshold for absolute change in coefficients. Default is 1e-6.
+            The termination threshold for absolute change in coefficients. Default is 1e-6.
         e_threshold : float
-            The convergence threshold for absolute change in exponents. Default is 1e-6.
+            The termination threshold for absolute change in exponents. Default is 1e-6.
         d_threshold : float
-            The convergence threshold for absolute change in divergence value. Default is 1e-6.
+            The termination threshold for absolute change in divergence value. Default is 1e-6.
         disp : bool
-            If true, then at each iteration the integral, :math:`L_1`, :math:`L_\infty` and
-            Kullback-Leibler measure is printed. Default is False.
+            If true, then at each iteration the error measures, :math:`L_1`, :math:`L_\infty`
+            and Kullback-Leibler measure is printed. Default is False.
 
         Returns
         -------
@@ -468,64 +367,13 @@ class KLDivergenceSCF(_BaseFit):
         return results
 
 
-class GaussianBasisFit(_BaseFit):
+class ScipyFit(_BaseFit):
     r"""
-    Optimizes either least-squares or Kullback-Leibler of Gaussian funcs using `Scipy.optimize`.
+    Optimizes either least-squares or Kullback-Leibler of Gaussian functions using `Scipy.optimize`.
 
     The Gaussian functions can be constrained to have their integral be a fixed value.
         Although it is not recommended. The coefficients and exponents are always bounded to be
-         positive.
-
-    Attributes
-    ----------
-    grid : (_BaseRadialGrid, CubicGrid)
-        Grid class that contains the grid points and integration methods on them.
-    density : ndarray(N,)
-        The true function evaluated on the grid points from `grid`.
-    model : (AtomicGaussianDensity, MolecularGaussianDensity)
-        The Gaussian basis model density. Located in `model.py`.
-    measure : str, optional
-        The deviation measure between true density and model density that is minimized.
-        Can be either be "KL" (Kullback-Leibler, default) or "LS" (least-squares).
-    norm : float
-        The integration of the density over the grid.
-
-    Methods
-    -------
-    run() :
-    func() :
-    evaluate_model() :
-
-    Examples
-    --------
-    The goal is to fit a Gaussian density to some function.
-    def f(x) :
-        # Insert what it does here.
-        return ...
-
-    The first step is to define the grid object.
-    >> grid = CubicGrid(0.01, 0.99, 0.01)
-
-    Place the values of `f` on those grid points in an array.
-    >> density = f(grid.points)
-
-    Define the model, that you want to fit with.
-    >> model = AtomicGaussianDensity(grid.points, num_s=5, num_p=5, normalize=True)
-
-    Define which measure (least-squares) and "scipy.optimize" algorithm to use.
-    >> fit = GaussianBasisFit(grid, density, model, measure="LS", method="SLSQP")
-
-    Optimize the coefficients and exponents but give an initial guess.
-    >> initc = [1.] * 10
-    >> inite = np.array([0.001, 0.01, 0.1, 1., 2., 5., 10., 50., 75., 100.])
-    >> result = fit.run(initc, inite)
-
-    Print out the results.
-    >> print("Optimized coefficients are: ", result["x"][0])
-    >> print("Optimized exponents are: ", result["x"][1])
-    >> print("Final performance measures are: ", result["performance"])
-    >> print("Was it successful? ", result["success"])
-    >> print("Why it terminated? ", result["message"])
+        positive.
 
     Notes
     -----
@@ -545,7 +393,7 @@ class GaussianBasisFit(_BaseFit):
     def __init__(self, grid, density, model, measure=KLDivergence, method="SLSQP", weights=None,
                  integral_dens=None):
         r"""
-        Construct the GaussianBasisFit object.
+        Construct the ScipyFit object.
 
         Parameters
         ----------
@@ -563,7 +411,7 @@ class GaussianBasisFit(_BaseFit):
             See "scipy.optimize.minimize" for options.
         weights : ndarray, optional
             The weights of objective function at each point. If `None`, 1.0 is used.
-        integral_dens : float, optional
+        integral_dens : float, optional 
             If this is provided, then the model is constrained to integrate to this value.
             If not, then the model is constrained to the numerical integration of the
             density. Useful when one knows the actual integration value of the density.
@@ -583,7 +431,7 @@ class GaussianBasisFit(_BaseFit):
         if weights is None:
             weights = np.ones(len(density))
         self.weights = weights
-        super(GaussianBasisFit, self).__init__(grid, density, model, measure, integral_dens)
+        super(ScipyFit, self).__init__(grid, density, model, measure, integral_dens)
 
     def run(self, c0, e0, opt_coeffs=True, opt_expons=True, maxiter=1000, tol=1.e-14, disp=False,
             with_constraint=True):
@@ -728,7 +576,7 @@ class GaussianBasisFit(_BaseFit):
 
         Returns
         -------
-        float, ndarray :
+        (float, ndarray) :
             The objective function value and its derivative wrt to coefficients and exponents.
 
         """

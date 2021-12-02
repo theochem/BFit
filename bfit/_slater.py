@@ -20,14 +20,6 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-r"""Module responsible for reading and storing information from '.slater' files.
-
-Functions
----------
-load_slater_wfn : Function for reading and returning information from '.slater' files.
-
-"""
-
 import os
 import re
 import numpy as np
@@ -37,17 +29,16 @@ __all__ = ["load_slater_wfn"]
 
 def load_slater_wfn(element, anion=False, cation=False):
     """
-    Return the data recorded in the atomic Slater wave-function file as a dictionary.
+    Return the data recorded in the atomic Slater '.slater' files wave-function file as a dictionary.
 
     Parameters
     ----------
-    file_name : str
-        The path to the Slater atomic file.
+    element : str
+        The atom/element.
     anion : bool
         If true, then the anion of element is used.
     cation : bool
         If true, then the cation of element is used.
-
     """
     # Heavy atoms from atom cs to lr.
     heavy_atoms = ["cs", "ba", "la", "ce", "pr", "nd", "pm", "sm", "eu", "gd", "tb", "dy", "ho",
@@ -67,8 +58,6 @@ def load_slater_wfn(element, anion=False, cation=False):
                     "v", "xe", "y", "zn", "zr"]
 
     is_heavy_element = element.lower() in heavy_atoms
-    if (anion or cation) and is_heavy_element:
-        raise ValueError("Both Anion & Cation Slater File for element %s does not exist." % element)
     if anion:
         if element.lower() in anion_atoms:
             file_path = "/data/anion/%s.an" % element.lower()
@@ -84,7 +73,7 @@ def load_slater_wfn(element, anion=False, cation=False):
 
     file_name = os.path.join(os.path.dirname(__file__) + file_path)
 
-    def get_number_of_electrons_per_orbital(configuration):
+    def _get_number_of_electrons_per_orbital(configuration):
         """
         Get the Occupation Number for all orbitals of an _element returing an dictionary.
 
@@ -141,7 +130,7 @@ def load_slater_wfn(element, anion=False, cation=False):
 
         return {key: value for key, value in out.items() if value != 0}
 
-    def get_column(t_orbital):
+    def _get_column(t_orbital):
         """
         Correct the error in order to retrieve the correct column.
 
@@ -170,7 +159,7 @@ def load_slater_wfn(element, anion=False, cation=False):
         else:
             raise ValueError("Did not recognize orbital %s " % t_orbital)
 
-    def configuration_exact_for_heavy_elements(configuration):
+    def _configuration_exact_for_heavy_elements(configuration):
         r"""later file for heavy elements does not contain the configuration in right format."""
         true_configuration = ""
         if "[XE]" in configuration:
@@ -191,7 +180,7 @@ def load_slater_wfn(element, anion=False, cation=False):
         line = f.readline()
         configuration = line.split()[1].replace(",", "")
         if is_heavy_element:
-            configuration = configuration_exact_for_heavy_elements(configuration)
+            configuration = _configuration_exact_for_heavy_elements(configuration)
 
         next_line = f.readline()
         # Sometimes there are blank lin es.
@@ -242,7 +231,7 @@ def load_slater_wfn(element, anion=False, cation=False):
                     orbitals_basis[subshell] += [list_words[0]]
 
                     for x in list_of_orbitals:
-                        orbitals_coeff[x] += [float(list_words[get_column(x)])]
+                        orbitals_coeff[x] += [float(list_words[_get_column(x)])]
                     line = f.readline()
             else:
                 line = f.readline()
@@ -259,7 +248,7 @@ def load_slater_wfn(element, anion=False, cation=False):
             'orbitals_coeff':
                 {key: np.asarray(value).reshape(len(value), 1)
                  for key, value in orbitals_coeff.items() if value != []},
-            'orbitals_occupation': np.array([get_number_of_electrons_per_orbital(configuration)[k]
+            'orbitals_occupation': np.array([_get_number_of_electrons_per_orbital(configuration)[k]
                                              for k in orbitals])[:, None],
             'basis_numbers':
                 {key: np.asarray([[int(x[0])] for x in value])

@@ -84,6 +84,7 @@ class SquaredDifference(Measure):
             The model density evaluated on the grid points.
         deriv : bool, optional
             Whether to compute the derivative of squared difference w.r.t. model density.
+            Default is false.
 
         Returns
         -------
@@ -91,7 +92,12 @@ class SquaredDifference(Measure):
             The squared difference between density & model on the grid points.
         dm : ndarray(N,)
             The derivative of squared difference w.r.t. model density evaluated on the
-            grid points. Only returned if `deriv=True`.
+            grid points, only returned if `deriv=True`.
+
+        Notes
+        -----
+        - This class returns the squared difference at each point in the domain.
+        One would need to integrate this to get the desired measure.
 
         Notes
         -----
@@ -161,7 +167,8 @@ class KLDivergence(Measure):
         model : ndarray(N,)
             The model density evaluated on the grid points.
         deriv : bool, optional
-            Whether to compute the derivative of divergence w.r.t. model density.
+            Whether to return the derivative of divergence w.r.t. model density, as well.
+            Default is false.
 
         Returns
         -------
@@ -170,6 +177,11 @@ class KLDivergence(Measure):
         dm : ndarray(N,)
             The derivative of divergence w.r.t. model density evaluated on the grid points.
             Only returned if `deriv=True`.
+
+        Raises
+        ------
+        ValueError :
+            If the model density is negative, then the integrand is un-defined.
 
         Notes
         -----
