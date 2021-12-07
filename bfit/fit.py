@@ -57,6 +57,10 @@ class _BaseFit:
         if np.any(density < 0.):
             raise ValueError("Density should be positive.")
         self._grid = grid
+        if not (hasattr(self.grid, "points")):
+            raise AttributeError(f"Grid class {type(self.grid)} should contain attribute 'points'.")
+        if not (hasattr(self.grid, 'integrate') and callable(getattr(self.grid, 'integrate'))):
+            raise AttributeError(f"Grid class {type(self.grid)} should contain method called 'integrate'.")
         self._density = density
         self._model = model
         self._measure = measure
