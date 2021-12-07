@@ -44,14 +44,13 @@ CubicGrid -
 
 """
 
-from grid.onedgrid import OneDGrid
 import numpy as np
 
 
 __all__ = ["ClenshawRadialGrid", "UniformRadialGrid", "CubicGrid"]
 
 
-class _BaseRadialGrid(OneDGrid):
+class _BaseRadialGrid:
     r"""
     Radial Grid Base Class.
 
