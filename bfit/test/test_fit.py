@@ -71,6 +71,18 @@ def test_assertion_raises():
     assert_raises(ValueError, gb.run, [], [], False, False)
     assert_raises(ValueError, gb.evaluate_model, [], ("not fixed", 2))
 
+    # Test giving a grid class with no points returns error
+    class GridNoPoints:
+        def integrate(self):
+            pass
+    assert_raises(AttributeError, ScipyFit, GridNoPoints(), e, KLDivergence())
+
+    # Test giving grid class with no integrate method returns error.
+    class GridNoIntegrate:
+        def __init__(self):
+            self.points = g.points
+    assert_raises(AttributeError, ScipyFit, GridNoIntegrate(), e, KLDivergence())
+
 
 def test_run_normalized_1s_gaussian():
     # density is normalized 1s orbital with exponent=1.0
