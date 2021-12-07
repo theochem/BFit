@@ -61,15 +61,15 @@ setup(
     author="QC-Devs Community",
     author_email="qcdevs@gmail.com",
     package_dir={"bfit": "bfit"},
-    packages=["bfit", "bfit.test"],
-    include_package_data=True,
+    packages=["bfit", "bfit.test", "bfit.data"],
     install_requires=[
         "numpy>=1.18.5", "scipy>=1.5.0", "pytest>=5.4.3", "sphinx>=2.3.0"
     ],
     package_data={
         # If any package contains *.slater files, include them:
-        '': ['*.slater', '*.nwchem']
+        'bfit': ['data/*/*.slater', 'data/*/*.cat', 'data/*/*.an', 'data/*/*.nwchem']
     },
+    include_package_data=True,
     classifiers=[
          'Development Status :: 0 - Released',
         'Environment :: Console',
