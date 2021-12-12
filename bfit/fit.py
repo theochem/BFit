@@ -165,6 +165,7 @@ class _BaseFit:
         kullback_leibler : float
             Kullback-Leibler divergence between density and approximate model density.
             This is defined to be :math:`KL(f, g) = \int f(x) \log\bigg(\frac{f(x)}{g(x)}\bigg) dx`.
+            If :math:`g` is negative, then this returns infinity.
 
         """
         # evaluate approximate model density
