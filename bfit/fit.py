@@ -169,13 +169,19 @@ class _BaseFit:
         """
         # evaluate approximate model density
         approx = self.model.evaluate(coeffs, expons)
+        if np.any(approx < 0.0):
+            # Return infinity, if the model density is negative.
+            kl = np.inf
+        else:
+            kl = self.integrate(self.density * np.log(self.density / approx))
+
         diff = np.abs(self.density - approx)
         return [
             self.integrate(approx),
             self.integrate(diff),
             np.max(diff),
             self.integrate(diff ** 2.0),
-            self.integrate(self.density * np.log(self.density / approx))
+            kl
         ]
 
 
