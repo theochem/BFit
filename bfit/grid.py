@@ -31,14 +31,7 @@ __all__ = ["ClenshawRadialGrid", "UniformRadialGrid", "CubicGrid"]
 class _BaseRadialGrid:
     r"""Radial Grid Base Class."""
 
-    Methods
-    -------
-    integrate(arr)
-        Integrate array `arr` defined over "point" array using trapezoidal integration.
-
-    """
-
-    def __init__(self, points, spherical=True):
+    def __init__(self, points):
         """
         Construct BaseRadialGrid object.
 
@@ -46,30 +39,22 @@ class _BaseRadialGrid:
         ----------
         points : ndarray, (N,)
             The radial grid points.
-        spherical : bool, optional
-            If `True`, the spherical integration of function is computed.
 
         """
         if not isinstance(points, np.ndarray) or points.ndim != 1:
             raise TypeError("Argument points should be a 1D numpy array.")
         self._points = np.ravel(points)
-        self._spherical = spherical
 
     @property
     def points(self):
         """Radial grid points."""
         return self._points
 
-    @property
-    def spherical(self):
-        """Whether to perform spherical integration."""
-        return self._spherical
-
     def __len__(self):
         """Return number of grid points."""
         return self._points.shape[0]
 
-    def integrate(self, arr, force_no_spherical=False):
+    def integrate(self, arr):
         r"""Compute trapezoidal integration of a function evaluated on the radial grid points.
 
         :math:`\int f(r) dr`, where :math:'f(r)' is the integrand.
@@ -78,9 +63,6 @@ class _BaseRadialGrid:
         ----------
         arr : ndarray
             The integrand evaluated on the radial grid points.
-        force_no_spherical : bool
-            This forces spherical integration to not occur even if spherical coordinates is
-            True, ie the class attribute `_spherical` is True.
 
         Returns
         -------
@@ -90,10 +72,7 @@ class _BaseRadialGrid:
         """
         if arr.shape != self.points.shape:
             raise ValueError("The argument arr should have {0} shape!".format(self.points.shape))
-        if self._spherical and not force_no_spherical:
-            value = 4. * np.pi * np.trapz(y=self.points**2 * arr, x=self.points)
-        else:
-            value = np.trapz(y=arr, x=self.points)
+        value = np.trapz(y=arr, x=self.points)
         return value
 
 
@@ -104,7 +83,7 @@ class UniformRadialGrid(_BaseRadialGrid):
     The grid points are equally-spaced in :math:`[0, max_points)` interval.
     """
 
-    def __init__(self, num_pts, min_radii=0., max_radii=100., spherical=True):
+    def __init__(self, num_pts, min_radii=0., max_radii=100.):
         """
         Construct the UniformRadialGrid object.
 
@@ -116,8 +95,6 @@ class UniformRadialGrid(_BaseRadialGrid):
             The smallest radial grid point.
         max_radii : float, optional
             The largest radial grid point.
-        spherical : bool, optional
-            If `True`, the spherical integration of function is computed.
 
         """
         if not isinstance(num_pts, int) or num_pts <= 0:
@@ -131,7 +108,7 @@ class UniformRadialGrid(_BaseRadialGrid):
 
         # compute points
         points = np.linspace(start=min_radii, stop=max_radii, num=num_pts, dtype=np.float128)
-        super(UniformRadialGrid, self).__init__(points, spherical)
+        super(UniformRadialGrid, self).__init__(points)
 
 
 class ClenshawRadialGrid(_BaseRadialGrid):
@@ -151,7 +128,7 @@ class ClenshawRadialGrid(_BaseRadialGrid):
 
     """
 
-    def __init__(self, atomic_number, num_core_pts, num_diffuse_pts, extra_pts=None, spherical=True):
+    def __init__(self, atomic_number, num_core_pts, num_diffuse_pts, extra_pts=None):
         r"""
         Construct ClenshawRadialGrid grid object.
 
@@ -165,8 +142,6 @@ class ClenshawRadialGrid(_BaseRadialGrid):
             The number of points far from the origin/core region.
         extra_pts : list
             Additional points to be added to the grid, commonly points far away from origin.
-        spherical : bool, optional
-            If `True`, the spherical integration of function is computed.
 
         """
         if not isinstance(atomic_number, int) or atomic_number <= 0:
@@ -191,7 +166,7 @@ class ClenshawRadialGrid(_BaseRadialGrid):
         else:
             points = np.concatenate((core_points, diff_points[1:]))
 
-        super(ClenshawRadialGrid, self).__init__(np.sort(points), spherical)
+        super(ClenshawRadialGrid, self).__init__(np.sort(points))
 
     @property
     def atomic_number(self):
