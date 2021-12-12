@@ -20,29 +20,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-"""
-Grid Module - Model the grid and integration methods of the model and true probability distributions.
-
-Classes
--------
-There are three classes:
-
-ClenshawRadialGrid -
-    Models a One-dimensional grid via Clenshaw-Curtis pattern.
-    Integration is done via 'np.trapz' method (spherical coordinates, optional).
-    Intended for Atomic fitting.
-
-UniformRadialGrid -
-    Uniform (equal spacing), one-dimensional grid.
-    Integration is done via 'np.trapz' method (spherical coordinates, optional).
-    Intended for Atomic fitting.
-
-CubicGrid -
-    Uniform (equal spacing), three-dimensional grid.
-    Integration is done via Riemannian sums.
-    Intended for Molecular fitting.
-
-"""
+"""Grid Module For Integration"""
 
 import numpy as np
 
@@ -51,15 +29,7 @@ __all__ = ["ClenshawRadialGrid", "UniformRadialGrid", "CubicGrid"]
 
 
 class _BaseRadialGrid:
-    r"""
-    Radial Grid Base Class.
-
-    Attributes
-    ----------
-    points : ndarray, (N,)
-        The radial grid points of a one-dimensional grid with N points.
-    spherical : bool
-        If true, then trapezoidal integration is done spherically (ie with a factor of :math:`4 \pi r^2`).
+    r"""Radial Grid Base Class."""
 
     Methods
     -------
@@ -102,10 +72,7 @@ class _BaseRadialGrid:
     def integrate(self, arr, force_no_spherical=False):
         r"""Compute trapezoidal integration of a function evaluated on the radial grid points.
 
-        .. math:: \int p * f(r) dr
-
-        where :math:'f(r)' is the integrand and :math:`p=4 \times \pi` if `spherical=True`,
-        otherwise :math:`p=1.0`.
+        :math:`\int f(r) dr`, where :math:'f(r)' is the integrand.
 
         Parameters
         ----------
@@ -131,22 +98,10 @@ class _BaseRadialGrid:
 
 
 class UniformRadialGrid(_BaseRadialGrid):
-    r"""Uniformly Distributed Radial Grid Class.
+    r"""
+    Uniformly Distributed Radial Grid Class.
 
     The grid points are equally-spaced in :math:`[0, max_points)` interval.
-
-    Attributes
-    ----------
-    points : ndarray, (N,)
-        The radial grid points of a one-dimensional grid with N points.
-    spherical : bool
-        If true, then trapezoidal integration is done spherically (ie with a factor of :math:`4 \pi r^2`).
-
-    Methods
-    -------
-    integrate(arr)
-        Integrate array `arr` defined over "point" array using trapezoidal integration.
-
     """
 
     def __init__(self, num_pts, min_radii=0., max_radii=100., spherical=True):
@@ -193,20 +148,6 @@ class ClenshawRadialGrid(_BaseRadialGrid):
             r_p = \frac{1}{2Z} \bigg(1 - \cos\bigg(\frac{\pi p}{400} \bigg)\bigg)  & p = 0, 1, \cdots, m - 1 \\
             r_p = 25 \bigg(1 - \cos\bigg(\frac{\pi p}{600} \bigg)\bigg) & p = 0, 1, \cdocts, n - 1\\
         \end{eqnarray}
-
-    Attributes
-    ----------
-    points : ndarray, (N,)
-        The radial grid points of a one-dimensional grid with N points.
-    atomic_number :
-        Return the atomic number.
-    spherical : bool
-        If true, then trapezoidal integration is done spherically (ie with a factor of :math:`4 \pi r^2`).
-
-    Methods
-    -------
-    integrate(arr)
-        Integrate array `arr` defined over "point" array using trapezoidal integration.
 
     """
 
@@ -295,22 +236,7 @@ class ClenshawRadialGrid(_BaseRadialGrid):
 
 
 class CubicGrid:
-    r"""
-    Equally-Spaced 3D Cubic Grid Class.
-
-    Attributes
-    ----------
-    points : ndarray, (N, 3)
-        The three-dimensional array containing the `N` grid points that are uniform.
-    step : float
-        The positive number representing the step-size of any two consequent grid points.
-
-    Methods
-    -------
-    integrate(arr) :
-        Integrate an array `arr` defined over the `points` using Riemannian sum.
-
-    """
+    r"""Equally-Spaced 3D Cubic Grid Class."""
 
     def __init__(self, origin, axes, shape):
         """
@@ -360,6 +286,7 @@ class CubicGrid:
     ):
         r"""
         Construct a uniform grid given the molecular pseudo-numbers and coordinates.
+
         Parameters
         ----------
         atcorenums : np.ndarray, shape (M,)
