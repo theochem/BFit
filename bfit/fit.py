@@ -37,7 +37,7 @@ __all__ = ["KLDivergenceSCF", "ScipyFit"]
 class _BaseFit:
     r"""Base Fitting Class."""
 
-    def __init__(self, grid, density, model, measure, integral_dens=None):
+    def __init__(self, grid, density, model, measure, integral_dens=None, spherical=False):
         """
         Construct the base fitting class.
 
@@ -52,6 +52,13 @@ class _BaseFit:
             The Gaussian basis model density. See `model.py`.
         measure : (SquaredDifference, KLDivergence)
             The deviation measure between true density and model density. See `measure.py`.
+        integral_dens : float, optional
+            If this is provided, then the model is constrained to integrate to this value.
+            If not, then the model is constrained to the numerical integration of the
+            density. Useful when one knows the actual integration value of the density.
+        spherical : bool
+            Whether to perform spherical integration by adding :math:`4 \pi r^2` term
+            to the integrand. Only used when grid is one-dimensional and positive (radial grid).
 
         """
         if np.any(density < 0.):
@@ -61,12 +68,17 @@ class _BaseFit:
             raise AttributeError(f"Grid class {type(self.grid)} should contain attribute 'points'.")
         if not (hasattr(self.grid, 'integrate') and callable(getattr(self.grid, 'integrate'))):
             raise AttributeError(f"Grid class {type(self.grid)} should contain method called 'integrate'.")
+        if self.grid.points.ndim != 1 and spherical:
+            raise ValueError(
+                f"Spherical is true only when grid points {self.grid.points.ndim} are one-dimensional."
+            )
         self._density = density
         self._model = model
         self._measure = measure
+        self._spherical = spherical
         # compute norm of density
         if integral_dens is None:
-            self._integral_dens = grid.integrate(density)
+            self._integral_dens = self.integrate(density)
         else:
             self._integral_dens = integral_dens
 
@@ -94,6 +106,33 @@ class _BaseFit:
     def integral_dens(self):
         r"""Integration value of the density."""
         return self._integral_dens
+
+    @property
+    def spherical(self):
+        """Whether to perform spherical integration."""
+        return self._spherical
+
+    def integrate(self, integrand):
+        r"""
+        Integrate the integrand.
+
+        Parameters
+        ----------
+        integrand : ndarray(N,)
+            The integrand :math:`f(x)` being integrated defined on :math:`N` points.
+            If `spherical` attribute is true, then the radial component is
+            integrated in spherical coordinates.
+
+        Returns
+        -------
+        float :
+            Returns the integration :math:`\int f(x) dx` or if spherical
+            is true then returns :math:`\int_0^\infty f(r) 4 \pi r^2 dr`.
+
+        """
+        if self.spherical:
+            return self.grid.integrate(integrand * 4.0 * np.pi * self.grid.points**2.0)
+        return self.grid.integrate(integrand)
 
     def goodness_of_fit(self, coeffs, expons):
         r"""
@@ -132,12 +171,11 @@ class _BaseFit:
         approx = self.model.evaluate(coeffs, expons)
         diff = np.abs(self.density - approx)
         return [
-            self.grid.integrate(approx),
-            self.grid.integrate(diff),
+            self.integrate(approx),
+            self.integrate(diff),
             np.max(diff),
-            self.grid.integrate(diff**2.0),
-            # TODO: Once measure.py converts classess to functions, then update this.
-            self.grid.integrate(self.density * np.log(self.density / approx))
+            self.integrate(diff ** 2.0),
+            self.integrate(self.density * np.log(self.density / approx))
         ]
 
 
@@ -155,7 +193,7 @@ class KLDivergenceSCF(_BaseFit):
 
     """
 
-    def __init__(self, grid, density, model, mask_value=0., integral_dens=None):
+    def __init__(self, grid, density, model, mask_value=0., integral_dens=None, spherical=False):
         r"""
         Construct the KLDivergenceSCF class.
 
@@ -173,13 +211,16 @@ class KLDivergenceSCF(_BaseFit):
             If this is provided, then the model is constrained to integrate to this value.
             If not, then the model is constrained to the numerical integration of the
             density. Useful when one knows the actual integration value of the density.
+        spherical : bool
+            Whether to perform spherical integration by adding :math:`4 \pi r^2` term
+            to the integrand. Only used when grid is one-dimensional and positive (radial grid).
 
         """
         # initialize KL deviation measure
         measure = KLDivergence(mask_value=mask_value)
-        super(KLDivergenceSCF, self).__init__(grid, density, model, measure, integral_dens)
+        super(KLDivergenceSCF, self).__init__(grid, density, model, measure, integral_dens, spherical)
         # compute lagrange multiplier
-        self._lm = self.grid.integrate(self.density) / self.integral_dens
+        self._lm = self.integrate(self.density) / self.integral_dens
         if self._lm == 0. or np.isnan(self._lm):
             raise RuntimeError("Lagrange multiplier cannot be {0}.".format(self._lm))
 
@@ -225,7 +266,7 @@ class KLDivergenceSCF(_BaseFit):
         avrg1, avrg2 = np.zeros(self.model.nbasis), np.zeros(self.model.nbasis)
         for index in range(self.model.nbasis):
             integrand = -dk * dm[:, index]
-            avrg1[index] = self.grid.integrate(integrand)
+            avrg1[index] = self.integrate(integrand)
             if update_expons:
                 if self.model.natoms == 1:
                     # case of AtomicGaussianDensity or MolecularGaussianDensity model with 1 atom
@@ -234,7 +275,7 @@ class KLDivergenceSCF(_BaseFit):
                     # case of MolecularGaussianDensity model with more than 1 atom
                     center_index = self.model.assign_basis_to_center(index)
                     radii = self.model.radii[center_index]
-                avrg2[index] = self.grid.integrate(integrand * radii**2)
+                avrg2[index] = self.integrate(integrand * radii**2)
 
         # compute updated coeffs & expons
         if update_coeffs:
@@ -382,7 +423,7 @@ class ScipyFit(_BaseFit):
     """
 
     def __init__(self, grid, density, model, measure=KLDivergence, method="SLSQP", weights=None,
-                 integral_dens=None):
+                 integral_dens=None, spherical=False):
         r"""
         Construct the ScipyFit object.
 
@@ -406,6 +447,9 @@ class ScipyFit(_BaseFit):
             If this is provided, then the model is constrained to integrate to this value.
             If not, then the model is constrained to the numerical integration of the
             density. Useful when one knows the actual integration value of the density.
+        spherical : bool
+            Whether to perform spherical integration by adding :math:`4 \pi r^2` term
+            to the integrand. Only used when grid is one-dimensional and positive (radial grid).
 
         """
         if np.any(abs(grid.points - model.points) > 1.e-12):
@@ -422,7 +466,7 @@ class ScipyFit(_BaseFit):
         if weights is None:
             weights = np.ones(len(density))
         self.weights = weights
-        super(ScipyFit, self).__init__(grid, density, model, measure, integral_dens)
+        super(ScipyFit, self).__init__(grid, density, model, measure, integral_dens, spherical)
 
     def run(self, c0, e0, opt_coeffs=True, opt_expons=True, maxiter=1000, tol=1.e-14, disp=False,
             with_constraint=True):
@@ -576,10 +620,10 @@ class ScipyFit(_BaseFit):
         # compute KL divergence
         k, dk = self.measure.evaluate(self.density, m, deriv=True)
         # compute objective function & its derivative
-        obj = self.grid.integrate(self.weights * k)
+        obj = self.integrate(self.weights * k)
         d_obj = np.zeros_like(x)
         for index in range(len(x)):
-            d_obj[index] = self.grid.integrate(self.weights * dk * dm[:, index])
+            d_obj[index] = self.integrate(self.weights * dk * dm[:, index])
         return obj, d_obj
 
     def const_norm(self, x, *args):
@@ -601,7 +645,7 @@ class ScipyFit(_BaseFit):
         """
         # compute linear combination of gaussian basis functions
         m, _ = self.evaluate_model(x, *args)
-        cons = self.integral_dens - self.grid.integrate(m)
+        cons = self.integral_dens - self.integrate(m)
         return cons
 
     def evaluate_model(self, x, *args):
