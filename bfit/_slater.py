@@ -183,18 +183,25 @@ def load_slater_wfn(element, anion=False, cation=False):
             configuration = _configuration_exact_for_heavy_elements(configuration)
 
         next_line = f.readline()
-        # Sometimes there are blank lin es.
+        # Sometimes there are blank lines.
         while len(next_line.strip()) == 0:
             next_line = f.readline()
-
         if is_heavy_element:
             # Heavy element slater files has extra redundant information of 5 lines.
             for i in range(0, 6):
-                f.readline()
+                next_line = f.readline()
 
-        next_line = f.readline()
-        energy = [float(next_line.split()[2])] + \
-                 [float(x) for x in (re.findall(r"[= -]\d+.\d+", f.readline()))[:-1]]
+        # Get energy from "E=..." line
+        split_energy_line = next_line.split("=")
+        if not split_energy_line[0].strip() == "E":
+            raise RuntimeError("Parsing error of energy term 'E='.")
+        energy = float(split_energy_line[1])
+
+        # Split the kinetic, potential energy.
+        split_energy_line = re.findall(r"[= -]\d+.\d+", f.readline())
+        assert len(split_energy_line) == 3
+        kinetic_energy = float(split_energy_line[0])
+        potential_energy = float(split_energy_line[1])
 
         orbitals = []
         orbitals_basis = {'S': [], 'P': [], 'D': [], "F": []}
@@ -204,6 +211,8 @@ def load_slater_wfn(element, anion=False, cation=False):
         orbitals_coeff = {}
 
         line = f.readline()
+        while line.strip() == "":
+            line = f.readline()
         while line.strip() != "":
             # If line has ___S___ or P or D where _ = " ".
             if re.search(r'  [S|P|D|F]  ', line):
@@ -237,7 +246,9 @@ def load_slater_wfn(element, anion=False, cation=False):
                 line = f.readline()
 
     data = {'configuration': configuration,
-            'energy': energy,
+            "energy": energy,
+            'kinetic_energy': kinetic_energy,
+            'potential_energy': potential_energy,
             'orbitals': orbitals,
             'orbitals_energy': np.array(orbitals_energy)[:, None],
             'orbitals_cusp': np.array(orbitals_cusp)[:, None],
