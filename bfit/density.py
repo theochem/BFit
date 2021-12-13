@@ -75,6 +75,16 @@ class SlaterAtoms:
         return self._energy
 
     @property
+    def kinetic_energy(self):
+        r"""Kinetic energy of atom."""
+        return self._kinetic_energy
+
+    @property
+    def potential_energy(self):
+        r"""Potential energy of atom."""
+        return self._potential_energy
+
+    @property
     def configuration(self):
         r"""
         The electron configuration of the element.
