@@ -97,7 +97,7 @@ def test_run_normalized_1s_gaussian():
     assert_almost_equal(np.array([1.]), res["coeffs"], decimal=8)
     assert_almost_equal(np.array([1.]), res["exps"], decimal=8)
     # check value of optimized objective function & fitness measure
-    assert_almost_equal(0., res["fun"][-1], decimal=10)
+    assert_almost_equal(0., res["fun"][-1], decimal=8)
     assert_almost_equal(1., res["performance"][-1, 0], decimal=8)
     assert_almost_equal(0., res["performance"][-1, 1:], decimal=8)
 
@@ -107,7 +107,7 @@ def test_run_normalized_1s_gaussian():
     assert_almost_equal(np.array([1.]), res["coeffs"], decimal=8)
     assert_almost_equal(np.array([1.]), res["exps"], decimal=8)
     # check value of optimized objective function & fitness measure
-    assert_almost_equal(0., res["fun"][-1], decimal=10)
+    assert_almost_equal(0., res["fun"][-1], decimal=8)
     assert_almost_equal(1., res["performance"][-1, 0], decimal=8)
     assert_almost_equal(0., res["performance"][-1, 1:], decimal=8)
 
@@ -117,7 +117,7 @@ def test_run_normalized_1s_gaussian():
     assert_almost_equal(np.array([1.]), res["coeffs"], decimal=8)
     assert_almost_equal(np.array([1.]), res["exps"], decimal=8)
     # check value of optimized objective function
-    assert_almost_equal(0., res["fun"][-1], decimal=10)
+    assert_almost_equal(0., res["fun"][-1], decimal=8)
 
     # fit density with initial coeff=20. & expon=0.01.
     res = kl.run(np.array([20.]), np.array([0.01]), True, True, 500, 1.e-4, 1.e-4, 1.e-4)
@@ -125,7 +125,7 @@ def test_run_normalized_1s_gaussian():
     assert_almost_equal(np.array([1.]), res["coeffs"], decimal=8)
     assert_almost_equal(np.array([1.]), res["exps"], decimal=8)
     # check value of optimized objective function
-    assert_almost_equal(0., res["fun"][-1], decimal=10)
+    assert_almost_equal(0., res["fun"][-1], decimal=8)
 
 
 def test_kl_scf_update_coeffs_2s_gaussian():
@@ -300,25 +300,25 @@ def test_kl_fit_unnormalized_dens_normalized_1s_gaussian():
     result = kl.run(np.array([1.57]), np.array([0.51]), True, True)
     assert_almost_equal(expected_cs, result["coeffs"], decimal=8)
     assert_almost_equal(expected_es, result["exps"], decimal=8)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     assert_almost_equal(np.array([-1., 0.]), result["jacobian"], decimal=6)
     # initial coeff=0.1 & expon=0.1
     result = kl.run(np.array([0.1]), np.array([0.1]), True, True)
     assert_almost_equal(expected_cs, result["coeffs"], decimal=8)
     assert_almost_equal(expected_es, result["exps"], decimal=8)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     assert_almost_equal(np.array([-1., 0.]), result["jacobian"], decimal=6)
     # initial coeff=5.0 & expon=15.
     result = kl.run(np.array([5.0]), np.array([15.]), True, True)
     assert_almost_equal(expected_cs, result["coeffs"], decimal=8)
     assert_almost_equal(expected_es, result["exps"], decimal=8)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     assert_almost_equal(np.array([-1., 0.]), result["jacobian"], decimal=6)
     # initial coeff=0.8 & expon=0.51, opt coeffs
     result = kl.run(np.array([0.5]), np.array([0.51]), True, False)
     assert_almost_equal(expected_cs, result["coeffs"], decimal=8)
     assert_almost_equal(expected_es, result["exps"], decimal=8)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     assert_almost_equal(np.array([-1.]), result["jacobian"], decimal=6)
 
 
@@ -337,29 +337,29 @@ def test_kl_fit_normalized_dens_unnormalized_1s_gaussian():
     result = kl.run(np.array([2.6]), np.array([0.001]), opt_coeffs=True, opt_expons=True)
     assert_almost_equal(expected_cs, result["coeffs"], decimal=7)
     assert_almost_equal(expected_es, result["exps"], decimal=7)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     # initial coeff=1. & expon=0.88, opt coeffs
     result = kl.run(np.array([1.0]), np.array([0.88]), opt_coeffs=True, opt_expons=False)
     assert_almost_equal(expected_cs, result["coeffs"], decimal=8)
     assert_almost_equal(expected_es, result["exps"], decimal=8)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     assert_almost_equal(np.array([-1.]) / (0.88 / np.pi)**1.5, result["jacobian"], decimal=6)
     # initial coeff=10. & expon=0.88, opt coeffs
     result = kl.run(np.array([10.]), np.array([0.88]), opt_coeffs=True, opt_expons=False)
     assert_almost_equal(expected_cs, result["coeffs"], decimal=8)
     assert_almost_equal(expected_es, result["exps"], decimal=8)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     assert_almost_equal(np.array([-1.]) / (0.88 / np.pi)**1.5, result["jacobian"], decimal=6)
     # initial coeff=expected_cs & expon=expected_es, opt expons
     result = kl.run(expected_cs, expected_es, opt_coeffs=False, opt_expons=True)
     assert_almost_equal(expected_cs, result["coeffs"], decimal=8)
     assert_almost_equal(expected_es, result["exps"], decimal=8)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     # initial coeff=expected_cs & expon=5.0, opt expons
     result = kl.run(expected_cs, np.array([5.0]), opt_coeffs=False, opt_expons=True)
     assert_almost_equal(expected_cs, result["coeffs"], decimal=8)
     assert_almost_equal(expected_es, result["exps"], decimal=8)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
 
 
 def test_kl_fit_normalized_dens_normalized_1s_gaussian():
@@ -377,25 +377,25 @@ def test_kl_fit_normalized_dens_normalized_1s_gaussian():
     result = kl.run(np.array([2.6]), np.array([0.001]), opt_coeffs=True, opt_expons=True)
     assert_almost_equal(expected_cs, result["coeffs"], decimal=8)
     assert_almost_equal(expected_es, result["exps"], decimal=8)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     assert_almost_equal(np.array([-1., 0.]), result["jacobian"], decimal=6)
     # initial coeff=1. & expon=0.88, opt coeffs
     result = kl.run(np.array([1.0]), np.array([0.88]), opt_coeffs=True, opt_expons=False)
     assert_almost_equal(expected_cs, result["coeffs"], decimal=8)
     assert_almost_equal(expected_es, result["exps"], decimal=8)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     assert_almost_equal(np.array([-1.]), result["jacobian"], decimal=6)
     # initial coeff=10. & expon=0.88, opt coeffs
     result = kl.run(np.array([10.]), np.array([0.88]), opt_coeffs=True, opt_expons=False)
     assert_almost_equal(expected_cs, result["coeffs"], decimal=8)
     assert_almost_equal(expected_es, result["exps"], decimal=8)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     assert_almost_equal(np.array([-1.]), result["jacobian"], decimal=6)
     # initial coeff=expected_cs & expon=expected_es, opt expons
     result = kl.run(expected_cs, expected_es, opt_coeffs=False, opt_expons=True)
     assert_almost_equal(expected_cs, result["coeffs"], decimal=8)
     assert_almost_equal(expected_es, result["exps"], decimal=8)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     assert_almost_equal(np.array([0.]), result["jacobian"], decimal=6)
 
 
@@ -419,26 +419,26 @@ def test_kl_fit_normalized_dens_unnormalized_2p_gaussian():
     result = kl.run(np.array([1.5, 0.1]), np.array([4.0, 0.001]), True, True)
     assert_almost_equal(expected_cs, result["coeffs"], decimal=6)
     assert_almost_equal(expected_es, result["exps"], decimal=5)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     # initial coeff=cs0 & expon=es0, opt coeffs
     result = kl.run(cs0, es0, opt_coeffs=True, opt_expons=False)
     assert_almost_equal(expected_cs, result["coeffs"], decimal=6)
     assert_almost_equal(expected_es, result["exps"], decimal=6)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     # initial coeff=[1.0, 1.0] & expon=es0, opt coeffs
     result = kl.run(np.array([1.0, 1.0]), es0, opt_coeffs=True, opt_expons=False)
     assert_almost_equal(expected_cs, result["coeffs"], decimal=6)
     assert_almost_equal(expected_es, result["exps"], decimal=6)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     # initial coeff=expected_cs & expon=[4.5, 1.0], opt expons
     result = kl.run(expected_cs, np.array([4.5, 1.0]), opt_coeffs=False, opt_expons=True)
     assert_almost_equal(expected_cs, result["coeffs"], decimal=6)
     assert_almost_equal(expected_es, result["exps"], decimal=6)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
 
 
 def test_kl_fit_normalized_dens_normalized_2p_gaussian():
-    # density is normalized 2p orbitals
+    # density is normalized 2p orbitals`
     grid = UniformRadialGrid(150, 1e-15, 15.0, spherical=True)
     points = grid.points
     cs0 = np.array([0.76, 3.09])
@@ -454,25 +454,25 @@ def test_kl_fit_normalized_dens_normalized_2p_gaussian():
     result = kl.run(cs0, es0, True, False)
     assert_almost_equal(cs0, result["coeffs"], decimal=6)
     assert_almost_equal(es0, result["exps"], decimal=6)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     assert_almost_equal(np.array([-1., -1.]), result["jacobian"], decimal=6)
     # initial coeff=[2.5, 0.5] & expon=[2.0, 1.9]
     result = kl.run(np.array([2.5, 0.5]), np.array([2.0, 1.9]), True, True)
     assert_almost_equal(np.sort(cs0), np.sort(result["coeffs"]), decimal=6)
     assert_almost_equal(np.sort(es0), np.sort(result["exps"]), decimal=5)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     assert_almost_equal(np.array([-1., -1., 0., 0.]), result["jacobian"], decimal=6)
     # initial coeff=[1.0, 1.0] & expon=es0, opt coeffs
     result = kl.run(np.array([1.0, 1.0]), es0, True, False)
     assert_almost_equal(cs0, result["coeffs"], decimal=6)
     assert_almost_equal(es0, result["exps"], decimal=6)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     assert_almost_equal(np.array([-1., -1.]), result["jacobian"], decimal=6)
     # initial coeff=cs0 & expon=es0, opt coeffs
     result = kl.run(cs0, es0, True, False)
     assert_almost_equal(cs0, result["coeffs"], decimal=6)
     assert_almost_equal(es0, result["exps"], decimal=6)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     assert_almost_equal(np.array([-1., -1.]), result["jacobian"], decimal=6)
 
 
@@ -493,25 +493,25 @@ def test_kl_fit_normalized_dens_normalized_1s2p_gaussian():
     result = kl.run(np.array([1., 1., 1.]), np.array([1., 1., 1.]), True, True)
     assert_almost_equal(np.sort(cs0), np.sort(result["coeffs"]), decimal=5)
     assert_almost_equal(np.sort(es0), np.sort(result["exps"]), decimal=5)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     assert_almost_equal(np.array([-1., -1., -1., 0., 0., 0.]), result["jacobian"], decimal=6)
     # initial coeff=[0.1, 0.6, 7.] & expon=[1., 0.9, 1.0]
     result = kl.run(np.array([0.1, 0.6, 7.]), np.array([1., 0.9, 1.0]), True, True)
     assert_almost_equal(np.sort(cs0), np.sort(result["coeffs"]), decimal=5)
     assert_almost_equal(np.sort(es0), np.sort(result["exps"]), decimal=5)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     assert_almost_equal(np.array([-1., -1., -1., 0., 0., 0.]), result["jacobian"], decimal=6)
     # initial coeff=[1., 5., 0.] & expon=es0, opt coeffs
     result = kl.run(np.array([1., 5., 0.]), es0, True, False)
     assert_almost_equal(np.sort(cs0), np.sort(result["coeffs"]), decimal=5)
     assert_almost_equal(np.sort(es0), np.sort(result["exps"]), decimal=5)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     assert_almost_equal(np.array([-1., -1., -1.]), result["jacobian"], decimal=6)
     # initial coeff=cs0 & expon=es0, opt expons
     result = kl.run(cs0, es0, False, True)
     assert_almost_equal(np.sort(cs0), np.sort(result["coeffs"]), decimal=5)
     assert_almost_equal(np.sort(es0), np.sort(result["exps"]), decimal=5)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     assert_almost_equal(np.array([0., 0., 0.]), result["jacobian"], decimal=6)
 
 
@@ -534,17 +534,17 @@ def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1s_gaussian():
     result = kl.run(np.ones(2), np.ones(2), True, True)
     assert_almost_equal(cs0, result["coeffs"], decimal=4)
     assert_almost_equal(es0, result["exps"], decimal=4)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     # initial coeff=1. & expon=1.
     result = kl.run(np.array([5.45, 0.001]), es0, True, False)
     assert_almost_equal(cs0, result["coeffs"], decimal=6)
     assert_almost_equal(es0, result["exps"], decimal=6)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     # initial coeff=1. & expon=1.
     result = kl.run(cs0, np.array([5.45, 0.001]), False, True)
     assert_almost_equal(cs0, result["coeffs"], decimal=6)
     assert_almost_equal(es0, result["exps"], decimal=6)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     # fit 1s density on center 1
     measure = KLDivergence()
     kl = ScipyFit(grid, dens1, model, measure=measure, method="slsqp")
@@ -552,17 +552,17 @@ def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1s_gaussian():
     result = kl.run(np.ones(2), np.ones(2), True, True)
     assert_almost_equal(np.array([result["coeffs"][0], 0.]), result["coeffs"], decimal=4)
     assert_almost_equal(es0[0], result["exps"][0], decimal=4)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     # initial coeff=1. & expon=1.
     result = kl.run(np.array([6.79, 8.51]), es0, True, False)
     assert_almost_equal(np.array([result["coeffs"][0], 0.]), result["coeffs"], decimal=4)
     assert_almost_equal(es0, result["exps"], decimal=4)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     # initial coeff=1. & expon=1.
     result = kl.run(np.array([1.52, 0.0]), np.array([3.0, 4.98]), False, True)
     assert_almost_equal(np.array([result["coeffs"][0], 0.]), result["coeffs"], decimal=4)
     assert_almost_equal(es0[0], result["exps"][0], decimal=4)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
 
 
 def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
@@ -585,17 +585,17 @@ def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
     result = kl.run(np.ones(2), np.array([0.1, 0.2]), True, True, tol=1e-20, disp=True)
     assert_almost_equal(cs0, result["coeffs"], decimal=6)
     assert_almost_equal(es0, result["exps"], decimal=6)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     # opt. coeffs, initial expon=es0
     result = kl.run(np.array([5.91, 7.01]), es0, True, False)
     assert_almost_equal(cs0, result["coeffs"], decimal=6)
     assert_almost_equal(es0, result["exps"], decimal=6)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     # opt. expons, initial coeff=cs0
     result = kl.run(cs0, np.array([5.91, 7.01]), False, True)
     assert_almost_equal(cs0, result["coeffs"], decimal=6)
     assert_almost_equal(es0, result["exps"], decimal=6)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     # fit 1s density on center 1
     measure = KLDivergence()
     kl = ScipyFit(grid, dens_s, model, measure=measure, method="slsqp")
@@ -603,7 +603,7 @@ def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
     result = kl.run(np.ones(2), np.ones(2), True, True)
     assert_almost_equal(np.array([cs0[0], 0.]), result["coeffs"], decimal=6)
     assert_almost_equal(es0[0], result["exps"][0], decimal=6)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     # # fit 1p density on center 2
     measure = KLDivergence(mask_value=1e-12)
     kl = ScipyFit(grid, dens_p, model, measure=measure, method="slsqp")
@@ -611,7 +611,7 @@ def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
     result = kl.run(np.array([0., cs0[1]]), np.ones(2), False, True)
     assert_almost_equal(np.array([0., cs0[1]]), result["coeffs"], decimal=6)
     assert_almost_equal(es0[1], result["exps"][1], decimal=6)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
 
 
 def test_ls_fit_normalized_dens_normalized_1s_gaussian():
@@ -628,12 +628,12 @@ def test_ls_fit_normalized_dens_normalized_1s_gaussian():
     result = ls.run(np.array([0.1]), np.array([3.5]), True, True)
     assert_almost_equal(cs0, result["coeffs"], decimal=8)
     assert_almost_equal(es0, result["exps"], decimal=8)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     # opt. coeffs
     result = ls.run(np.array([10.]), np.array([0.51]), True, False)
     assert_almost_equal(cs0, result["coeffs"], decimal=8)
     assert_almost_equal(es0, result["exps"], decimal=8)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     # model density is two normalized 1s Gaussian
     model = AtomicGaussianDensity(grid.points, num_s=2, num_p=0, normalize=True)
     ls = ScipyFit(grid, dens, model, measure=measure, method="slsqp")
@@ -641,7 +641,7 @@ def test_ls_fit_normalized_dens_normalized_1s_gaussian():
     result = ls.run(np.array([0.1, 3.0]), np.array([5.1, 7.8]), True, True)
     assert_almost_equal(np.array([1.57, 0.]), result["coeffs"], decimal=6)
     assert_almost_equal(np.array([0.51, 0.]), result["exps"], decimal=6)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
 
 
 def test_ls_fit_normalized_dens_normalized_2s_gaussian():
@@ -665,12 +665,12 @@ def test_ls_fit_normalized_dens_normalized_2s_gaussian():
     result = ls.run(initial_cs, initial_es, True, True)
     assert_almost_equal(np.sort(cs0), np.sort(result["coeffs"]), decimal=6)
     assert_almost_equal(np.sort(es0), np.sort(result["exps"]), decimal=6)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     # opt. coeffs
     result = ls.run(initial_cs, es0, True, False)
     assert_almost_equal(cs0, result["coeffs"], decimal=8)
     assert_almost_equal(es0, result["exps"], decimal=8)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
 
 
 def test_ls_fit_normalized_dens_normalized_5s_gaussian():
@@ -697,14 +697,14 @@ def test_ls_fit_normalized_dens_normalized_5s_gaussian():
     result = ls.run(initial_cs, es0, True, False, tol=1e-15)
     assert_almost_equal(np.sort(cs0), np.sort(result["coeffs"]), decimal=6)
     assert_almost_equal(np.sort(es0), np.sort(result["exps"]), decimal=6)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     # opt. expons, by re-arranging the exponents and coefficients.
     initial_cs = np.array([0.12, 0.97,  3.67, 1.57, 5.05])
     initial_es = np.array([1.2, 19., 1., 0.1, 10.])
     result = ls.run(initial_cs, initial_es, False, True, tol=1e-20, with_constraint=False)
     assert_almost_equal(np.sort(initial_cs), np.sort(result["coeffs"]), decimal=6)
     assert_almost_equal(np.sort(es0), np.sort(result["exps"]), decimal=1)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
 
 
 def test_ls_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1s_gaussian():
@@ -724,7 +724,7 @@ def test_ls_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1s_gaussian():
     result = ls.run(np.ones(2), np.ones(2), True, True)
     assert_almost_equal(cs0, result["coeffs"], decimal=6)
     assert_almost_equal(es0, result["exps"], decimal=6)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     # fit 1s density on center 1
     measure = SquaredDifference()
     ls = ScipyFit(grid, dens1, model, measure=measure, method="slsqp")
@@ -732,7 +732,7 @@ def test_ls_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1s_gaussian():
     result = ls.run(np.ones(2), np.ones(2), True, True)
     assert_almost_equal(np.array([1.52, 0.0]), result["coeffs"], decimal=6)
     assert_almost_equal(es0[0], result["exps"][0], decimal=6)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     # fit 1s density on center 2
     measure = SquaredDifference()
     ls = ScipyFit(grid, dens2, model, measure=measure, method="slsqp")
@@ -740,7 +740,7 @@ def test_ls_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1s_gaussian():
     result = ls.run(np.ones(2), np.ones(2), True, True)
     assert_almost_equal(np.array([0.0, 2.67]), result["coeffs"], decimal=6)
     assert_almost_equal(es0[1], result["exps"][1], decimal=6)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
 
 
 def test_ls_fit_normalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
@@ -762,17 +762,17 @@ def test_ls_fit_normalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
     result = ls.run(np.ones(2), np.ones(2), True, True)
     assert_almost_equal(expected_cs, result["coeffs"], decimal=6)
     assert_almost_equal(es0, result["exps"], decimal=6)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     # opt. coeffs
     result = ls.run(np.array([0.001, 3.671]), es0, True, False)
     assert_almost_equal(expected_cs, result["coeffs"], decimal=6)
     assert_almost_equal(es0, result["exps"], decimal=6)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     # opt. expons
     result = ls.run(expected_cs, np.array([2.5, 1.9]), False, True)
     assert_almost_equal(expected_cs, result["coeffs"], decimal=6)
     assert_almost_equal(es0, result["exps"], decimal=6)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     # fit 1s density on center 1
     measure = SquaredDifference()
     ls = ScipyFit(grid, dens_s, model, measure=measure, method="slsqp")
@@ -780,16 +780,16 @@ def test_ls_fit_normalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
     result = ls.run(np.ones(2), np.ones(2), True, True)
     assert_almost_equal(np.array([expected_cs[0], 0.]), result["coeffs"], decimal=6)
     assert_almost_equal(es0[0], result["exps"][0], decimal=6)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     # opt. coeffs
     result = ls.run(np.array([0.05, 5.01]), es0, True, False)
     assert_almost_equal(np.array([expected_cs[0], 0.]), result["coeffs"], decimal=6)
     assert_almost_equal(es0, result["exps"], decimal=6)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
     # fit 1s density on center 1
     measure = SquaredDifference()
     ls = ScipyFit(grid, dens_p, model, measure=measure, method="slsqp")
     result = ls.run(np.array([0.05, 5.01]), es0, True, False, with_constraint=False)
     assert_almost_equal([0., expected_cs[1]], result["coeffs"], decimal=6)
     assert_almost_equal(es0, result["exps"], decimal=6)
-    assert_almost_equal(0., result["fun"], decimal=10)
+    assert_almost_equal(0., result["fun"], decimal=8)
