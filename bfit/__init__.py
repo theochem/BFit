@@ -27,5 +27,4 @@ from bfit.grid import *
 from bfit.model import *
 from bfit.density import *
 from bfit.measure import *
-from bfit.greedy_utils import *
-from bfit.greedy_strat import *
+from bfit.greedy import *

@@ -26,13 +26,228 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 from scipy.optimize import nnls
 
-from bfit.greedy_utils import (
-    check_redundancies, get_next_choices, get_two_next_choices, pick_two_lose_one
-)
 from bfit.model import AtomicGaussianDensity
 from bfit.fit import ScipyFit, KLDivergenceSCF
 
 __all__ = ["GreedyLeastSquares", "GreedyKL"]
+
+
+def check_redundancies(coeffs, fparams, eps=1e-3):
+    r"""
+    Check if the fparams have similar values and groups them together.
+
+    If any two function parameters have similar values, then one of the
+    function parameters is removed, and the corresponding coefficient,
+    are added together.
+    Note: as of now this only works if each basis function depends on only one
+    parameters e.g. e^(-x), not e^(-x + y).
+
+    Parameters
+    ----------
+    coeffs : np.ndarray(M,)
+        Coefficients of the basis function set of size :math:`M`.
+    fparams : np.ndarray(M,)
+        Function parameters of the basis function set of size :math:`M`.
+    eps : float
+        Value that indicates the threshold for how close two parameters are.
+
+    Returns
+    -------
+    (np.ndarray, np.ndarray)
+                            New coefficients and new exponents, where close
+                            values of the function parameters are removed and
+                            the coefficients are added together.
+
+    """
+    new_coeffs = coeffs.copy()
+    new_exps = fparams.copy()
+
+    # Indexes where they're the same.
+    indexes_same = []
+    for i, alpha in enumerate(fparams):
+        similar_indexes = []
+        for j in range(i + 1, len(fparams)):
+            if j not in similar_indexes:
+                if np.abs(alpha - fparams[j]) < eps:
+                    if i not in similar_indexes:
+                        similar_indexes.append(i)
+                    similar_indexes.append(j)
+        if len(similar_indexes) != 0:
+            indexes_same.append(similar_indexes)
+
+    # Add the coefficients together and add/group them, if need be
+    for group_similar_items in indexes_same:
+        for i in range(1, len(group_similar_items)):
+            new_coeffs[group_similar_items[0]] += coeffs[group_similar_items[i]]
+
+    if len(indexes_same) != 0:
+        indices = [y for x in indexes_same for y in x[1:]]
+        new_exps = np.delete(new_exps, indices)
+        new_coeffs = np.delete(new_coeffs, indices)
+    return new_coeffs, new_exps
+
+
+def get_next_choices(factor, coeffs, fparams, coeff_val=100.):
+    r"""
+    Get the next set of (n+1) fparams, used by the greedy-fitting algorithm.
+
+    Given a set of n fparams and n coeffs, this method gets the next (n+1)
+    fparams by using a constant factor and coefficient value :math:`c^\prime`.
+    A list of (n+1) choices are returned. They are determined as follows,
+    if fparams = [a1, a2, ..., an] and coeffs = [c1, c2, ..., cn].
+    Then each choice is either
+                [a1 / factor, a2, a3, .., an] & coeffs = [c1, c^\prime, c2, ..., cn],
+                [a1, a2, ..., (ai + a(i+1)/2, a(i+1), ..., an] & similar coeffs,
+                [a1, a2, ..., factor * an] & coeffs = [c1 c2, ..., c^\prime, cn].
+
+    Parameters
+    ----------
+    factor : float
+        Number used to give two choices by multiplying each end point.
+    coeffs : np.ndarray
+        Coefficients of the basis functions.
+    fparams : np.ndarray
+        Function parameters.
+    coeff_val : float
+        Number used to fill in the coefficient value for each guess.
+
+    Returns
+    -------
+    List[List[np.ndarray, np.ndarray]]
+        List of lists where the next possible initial choices for greedy based on factor.
+
+    """
+    size = fparams.shape[0]
+    all_choices = []
+    for index, exp in np.ndenumerate(fparams):
+        if index[0] == 0:
+            exps_arr = np.insert(fparams, index, exp / factor)
+            coeffs_arr = np.insert(coeffs, index, coeff_val)
+        elif index[0] <= size:
+            exps_arr = np.insert(fparams, index, (fparams[index[0] - 1] +
+                                                  fparams[index[0]]) / 2)
+            coeffs_arr = np.insert(coeffs, index, coeff_val)
+        all_choices.append(np.append(coeffs_arr, exps_arr))
+        if index[0] == size - 1:
+            exps_arr = np.append(fparams, np.array([exp * factor]))
+            endpt = np.append(coeffs, np.array([coeff_val]))
+            all_choices.append(np.append(endpt, exps_arr))
+    return all_choices
+
+
+def get_two_next_choices(factor, coeffs, fparams, coeff_val=100.):
+    r"""
+    Return a list of (n+2) set of initial guess for fparams for greedy.
+
+    Assuming coeffs=[c1, c2 ,... ,cn] and fparams =[a1, a2, ..., an]. The
+    next (n+2) choice is either a combination of a endpoint guess and a
+    midpoint, or two mid point guess or two endpoint guess. In other words:
+        [a1 / factor, ..., (ai + a(i+1))/2, ..., an],
+        [a1, ..., (aj + a(j+1))/2, a(j+1) ..., (ai + a(i+1))/2, a(i+1), .., an],
+        [a1 / factor, a2, a3, ..., a(n-1), factor * an], respectively.
+
+    Parameters
+    ----------
+    factor : float
+        Number used to give two choices by multiplying each end point.
+    coeffs : np.ndarray(M,)
+        Coefficients of the basis function set of size :math:`M`.
+    fparams : np.ndarray(M,)
+        Function parameters of the basis function set of size :math:`M`.
+    coeff_val : float
+        Number used to fill in the coefficient value for each guess.
+
+    Returns
+    -------
+    List[List[np.ndarray, np.ndarray]]
+        List of lists where the next possible initial choices for greedy based on factor.
+
+    """
+    size = len(fparams)
+    choices_coeff = []
+    choices_fparams = []
+    for i, e in enumerate(fparams):
+        if i == 0:
+            fparam_arr = np.insert(fparams, i, e / factor)
+            coeff_arr = np.insert(coeffs, i, coeff_val)
+        elif i <= size:
+            fparam_arr = np.insert(fparams, i, (fparams[i - 1] + fparams[i]) / 2)
+            coeff_arr = np.insert(coeffs, i, coeff_val)
+
+        coeff2, exp2 = get_next_possible_coeffs_and_exps2(factor, coeff_arr, fparam_arr, coeff_val)
+        choices_coeff.extend(coeff2[i:])
+        choices_fparams.extend(exp2[i:])
+
+        if i == size - 1:
+            fparam_arr = np.append(fparams, np.array([e * factor]))
+            endpt = np.append(coeffs, np.array([coeff_val]))
+            coeff2, exp2 = get_next_possible_coeffs_and_exps2(factor, endpt, fparam_arr, coeff_val)
+            choices_coeff.extend(coeff2[-2:])
+            choices_fparams.extend(exp2[-2:])
+    all_choices_params = []
+    for i, c in enumerate(choices_coeff):
+        all_choices_params.append(np.append(c, choices_fparams[i]))
+    return all_choices_params
+
+
+def get_next_possible_coeffs_and_exps2(factor, coeffs, exps, coeff_val=100.):
+    # This is the same function as get_next_choices except that
+    #   it returns the coefficients and exponents separately.
+    size = exps.shape[0]
+    all_choices_of_exponents = []
+    all_choices_of_coeffs = []
+    for index, exp in np.ndenumerate(exps):
+        if index[0] == 0:
+            exponent_array = np.insert(exps, index, exp / factor)
+            coefficient_array = np.insert(coeffs, index, coeff_val)
+        elif index[0] <= size:
+            exponent_array = np.insert(exps, index, (exps[index[0] - 1] + exps[index[0]]) / 2)
+            coefficient_array = np.insert(coeffs, index, coeff_val)
+        all_choices_of_exponents.append(exponent_array)
+        all_choices_of_coeffs.append(coefficient_array)
+        if index[0] == size - 1:
+            exponent_array = np.append(exps, np.array([exp * factor]))
+            all_choices_of_exponents.append(exponent_array)
+            all_choices_of_coeffs.append(np.append(coeffs, np.array([coeff_val])))
+    return all_choices_of_coeffs, all_choices_of_exponents
+
+
+def pick_two_lose_one(factor, coeffs, exps, coeff_val=100.):
+    r"""
+    Get (n+1) choices by choosing (n+2) choices and losing one value each time.
+
+    Most accurate out of the other methods in this file but has returns
+    a large number of possible (n+1) initial guesses for greedy-algorithm.
+
+    Using the choices from 'get_two_next_choices', this
+    method removes each possible exponent, to get another (n+1) choice.
+
+    Parameters
+    ----------
+    factor : float
+        Number used to give two choices by multiplying each end point.
+    coeffs : np.ndarray(M,)
+        Coefficients of the basis function set of size :math:`M`.
+    fparams : np.ndarray(M,)
+        Function parameters of the basis function set of size :math:`M`.
+    coeff_val : float
+        Number used to fill in the coefficient value for each guess.
+
+    Returns
+    -------
+    List[List[np.ndarray, np.ndarray]]
+        List of lists where the next possible initial choices for greedy based on factor.
+
+    """
+    all_choices = []
+    two_choices = get_two_next_choices(factor, coeffs, exps, coeff_val)
+    for i, p in enumerate(two_choices):
+        coeff, exp = p[:len(p) // 2], p[len(p) // 2:]
+        for j in range(0, len(p) // 2):
+            new_coeff = np.delete(coeff, j)
+            new_exp = np.delete(exp, j)
+            all_choices.append(np.append(new_coeff, new_exp))
+    return all_choices
 
 
 class GreedyStrategy(metaclass=ABCMeta):
@@ -101,13 +316,20 @@ class GreedyStrategy(metaclass=ABCMeta):
         pass
 
     def eval_model(self, params):
+        r"""Evaluate the model at given set of points."""
         return self.model.evaluate(params[:len(params)//2], params[len(params)//2:])
+
+    def eval_obj_function(self, params):
+        r"""Evaluate the objective function."""
+        model = self.eval_model(params)
+        return self.grid.integrate(self.gaussian_obj.measure.evaluate(self.density, model))
 
     def get_next_iter_params(self, params):
         coeffs, exps = params[:len(params)//2], params[len(params)//2:]
         return self.next_param_func(self.scale, coeffs, exps)
 
     def store_errors(self, params):
+        r"""Store errors inside the attribute `err_arr`."""
         err = self.get_errors_from_model(params)
         if len(self.err_arr) == 0:
             self.err_arr = [[x] for x in err]
@@ -214,9 +436,9 @@ class GreedyStrategy(metaclass=ABCMeta):
             "performance" : ndarray
                 Values of various performance measures of modeled density at each iteration,
                 as computed by `goodness_of_fit()` method.
-           "parameters_iteration": List
+            "parameters_iteration": List
                 List of the optimal parameters of each iteration.
-           "exit_information": str
+            "exit_information": str
                 Information about termination.
 
         """
@@ -232,7 +454,7 @@ class GreedyStrategy(metaclass=ABCMeta):
 
         # Start the greedy algorithm
         success = True
-        while numb_funcs < max_numb_funcs - 1  and numb_redum < 5 and np.abs(best_gval - prev_gval) >= d_threshold:
+        while numb_funcs < max_numb_funcs - 1 and numb_redum < 5 and np.abs(best_gval - prev_gval) >= d_threshold:
             s_coeffs, s_exps, p_coeffs, p_exps = self._split_parameters(gparams)
             print("S params", s_coeffs, s_exps)
             print("P params", p_coeffs, p_exps)
@@ -354,11 +576,6 @@ class GreedyLeastSquares(GreedyStrategy):
     def density(self):
         return self.gaussian_obj.density
 
-    def eval_obj_function(self, params):
-        r"""Evaluate the objective function."""
-        model = self.eval_model(params)
-        return self.grid.integrate(self.gaussian_obj.measure.evaluate(self.density, model))
-
     def optimize_using_nnls(self, true_dens, cofactor_matrix):
         r"""Solve for the coefficients using non-linear least squares"""
         b_vector = np.copy(true_dens)
@@ -456,10 +673,6 @@ class GreedyKL(GreedyStrategy):
     def grid(self):
         r"""Grid class object."""
         return self.mbis_obj.grid
-
-    def eval_obj_function(self, params):
-        model = self.eval_model(params)
-        return self.grid.integrate(self.mbis_obj.measure.evaluate(self.density, model))
 
     def get_best_one_function_solution(self):
         r"""Obtain the best one s-type function to Kullback-Leibler."""
