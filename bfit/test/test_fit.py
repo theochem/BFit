@@ -132,7 +132,7 @@ def test_kl_scf_update_coeffs_2s_gaussian():
     # actual density is a 1s Slater function
     grid = UniformRadialGrid(150, 0.0, 15.0, spherical=True)
     c, e = np.array([5., 2.]), np.array([10., 3.])
-    dens = np.exp(-grid.points, dtype=np.float128)
+    dens = np.exp(-grid.points, dtype=np.float64)
     # model density is a normalized 2s Gaussian basis
     model = AtomicGaussianDensity(grid.points, num_s=2, num_p=0, normalize=True)
     # test updating coeffs
@@ -154,8 +154,8 @@ def test_kl_scf_update_params_2s_gaussian():
     # actual density is a 1s Slater function
     grid = UniformRadialGrid(1000, 0.0, 20.0, spherical=True)
     points = grid.points
-    c, e = np.array([5., 2.], dtype=np.float128), np.array([10., 3.], dtype=np.float128)
-    dens = np.exp(-points, dtype=np.float128)
+    c, e = np.array([5., 2.], dtype=np.float64), np.array([10., 3.], dtype=np.float64)
+    dens = np.exp(-points, dtype=np.float64)
     # model density is a normalized 2s Gaussian basis
     model = AtomicGaussianDensity(points, num_s=2, num_p=0, normalize=True)
     # test updating coeffs
