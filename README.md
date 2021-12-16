@@ -31,8 +31,8 @@ Dependencies
 * Python >= 3.0: http://www.python.org/
 * NumPy >= 1.18.5: http://www.numpy.org/
 * SciPy >= 1.5.0: http://www.scipy.org/
-* Matplotlib >=3.2.0:
-* Sphinx >= 2.3.0:
+* Matplotlib >=3.2.0: https://matplotlib.org/
+* Sphinx >= 2.3.0: https://www.sphinx-doc.org/
 
 
 Installation
