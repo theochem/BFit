@@ -536,14 +536,14 @@ def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1s_gaussian():
     assert_almost_equal(es0, result["exps"], decimal=4)
     assert_almost_equal(0., result["fun"], decimal=8)
     # initial coeff=1. & expon=1.
-    result = kl.run(np.array([5.45, 0.001]), es0, True, False)
-    assert_almost_equal(cs0, result["coeffs"], decimal=6)
-    assert_almost_equal(es0, result["exps"], decimal=6)
+    result = kl.run(np.array([5.45, 0.001]), es0, True, False, disp=True)
+    assert_almost_equal(cs0, result["coeffs"], decimal=5)
+    assert_almost_equal(es0, result["exps"], decimal=5)
     assert_almost_equal(0., result["fun"], decimal=8)
     # initial coeff=1. & expon=1.
     result = kl.run(cs0, np.array([5.45, 0.001]), False, True)
-    assert_almost_equal(cs0, result["coeffs"], decimal=6)
-    assert_almost_equal(es0, result["exps"], decimal=6)
+    assert_almost_equal(cs0, result["coeffs"], decimal=5)
+    assert_almost_equal(es0, result["exps"], decimal=5)
     assert_almost_equal(0., result["fun"], decimal=8)
     # fit 1s density on center 1
     measure = KLDivergence()
