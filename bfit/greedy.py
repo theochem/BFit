@@ -19,10 +19,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-r"""
-TODO
-
-"""
+r"""Greedy Fitting Module"""
 
 from abc import ABCMeta, abstractmethod
 
@@ -39,27 +36,26 @@ __all__ = ["GreedyLeastSquares", "GreedyKL"]
 
 
 class GreedyStrategy(metaclass=ABCMeta):
-    r"""
-    TODO
-
-    """
+    r"""Base greedy strategy class for fitting s-type, p-type Gaussians"""
 
     def __init__(self, grid, choice_function="pick-one", scale=2.0):
         r"""
+        Construct the base greedy class.
 
         Parameters
         ----------
         choice_function : str
             Determines how the next set of basis-functions are chosen.
             Can be either:
-                "pick-one" :  Add a new basis-funciton, by taking the average between every two exponents.
-                "pick-two" : Add two new basis-functions.
-                pick-two-lose-one" : Pick two basis-functions then remove one.
-
-            Further information regarding these, please see .
-
+                "pick-one" : Add a new basis-function by taking the average between every two
+                             s-type or p-type exponents.
+                "pick-two" : Add two new basis-functions by recursion of "pick-one" over each
+                             guess from "pick-one".
+                "pick-two-lose-one" : Add new basis-function by iterating though each guess
+                                      in "pick-two" and removing one basis-function, generating
+                                      a new guess each time.
         scale : float
-            Positive number that scales the guesses
+            Positive number that scales the function parameters of each guess.
 
         """
         if not isinstance(scale, float):
@@ -86,7 +82,7 @@ class GreedyStrategy(metaclass=ABCMeta):
         self.redudan_info = []  # Stores information about redundancies of parameters.
 
     @abstractmethod
-    def get_cost_function(self):
+    def eval_obj_function(self):
         r"""Return evaluation of the function that is being optimized."""
         raise NotImplementedError()
 
@@ -103,6 +99,9 @@ class GreedyStrategy(metaclass=ABCMeta):
     @abstractmethod
     def get_errors_from_model(self, params):
         pass
+
+    def eval_model(self, params):
+        return self.model.evaluate(params[:len(params)//2], params[len(params)//2:])
 
     def get_next_iter_params(self, params):
         coeffs, exps = params[:len(params)//2], params[len(params)//2:]
@@ -122,35 +121,43 @@ class GreedyStrategy(metaclass=ABCMeta):
 
         Parameters
         ----------
-        param_list : List[TODO]
-
+        param_list : List[`num_s_choices` + `num_p_choices`]
+            List of size `num_s_choices` + `num_p_choices` of each initial guess.
         num_s_choices : int
-
+            Number of guesses for s-type Gaussians.
         num_p_choices : int
+            Number of guesses for p-type Gaussians.
 
         Returns
         -------
         (float, List, bool) :
-            Returns the value of the cost-function and the best parameters.
+            Returns the value of the cost-function and the best parameters corresponding
+            to that value of cost-function.
             True if adding S-type is the most optimal, False otherwise.
 
         """
+        # Initialize the values being returned.
         best_local_value = 1e10
         best_local_param = None
         is_s_optimal = False
         for i in range(0, num_s_choices + num_p_choices):
+            # Get the function parameter guess.
             param = param_list[i]
 
             # Update model for the new number of S-type and P-type functions.
             if i < num_s_choices:
+                # Update the number of s-type basis functions for this guess.
                 self.model.change_numb_s_and_numb_p(self.num_s + self.numb_func_increase, self.num_p)
             else:
+                # Update the number of p-type basis functions for this guess.
                 self.model.change_numb_s_and_numb_p(self.num_s, self.num_p + self.numb_func_increase)
 
+            # Optimize using this initial guess and get cost-function value.
             local_param = self.get_optimization_routine(param, local=True)
-            cost_func = self.get_cost_function(local_param)
+            cost_func = self.eval_obj_function(local_param)
+            # If it is the best found, then return it.
             if cost_func < best_local_value:
-                best_local_value = self.get_cost_function(local_param)
+                best_local_value = self.eval_obj_function(local_param)
                 best_local_param = local_param
                 if i < num_s_choices:
                     is_s_optimal = True
@@ -168,7 +175,51 @@ class GreedyStrategy(metaclass=ABCMeta):
         p_exps = params[2 * self.num_s + self.num_p:]
         return s_coeffs, s_exps, p_coeffs, p_exps
 
-    def __call__(self, factor, d_threshold=1e-8, max_numb_funcs=30, add_extra_choices=None, ioutput=False):
+    def __call__(self, factor, d_threshold=1e-8, max_numb_funcs=30, add_extra_choices=None, disp=False):
+        r"""
+        Run the greedy algorithm for fitting s-type, p-type Gaussians to a density.
+
+        Initially, the algorithm solves for the best one-function basis-function.
+        Then it generates next initial guesses based on the previous choice, and
+        optimizes each initial guess, with a small threshold for convergence.
+        It takes the best initial guess from that set and optimizes it further.
+        Then this process repeats until convergence or termination criteria is met.
+
+        Parameters
+        ----------
+        factor : float
+            The factor that is used to generate new initial guess.
+        d_threshold : float
+            The convergence threshold for the objective function being minimized.
+        max_numb_funcs : int
+            Maximum number of basis-functions to have.
+        add_extra_choices : callable(List, List[List])
+            Function that returns extra initial guesses to the current guess.
+            Input must be the model parameters.
+        disp : bool
+            Whether to display the output.
+
+        Returns
+        -------
+        result : dict
+            The optimization results presented as a dictionary containing:
+            "coeffs" : ndarray
+                The optimized coefficients of Gaussian model.
+            "exps" : ndarray
+                The optimized exponents of Gaussian model.
+            "success": bool
+                Whether or not the optimization exited successfully.
+            "fun" : ndarray
+                Values of KL divergence (objective function) at each iteration.
+            "performance" : ndarray
+                Values of various performance measures of modeled density at each iteration,
+                as computed by `goodness_of_fit()` method.
+           "parameters_iteration": List
+                List of the optimal parameters of each iteration.
+           "exit_information": str
+                Information about termination.
+
+        """
         # Initialize all the variables
         gparams = self.get_best_one_function_solution()
         self.store_errors(gparams)
@@ -268,7 +319,9 @@ class GreedyStrategy(metaclass=ABCMeta):
             # TODO check if these are well-define, when the while statements don't go through, it will fail.
             exit_info = self._final_exit_info(numb_funcs, max_numb_funcs, best_gval, prev_gval, numb_redum)
 
-        results = {"x": gparams,
+        coeffs, exps = self._split_parameters(gparams)
+        results = {"coeffs": coeffs,
+                   "exps" : exps,
                    "fun": np.array(self.err_arr).T[:, -1],
                    "success" : success,
                    "parameters_iteration": params_iter,
@@ -295,28 +348,26 @@ class GreedyLeastSquares(GreedyStrategy):
         self.global_tol = global_tol
         self.successful = None
         super(GreedyLeastSquares, self).__init__(grid, choice, scale)
-        self.gaussian_obj = GaussianBasisFit(grid, density, self.model, measure="LS", method=method)
+        self.gaussian_obj = ScipyFit(grid, density, self.model, measure="LS", method=method)
 
     @property
     def density(self):
         return self.gaussian_obj.density
 
-    def get_model(self, params):
-        return self.model.evaluate(params[:len(params)//2], params[len(params)//2:])
-
-    def get_cost_function(self, params):
-        model = self.get_model(params)
-        return self.grid.integrate(self.gaussian_obj.measure.evaluate(model))
+    def eval_obj_function(self, params):
+        r"""Evaluate the objective function."""
+        model = self.eval_model(params)
+        return self.grid.integrate(self.gaussian_obj.measure.evaluate(self.density, model))
 
     def optimize_using_nnls(self, true_dens, cofactor_matrix):
-        r"""
-        """
+        r"""Solve for the coefficients using non-linear least squares"""
         b_vector = np.copy(true_dens)
         b_vector = np.ravel(b_vector)
         row_nnls_coefficients = nnls(cofactor_matrix, b_vector)
         return row_nnls_coefficients[0]
 
     def _solve_one_function_weight(self, weight):
+        r"""Helper function for solving best one-basis function solution."""
         a = 2.0 * np.sum(weight)
         sum_of_grid_squared = np.sum(weight * np.power(self.grid.points, 2))
         b = 2.0 * sum_of_grid_squared
@@ -332,17 +383,18 @@ class GreedyLeastSquares(GreedyStrategy):
         return np.array([coefficient, exponent])
 
     def get_best_one_function_solution(self):
+        r"""Obtain the best one s-type function solution to least-squares using different weights."""
         # Minimizing weighted least squares with three different weights
         weight1 = np.ones(len(self.grid.points))
         weight3 = np.power(self.density, 2.)
         p1 = self._solve_one_function_weight(weight1)
-        cost_func1 = self.get_cost_function(p1)
+        cost_func1 = self.eval_obj_function(p1)
 
         p2 = self._solve_one_function_weight(self.density)
-        cost_func2 = self.get_cost_function(p2)
+        cost_func2 = self.eval_obj_function(p2)
 
         p3 = self._solve_one_function_weight(weight3)
-        cost_func3 = self.get_cost_function(p3)
+        cost_func3 = self.eval_obj_function(p3)
 
         p_min = min(
             [(cost_func1, p1), (cost_func2, p2), (cost_func3, p3)], key=lambda t: t[0]
@@ -369,11 +421,11 @@ class GreedyLeastSquares(GreedyStrategy):
         cofac_matrix = self.create_cofactor_matrix(exps)
         coeffs = self.optimize_using_nnls(self.density, cofac_matrix)
         if local:
-            results = self.gaussian_obj.run(coeffs, exps, tol=self.local_tol, maxiter=1000)["x"]
+            results = self.gaussian_obj.run(coeffs, exps, tol=self.local_tol, maxiter=1000)
         else:
             results = self.gaussian_obj.run(coeffs, exps, tol=self.global_tol, maxiter=1000, disp=True,
-                                            with_constraint=True)["x"]
-        return np.hstack((results[0], results[1]))
+                                            with_constraint=True)
+        return np.hstack((results["coeffs"], results["exps"]))
 
     def get_errors_from_model(self, params):
         coeffs, exps = params[:len(params)//2], params[len(params)//2:]
@@ -392,39 +444,40 @@ class GreedyKL(GreedyStrategy):
 
     @property
     def density(self):
+        r"""Density that is fitted to."""
         return self.mbis_obj.density
 
     @property
-    def norm(self):
-        return self.mbis_obj.norm
+    def integral_dens(self):
+        r"""Integral of the density."""
+        return self.mbis_obj.integral_dens
 
     @property
     def grid(self):
+        r"""Grid class object."""
         return self.mbis_obj.grid
 
-    def get_model(self, params):
-        return self.model.evaluate(params[:len(params)//2], params[len(params)//2:])
-
-    def get_cost_function(self, params):
-        model = self.get_model(params)
-        return self.grid.integrate(self.mbis_obj.measure.evaluate(model))
+    def eval_obj_function(self, params):
+        model = self.eval_model(params)
+        return self.grid.integrate(self.mbis_obj.measure.evaluate(self.density, model))
 
     def get_best_one_function_solution(self):
+        r"""Obtain the best one s-type function to Kullback-Leibler."""
         denom = self.grid.integrate(self.density * np.power(self.grid.points ** 2, 2.))
-        exps = 3. * self.norm / (2. * 4. * np.pi * denom)
-        return np.array([self.norm, exps])
+        exps = 3. * self.integral_dens / (2. * 4. * np.pi * denom)
+        return np.array([self.integral_dens, exps])
 
     def get_optimization_routine(self, params, local=False):
         coeffs, exps = params[:len(params)//2], params[len(params)//2:]
         if local:
             result = self.mbis_obj.run(coeffs, exps, opt_coeffs=True, opt_expons=True,
                                      maxiter=500, c_threshold=1e-2, e_threshold=1e-3,
-                                     disp=False)['x']
-            return np.hstack((result[0], result[1]))
+                                     disp=False)
+            return np.hstack((result["coeffs"], result["exps"]))
         result = self.mbis_obj.run(coeffs, exps, opt_coeffs=True, opt_expons=True, maxiter=1000,
                                  c_threshold=self.threshold_coeff, e_threshold=self.threshold_exp,
-                                   d_threshold=1e-6, disp=False)['x']
-        return np.hstack((result[0], result[1]))
+                                   d_threshold=1e-6, disp=False)
+        return np.hstack((result["coeffs"], result["exps"]))
 
     def get_errors_from_model(self, params):
         coeffs, exps = params[:len(params)//2], params[len(params)//2:]
@@ -433,9 +486,9 @@ class GreedyKL(GreedyStrategy):
 
 if __name__ == "__main__":
     from bfit.grid import ClenshawRadialGrid
-    from bfit.density import AtomicDensity
+    from bfit.density import SlaterAtoms
     grid = ClenshawRadialGrid(4, num_core_pts=10000, num_diffuse_pts=900, extra_pts=[50, 75, 100])
-    dens_obj = AtomicDensity("be")
+    dens_obj = SlaterAtoms("be")
     dens = dens_obj.atomic_density(grid.points)
 
     greedy = GreedyKL(grid, dens, integration_val=4.0, eps_coeff=1e-7, eps_exp=1e-8)
