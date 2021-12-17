@@ -202,7 +202,7 @@ class KLDivergence(Measure):
         if not isinstance(deriv, bool):
             raise TypeError(f"Deriv {type(deriv)} should be Boolean type.")
         if np.any(model < 0.):
-            raise ValueError("Model density should be positive.")
+            return np.inf
 
         # compute ratio & replace masked values by 1.0
         ratio = density / np.ma.masked_less_equal(model, self.mask_value)
