@@ -82,6 +82,10 @@ class _BaseFit:
         else:
             self._integral_dens = integral_dens
 
+        # Used to calculate the error measures in model only.
+        self.kl_error = KLDivergence(mask_value=1e-12)
+        self.ls_error = SquaredDifference()
+
     @property
     def grid(self):
         r"""Grid object containing points and integration method."""
@@ -170,19 +174,13 @@ class _BaseFit:
         """
         # evaluate approximate model density
         approx = self.model.evaluate(coeffs, expons)
-        if np.any(approx < 0.0):
-            # Return infinity, if the model density is negative.
-            kl = np.inf
-        else:
-            kl = self.integrate(self.density * np.log(self.density / approx))
-
         diff = np.abs(self.density - approx)
         return [
             self.integrate(approx),
             self.integrate(diff),
             np.max(diff),
-            self.integrate(diff ** 2.0),
-            kl
+            self.integrate(self.ls_error.evaluate(self.density, approx, deriv=False)),
+            self.integrate(self.kl_error.evaluate(self.density, approx, deriv=False))
         ]
 
 
