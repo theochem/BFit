@@ -353,9 +353,7 @@ class KLDivergenceSCF(_BaseFit):
 
             if disp:
                 print(template_iters.format(
-                     niter, performance[-1][0], performance[-1][1], performance[-1][2],
-                     performance[-1][3], performance[-1][4], max_diff_coeffs, max_diff_expons,
-                    diff_divergence)
+                     niter, *performance[-1], max_diff_coeffs, max_diff_expons, diff_divergence)
                 )
 
 
@@ -565,10 +563,7 @@ class ScipyFit(_BaseFit):
                         performance = self.goodness_of_fit(xk, e0)
                     elif opt_expons:
                         performance = self.goodness_of_fit(c0, xk)
-                    print(template_iters.format(
-                        performance[0], performance[1], performance[2],
-                        performance[3], performance[4])
-                    )
+                    print(template_iters.format(*performance))
 
                 callback = print_results
             elif self.method == "trust-constr":
@@ -585,10 +580,7 @@ class ScipyFit(_BaseFit):
                         performance = self.goodness_of_fit(xk, e0)
                     elif opt_expons:
                         performance = self.goodness_of_fit(c0, xk)
-                    print(template_iters.format(
-                        performance[0], performance[1], performance[2],
-                        performance[3], performance[4])
-                    )
+                    print(template_iters.format(*performance))
                 callback = print_results
         # optimize
         start = timer()  # Start timer
