@@ -108,7 +108,7 @@ class UniformRadialGrid(_BaseRadialGrid):
 
         # compute points
         points = np.linspace(start=min_radii, stop=max_radii, num=num_pts)
-        super(UniformRadialGrid, self).__init__(points, spherical)
+        super(UniformRadialGrid, self).__init__(points)
 
 
 class ClenshawRadialGrid(_BaseRadialGrid):
