@@ -41,8 +41,7 @@ def test_raises_kl():
     assert_raises(ValueError, measure.evaluate, np.array([1., 2., 3.]), 1.75)
     assert_raises(ValueError, measure.evaluate, np.array([1., 2., 3.]), np.array([1., 2., 3., 4.]))
     assert_raises(ValueError, measure.evaluate, np.array([1., 2., 3.]), np.array([[1.], [2.], [3.]]))
-    assert_raises(ValueError, measure.evaluate, np.array([1., 2., 3.]), np.array([1., 2., -3.]))
-    assert_raises(ValueError, measure.evaluate, np.array([1., 2., 3.]), np.array([-0.5, -1.3, -2.8]))
+    assert_almost_equal(np.inf, measure.evaluate(np.array([1., 2., 3.]), np.array([1., 2., -3.])))
 
 
 def test_evaluate_kl_equal():

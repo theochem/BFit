@@ -83,7 +83,7 @@ class _BaseFit:
             self._integral_dens = integral_dens
 
         # Used to calculate the error measures in model only.
-        self.kl_error = KLDivergence(mask_value=1e-12)
+        self.kl_error = KLDivergence(mask_value=0.0)
         self.ls_error = SquaredDifference()
 
     @property
