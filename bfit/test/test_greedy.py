@@ -25,8 +25,7 @@ import numpy as np
 import numpy.testing as npt
 
 from bfit.greedy import (
-    check_redundancies, get_next_choices, get_next_possible_coeffs_and_exps2,
-    get_two_next_choices, pick_two_lose_one
+    remove_redundancies, get_next_choices, get_two_next_choices, pick_two_lose_one
 )
 
 
@@ -35,7 +34,7 @@ def test_check_redundancies():
     c = np.array([50., 30., 10., 2., 3.])
     exps = np.array([3.1, 3., 2, 1, 3.025])
     simi = 1.
-    true_answer = check_redundancies(c, exps, simi)
+    true_answer = remove_redundancies(c, exps, simi)
     desired_answer_coeff = np.array([83., 10., 2.])
     desired_answer_exps = np.array([3.1, 2., 1.])
     npt.assert_allclose(true_answer[0], desired_answer_coeff)
@@ -44,12 +43,12 @@ def test_check_redundancies():
     c = np.array([50., 30., 10., 2., 3.])
     exps = np.array([3.0012, 3.0005, 2, 1, 3.025])
     simi = 1e-2
-    true_answer = check_redundancies(c, exps, simi)
+    true_answer = remove_redundancies(c, exps, simi)
     npt.assert_array_equal(true_answer[0], np.array([80, 10., 2., 3]))
     npt.assert_array_equal(true_answer[1], np.array([3.0012, 2., 1., 3.025]))
 
     simi = 1e-1
-    true_answer = check_redundancies(c, exps, simi)
+    true_answer = remove_redundancies(c, exps, simi)
     npt.assert_array_equal(true_answer[0], np.array([83, 10., 2]))
     npt.assert_array_equal(true_answer[1], np.array([3.0012, 2, 1]))
 
@@ -64,17 +63,6 @@ def test_get_next_possible_coeffs_and_exps():
                       [1, 0, 2, 3, 3.5, 4],
                       [1, 2, 0, 3, 4, 8]]
     npt.assert_array_equal(true_answer, desired_answer)
-
-
-def test_get_next_possible_coeffs_and_exps2():
-    c = np.array([1., 2.])
-    e = np.array([3., 4.])
-    factor = 2
-    true_answer = get_next_possible_coeffs_and_exps2(factor, c, e, coeff_val=0)
-    desired_answer_coeff = [[0., 1., 2], [1., 0., 2], [1., 2., 0]]
-    desired_answer_exps = [[1.5, 3, 4], [3, 3.5, 4], [3., 4., 8]]
-    npt.assert_array_equal(true_answer[0], desired_answer_coeff)
-    npt.assert_array_equal(true_answer[1], desired_answer_exps)
 
 
 def test_get_two_next_possible_coeffs_and_exps():
