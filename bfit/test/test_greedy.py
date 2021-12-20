@@ -19,20 +19,15 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-r"""Test file for 'bfit.greedy.greedy_utils'. """
-
+r"""Test file for 'bfit.greedy'. """
 
 import numpy as np
 import numpy.testing as npt
 
-from bfit.greedy_utils import check_redundancies, get_next_choices
-from bfit.greedy_utils import get_next_possible_coeffs_and_exps2
-from bfit.greedy_utils import get_two_next_choices, pick_two_lose_one
-
-
-__all__ = ["test_check_redundancies", "test_get_next_possible_coeffs_and_exps",
-           "test_get_next_possible_coeffs_and_exps2",
-           "test_get_two_next_possible_coeffs_and_exps", "test_pick_two_lose_one"]
+from bfit.greedy import (
+    check_redundancies, get_next_choices, get_next_possible_coeffs_and_exps2,
+    get_two_next_choices, pick_two_lose_one
+)
 
 
 def test_check_redundancies():

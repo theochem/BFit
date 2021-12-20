@@ -5,8 +5,7 @@ BFit
 <a href='https://docs.python.org/3.8/'><img src='https://img.shields.io/badge/python-3.8-blue.svg'></a>
 <a href='https://docs.python.org/3.9/'><img src='https://img.shields.io/badge/python-3.9-blue.svg'></a>
 [![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/theochem/procrustes/master?filepath=docs%2Fnotebooks%2F)
-
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/theochem/bfit/master?labpath=%2Fexamples%2F)
 
 BFit is a Python library for (best) fitting a convex sum of positive basis functions to any
 probability distribution. It is primarily intended for quantum chemistry applications, where the
@@ -32,9 +31,8 @@ Dependencies
 * Python >= 3.0: http://www.python.org/
 * NumPy >= 1.18.5: http://www.numpy.org/
 * SciPy >= 1.5.0: http://www.scipy.org/
-* Grid VERSION: https://grid.qcdevs.org/
-* PyTest >= 5.3.4: https://docs.pytest.org/
-* PyTest-Cov >= 2.8.0: https://pypi.org/project/pytest-cov/
+* Matplotlib >=3.2.0: https://matplotlib.org/
+* Sphinx >= 2.3.0: https://www.sphinx-doc.org/
 
 
 Installation
@@ -78,6 +76,7 @@ There are four steps to using BFit.
 ### 1. Specify the Grid Object.
 The grid is a uniform one-dimension grid with 100 points from 0. to 50.
 ```python
+import numpy as np
 from bfit.grid import UniformRadialGrid
 grid = UniformRadialGrid(num_pts=100, min_radii=0., max_radii=50.)
 ```
@@ -108,13 +107,13 @@ See [fit.py](bfit/fit.py) for options of fitting algorithms.
 c0 = np.array([1., 1., 1., 1.])
 e0 = np.array([0.001, 0.1, 1., 5., 100.])
 
-# Optimize both coefficients and exponents.
-result = fit.run(c0, e0, opt_coeffs=True, opt_expons=True, maxiter=1000)
+# Optimize both coefficients and exponents and print while running.
+result = fit.run(c0, e0, opt_coeffs=True, opt_expons=True, maxiter=1000, disp=True)
 
 print("Optimized coefficients are: ", result["x"][0])
 print("Optimized exponents are: ", result["x"][1])
 print("Final performance measures are: ", result["performance"][-1])
 print("Was it successful? ", result["success"])
 ```
-See the [example directory](examples/) for more examples.
-
+See the [example directory](examples/) for more examples or the interactive binder 
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/theochem/bfit/master?labpath=%2Fexamples%2F)

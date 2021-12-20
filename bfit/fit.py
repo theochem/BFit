@@ -315,8 +315,7 @@ class KLDivergenceSCF(_BaseFit):
         d_threshold : float
             The termination threshold for absolute change in divergence value. Default is 1e-6.
         disp : bool
-            If true, then at each iteration the error measures, :math:`L_1`, :math:`L_\infty`
-            and Kullback-Leibler measure is printed. Default is False.
+            If true, then at each iteration various error measures will be printed.
 
         Returns
         -------
@@ -354,6 +353,24 @@ class KLDivergenceSCF(_BaseFit):
         fun, performance = [], []
         niter = 0
         start = timer()
+
+        if disp:
+            # Template for the header.
+            print("-" * (10 + 12 + 15 + 15 + 15 + 15 + 15 + 15 + 15 + 12))
+            # Format is {identifier:width}, ^ means center it, | means put a bar in it
+            template_header = (
+                "|{0:^10}|{1:^12}|{2:^15}|{3:^15}|{4:^15}|{5:^16}|{6:^15}|{7:^15}|{8:^15}|"
+            )
+            # Print the headers
+            print(template_header.format(
+                "Iteration", "Integration", "L1", "L Infinity", "Least-squares",
+                "Kullback-Leibler", "Change Coeffs", "Change Exps", "Change Objective")
+            )
+            print("-" * (10 + 12 + 15 + 15 + 15 + 15 + 15 + 15 + 15 + 12))
+            # Template for float iteration
+            template_iters = (
+                "|{0:^10d}|{1:^12f}|{2:^15e}|{3:^15f}|{4:^15e}|{5:^16e}|{6:^15e}|{7:^15e}|{8:^15e}|"
+            )
         while ((max_diff_expons > e_threshold or max_diff_coeffs > c_threshold) and
                diff_divergence > d_threshold) and maxiter > niter:
 
@@ -381,10 +398,11 @@ class KLDivergenceSCF(_BaseFit):
                 diff_divergence = np.abs(performance[niter - 1][-1] - performance[niter - 2][-1])
 
             if disp:
-                print(niter, performance[-1])
-                print(diff_divergence, max_diff_coeffs, max_diff_expons)
-                print(new_cs, new_es)
-                print("\n")
+                print(template_iters.format(
+                     niter, *performance[-1], max_diff_coeffs, max_diff_expons, diff_divergence)
+                )
+
+
         end = timer()
         time = end - start
 
@@ -393,6 +411,13 @@ class KLDivergenceSCF(_BaseFit):
             success = False
         else:
             success = True
+
+        if disp:
+            print("-" * (10 + 12 + 15 + 15 + 15 + 15 + 15 + 15 + 15 + 12))
+            print(f"Successful?: {success}")
+            print(f"Time: {time:.2f} seconds")
+            print(f"Coefficients {new_cs}")
+            print(f"Exponents {new_es}")
 
         results = {"coeffs": new_cs,
                    "exps" : new_es,
@@ -494,7 +519,8 @@ class ScipyFit(_BaseFit):
             For slsqp. precision goal for the value of objective function in the stopping criterion.
             For trust-constr, it is precision goal for the change in independent variables.
         disp : bool
-            If True, then it will print the convergence messages from the optimizer.
+            If True, then it will print the iteration errors, convergence messages from the optimizer
+            and will print out various error measures at each iteration.
         with_constraint : bool
             If true, then adds the constraint that the integration of the model density must
             be equal to the constraint of true density. The default is True.
@@ -563,9 +589,48 @@ class ScipyFit(_BaseFit):
         callback = None
         if disp:
             if self.method == "slsqp":
-                callback = lambda xk : print(self.goodness_of_fit(xk[:len(c0)], xk[len(c0):]))
+                # Template for the header.
+                print("-" * (10 + 12 + 15 + 15 + 15 + 12))
+                # Format is {identifier:width}, ^ means center it, | means put a bar in it
+                template_header = (
+                    "|{0:^12}|{1:^15}|{2:^15}|{3:^15}|{4:^16}|"
+                )
+                # Print the headers
+                print(template_header.format(
+                    "Integration", "L1", "L Infinity", "Least-squares", "Kullback-Leibler")
+                )
+                print("-" * (10 + 12 + 15 + 15 + 15 + 12))
+                # Template for float iteration
+                template_iters = (
+                    "|{0:^12f}|{1:^15e}|{2:^15f}|{3:^15e}|{4:^16e}|"
+                )
+
+                def print_results(xk):
+                    if opt_coeffs and opt_expons:
+                        performance = self.goodness_of_fit(xk[:len(c0)], xk[len(c0):])
+                    elif opt_coeffs:
+                        performance = self.goodness_of_fit(xk, e0)
+                    elif opt_expons:
+                        performance = self.goodness_of_fit(c0, xk)
+                    print(template_iters.format(*performance))
+
+                callback = print_results
             elif self.method == "trust-constr":
-                callback = lambda xk, res: print(self.goodness_of_fit(xk[:len(c0)], xk[len(c0):]))
+                # Template for float iteration
+                template_iters = (
+                    "Integration: {0:10f},  L1: {1:10e},  L Infinity: {2:10f}, "
+                    "Least Squares: {3:10e},  Kullback-Liebler: {4:10e}"
+                )
+
+                def print_results(xk, _):
+                    if opt_coeffs and opt_expons:
+                        performance = self.goodness_of_fit(xk[:len(c0)], xk[len(c0):])
+                    elif opt_coeffs:
+                        performance = self.goodness_of_fit(xk, e0)
+                    elif opt_expons:
+                        performance = self.goodness_of_fit(c0, xk)
+                    print(template_iters.format(*performance))
+                callback = print_results
         # optimize
         start = timer()  # Start timer
         res = minimize(fun=self.func,
@@ -593,14 +658,24 @@ class ScipyFit(_BaseFit):
         else:
             coeffs, expons = c0, res["x"]
 
+        if disp:
+            # Print Final Output.
+            if self.method == "slsqp":
+                print("-" * (10 + 12 + 15 + 15 + 15 + 12))
+            print(f"Successful?: {res['success']}")
+            print(f"Time: {time:.2f} seconds")
+            print("Scipy Message: " + res["message"])
+            print(f"Coefficients {coeffs}")
+            print(f"Exponents {expons}")
+
         results = {"coeffs": coeffs,
-                   "exps" : expons,
+                   "exps": expons,
                    "fun": res["fun"],
                    "success": res["success"],
                    "message": res["message"],
                    "jacobian": res["jac"],
                    "performance": np.array(self.goodness_of_fit(coeffs, expons)),
-                   "time" : time}
+                   "time": time}
         return results
 
     def func(self, x, *args):

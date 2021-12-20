@@ -88,7 +88,7 @@ def test_positive_definite_kinetic_energy_he():
     grid = np.arange(0., 30.0, 0.0001)
     energ = he.lagrangian_kinetic_energy(grid)
     integral = np.trapz(energ * 4 * np.pi * grid**2.0, grid)
-    assert np.all(np.abs(integral - he.energy[0]) < 1e-4)
+    assert np.all(np.abs(integral - he.kinetic_energy) < 1e-4)
 
 
 def test_positive_definite_kinetic_energy_be():
@@ -98,7 +98,7 @@ def test_positive_definite_kinetic_energy_be():
     grid = np.arange(0., 30.0, 0.0001)
     energ = be.lagrangian_kinetic_energy(grid)
     integral = np.trapz(energ * 4 * np.pi * grid**2.0, grid)
-    assert np.all(np.abs(integral - be.energy[0]) < 1e-5)
+    assert np.all(np.abs(integral - be.kinetic_energy) < 1e-5)
 
 
 def test_positive_definite_kinetic_energy_most_atoms():
@@ -109,7 +109,7 @@ def test_positive_definite_kinetic_energy_most_atoms():
         grid = np.arange(0., 30., 0.0001)
         energ = adens.lagrangian_kinetic_energy(grid)
         integral = np.trapz(energ * 4.0 * np.pi * grid**2.0, grid)
-        assert np.all(np.abs(integral - adens.energy[0]) < 1e-3)
+        assert np.all(np.abs(integral - adens.kinetic_energy) < 1e-3)
 
 
 def test_phi_derivative_lcao_b():
@@ -357,13 +357,13 @@ def test_kinetic_energy_cation_anion_c():
     grid = np.arange(0.0, 25.0, 0.0001)
     energ = c.lagrangian_kinetic_energy(grid)
     integral = np.trapz(energ * 4.0 * np.pi * grid**2.0, grid)
-    assert_almost_equal(integral, c.energy[0], decimal=6)
+    assert_almost_equal(integral, c.kinetic_energy, decimal=6)
 
     c = SlaterAtoms("c", anion=True)
     grid = np.arange(0.0, 40.0, 0.0001)
     energ = c.lagrangian_kinetic_energy(grid)
     integral = np.trapz(energ * 4.0 * np.pi * grid**2.0, grid)
-    assert_almost_equal(integral, c.energy[0], decimal=5)
+    assert_almost_equal(integral, c.kinetic_energy, decimal=5)
 
 
 def test_derivative_electron_density_c():
@@ -392,7 +392,7 @@ def test_kinetic_energy_heavy_element_ce():
     c = SlaterAtoms("ce")
     grid = np.arange(0.0, 25.0, 0.0001)
     energ = c.lagrangian_kinetic_energy(grid)
-    assert_almost_equal(np.trapz(energ * 4 * np.pi * grid**2.0, grid), c.energy[0], decimal=3)
+    assert_almost_equal(np.trapz(energ * 4 * np.pi * grid**2.0, grid), c.kinetic_energy, decimal=3)
 
 
 def test_raises():

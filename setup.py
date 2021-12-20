@@ -61,17 +61,18 @@ setup(
     author="QC-Devs Community",
     author_email="qcdevs@gmail.com",
     package_dir={"bfit": "bfit"},
-    packages=["bfit", "bfit.test", "bfit.data"],
+    packages=["bfit", "bfit.test"],
     install_requires=[
-        "numpy>=1.18.5", "scipy>=1.5.0", "pytest>=5.4.3", "sphinx>=2.3.0"
+        "numpy>=1.18.5", "scipy>=1.5.0", "pytest>=5.4.3", "sphinx>=2.3.0", "matplotlib>=3.2.0"
     ],
     package_data={
         # If any package contains *.slater files, include them:
-        'bfit': ['data/*/*.slater', 'data/*/*.cat', 'data/*/*.an', 'data/*/*.nwchem']
+        'bfit': ['data/*/*.slater', 'data/*/*.cat', 'data/*/*.an', 'data/*/*.nwchem'],
+        'bfit.test': ['data/*/*.slater', 'data/*/*.cat', 'data/*/*.an', 'data/*/*.nwchem']
     },
     include_package_data=True,
     classifiers=[
-         'Development Status :: 0 - Released',
+        'Development Status :: 0 - Released',
         'Environment :: Console',
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
         'Operating System :: POSIX :: Linux',

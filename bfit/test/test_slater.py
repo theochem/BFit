@@ -32,7 +32,8 @@ def test_parsing_slater_density_be():
     be = load_slater_wfn("be")
 
     assert be['configuration'] == '1S(2)2S(2)'
-    assert be['energy'] == [14.57302313]
+    assert be['energy'] == -14.573023167
+    assert be['kinetic_energy'] == 14.573023130
 
     # Check basis of S orbitals
     assert be['orbitals'] == ['1S', '2S']
@@ -66,7 +67,9 @@ def test_parsing_slater_density_ag():
 
     # Check configuration and energy.
     assert ag['configuration'] == 'K(2)L(8)M(18)4S(2)4P(6)5S(1)4D(10)'
-    assert ag['energy'] == [5197.698468984]
+    assert ag['energy'] == -5197.698467674
+    assert ag["kinetic_energy"] == 5197.698468984
+    assert ag["potential_energy"] == -10395.396936658
 
     # Check orbitals
     assert ag['orbitals'] == ['1S', '2S', '3S', '4S', '5S', '2P', '3P', '4P', '3D', '4D']
@@ -108,7 +111,9 @@ def test_parsing_slater_density_ne():
     assert ne['configuration'] == "1S(2)2S(2)2P(6)"
     assert ne['orbitals'] == ["1S", "2S", "2P"]
     assert (ne["orbitals_occupation"] == np.array([[2], [2], [6]])).all()
-    assert ne['energy'] == [128.547098140]
+    assert ne['energy'] == -128.547098079
+    assert ne["kinetic_energy"] == 128.547098140
+    assert ne["potential_energy"] == -257.094196219
 
     # Check orbital energy and cusp
     assert (abs(ne['orbitals_energy'] - np.array([-32.7724425, -1.9303907, -0.8504095])[:, None]) < 1.e-6).all()
@@ -132,7 +137,9 @@ def test_parsing_slater_density_h():
     h = load_slater_wfn("h")
 
     assert h['configuration'] == "1S(1)"
-    assert h['energy'] == [0.5]
+    assert h['energy'] == -0.5
+    assert h["kinetic_energy"] == 0.5
+    assert h["potential_energy"] == -1.0
 
     # Check orbital energy and cusp
     assert (abs(h['orbitals_energy'] - np.array([-0.50])[:, None]) < 1.e-6).all()
@@ -156,7 +163,9 @@ def test_parsing_slater_density_k():
     k = load_slater_wfn("k")
 
     assert k["configuration"] == "K(2)L(8)3S(2)3P(6)4S(1)"
-    assert k["energy"] == [599.164786943]
+    assert k["energy"] == -599.164786322
+    assert k["kinetic_energy"] == 599.164786943
+    assert k["potential_energy"] == -1198.329573264
 
     assert k['orbitals'] == ["1S", "2S", "3S", "4S", "2P", "3P"]
     assert np.all(abs(k['orbitals_cusp'] - np.array([1.0003111, 0.9994803, 1.0005849, 1.0001341,
@@ -193,7 +202,9 @@ def test_parsing_slater_density_xe():
     assert xe['orbitals'] == ["1S", "2S", "3S", "4S", "5S", "2P", "3P", "4P", "5P", "3D", "4D"]
     occupation = np.array([[2], [2], [2], [2], [2], [6], [6], [6], [6], [10], [10]])
     assert (xe["orbitals_occupation"] == occupation).all()
-    assert xe['energy'] == [7232.138367196]
+    assert xe['energy'] == -7232.138355835
+    assert xe["kinetic_energy"] == 7232.138367196
+    assert xe["potential_energy"] == -14464.276723031
 
     # Check coeffs of D orbitals.
     coeffs = np.array([-0.0006386, -0.0030974, 0.0445101, -0.1106186, -0.0924762, -0.4855794,
@@ -209,12 +220,30 @@ def test_parsing_slater_density_xe_cation():
     assert xe['orbitals'] == ["1S", "2S", "3S", "4S", "5S", "2P", "3P", "4P", "5P", "3D", "4D"]
     occupation = np.array([[2], [2], [2], [2], [2], [6], [6], [6], [5], [10], [10]])
     assert (xe["orbitals_occupation"] == occupation).all()
-    assert xe['energy'] == [7231.708943551]
+    assert xe['energy'] == -7231.708943297
+    assert xe["kinetic_energy"] == 7231.708943551
+    assert xe["potential_energy"] == -14463.417886848
 
     # Check coefficients of D orbitals.
     coeff = np.array([-0.0004316, -0.0016577, -0.0041398, -0.2183952, 0.0051908, -0.2953384,
                      -0.0095762, 0.6460145, 0.4573096, 0.0431928, -0.0000161])
     assert (abs(xe['orbitals_coeff']["4D"] - coeff.reshape((len(coeff), 1))) < 1e-10).all()
+
+
+def test_parsing_slater_density_c_cation():
+    # Load the Xe file
+    c = load_slater_wfn("c", cation=True)
+    assert c['configuration'] == "1S(2)2S(2)2P(1)"
+    assert c['orbitals'] == ["1S", "2S", "2P"]
+    occupation = np.array([[2], [2], [1]])
+    assert (c["orbitals_occupation"] == occupation).all()
+    assert c['energy'] == -37.292223770
+    assert c["kinetic_energy"] == 37.292223758
+    assert c["potential_energy"] == -74.584447528
+
+    # Check coefficients of P orbitals.
+    coeff = np.array([0.0000857, 0.0092705, -0.0120655, 0.0790120, 0.2559441, 0.6807658, 0.0323882])
+    assert (abs(c['orbitals_coeff']["2P"] - coeff.reshape((len(coeff), 1))) < 1e-10).all()
 
 
 def test_parsing_slater_density_h_anion():
@@ -226,7 +255,9 @@ def test_parsing_slater_density_h_anion():
     assert h['orbitals'] == ["1S"]
     occupation = np.array([[2]])
     assert (h["orbitals_occupation"] == occupation).all()
-    assert h['energy'] == [0.487929734]
+    assert h['energy'] == -0.487929734
+    assert h["kinetic_energy"] == 0.487929734
+    assert h["potential_energy"] == -0.975859469
 
     # Check coeffs of 1S orbitals.
     coeff = np.array([0.0005803, 0.0754088, 0.2438040, 0.3476471, 0.3357298, 0.0741188])
@@ -247,7 +278,9 @@ def test_parsing_slater_heavy_atom_cs():
                               "4D"]
     occupation = np.array([[2], [2], [2], [2], [2], [1], [6], [6], [6], [6], [10], [10]])
     assert (cs["orbitals_occupation"] == occupation).all()
-    assert cs['energy'] == [7553.933539793]
+    assert cs['energy'] == -7553.933536555
+    assert cs["kinetic_energy"] == 7553.933539793
+    assert cs["potential_energy"] == -15107.867076348
 
     # Check coeffs of D orbitals.
     coeffs = np.array([-0.0025615, -0.1930536, -0.2057559, -0.1179374, 0.4341816, 0.6417053,
@@ -270,7 +303,9 @@ def test_parsing_slater_heavy_atom_rn():
     occupation = np.array([[2], [2], [2], [2], [2], [2], [6], [6], [6], [6], [6], [10], [10],
                            [10], [14]])
     assert (rn["orbitals_occupation"] == occupation).all()
-    assert rn['energy'] == [21866.772036482]
+    assert rn['energy'] == -21866.772070663
+    assert rn["kinetic_energy"] == 21866.772036482
+    assert rn["potential_energy"] == -43733.544107144
 
     # Check coeffs of 4F orbitals.
     coeffs = np.array([.0196357, .2541992, .4806186, -.2542278, .5847619, .0099519])
@@ -288,7 +323,9 @@ def test_parsing_slater_heavy_atom_lr():
     occupation = np.array([[2], [2], [2], [2], [2], [2], [2], [6], [6], [6], [6], [6], [10], [10],
                            [10], [1], [14], [14]])
     assert (lr["orbitals_occupation"] == occupation).all()
-    assert lr['energy'] == [33557.949960623]
+    assert lr['energy'] == -33557.950142251
+    assert lr["kinetic_energy"] == 33557.949960623
+    assert lr["potential_energy"] == -67115.900102873
 
     # Check coeffs of 3D orbitals.
     coeffs = np.array([0.0017317, 0.4240510, 0.4821228, 0.1753365, -0.0207393, 0.0091584,
@@ -311,7 +348,9 @@ def test_parsing_slater_heavy_atom_dy():
                               "3D", "4D", "4F"]
     occupation = np.array([[2], [2], [2], [2], [2], [2], [6], [6], [6], [6], [10], [10], [10]])
     assert (dy["orbitals_occupation"] == occupation).all()
-    assert dy['energy'] == [11641.452478555]
+    assert dy['energy'] == -11641.452434124
+    assert dy['kinetic_energy'] == 11641.452478555
+    assert dy["potential_energy"] == -23282.904912679
 
     # Check coeffs of 4D orbitals.
     coeffs = np.array([-0.0016462, -0.2087639, -0.2407385, -0.1008913, 0.4844709, 0.6180159,
