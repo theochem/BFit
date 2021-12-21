@@ -266,7 +266,7 @@ def pick_two_lose_one(factor, coeffs, exps, coeff_val=100.):
 class GreedyStrategy(metaclass=ABCMeta):
     r"""Base greedy strategy class for fitting s-type, p-type Gaussians"""
 
-    def __init__(self, fitting_obj, choice_function="pick-one", scale=2.0):
+    def __init__(self, fitting_obj, choice_function="pick-one"):
         r"""
         Construct the base greedy class.
 
@@ -285,16 +285,10 @@ class GreedyStrategy(metaclass=ABCMeta):
         fitting_obj : _BaseFit
             The fitting class that is a child of _BaseFit class.  This is used to
             optimize the objective function.
-        scale : float
-            Positive number that scales the function parameters of each guess.
 
         """
         if not isinstance(fitting_obj, _BaseFit):
             raise TypeError(f"Fitting object {type(fitting_obj)} should be of type _BaseFit.")
-        if not isinstance(scale, float):
-            raise TypeError(f"Scale {scale} parameter should be a float.")
-        if scale <= 0.0:
-            raise ValueError(f"Scale {scale} should be positive.")
 
         if choice_function == "pick-one":
             self.next_param_func = get_next_choices
@@ -309,7 +303,6 @@ class GreedyStrategy(metaclass=ABCMeta):
             raise ValueError(f"Choice parameter {choice_function} was not recognized.")
         self.num_s = 1
         self.num_p = 0
-        self.scale = scale
         self.err_arr = []
         self.fitting_obj = fitting_obj
 
@@ -352,11 +345,6 @@ class GreedyStrategy(metaclass=ABCMeta):
         r"""Return evaluation the objective function."""
         model = self.model.evaluate(params[:len(params)//2], params[len(params)//2:])
         return self.grid.integrate(self.fitting_obj.measure.evaluate(self.density, model))
-
-    def get_next_iter_params(self, params):
-        r"""Get the next list of initial guesses with additional basis-functions."""
-        coeffs, exps = params[:len(params)//2], params[len(params)//2:]
-        return self.next_param_func(self.scale, coeffs, exps)
 
     def store_errors(self, params):
         r"""Store errors inside the attribute `err_arr`."""
@@ -449,7 +437,7 @@ class GreedyStrategy(metaclass=ABCMeta):
         ))
         return template_iters
 
-    def __call__(self, factor, d_threshold=1e-8, max_numb_funcs=30, add_extra_choices=None, disp=False):
+    def run(self, factor, d_threshold=1e-8, max_numb_funcs=30, add_extra_choices=None, disp=False):
         r"""
         Keep adding new Gaussians to fit to a density until convergence is achieved.
 
@@ -497,6 +485,11 @@ class GreedyStrategy(metaclass=ABCMeta):
                 Information about termination of the greedy algorithm.
 
         """
+        if not isinstance(factor, float):
+            raise TypeError(f"Factor {factor} parameter should be a float.")
+        if factor <= 0.0:
+            raise ValueError(f"Scale {factor} should be positive.")
+
         # Initialize all the variables
         gparams = self.get_best_one_function_solution()
         self.store_errors(gparams)
@@ -512,7 +505,7 @@ class GreedyStrategy(metaclass=ABCMeta):
             template_iters = self._print_header()
 
         success = True
-        while numb_funcs < max_numb_funcs - 1 and numb_redum < 5 and np.abs(best_gval - prev_gval) >= d_threshold:
+        while numb_funcs <= max_numb_funcs - 1 and numb_redum < 5 and np.abs(best_gval - prev_gval) >= d_threshold:
             s_coeffs, s_exps, p_coeffs, p_exps = self._split_parameters(gparams)
 
             # Get the next list of choices of parameters for S-type and P-type orbitals.
@@ -654,8 +647,9 @@ class GreedyLeastSquares(GreedyStrategy):
     r"""Optimize Least-Squares using Greedy and ScipyFit methods."""
 
     def __init__(
-        self, grid, density, choice="pick-one", local_tol=1e-5, global_tol=1e-8, scale=2.0,
-        method="SLSQP", normalize=False, integral_dens=None
+        self, grid, density, choice="pick-one", local_tol=1e-5, global_tol=1e-8,
+        method="SLSQP", normalize=False, integral_dens=None, with_constraint=False,
+            maxiter=1000,
     ):
         r"""
         Construct the GreedyLestSquares object.
@@ -683,8 +677,6 @@ class GreedyLeastSquares(GreedyStrategy):
             The tolerance for convergence of scipy.optimize method for further refining/optimizing
             the best local guess found out of all choices.  Should be smaller than
             `local_tol`.
-        scale : float, optional
-            Positive number that scales the function parameters of each guess.
         method : str, optional
             The method used for optimizing parameters. Default is "slsqp".
             See "scipy.optimize.minimize" for options.
@@ -694,14 +686,42 @@ class GreedyLeastSquares(GreedyStrategy):
             If this is provided, then the model is constrained to integrate to this value.
             If not, then the model is constrained to the numerical integration of the
             density. Useful when one knows the actual integration value of the density.
+        with_constraint : bool
+            If true, then adds the constraint that the integration of the model density must
+            be equal to the constraint of true density. The default is True.
+        maxiter : int, optional
+            Maximum number of iterations when optimizing an initial guess in the `scipy.optimize`
+            method.
 
         """
-        self.local_tol = local_tol
-        self.global_tol = global_tol
+        self._local_tol = local_tol
+        self._global_tol = global_tol
+        self._maxiter = maxiter
+        self._with_constraint = with_constraint
         model = AtomicGaussianDensity(grid.points, num_s=1, num_p=0, normalize=normalize)
         gaussian_obj = ScipyFit(grid, density, model, measure=SquaredDifference(), method=method,
                                 integral_dens=integral_dens)
-        super(GreedyLeastSquares, self).__init__(gaussian_obj, choice, scale)
+        super(GreedyLeastSquares, self).__init__(gaussian_obj, choice)
+
+    @property
+    def local_tol(self):
+        r"""Local tolerance for convergence in `scipy.optimize`."""
+        return self._local_tol
+
+    @property
+    def global_tol(self):
+        r"""Global tolerance for convergence in `scipy.optimize`."""
+        return self._global_tol
+
+    @property
+    def maxiter(self):
+        r"""Maximum number of iterations in optimization routine."""
+        return self._maxiter
+
+    @property
+    def with_constraint(self):
+        r"""Constraint that integral of model should equal integral of density."""
+        return self._with_constraint
 
     def _solve_one_function_weight(self, weight):
         r"""Helper function for solving best one-basis function solution."""
@@ -765,10 +785,15 @@ class GreedyLeastSquares(GreedyStrategy):
         cofac_matrix = self._create_cofactor_matrix(exps)
         coeffs = self.optimize_using_nnls(self.density, cofac_matrix)
         if local:
-            results = self.fitting_obj.run(coeffs, exps, tol=self.local_tol, maxiter=1000)
+            results = self.fitting_obj.run(
+                coeffs, exps, tol=self.local_tol, maxiter=self.maxiter,
+                with_constraint=self.with_constraint
+            )
         else:
-            results = self.fitting_obj.run(coeffs, exps, tol=self.global_tol, maxiter=1000, disp=False,
-                                           with_constraint=True)
+            results = self.fitting_obj.run(
+                coeffs, exps, tol=self.global_tol, maxiter=self.maxiter,
+                with_constraint=self.with_constraint
+            )
         return np.hstack((results["coeffs"], results["exps"]))
 
 
@@ -777,8 +802,9 @@ class GreedyKLSCF(GreedyStrategy):
 
     def __init__(
         self, grid, density, choice="pick-one", g_eps_coeff=1e-4, g_eps_exp=1e-5,
-        l_eps_coeff=1e-2, l_eps_exp=1e-3, scale=2.0, mask_value=1e-12, integral_dens=None,
-        maxiter=1000
+            g_eps_obj=1e-10, l_eps_coeff=1e-2, l_eps_exp=1e-3, l_eps_obj=1e-8,
+            mask_value=1e-12, integral_dens=None,
+            maxiter=1000
     ):
         r"""
         Construct the GreedyKLSCF object.
@@ -799,20 +825,24 @@ class GreedyKLSCF(GreedyStrategy):
                 "pick-two-lose-one" : Add new basis-function by iterating though each guess
                                       in "pick-two" and removing one basis-function, generating
                                       a new guess each time.
-        l_eps_coeff : float, optional
-            The tolerance for convergence of coefficients in KL-SCF method for optimizing
-            each local initial guess. Should be larger than `eps_g_coeff`.
-        l_eps_exp : float, optional
-            The tolerance for convergence of exponents in KL-SCF method for optimizing
-            each local initial guess. Should be larger than `l_eps_exp`.
         g_eps_coeff : float, optional
             The tolerance for convergence of coefficients in KL-SCF method for further
             refining and optimizing the  best found local guess.
         g_eps_exp : float, optional
             The tolerance for convergence of exponents in KL-SCF method for further refining/optimizing
             the best local guess found out of all choices.
-        scale : float, optional
-            Positive number that scales the function parameters of each guess.
+        g_eps_obj : float, optional
+            The tolerance for convergence of objective function in KL-SCF method for
+            further refining/optimizing the best local guess found out of all choices.
+        l_eps_coeff : float, optional
+            The tolerance for convergence of coefficients in KL-SCF method for optimizing
+            each local initial guess. Should be larger than `g_eps_coeff`.
+        l_eps_exp : float, optional
+            The tolerance for convergence of exponents in KL-SCF method for optimizing
+            each local initial guess. Should be larger than `g_eps_exp`.
+        l_eps_obj : float, optional
+            The tolerance for convergence of objective function in KL-SCF method for optimizing
+            each local initial guess. Should be larger than `g_eps_obj`.
         mask_value : str, optional
             The method used for optimizing parameters. Default is "slsqp".
             See "scipy.optimize.minimize" for options.
@@ -825,15 +855,52 @@ class GreedyKLSCF(GreedyStrategy):
 
         """
         # Algorithm parameters for KL-SCF (KLDivergenceSCF) method.
-        self.l_threshold_coeff = l_eps_coeff
-        self.l_threshold_exp = l_eps_exp
-        self.g_threshold_coeff = g_eps_coeff
-        self.g_threshold_exp = g_eps_exp
-        self.maxiter = maxiter
+        self._l_threshold_coeff = l_eps_coeff
+        self._l_threshold_exp = l_eps_exp
+        self._l_threshold_obj = l_eps_obj
+        self._g_threshold_coeff = g_eps_coeff
+        self._g_threshold_exp = g_eps_exp
+        self._g_threshold_obj = g_eps_obj
+        self._maxiter = maxiter
         # Model that is fitted to.
         model = AtomicGaussianDensity(grid.points, num_s=1, num_p=0, normalize=True)
         scf_obj = KLDivergenceSCF(grid, density, model, mask_value, integral_dens)
-        super(GreedyKLSCF, self).__init__(scf_obj, choice, scale)
+        super(GreedyKLSCF, self).__init__(scf_obj, choice)
+
+    @property
+    def l_threshold_coeff(self):
+        r"""Local threshold for KL-SCF method for convergence of coefficients."""
+        return self._l_threshold_coeff
+
+    @property
+    def l_threshold_exp(self):
+        r"""Local threshold for KL-SCF method for convergence of exponents."""
+        return self._l_threshold_exp
+
+    @property
+    def l_threshold_obj(self):
+        r"""Local threshold for KL-SCF method for convergence of objective function."""
+        return self._l_threshold_obj
+
+    @property
+    def g_threshold_coeff(self):
+        r"""Global threshold for KL-SCF method for convergence of coefficients."""
+        return self._g_threshold_coeff
+
+    @property
+    def g_threshold_exp(self):
+        r"""Global threshold for KL-SCF method for convergence of exponents."""
+        return self._g_threshold_exp
+
+    @property
+    def g_threshold_obj(self):
+        r"""Global threshold for KL-SCF method for convergence of objective function."""
+        return self._g_threshold_obj
+
+    @property
+    def maxiter(self):
+        r"""Maximum iteration for KL-SCF method."""
+        return self._maxiter
 
     def get_best_one_function_solution(self):
         r"""Obtain the best one s-type function to Kullback-Leibler."""
@@ -844,23 +911,16 @@ class GreedyKLSCF(GreedyStrategy):
     def get_optimization_routine(self, params, local=False):
         coeffs, exps = params[:len(params)//2], params[len(params)//2:]
         if local:
-            result = self.fitting_obj.run(coeffs, exps, opt_coeffs=True, opt_expons=True,
-                                     maxiter=self.maxiter, c_threshold=self.l_threshold_coeff,
-                                     e_threshold=self.l_threshold_exp, disp=False)
+            result = self.fitting_obj.run(
+                coeffs, exps, opt_coeffs=True, opt_expons=True,
+                maxiter=self.maxiter, c_threshold=self.l_threshold_coeff,
+                e_threshold=self.l_threshold_exp, d_threshold=self.l_threshold_obj,
+                disp=False
+            )
             return np.hstack((result["coeffs"], result["exps"]))
-        result = self.fitting_obj.run(coeffs, exps, opt_coeffs=True, opt_expons=True,
-                                      maxiter=self.maxiter, c_threshold=self.g_threshold_coeff,
-                                      e_threshold=self.g_threshold_exp, d_threshold=1e-8, disp=False)
+        result = self.fitting_obj.run(
+            coeffs, exps, opt_coeffs=True, opt_expons=True, maxiter=self.maxiter,
+            c_threshold=self.g_threshold_coeff, e_threshold=self.g_threshold_exp,
+            d_threshold=self.g_threshold_obj, disp=False
+        )
         return np.hstack((result["coeffs"], result["exps"]))
-
-
-if __name__ == "__main__":
-    from bfit.grid import ClenshawRadialGrid
-    from bfit.density import SlaterAtoms
-    grid = ClenshawRadialGrid(4, num_core_pts=10000, num_diffuse_pts=900, extra_pts=[50, 75, 100])
-    dens_obj = SlaterAtoms("be")
-    dens = dens_obj.atomic_density(grid.points)
-
-    greedy = GreedyKLSCF(grid, dens, choice="pick-two", integral_dens=4.0, g_eps_coeff=1e-7, g_eps_exp=1e-8)
-    # greedy = GreedyLeastSquares(grid, dens, choice="pick-two", method="SLSQP")
-    greedy(2.0, disp=True)
