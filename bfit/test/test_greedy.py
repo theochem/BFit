@@ -24,8 +24,10 @@ r"""Test file for 'bfit.greedy'. """
 import numpy as np
 import numpy.testing as npt
 
+from bfit.grid import UniformRadialGrid
 from bfit.greedy import (
-    remove_redundancies, get_next_choices, get_two_next_choices, pick_two_lose_one
+    remove_redundancies, get_next_choices, get_two_next_choices, pick_two_lose_one,
+    GreedyLeastSquares, GreedyKLSCF
 )
 
 
@@ -118,3 +120,44 @@ def test_pick_two_lose_one():
                       [1, 0, 3, 12],
                       [1, 0, 3, 6]]
     npt.assert_array_equal(true_answer, desired_answer)
+
+
+def test_greedy_kl_two_function():
+    r"""Test Greedy Kullback-Leibler against two-function Gaussian combination."""
+    def eval_density(points):
+        return 0.25 * np.exp(-10. * points**2.0) * (10.0 / np.pi)**1.5 + \
+                0.75 * np.exp(-5. * points**2.0) * (5.0 / np.pi)**1.5
+
+    grid = UniformRadialGrid(1000, 0.0, 10.)
+    density = eval_density(grid.points)
+    greedy = GreedyKLSCF(grid, density, "pick-one",
+                         g_eps_coeff=1e-10, g_eps_exp=1e-10,
+                         l_eps_exp=1e-5, g_eps_obj=1e-15,
+                         l_eps_obj=1e-10, l_eps_coeff=1e-6, mask_value=0.0,
+                         maxiter=10000, integral_dens=1.0)
+    result = greedy.run(2.5, max_numb_funcs=2, disp=True)
+
+    npt.assert_almost_equal(result["fun"], 0.0, decimal=10)
+    npt.assert_almost_equal(np.sort(result["coeffs"]), [0.25, 0.75], decimal=3)
+    npt.assert_almost_equal(np.sort(result["exps"]), [5.0, 10.0], decimal=3)
+    assert result["success"]
+
+
+def test_greedy_ls_two_function():
+    r"""Test Greedy Least-Squares against two-function Gaussian combination."""
+    def eval_density(points):
+        return 0.25 * np.exp(-10. * points**2.0) * (10.0 / np.pi)**1.5 + \
+                0.75 * np.exp(-5. * points**2.0) * (5.0 / np.pi)**1.5
+
+    grid = UniformRadialGrid(1000, 0.0, 10.)
+    density = eval_density(grid.points)
+    greedy = GreedyLeastSquares(
+        grid, density, "pick-one", local_tol=1e-10, global_tol=1e-15,
+        integral_dens=1.0, normalize=True,
+    )
+    result = greedy.run(2.5, d_threshold=1e-10, max_numb_funcs=2, disp=True)
+
+    npt.assert_almost_equal(result["fun"], 0.0, decimal=10)
+    npt.assert_almost_equal(np.sort(result["coeffs"]), [0.25, 0.75], decimal=3)
+    npt.assert_almost_equal(np.sort(result["exps"]), [5.0, 10.0], decimal=3)
+    assert result["success"]
