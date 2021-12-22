@@ -583,7 +583,7 @@ def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1s_gaussian():
 def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
     r"""Test ScipyFit against un-normalized 1S and 1P-type Gaussians."""
     # density is normalized 1s + 1s gaussians
-    grid = UniformRadialGrid(150, 0.0, 15.0, spherical=True)
+    grid = UniformRadialGrid(1000, 0.0, 15.0, spherical=True)
     points = grid.points
     cs0 = np.array([1.52, 2.67])
     es0 = np.array([0.31, 0.41])
@@ -599,34 +599,34 @@ def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
     kl = ScipyFit(grid, dens_s + dens_p, model, measure=measure, method="slsqp")
     # opt. coeffs & expons
     result = kl.run(np.ones(2), np.array([0.1, 0.2]), True, True, tol=1e-20, disp=True)
-    assert_almost_equal(cs0, result["coeffs"], decimal=6)
-    assert_almost_equal(es0, result["exps"], decimal=6)
+    assert_almost_equal(cs0, result["coeffs"], decimal=4)
+    assert_almost_equal(es0, result["exps"], decimal=4)
     assert_almost_equal(0., result["fun"], decimal=8)
     # opt. coeffs, initial expon=es0
     result = kl.run(np.array([5.91, 7.01]), es0, True, False)
-    assert_almost_equal(cs0, result["coeffs"], decimal=6)
-    assert_almost_equal(es0, result["exps"], decimal=6)
+    assert_almost_equal(cs0, result["coeffs"], decimal=4)
+    assert_almost_equal(es0, result["exps"], decimal=4)
     assert_almost_equal(0., result["fun"], decimal=8)
     # opt. expons, initial coeff=cs0
     result = kl.run(cs0, np.array([5.91, 7.01]), False, True)
-    assert_almost_equal(cs0, result["coeffs"], decimal=6)
-    assert_almost_equal(es0, result["exps"], decimal=6)
+    assert_almost_equal(cs0, result["coeffs"], decimal=4)
+    assert_almost_equal(es0, result["exps"], decimal=4)
     assert_almost_equal(0., result["fun"], decimal=8)
     # fit 1s density on center 1
     measure = KLDivergence()
     kl = ScipyFit(grid, dens_s, model, measure=measure, method="slsqp")
     # opt. coeffs & expons
     result = kl.run(np.ones(2), np.ones(2), True, True)
-    assert_almost_equal(np.array([cs0[0], 0.]), result["coeffs"], decimal=6)
-    assert_almost_equal(es0[0], result["exps"][0], decimal=6)
+    assert_almost_equal(np.array([cs0[0], 0.]), result["coeffs"], decimal=4)
+    assert_almost_equal(es0[0], result["exps"][0], decimal=4)
     assert_almost_equal(0., result["fun"], decimal=8)
     # # fit 1p density on center 2
     measure = KLDivergence(mask_value=1e-12)
     kl = ScipyFit(grid, dens_p, model, measure=measure, method="slsqp")
     # opt. expons
     result = kl.run(np.array([0., cs0[1]]), np.ones(2), False, True)
-    assert_almost_equal(np.array([0., cs0[1]]), result["coeffs"], decimal=6)
-    assert_almost_equal(es0[1], result["exps"][1], decimal=6)
+    assert_almost_equal(np.array([0., cs0[1]]), result["coeffs"], decimal=4)
+    assert_almost_equal(es0[1], result["exps"][1], decimal=4)
     assert_almost_equal(0., result["fun"], decimal=8)
 
 
