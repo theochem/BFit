@@ -184,7 +184,7 @@ def test_evaluating_tsallis_derivative_against_finite_difference():
     eps = 1e-8
     dens = np.linspace(0.0, 1., num_pts)
     model = np.random.random(num_pts)
-    measure = TsallisDivergence(alpha=1.001, mask_value=1e-8)
+    measure = TsallisDivergence(alpha=1.001, mask_value=0.0)
 
     # Approximate it with central finite difference with accuracy 4.
     measure_pt_minus_2 = measure.evaluate(dens, model - 2.0 * eps, deriv=False)
@@ -194,7 +194,7 @@ def test_evaluating_tsallis_derivative_against_finite_difference():
     measure_pt_plus_2 = measure.evaluate(dens, model + 2.0 * eps, deriv=False)
     desired = (measure_pt_minus_2 / 12.0 - (2.0 / 3.0) * measure_pt_minus_1)
     desired += ((2.0 / 3.0) * measure_pt_plus_1 - measure_pt_plus_2 / 12.0)
-    assert_almost_equal(actual_deriv, desired / eps, decimal=4)
+    assert_almost_equal(actual_deriv, desired / eps, decimal=3)
 
 
 def test_evaluating_tsallis_derivative_against_kullback_leibler():
