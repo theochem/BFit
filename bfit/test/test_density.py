@@ -25,11 +25,12 @@ r"""Test bfit.density module."""
 from bfit.density import SlaterAtoms
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_equal, assert_raises
+import scipy
 
 
 def slater(e, n, r, derivative=False):
     """Calculate single normalized slater function at a given point."""
-    norm = np.power(2. * e, n) * np.sqrt(2. * e / np.math.factorial(2. * n))
+    norm = np.power(2. * e, n) * np.sqrt(2. * e / scipy.special.factorial(2 * n))
     slater = norm * np.power(r, n - 1) * np.exp(-e * r)
 
     if derivative:
