@@ -101,7 +101,7 @@ class UniformRadialGrid(_BaseRadialGrid):
     The grid points are equally-spaced in :math:`[0, max_points)` interval.
     """
 
-    def __init__(self, num_pts, min_radii=0., max_radii=100., spherical=True):
+    def __init__(self, num_pts, min_radii=0., max_radii=100., spherical=True, dtype=np.longdouble):
         """
         Construct the UniformRadialGrid object.
 
@@ -115,6 +115,8 @@ class UniformRadialGrid(_BaseRadialGrid):
             The largest radial grid point.
         spherical : bool, optional
             If `True`, the spherical integration of function is computed.
+        dtype : data-type, optional
+            The desired NumPy data-type.
 
         """
         if not isinstance(num_pts, int) or num_pts <= 0:
@@ -131,7 +133,7 @@ class UniformRadialGrid(_BaseRadialGrid):
             raise ValueError("The max_radii should be greater than the min_radii.")
 
         # compute points
-        points = np.linspace(start=min_radii, stop=max_radii, num=num_pts)
+        points = np.linspace(start=min_radii, stop=max_radii, num=num_pts, dtype=dtype)
         super().__init__(points, spherical)
 
 
@@ -154,7 +156,7 @@ class ClenshawRadialGrid(_BaseRadialGrid):
     """
 
     def __init__(self, atomic_number, num_core_pts, num_diffuse_pts, extra_pts=None,
-                 spherical=True):
+                 spherical=True, dtype=np.longdouble):
         r"""
         Construct ClenshawRadialGrid grid object.
 
@@ -171,7 +173,8 @@ class ClenshawRadialGrid(_BaseRadialGrid):
         spherical : bool
             If true, then trapezoidal integration is done spherically,
             i.e. with a factor of :math:`4 \pi r^2`.
-
+        dtype : data-type, optional
+            The desired NumPy data-type.
 
         """
         if not isinstance(atomic_number, int) or atomic_number <= 0:
@@ -184,8 +187,8 @@ class ClenshawRadialGrid(_BaseRadialGrid):
         self._atomic_number = atomic_number
 
         # compute core and diffuse points
-        core_points = self._get_points(num_core_pts, mode="core")
-        diff_points = self._get_points(num_diffuse_pts, mode="diffuse")
+        core_points = self._get_points(num_core_pts, mode="core", dtype=dtype)
+        diff_points = self._get_points(num_diffuse_pts, mode="diffuse", dtype=dtype)
 
         # put all points together (0.0 is also contained in diff_points, so it should be removed)
         if extra_pts:
@@ -203,7 +206,7 @@ class ClenshawRadialGrid(_BaseRadialGrid):
         """Return the atomic number."""
         return self._atomic_number
 
-    def _get_points(self, num_pts, mode="core"):
+    def _get_points(self, num_pts, mode="core", dtype=np.longdouble):
         r"""Generate radial points on [0, inf) based on Clenshaw-Curtis grid.
 
         The "core" points are concentrated near the origin based on:
@@ -223,6 +226,8 @@ class ClenshawRadialGrid(_BaseRadialGrid):
         mode : str, optional
             If "core", the points are placed closer to the origin. If "diffuse", the points are
             placed far away from origin.
+        dtype : data-type, optional
+            The desired NumPy data-type.
 
         Returns
         -------
@@ -231,10 +236,12 @@ class ClenshawRadialGrid(_BaseRadialGrid):
 
         """
         if mode.lower() == "core":
-            points = 1. - np.cos(0.5 * np.pi * np.arange(0., num_pts) / num_pts)
+            points = 1. - np.cos(0.5 * np.pi * np.arange(0., num_pts, dtype=dtype) / num_pts)
             points /= 2 * self._atomic_number
         elif mode.lower() == "diffuse":
-            points = 25. * (1. - np.cos(0.5 * np.pi * np.arange(0., num_pts) / num_pts))
+            points = 25. * (
+                    1. - np.cos(0.5 * np.pi * np.arange(0., num_pts, dtype=dtype) / num_pts)
+            )
         else:
             raise ValueError(
                 f"Arguments mode={mode.lower()} is not recognized!"
