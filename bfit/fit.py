@@ -20,15 +20,14 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-import numpy as np
+r"""Fitting Algorithms."""
+
+from timeit import default_timer as timer
 import warnings
 
+from bfit.measure import KLDivergence, Measure
+import numpy as np
 from scipy.optimize import minimize, NonlinearConstraint
-from timeit import default_timer as timer
-
-from bfit.measure import (
-    KLDivergence, Measure, SquaredDifference, TsallisDivergence
-)
 
 
 __all__ = ["KLDivergenceSCF", "ScipyFit"]
@@ -57,10 +56,14 @@ class _BaseFit:
         if np.any(density < 0.):
             raise ValueError("Density should be positive.")
         self._grid = grid
-        if not (hasattr(self.grid, "points")):
-            raise AttributeError(f"Grid class {type(self.grid)} should contain attribute 'points'.")
+        if not hasattr(self.grid, "points"):
+            raise AttributeError(
+                f"Grid class {type(self.grid)} should contain attribute 'points'."
+            )
         if not (hasattr(self.grid, 'integrate') and callable(getattr(self.grid, 'integrate'))):
-            raise AttributeError(f"Grid class {type(self.grid)} should contain method called 'integrate'.")
+            raise AttributeError(
+                f"Grid class {type(self.grid)} should contain method called 'integrate'."
+            )
         self._density = density
         self._model = model
         self._measure = measure
@@ -72,27 +75,27 @@ class _BaseFit:
 
     @property
     def grid(self):
-        r"""Grid object containing points and integration method."""
+        r"""Return grid object containing points and integration method."""
         return self._grid
 
     @property
     def density(self):
-        r"""The true density evaluated on the grid points."""
+        r"""Return the true density evaluated on the grid points."""
         return self._density
 
     @property
     def model(self):
-        r"""The Gaussian basis model density."""
+        r"""Return the Gaussian basis model density."""
         return self._model
 
     @property
     def measure(self):
-        r"""The deviation measure between true density and model density."""
+        r"""Return the deviation measure between true density and model density."""
         return self._measure
 
     @property
     def integral_dens(self):
-        r"""Integration value of the density."""
+        r"""Return integration value of the density."""
         return self._integral_dens
 
     def goodness_of_fit(self, coeffs, expons):
@@ -125,7 +128,7 @@ class _BaseFit:
             This is defined to be :math:`L_2^2(f, g) = \int (f(x) - g(x))^2 dx`.
         kullback_leibler : float
             Kullback-Leibler divergence between density and approximate model density.
-            This is defined to be :math:`KL(f, g) = \int f(x) \log\bigg(\frac{f(x)}{g(x)}\bigg) dx`.
+            This is defined to be :math:`KL(f, g) = \int f(x) \log\bigg(\frac{f(x)}{g(x)}\bigg)dx`.
 
         """
         # evaluate approximate model density
@@ -147,7 +150,8 @@ class KLDivergenceSCF(_BaseFit):
 
     This class optimizes the following objective function using self-consistent fitting method
     .. math::
-        \min_{\{c_i\}, \{\alpha\}} f(x) \log \bigg(\frac{f(x)}{\sum c_i b_k(x)} \bigg)dx + \lambda(N - \sum c_i)
+        \min_{\{c_i\}, \{\alpha\}} f(x) \log \bigg(\frac{f(x)}{\sum c_i b_k(x)} \bigg)dx +
+         \lambda(N - \sum c_i)
     where,
         :math:`f` is the true density to be fitted,
         :math:`c_i` is the coefficients of the model that sum to a constant number :math:`N`,
@@ -177,11 +181,11 @@ class KLDivergenceSCF(_BaseFit):
         """
         # initialize KL deviation measure
         measure = KLDivergence(mask_value=mask_value)
-        super(KLDivergenceSCF, self).__init__(grid, density, model, measure, integral_dens)
+        super().__init__(grid, density, model, measure, integral_dens)
         # compute lagrange multiplier
         self._lm = self.grid.integrate(self.density) / self.integral_dens
         if self._lm == 0. or np.isnan(self._lm):
-            raise RuntimeError("Lagrange multiplier cannot be {0}.".format(self._lm))
+            raise RuntimeError(f"Lagrange multiplier cannot be {self._lm}.")
 
     @property
     def lagrange_multiplier(self):
@@ -220,7 +224,7 @@ class KLDivergenceSCF(_BaseFit):
         # compute model density & its derivative
         m, dm = self.model.evaluate(coeffs, expons, deriv=True)
         # compute KL divergence & its derivative
-        k, dk = self.measure.evaluate(self.density, m, deriv=True)
+        _, dk = self.measure.evaluate(self.density, m, deriv=True)
         # compute averages needed to update parameters
         avrg1, avrg2 = np.zeros(self.model.nbasis), np.zeros(self.model.nbasis)
         for index in range(self.model.nbasis):
@@ -294,9 +298,9 @@ class KLDivergenceSCF(_BaseFit):
         if not isinstance(c0, np.ndarray) or not isinstance(e0, np.ndarray):
             raise TypeError("Initial coefficients or exponents should be numpy arrays.")
         if c0.shape != (self.model.nbasis,):
-            raise ValueError("Argument init_coeffs shape != ({0},)".format(self.model.nbasis))
+            raise ValueError(f"Argument init_coeffs shape != ({self.model.nbasis},)")
         if e0.shape != (self.model.nbasis,):
-            raise ValueError("Argument init_expons shape != ({0},)".format(self.model.nbasis))
+            raise ValueError(f"Argument init_expons shape != ({self.model.nbasis},)")
 
         new_cs, new_es = c0, e0
 
@@ -355,7 +359,6 @@ class KLDivergenceSCF(_BaseFit):
                 print(template_iters.format(
                      niter, *performance[-1], max_diff_coeffs, max_diff_expons, diff_divergence)
                 )
-
 
         end = timer()
         time = end - start
@@ -436,9 +439,9 @@ class ScipyFit(_BaseFit):
         if np.any(abs(grid.points - model.points) > 1.e-12):
             raise ValueError("The grid.points & model.points are not the same!")
         if len(grid.points) != len(density):
-            raise ValueError("Argument density should have ({0},) shape.".format(len(grid.points)))
+            raise ValueError(f"Argument density should have ({len(grid.points)},) shape.")
         if method.lower() not in ["slsqp", "trust-constr"]:
-            raise ValueError("Argument method={0} is not recognized!".format(method))
+            raise ValueError(f"Argument method={method} is not recognized!")
         if not isinstance(measure, Measure):
             raise TypeError(f"Measure {type(measure)} needs to be a children of the class Measure.")
 
@@ -447,7 +450,7 @@ class ScipyFit(_BaseFit):
         if weights is None:
             weights = np.ones(len(density))
         self.weights = weights
-        super(ScipyFit, self).__init__(grid, density, model, measure, integral_dens)
+        super().__init__(grid, density, model, measure, integral_dens)
 
     def run(self, c0, e0, opt_coeffs=True, opt_expons=True, maxiter=1000, tol=1.e-14, disp=False,
             with_constraint=True):
@@ -470,8 +473,8 @@ class ScipyFit(_BaseFit):
             For slsqp. precision goal for the value of objective function in the stopping criterion.
             For trust-constr, it is precision goal for the change in independent variables.
         disp : bool
-            If True, then it will print the iteration errors, convergence messages from the optimizer
-            and will print out various error measures at each iteration.
+            If True, then it will print the iteration errors, convergence messages from the
+            optimizer and will print out various error measures at each iteration.
         with_constraint : bool
             If true, then adds the constraint that the integration of the model density must
             be equal to the constraint of true density. The default is True.
@@ -599,7 +602,7 @@ class ScipyFit(_BaseFit):
 
         # check successful optimization
         if not res["success"]:
-            warnings.warn("Failed Optimization: {0}".format(res["message"]))
+            warnings.warn(f"Failed Optimization: {res['message']}")
 
         # split optimized coeffs & expons
         if opt_coeffs and opt_expons:

@@ -20,16 +20,16 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
+r"""Test bfit.model module."""
 
-
-import numpy as np
-from numpy.testing import assert_raises, assert_equal, assert_almost_equal
-
-from bfit.grid import UniformRadialGrid, CubicGrid
+from bfit.grid import CubicGrid, UniformRadialGrid
 from bfit.model import AtomicGaussianDensity, MolecularGaussianDensity
+import numpy as np
+from numpy.testing import assert_almost_equal, assert_equal, assert_raises
 
 
 def test_raises_gaussian_model():
+    r"""Test raises error of all Gaussian model classes."""
     # check points
     assert_raises(TypeError, AtomicGaussianDensity, 10., None, 5, 5, False)
     assert_raises(TypeError, AtomicGaussianDensity, [5.], None, 5, 5, True)
@@ -55,6 +55,7 @@ def test_raises_gaussian_model():
 
 
 def test_gaussian_1s_origin():
+    r"""Test evaluation of single s-type Gaussian at the origin."""
     # test one (un)normalized s-type gaussian on r=0. against sympy
     coeffs, expons = np.array([0.]), np.array([0.])
     # un-normalized at r=0.
@@ -86,6 +87,7 @@ def test_gaussian_1s_origin():
 
 
 def test_gaussian_1s_one_point():
+    r"""Test evaluation of single s-type Gaussian at various single points."""
     # test one (un)normalized s-type gaussian on one point against sympy
     coeffs, expons = np.array([3.]), np.array([0.])
     # un-normalized at r=1.
@@ -117,6 +119,7 @@ def test_gaussian_1s_one_point():
 
 
 def test_gaussian_1s_multiple_point():
+    r"""Test evaluation of single s-type Gaussian at multiple points."""
     # test one (un)normalized s-type gaussian on multiple point against sympy
     coeffs, expons = np.array([0.]), np.array([0.])
     # un-normalized r=[0., 0.5, 1.0]
@@ -152,6 +155,7 @@ def test_gaussian_1s_multiple_point():
 
 
 def test_gaussian_xs_origin():
+    r"""Test evaluation of multiple s-type Gaussian at origin."""
     # test multiple (un)normalized s-type gaussian on r=0. against sympy
     coeffs, expons = np.zeros(10), np.zeros(10)
     # un-normalized at r=0.
@@ -184,6 +188,7 @@ def test_gaussian_xs_origin():
 
 
 def test_gaussian_xs_one_point():
+    r"""Test evaluation of multiple s-type Gaussian at single point."""
     # test multiple (un)normalized s-type gaussian on one point against sympy
     coeffs, expons = np.array([0.0, 1.0, 0.0, 3.5]), np.array([0.0, 0.0, 2.0, 0.5])
     # un-normalized at r=-1.
@@ -217,6 +222,7 @@ def test_gaussian_xs_one_point():
 
 
 def test_gaussian_xs_multiple_point():
+    r"""Test evaluation of multiple s-type Gaussian at multiple points."""
     # test multiple (un)normalized s-type gaussian on multiple points against sympy
     points = np.array([0.0, -2.67, 0.43, 5.1])
     coeffs = np.array([2.0, 0.02, 1.51])
@@ -246,6 +252,7 @@ def test_gaussian_xs_multiple_point():
 
 
 def test_gaussian_1p_origin():
+    r"""Test evaluation of single p-type Gaussian at origin."""
     # test one (un)normalized p-type gaussian on r=0. against sympy
     coeffs, expons = np.array([0.]), np.array([0.])
     # un-normalized at r=0.
@@ -276,6 +283,7 @@ def test_gaussian_1p_origin():
 
 
 def test_gaussian_1p_one_point():
+    r"""Test evaluation of single p-type Gaussian at single point."""
     # test one (un)normalized p-type gaussian on one point against sympy
     coeffs, expons = np.array([3.]), np.array([0.])
     # un-normalized at r=-1.
@@ -307,6 +315,7 @@ def test_gaussian_1p_one_point():
 
 
 def test_gaussian_1p_multiple_point():
+    r"""Test evaluation of single p-type Gaussian at multiple points."""
     # test one (un)normalized p-type gaussian on multiple point against sympy
     coeffs, expons = np.array([0.]), np.array([0.])
     # un-normalized r=[0., -0.5, 1.0]
@@ -342,6 +351,7 @@ def test_gaussian_1p_multiple_point():
 
 
 def test_gaussian_xp_origin():
+    r"""Test evaluation of multiple p-type Gaussian at origin."""
     # test multiple (un)normalized p-type gaussian on r=0. against sympy
     coeffs, expons = np.zeros(10), np.zeros(10)
     # un-normalized at r=0.
@@ -372,6 +382,7 @@ def test_gaussian_xp_origin():
 
 
 def test_gaussian_xp_one_point():
+    r"""Test evaluation of multiple p-type Gaussian at single point."""
     # test multiple (un)normalized p-type gaussian on one point against sympy
     coeffs, expons = np.array([0.0, 1.0, 0.0, 3.5]), np.array([0.0, 0.0, 2.0, 0.5])
     # un-normalized at r=1.
@@ -405,6 +416,7 @@ def test_gaussian_xp_one_point():
 
 
 def test_gaussian_xp_multiple_point():
+    r"""Test evaluation of multiple p-type Gaussian at multiple points."""
     # test multiple (un)normalized p-type gaussian on multiple points against sympy
     points = np.array([0.0, 2.67, -0.43, 5.1])
     coeffs = np.array([2.0, 0.02, 1.51])
@@ -433,6 +445,7 @@ def test_gaussian_xp_multiple_point():
 
 
 def test_gaussian_1s1p_basis_origin():
+    r"""Test evaluation of single s-type and p-type Gaussian at origin."""
     # test (un)normalized s-type + p-type gaussian at origin against sympy
     coeffs = np.array([0.5, -2.0])
     expons = np.array([0.1, 0.4])
@@ -451,6 +464,7 @@ def test_gaussian_1s1p_basis_origin():
 
 
 def test_gaussian_1s1p_basis_one_point():
+    r"""Test evaluation of single s-type and p-type Gaussian at single point."""
     # test (un)normalized s-type & p-type gaussian on one point against sympy
     coeffs = np.array([0.5, 2.0])
     expons = np.array([0.1, 0.4])
@@ -471,6 +485,7 @@ def test_gaussian_1s1p_basis_one_point():
 
 
 def test_gaussian_2s1p_basis_origin():
+    r"""Test evaluation of two s-type and one p-type Gaussian at origin."""
     # test (un)normalized s-type & p-type gaussian on one point against sympy
     coeffs = np.array([1.2, -4.5, -0.75])
     expons = np.array([0.8, 1.25, 2.19])
@@ -490,14 +505,15 @@ def test_gaussian_2s1p_basis_origin():
 
 
 def test_gaussian_2s1p_basis_multiple_point():
+    r"""Test evaluation of two s-type and one p-type Gaussian at multiple points."""
     # test (un)normalized s-type & p-type gaussian on one point against sympy
     coeffs = np.array([1.2, -4.5, -0.75])
     expons = np.array([0.8, 1.25, 2.19])
     # un-normalized at r=[0.89, -2.56]
     g = np.array([-1.1399500497, 0.0050932753])
-    dg = np.array([[ 5.30635465e-01,  3.71530247e-01,  1.39768663e-01,
+    dg = np.array([[5.30635465e-01,  3.71530247e-01,  1.39768663e-01,
                     -5.04379622e-01,  1.32430099e+00,  8.30330683e-02],
-                   [ 5.28501406e-03,  2.76859611e-04,  3.83105827e-06,
+                   [5.28501406e-03,  2.76859611e-04,  3.83105827e-06,
                     -4.15630417e-02,  8.16492216e-03,  1.88304176e-05]])
     model = AtomicGaussianDensity(np.array([0.89, -2.56]), num_s=2, num_p=1, normalize=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
@@ -505,9 +521,9 @@ def test_gaussian_2s1p_basis_multiple_point():
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=[0.89, -2.56]
     g = np.array([-0.4268626593, 0.000499832])
-    dg = np.array([[ 6.81877632e-02,  9.32468966e-02,  1.18769254e-01,
-                     8.86086345e-02, -1.71159341e-01, -3.11281606e-02],
-                   [ 6.79135321e-04,  6.94864004e-05,  3.25546459e-06,
+    dg = np.array([[6.81877632e-02,  9.32468966e-02,  1.18769254e-01,
+                    8.86086345e-02, -1.71159341e-01, -3.11281606e-02],
+                   [6.79135321e-04,  6.94864004e-05,  3.25546459e-06,
                     -3.81288302e-03,  1.67401077e-03,  1.32140467e-05]])
     model = AtomicGaussianDensity(np.array([0.89, -2.56]), num_s=2, num_p=1, normalize=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
@@ -516,6 +532,7 @@ def test_gaussian_2s1p_basis_multiple_point():
 
 
 def test_gaussian_1s2p_basis_origin():
+    r"""Test evaluation of one s-type and two p-type Gaussian at origin."""
     # test (un)normalized s-type & p-type gaussian on one point against sympy
     coeffs = np.array([1.2, -4.5, -0.75])
     expons = np.array([0.8, 1.25, 2.19])
@@ -535,21 +552,22 @@ def test_gaussian_1s2p_basis_origin():
 
 
 def test_gaussian_1s2p_basis_multiple_point():
+    r"""Test evaluation of one s-type and two p-type Gaussian at multiple points."""
     # test (un)normalized s-type & p-type gaussian on one point against sympy
     coeffs = np.array([1.2, -4.5, -0.75])
     expons = np.array([0.8, 1.25, 2.19])
     # un-normalized at r=[-0.201, 1.701]
     g = np.array([0.9612490198, -0.2351426929])
-    dg = np.array([[ 0.96819593, 0.03841136, 0.03697997, -0.04693930, 0.00698336, 0.00112052],
-                   [ 0.09879376, 0.07774519, 0.00512249, -0.34301997, 1.01226602, 0.01111605]])
+    dg = np.array([[0.96819593, 0.03841136, 0.03697997, -0.04693930, 0.00698336, 0.00112052],
+                   [0.09879376, 0.07774519, 0.00512249, -0.34301997, 1.01226602, 0.01111605]])
     model = AtomicGaussianDensity(np.array([-0.201, 1.701]), num_s=1, num_p=2, normalize=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
     # normalized at r=[-0.201, 1.701]
     g = np.array([0.0895783695, -0.0612024131])
-    dg = np.array([[ 0.1244152, 0.00803376, 0.03142395,  0.27390239, -0.07084324, -0.0259519],
-                   [ 0.0126952, 0.01626045, 0.00435286, -0.01551457,  0.06537195,  0.00571917]])
+    dg = np.array([[0.1244152, 0.00803376, 0.03142395,  0.27390239, -0.07084324, -0.0259519],
+                   [0.0126952, 0.01626045, 0.00435286, -0.01551457,  0.06537195,  0.00571917]])
     model = AtomicGaussianDensity(np.array([-0.201, 1.701]), num_s=1, num_p=2, normalize=True)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
@@ -557,24 +575,25 @@ def test_gaussian_1s2p_basis_multiple_point():
 
 
 def test_gaussian_2s2p_basis_multiple_point():
+    r"""Test evaluation of two s-type and two p-type Gaussian at origin."""
     # test multiple (un)normalized s-type & p-type gaussian on one point against sympy
     coeffs = np.array([0.53, -6.1, -2.0, 4.3])
     expons = np.array([0.11, 3.4, 1.5, 0.78])
     points = np.array([0., -0.71, 1.68, -2.03, 3.12, 4.56])
     # un-normalized
     g = np.array([-5.57, 0.3920707885, 1.6490462639, 1.0318279643, 0.2027417225, 0.0538246312])
-    dg = np.array([[  1.00000000e+00, 1.00000000e+00, 0.00000000e+00,  0.00000000e+00,
-                     -0.00000000e+00, 0.00000000e+00, 0.00000000e+00, -0.00000000e+00],
-                   [  9.46058379e-01, 1.80154583e-01, 2.36660035e-01,  3.40214622e-01,
-                     -2.52761255e-01, 5.53977145e-01, 2.38600648e-01, -7.37459422e-01],
-                   [  7.33106716e-01, 6.79893148e-05, 4.09250713e-02,  3.12270833e-01,
-                     -1.09663381e+00, 1.17054756e-03, 2.31013843e-01, -3.78981876e+00],
-                   [  6.35528082e-01, 8.22382682e-07, 8.52051568e-03,  1.65591658e-01,
-                     -1.38804227e+00, 2.06726365e-05, 7.02243861e-02, -2.93426265e+00],
-                   [  3.42739704e-01, 4.22836923e-15, 4.43521708e-06,  4.90663947e-03,
-                     -1.76827365e+00, 2.51079889e-13, 8.63483543e-05, -2.05381723e-01],
-                   [  1.01540657e-01, 1.97762748e-31, 5.91712954e-13,  1.87976695e-06,
-                     -1.11903978e+00, 2.50844168e-29, 2.46076850e-11, -1.68074625e-04]])
+    dg = np.array([[1.00000000e+00, 1.00000000e+00, 0.00000000e+00,  0.00000000e+00,
+                    -0.00000000e+00, 0.00000000e+00, 0.00000000e+00, -0.00000000e+00],
+                   [9.46058379e-01, 1.80154583e-01, 2.36660035e-01,  3.40214622e-01,
+                    -2.52761255e-01, 5.53977145e-01, 2.38600648e-01, -7.37459422e-01],
+                   [7.33106716e-01, 6.79893148e-05, 4.09250713e-02,  3.12270833e-01,
+                    -1.09663381e+00, 1.17054756e-03, 2.31013843e-01, -3.78981876e+00],
+                   [6.35528082e-01, 8.22382682e-07, 8.52051568e-03,  1.65591658e-01,
+                    -1.38804227e+00, 2.06726365e-05, 7.02243861e-02, -2.93426265e+00],
+                   [3.42739704e-01, 4.22836923e-15, 4.43521708e-06,  4.90663947e-03,
+                    -1.76827365e+00, 2.51079889e-13, 8.63483543e-05, -2.05381723e-01],
+                   [1.01540657e-01, 1.97762748e-31, 5.91712954e-13,  1.87976695e-06,
+                    -1.11903978e+00, 2.50844168e-29, 2.46076850e-11, -1.68074625e-04]])
     dg = np.array(dg)
     model = AtomicGaussianDensity(points, num_s=2, num_p=2, normalize=False)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
@@ -583,17 +602,17 @@ def test_gaussian_2s2p_basis_multiple_point():
     # normalized
     g = np.array([-6.8644186384, -1.2960445644, 0.0614559599,
                   0.0423855159, 0.0025445224, 0.0003531182])
-    dg = np.array([[ 6.55185411e-03,  1.12588379e+00,  0.00000000e+00,  0.00000000e+00,
-                     4.73520366e-02, -3.02995197e+00,  0.00000000e+00,  0.00000000e+00],
-                   [ 6.19843649e-03,  2.02833125e-01,  7.80794966e-02,  2.18863537e-02,
-                     4.31417361e-02,  7.78541543e-02, -1.81545240e-01,  2.54197333e-01],
-                   [ 4.80320825e-03,  7.65480675e-05,  1.35021064e-02,  2.00887013e-02,
-                     2.75291113e-02,  1.11189616e-03,  3.12096688e-02,  3.30606041e-02],
-                   [ 4.16388728e-03,  9.25907331e-07,  2.81111077e-03,  1.06526803e-02,
-                     2.09992985e-02,  2.07832063e-05,  1.37982435e-02, -4.19483238e-02],
-                   [ 2.24558054e-03,  4.76065238e-15,  1.46327840e-06,  3.15649123e-04,
-                     4.64395201e-03,  2.69875021e-13,  2.36106798e-05, -8.86212334e-03],
-                   [ 6.65279571e-04,  2.22657872e-31,  1.95219482e-13,  1.20927325e-07,
+    dg = np.array([[6.55185411e-03,  1.12588379e+00,  0.00000000e+00,  0.00000000e+00,
+                    4.73520366e-02, -3.02995197e+00,  0.00000000e+00,  0.00000000e+00],
+                   [6.19843649e-03,  2.02833125e-01,  7.80794966e-02,  2.18863537e-02,
+                    4.31417361e-02,  7.78541543e-02, -1.81545240e-01,  2.54197333e-01],
+                   [4.80320825e-03,  7.65480675e-05,  1.35021064e-02,  2.00887013e-02,
+                    2.75291113e-02,  1.11189616e-03,  3.12096688e-02,  3.30606041e-02],
+                   [4.16388728e-03,  9.25907331e-07,  2.81111077e-03,  1.06526803e-02,
+                    2.09992985e-02,  2.07832063e-05,  1.37982435e-02, -4.19483238e-02],
+                   [2.24558054e-03,  4.76065238e-15,  1.46327840e-06,  3.15649123e-04,
+                    4.64395201e-03,  2.69875021e-13,  2.36106798e-05, -8.86212334e-03],
+                   [6.65279571e-04,  2.22657872e-31,  1.95219482e-13,  1.20927325e-07,
                     -2.52362846e-03,  2.76429266e-29,  7.46790004e-12, -9.14578547e-06]])
     dg = np.array(dg)
     model = AtomicGaussianDensity(points, num_s=2, num_p=2, normalize=True)
@@ -603,6 +622,7 @@ def test_gaussian_2s2p_basis_multiple_point():
 
 
 def test_molecular_gaussian_density_1d_1center_1s():
+    r"""Test evaluation of one s-type Molecular Gaussian at origin."""
     # points in 1D space
     points = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
     # gaussian parameters
@@ -637,6 +657,7 @@ def test_molecular_gaussian_density_1d_1center_1s():
 
 
 def test_molecular_gaussian_density_1d_1center_2s():
+    r"""Test evaluation of two s-type Molecular Gaussian at origin."""
     # points in 1D space
     points = np.array([-3.09, -1.53, 0.0, 0.79, 2.91, 4.09])
     # gaussian parameters
@@ -649,13 +670,15 @@ def test_molecular_gaussian_density_1d_1center_2s():
     assert_equal(model.nbasis, 2)
     assert_equal(model.assign_basis_to_center(0), 0)
     assert_equal(model.assign_basis_to_center(1), 0)
-    g = np.array([0.0015335519, 0.1046706295, 1.2358743034, 4.2625443763, 1.2209551847, 0.2082434127])
-    dg = np.array([[ 1.17169574e-22, 5.99043705e-04, -1.45627659e-20, -3.16089580e-02],
-                   [ 3.55683438e-10, 4.08869638e-02, -1.90464255e-08, -9.29517039e-01],
-                   [ 5.79288407e-03, 4.69118442e-01, -7.34426186e-02, -2.52498310e+00],
-                   [ 3.43963408e-01, 8.54861339e-01, -9.03477676e-01, -9.53286654e-01],
-                   [ 5.39425921e-03, 4.64229610e-01, -6.93353697e-02, -2.53325270e+00],
-                   [ 3.83880356e-08, 8.13449927e-02, -1.61332199e-06, -1.45137168e+00]])
+    g = np.array(
+        [0.0015335519, 0.1046706295, 1.2358743034, 4.2625443763, 1.2209551847, 0.2082434127]
+    )
+    dg = np.array([[1.17169574e-22, 5.99043705e-04, -1.45627659e-20, -3.16089580e-02],
+                   [3.55683438e-10, 4.08869638e-02, -1.90464255e-08, -9.29517039e-01],
+                   [5.79288407e-03, 4.69118442e-01, -7.34426186e-02, -2.52498310e+00],
+                   [3.43963408e-01, 8.54861339e-01, -9.03477676e-01, -9.53286654e-01],
+                   [5.39425921e-03, 4.64229610e-01, -6.93353697e-02, -2.53325270e+00],
+                   [3.83880356e-08, 8.13449927e-02, -1.61332199e-06, -1.45137168e+00]])
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -666,18 +689,19 @@ def test_molecular_gaussian_density_1d_1center_2s():
     assert_equal(model.assign_basis_to_center(0), 0)
     assert_equal(model.assign_basis_to_center(1), 0)
     g = np.array([5.94877e-05, 0.0040602608, 0.070642293, 1.5133048321, 0.0685013983, 0.0080780828])
-    dg = np.array([[ 8.06936140e-23, 2.32373955e-05, -9.73133606e-21, -9.78271797e-04],
-                   [ 2.44955932e-10, 1.58603879e-03, -1.22127618e-08, -1.91389796e-02],
-                   [ 3.98950629e-03, 1.81974883e-02, -3.58506541e-02,  9.61603808e-02],
-                   [ 2.36884454e-01, 3.31607709e-02,  2.52321914e-01,  3.16736121e-01],
-                   [ 3.71497700e-03, 1.80078465e-02, -3.40355466e-02,  9.38167504e-02],
-                   [ 2.64374891e-08, 3.15543884e-03, -1.01347721e-06, -2.26418808e-02]])
+    dg = np.array([[8.06936140e-23, 2.32373955e-05, -9.73133606e-21, -9.78271797e-04],
+                   [2.44955932e-10, 1.58603879e-03, -1.22127618e-08, -1.91389796e-02],
+                   [3.98950629e-03, 1.81974883e-02, -3.58506541e-02,  9.61603808e-02],
+                   [2.36884454e-01, 3.31607709e-02,  2.52321914e-01,  3.16736121e-01],
+                   [3.71497700e-03, 1.80078465e-02, -3.40355466e-02,  9.38167504e-02],
+                   [2.64374891e-08, 3.15543884e-03, -1.01347721e-06, -2.26418808e-02]])
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
 
 
 def test_molecular_gaussian_density_1d_1center_1s2p():
+    r"""Test evaluation of one s-type and two-p-type Molecular Gaussian at origin."""
     # points in 1D space
     points = np.array([-2.22, -0.76, 0.0, 1.98, 3.25, 5.50])
     # gaussian parameters
@@ -721,6 +745,7 @@ def test_molecular_gaussian_density_1d_1center_1s2p():
 
 
 def test_molecular_gaussian_density_2d_1center_2s1p():
+    r"""Test evaluation of two s-type and single p-type Molecular Gaussian."""
     # points in 2D space
     points = np.array([[0.0, 0.0], [0.25, -0.25], [-0.5, -0.5], [0.25, 0.5]])
     # gaussian parameters
@@ -750,6 +775,7 @@ def test_molecular_gaussian_density_2d_1center_2s1p():
 
 
 def test_molecular_gaussian_density_2d_2center_1s1p_2p():
+    r"""Test evaluation of Molecular Gaussian of multiple centers."""
     # points in 2D space
     points = np.array([[0.0, 0.0], [0.25, -0.25], [-0.5, -0.5], [0.25, 0.5]])
     # gaussian parameters
@@ -795,6 +821,7 @@ def test_molecular_gaussian_density_2d_2center_1s1p_2p():
 
 
 def test_molecular_gaussian_density_3d_2center_1p_1p():
+    r"""Test evaluation of Molecular Gaussian of multiple centers with p-type Gaussians."""
     # points in 3D space
     points = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, -1.0], [0.0, -1.0, 0.0]])
     # gaussian parameters
@@ -809,9 +836,9 @@ def test_molecular_gaussian_density_3d_2center_1p_1p():
     assert_equal(model.assign_basis_to_center(0), 0)
     assert_equal(model.assign_basis_to_center(1), 1)
     g = np.array([0.56375047, 0.84793613, 0.74434677])
-    dg = np.array([[ 0.        ,  0.35234404,  0.        , -0.28187524],
-                   [ 0.01347589,  0.52490662, -0.01617107, -1.2597759 ],
-                   [ 0.082085  ,  0.43443486, -0.049251  , -1.73773943]])
+    dg = np.array([[0.,  0.35234404,  0., -0.28187524],
+                   [0.01347589,  0.52490662, -0.01617107, -1.2597759],
+                   [0.082085,  0.43443486, -0.049251, -1.73773943]])
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
@@ -822,15 +849,16 @@ def test_molecular_gaussian_density_3d_2center_1p_1p():
     assert_equal(model.assign_basis_to_center(0), 0)
     assert_equal(model.assign_basis_to_center(1), 1)
     g = np.array([0.02767043, 0.05078846, 0.09238776])
-    dg = np.array([[ 0.00000000e+00,  1.72940204e-02,  0.00000000e+00, 8.49877575e-02],
-                   [ 1.59437891e-02,  2.57638692e-02, -9.56627343e-03, 8.53888235e-02],
-                   [ 9.71175569e-02,  2.13232647e-02, -1.38777878e-17, 3.65541680e-02]])
+    dg = np.array([[0.00000000e+00,  1.72940204e-02,  0.00000000e+00, 8.49877575e-02],
+                   [1.59437891e-02,  2.57638692e-02, -9.56627343e-03, 8.53888235e-02],
+                   [9.71175569e-02,  2.13232647e-02, -1.38777878e-17, 3.65541680e-02]])
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
 
 
 def test_molecular_gaussian_density_3d_3center_2s1p_1p_2s():
+    r"""Test evaluation of Molecular Gaussian with three centers."""
     # points in 3D space
     points = np.array([[0.5, 0.5, 0.5], [1.0, 0.0, 0.0], [0.0, 1.5, 0.5], [0.0, 0.0, -0.5]])
     # gaussian parameters
@@ -850,20 +878,20 @@ def test_molecular_gaussian_density_3d_3center_2s1p_1p_2s():
     assert_equal(model.assign_basis_to_center(5), 2)
     # compute density value & its derivatives
     g = np.array([4.177243712, 2.9091656819, 2.4681836067, 5.1131523036])
-    dg = np.array([[ 5.48811636e-01,  1.53354967e-01,  1.80381347e-01,
-                     3.16049495e-01,  3.60656314e-03,  9.77834441e-02,
+    dg = np.array([[5.48811636e-01,  1.53354967e-01,  1.80381347e-01,
+                    3.16049495e-01,  3.60656314e-03,  9.77834441e-02,
                     -1.31714793e+00, -1.95527583e-01, -1.21757409e-01,
                     -1.61975366e+00, -5.95082917e-03, -5.20696840e-01],
-                   [ 4.49328964e-01,  8.20849986e-02,  1.49568619e-01,
-                     2.88474905e-01,  3.05902321e-07,  2.02943064e-03,
+                   [4.49328964e-01,  8.20849986e-02,  1.49568619e-01,
+                    2.88474905e-01,  3.05902321e-07,  2.02943064e-03,
                     -1.43785269e+00, -1.39544498e-01, -1.34611757e-01,
                     -5.91373556e-01, -1.34597021e-06, -2.88179150e-02],
-                   [ 1.35335283e-01,  1.93045414e-03,  2.16292380e-02,
-                     1.10649502e-01,  2.35177459e-02,  2.12247974e-01,
+                   [1.35335283e-01,  1.93045414e-03,  2.16292380e-02,
+                    1.10649502e-01,  2.35177459e-02,  2.12247974e-01,
                     -1.08268227e+00, -8.20443008e-03, -4.86657855e-02,
                     -1.36098888e+00, -2.58695204e-02, -7.53480307e-01],
-                   [ 8.18730753e-01,  5.35261429e-01,  1.55471264e-01,
-                     3.16049495e-01,  8.48182352e-05,  2.07543379e-02,
+                   [8.18730753e-01,  5.35261429e-01,  1.55471264e-01,
+                    3.16049495e-01,  8.48182352e-05,  2.07543379e-02,
                     -6.54984602e-01, -2.27486107e-01, -3.49810344e-02,
                     -1.61975366e+00, -2.33250147e-04, -1.84194749e-01]])
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
@@ -880,28 +908,29 @@ def test_molecular_gaussian_density_3d_3center_2s1p_1p_2s():
     assert_equal(model.assign_basis_to_center(4), 2)
     assert_equal(model.assign_basis_to_center(5), 2)
     g = np.array([1.4141296252, 0.5578528034, 1.8064862846, 1.4079886645])
-    dg = np.array([[ 7.05234390e-02,  1.08863690e-01,  1.07463149e-01,
-                     4.80198440e-02,  1.33033380e-02,  9.58480014e-02,
-                     2.53884381e-01, -2.77602409e-02,  5.47213665e-02,
-                     2.01355937e-01, -1.60970390e-02, -1.81106344e-01],
-                   [ 5.77397084e-02,  5.82705342e-02,  8.91063016e-02,
-                     4.38302234e-02,  1.12836565e-06,  1.98926180e-03,
-                     1.61671183e-01, -3.96239632e-02,  2.53249489e-02,
-                     3.18566033e-01, -4.46832798e-06, -2.14134408e-02],
-                   [ 1.73908660e-02,  1.37039161e-03,  1.28857338e-02,
-                     1.68118346e-02,  8.67486608e-02,  2.08046917e-01,
+    dg = np.array([[7.05234390e-02,  1.08863690e-01,  1.07463149e-01,
+                    4.80198440e-02,  1.33033380e-02,  9.58480014e-02,
+                    2.53884381e-01, -2.77602409e-02,  5.47213665e-02,
+                    2.01355937e-01, -1.60970390e-02, -1.81106344e-01],
+                   [5.77397084e-02,  5.82705342e-02,  8.91063016e-02,
+                    4.38302234e-02,  1.12836565e-06,  1.98926180e-03,
+                    1.61671183e-01, -3.96239632e-02,  2.53249489e-02,
+                    3.18566033e-01, -4.46832798e-06, -2.14134408e-02],
+                   [1.73908660e-02,  1.37039161e-03,  1.28857338e-02,
+                    1.68118346e-02,  8.67486608e-02,  2.08046917e-01,
                     -3.47817319e-02, -4.42636491e-03, -1.37334794e-02,
                     -5.01298341e-02, -5.72541161e-02, -2.38247276e-02],
-                   [ 1.05208608e-01,  3.79971613e-01,  9.26228338e-02,
-                     4.80198440e-02,  3.12864522e-04,  2.03435441e-02,
-                     5.47084762e-01,  2.26083110e-01,  8.88447971e-02,
-                     2.01355937e-01, -7.22717046e-04, -1.10659036e-01]])
+                   [1.05208608e-01,  3.79971613e-01,  9.26228338e-02,
+                    4.80198440e-02,  3.12864522e-04,  2.03435441e-02,
+                    5.47084762e-01,  2.26083110e-01,  8.88447971e-02,
+                    2.01355937e-01, -7.22717046e-04, -1.10659036e-01]])
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=False), decimal=8)
     assert_almost_equal(g, model.evaluate(coeffs, expons, deriv=True)[0], decimal=8)
     assert_almost_equal(dg, model.evaluate(coeffs, expons, deriv=True)[1], decimal=8)
 
 
 def test_gaussian_model_s_integrate_uniform():
+    r"""Test integration of one s-type Gaussian with uniform grid against analytic value."""
     grid = UniformRadialGrid(100, 0.0, 15.0, spherical=True)
     # un-normalized s-type Gaussian at origin
     model = AtomicGaussianDensity(grid.points, num_s=1, num_p=0, normalize=False)
@@ -918,6 +947,7 @@ def test_gaussian_model_s_integrate_uniform():
 
 
 def test_gaussian_model_p_integrate_uniform():
+    r"""Test integration of one p-type Gaussian with uniform grid against analytic value."""
     grid = UniformRadialGrid(100, 0.0, 15.0, spherical=True)
     # un-normalized p-type Gaussian at origin
     model = AtomicGaussianDensity(grid.points, num_s=0, num_p=1, normalize=False)
@@ -940,6 +970,7 @@ def test_gaussian_model_p_integrate_uniform():
 
 
 def test_gaussian_model_sp_integrate_uniform():
+    r"""Test integration of one s/p-type Gaussian with uniform grid against analytic value."""
     grid = UniformRadialGrid(100, 0.0, 15.0, spherical=True)
     # un-normalized s-type + p-type Gaussian at origin
     model = AtomicGaussianDensity(grid.points, num_s=1, num_p=1, normalize=False)
@@ -961,6 +992,7 @@ def test_gaussian_model_sp_integrate_uniform():
 
 
 def test_gaussian_model_s_integrate_cubic():
+    r"""Test integration of one s-type Molecular Gaussian with cubic grid."""
     axes = np.array([[0.3, 0.0, 0.0], [0.0, 0.3, 0.0], [0.0, 0.0, 0.3]])
     grid = CubicGrid(np.array([-5.0, -5.0, -5.0]), axes, (65, 65, 65))
     coord = None
@@ -979,6 +1011,7 @@ def test_gaussian_model_s_integrate_cubic():
 
 
 def test_gaussian_model_sp_integrate_cubic():
+    r"""Test integration of one s-type and one p-type Molecular Gaussian with cubic grid."""
     axes = np.array([[0.3, 0.0, 0.0], [0.0, 0.3, 0.0], [0.0, 0.0, 0.3]])
     grid = CubicGrid(np.zeros(3), axes, (65, 65, 65))
     coord = np.array([10., 10., 10.])
@@ -1002,6 +1035,7 @@ def test_gaussian_model_sp_integrate_cubic():
 
 
 def test_molecular_gaussian_model_sp_integrate_cubic():
+    r"""Test integration of one s-type and one p-type Molecular Gaussian with cubic grid."""
     axes = np.array([[0.3, 0.0, 0.0], [0.0, 0.3, 0.0], [0.0, 0.0, 0.3]])
     grid = CubicGrid(np.zeros(3), axes, (75, 75, 75))
     coord = np.array([[10., 10., 9.5], [10., 10., 10.5]])

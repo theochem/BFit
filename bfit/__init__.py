@@ -20,7 +20,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-
+r"""Package for fitting densities to a linear combination of Gaussians."""
 
 from bfit.fit import *
 from bfit.grid import *

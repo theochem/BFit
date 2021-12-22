@@ -20,18 +20,18 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
+r"""Test bfit.fit module."""
 
-
+from bfit.fit import KLDivergenceSCF, ScipyFit
+from bfit.grid import CubicGrid, UniformRadialGrid
+from bfit.measure import KLDivergence, SquaredDifference
+from bfit.model import AtomicGaussianDensity, MolecularGaussianDensity
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_equal, assert_raises
 
-from bfit.model import AtomicGaussianDensity, MolecularGaussianDensity
-from bfit.fit import KLDivergenceSCF, ScipyFit
-from bfit.measure import KLDivergence, SquaredDifference
-from bfit.grid import UniformRadialGrid, CubicGrid
-
 
 def test_lagrange_multiplier():
+    r"""Test lagrange multiplier of KL-SCF."""
     g = UniformRadialGrid(150, 1e-4, 15.0, spherical=True)
     e = np.exp(-g.points)
     kl = KLDivergenceSCF(g, e, None)
@@ -39,6 +39,7 @@ def test_lagrange_multiplier():
 
 
 def test_goodness_of_fit():
+    r"""Test goodness of fit with analytic values."""
     g = UniformRadialGrid(1000, 0.0, 10.0, spherical=True)
     e = np.exp(-g.points)
     m = AtomicGaussianDensity(g.points, num_s=1, num_p=0, normalize=False)
@@ -51,6 +52,7 @@ def test_goodness_of_fit():
 
 
 def test_assertion_raises():
+    r"""Test assertion raises of all fitting methods."""
     g = UniformRadialGrid(1000, 0.0, 10.0, spherical=True)
     e = np.exp(-g.points)
     m = AtomicGaussianDensity(g.points, num_s=1, num_p=0, normalize=False)
@@ -59,7 +61,7 @@ def test_assertion_raises():
     assert_raises(ValueError, kl.run, np.array([1., 2.]), np.array([1.]))
     assert_raises(ValueError, kl.run, np.array([1.]), np.array([1., 2.]))
     assert_raises(ValueError, kl.run, np.array([1.]), np.array([1.]), False, False)
-    assert False == kl.run(np.array([1.]), np.array([1.]), maxiter=1)["success"]
+    assert not kl.run(np.array([1.]), np.array([1.]), maxiter=1)["success"]
 
     m2 = AtomicGaussianDensity(g.points * 2., num_s=1, num_p=0, normalize=False)
     measure = KLDivergence()
@@ -84,7 +86,8 @@ def test_assertion_raises():
     assert_raises(AttributeError, ScipyFit, GridNoIntegrate(), e, KLDivergence())
 
 
-def test_run_normalized_1s_gaussian():
+def test_run_normalized_s_gaussian():
+    r"""Test KL-SCF against normalized s-type Gaussian."""
     # density is normalized 1s orbital with exponent=1.0
     g = UniformRadialGrid(150, 0.0, 15.0, spherical=True)
     e = (1. / np.pi)**1.5 * np.exp(-g.points**2.)
@@ -129,6 +132,7 @@ def test_run_normalized_1s_gaussian():
 
 
 def test_kl_scf_update_coeffs_2s_gaussian():
+    r"""Test KL-SCF method for updating coefficients of two s-type Gaussians."""
     # actual density is a 1s Slater function
     grid = UniformRadialGrid(150, 0.0, 15.0, spherical=True)
     c, e = np.array([5., 2.]), np.array([10., 3.])
@@ -151,6 +155,7 @@ def test_kl_scf_update_coeffs_2s_gaussian():
 
 
 def test_kl_scf_update_params_2s_gaussian():
+    r"""Test KL-SCF method for updating exponents of two s-type Gaussians."""
     # actual density is a 1s Slater function
     grid = UniformRadialGrid(1000, 0.0, 20.0, spherical=True)
     points = grid.points
@@ -176,6 +181,7 @@ def test_kl_scf_update_params_2s_gaussian():
 
 
 def test_kl_scf_update_params_1s1p_gaussian():
+    r"""Test KL-SCF method against one s-type and one p-type Gaussians."""
     # actual density is a 1s Slater function
     grid = UniformRadialGrid(150, 0.0, 15.0, spherical=True)
     points = grid.points
@@ -212,6 +218,7 @@ def test_kl_scf_update_params_1s1p_gaussian():
 
 
 def test_kl_scf_update_params_3d_molecular_dens_1s_1s_gaussian():
+    r"""Test KL-SCF method in three dimensions for one s-type and one p-type Gaussian."""
     # actual density is a 1s Gaussian at origin
     axes = np.array([[0.1, 0.0, 0.0], [0.0, 0.1, 0.0], [0.0, 0.0, 0.1]])
     grid = CubicGrid(np.array([-2.0, -2.0, -2.0]), axes, (40, 40, 40))
@@ -248,6 +255,7 @@ def test_kl_scf_update_params_3d_molecular_dens_1s_1s_gaussian():
 
 
 def test_kl_scf_run_3d_molecular_dens_1s_1p_gaussian():
+    r"""Test KL-SCF on 3D Gaussian example with 1 s-type and 1 p-type Gaussians."""
     # make cubic grid
     axes = np.array([[0.3, 0.0, 0.0], [0.0, 0.3, 0.0], [0.0, 0.0, 0.3]])
     grid = CubicGrid(np.array([-10.0, -10.0, -10.0]), axes, (65, 65, 65))
@@ -286,6 +294,7 @@ def test_kl_scf_run_3d_molecular_dens_1s_1p_gaussian():
 
 
 def test_kl_fit_unnormalized_dens_normalized_1s_gaussian():
+    r"""Test ScipyFit against normalized gaussian model."""
     # density is normalized 1s orbital with exponent=1.0
     grid = UniformRadialGrid(150, 0.0, 15.0, spherical=True)
     # density is normalized 1s gaussian
@@ -323,6 +332,7 @@ def test_kl_fit_unnormalized_dens_normalized_1s_gaussian():
 
 
 def test_kl_fit_normalized_dens_unnormalized_1s_gaussian():
+    r"""Test ScipyFit against un-normalized Gaussian model."""
     # density is normalized 1s gaussian
     grid = UniformRadialGrid(200, 0.0, 15.0, spherical=True)
     dens = 2.06 * (0.88 / np.pi)**1.5 * np.exp(-0.88 * grid.points**2.)
@@ -363,6 +373,7 @@ def test_kl_fit_normalized_dens_unnormalized_1s_gaussian():
 
 
 def test_kl_fit_normalized_dens_normalized_1s_gaussian():
+    r"""Test ScipyFiy againstnormalized Gaussian model."""
     # density is normalized 1s gaussian
     grid = UniformRadialGrid(150, 0.0, 15.0, spherical=True)
     dens = 2.06 * (0.88 / np.pi)**1.5 * np.exp(-0.88 * grid.points**2.)
@@ -400,6 +411,7 @@ def test_kl_fit_normalized_dens_normalized_1s_gaussian():
 
 
 def test_kl_fit_normalized_dens_unnormalized_2p_gaussian():
+    r"""Test ScipyFiy against un-normalized p-type Gaussian."""
     # density is normalized 2p orbitals
     grid = UniformRadialGrid(150, 1e-15, 15.0, spherical=True)
     points = grid.points
@@ -438,6 +450,7 @@ def test_kl_fit_normalized_dens_unnormalized_2p_gaussian():
 
 
 def test_kl_fit_normalized_dens_normalized_2p_gaussian():
+    r"""Test ScipyFiy against normalized p-type Gaussian model."""
     # density is normalized 2p orbitals`
     grid = UniformRadialGrid(150, 1e-15, 15.0, spherical=True)
     points = grid.points
@@ -477,6 +490,7 @@ def test_kl_fit_normalized_dens_normalized_2p_gaussian():
 
 
 def test_kl_fit_normalized_dens_normalized_1s2p_gaussian():
+    r"""Test ScipyFit with KL against normalized one s-type and 2 p-type Gaussians."""
     # density is normalized 1s + 2p gaussians
     grid = UniformRadialGrid(150, 0.0, 15.0, spherical=True)
     points = grid.points
@@ -516,6 +530,7 @@ def test_kl_fit_normalized_dens_normalized_1s2p_gaussian():
 
 
 def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1s_gaussian():
+    r"""Test ScipyFit of 3D un-normalized Gaussian model."""
     # density is normalized 1s + 1s gaussians
     grid = UniformRadialGrid(150, 0.0, 15.0, spherical=True)
     points = grid.points
@@ -566,6 +581,7 @@ def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1s_gaussian():
 
 
 def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
+    r"""Test ScipyFit against un-normalized 1S and 1P-type Gaussians."""
     # density is normalized 1s + 1s gaussians
     grid = UniformRadialGrid(150, 0.0, 15.0, spherical=True)
     points = grid.points
@@ -615,6 +631,7 @@ def test_kl_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
 
 
 def test_ls_fit_normalized_dens_normalized_1s_gaussian():
+    r"""Test ScipyFit of least-squares against normalized Gaussian model."""
     # density is normalized 1s orbital with exponent=1.0
     grid = UniformRadialGrid(200, 0.0, 15.0, spherical=True)
     # actual density is a normalized 1s gaussian
@@ -645,6 +662,7 @@ def test_ls_fit_normalized_dens_normalized_1s_gaussian():
 
 
 def test_ls_fit_normalized_dens_normalized_2s_gaussian():
+    r"""Test ScipyFit least-squares against two normalized s-type Gaussians."""
     # density is normalized 1s orbital with exponent=1.0
     grid = UniformRadialGrid(300, 0.0, 15.0, spherical=True)
     # actual density is a normalized 1s gaussian
@@ -674,6 +692,7 @@ def test_ls_fit_normalized_dens_normalized_2s_gaussian():
 
 
 def test_ls_fit_normalized_dens_normalized_5s_gaussian():
+    r"""Test ScipyFiy least-squares against 5 s-type, normalized Gaussians."""
     # density is normalized 1s orbital with exponent=1.0
     grid = UniformRadialGrid(300, 0.0, 15.0, spherical=True)
     # actual density is a normalized 5s gaussian
@@ -707,7 +726,8 @@ def test_ls_fit_normalized_dens_normalized_5s_gaussian():
     assert_almost_equal(0., result["fun"], decimal=8)
 
 
-def test_ls_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1s_gaussian():
+def test_ls_fit_unnormalized_1d_molecular_dens_unnormalized_2s_gaussian():
+    r"""Test ScipyFit least-squares against un-normalized Gaussian model."""
     # density is normalized 1s + 1s gaussians
     grid = UniformRadialGrid(200, 0.0, 15.0, spherical=True)
     cs0, es0 = np.array([1.52, 2.67, ]), np.array([0.31, 0.41])
@@ -744,6 +764,7 @@ def test_ls_fit_unnormalized_1d_molecular_dens_unnormalized_1s_1s_gaussian():
 
 
 def test_ls_fit_normalized_1d_molecular_dens_unnormalized_1s_1p_gaussian():
+    r"""Test ScipyFit least-squares of 3D 1S, 1P-type Gaussian model."""
     # density is normalized 1s + 1s gaussians
     grid = UniformRadialGrid(200, 0.0, 15.0, spherical=True)
     cs0, es0 = np.array([1.52, 2.67]), np.array([0.31, 0.41])

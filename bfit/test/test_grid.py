@@ -20,16 +20,15 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
+r"""Test bfit.grid module."""
 
-
+from bfit.grid import _BaseRadialGrid, ClenshawRadialGrid, CubicGrid, UniformRadialGrid
 import numpy as np
-
-from numpy.testing import assert_raises, assert_almost_equal
-
-from bfit.grid import _BaseRadialGrid, UniformRadialGrid, ClenshawRadialGrid, CubicGrid
+from numpy.testing import assert_almost_equal, assert_raises
 
 
 def test_raises_base():
+    r"""Test _BaseRadialGrid raises errors."""
     # check array
     assert_raises(TypeError, _BaseRadialGrid, 5.)
     assert_raises(TypeError, _BaseRadialGrid, [1., 2., 3.])
@@ -40,6 +39,7 @@ def test_raises_base():
 
 
 def test_integration_base():
+    r"""Test integration of _BaseRadialGrid."""
     # integrate a triangle
     grid = _BaseRadialGrid(np.arange(0., 2., 0.000001), spherical=False)
     value = grid.integrate(grid.points)
@@ -50,7 +50,7 @@ def test_integration_base():
 
 
 def test_raises_integration():
-    r"""Test that integration over BaseRadialGrid returns an assertion error if dimension aren't specified."""
+    r"""Test integration over BaseRadialGrid returns an error if dimension aren't specified."""
     grid = _BaseRadialGrid(np.arange(0., 2., 0.000001), spherical=False)
     # Obtain an array with different dimension than the "grid.points".
     arr = np.arange(0., 2., 0.1)
@@ -58,6 +58,7 @@ def test_raises_integration():
 
 
 def test_raises_clenshaw():
+    r"""Test ClenshawRadialGrid raises error."""
     assert_raises(TypeError, ClenshawRadialGrid, 10.1, 1, 1, [])
     assert_raises(TypeError, ClenshawRadialGrid, -10, 1, 1, [])
     assert_raises(TypeError, ClenshawRadialGrid, 1, 2.2, 1, [])
@@ -68,6 +69,7 @@ def test_raises_clenshaw():
 
 
 def test_raises_uniform():
+    r"""Test UniformRadialGrid raises error."""
     assert_raises(TypeError, UniformRadialGrid, 10.1, 1, 1)
     assert_raises(TypeError, UniformRadialGrid, -10, 1, 1)
     assert_raises(TypeError, UniformRadialGrid, 10, "not numb", 1)
@@ -76,6 +78,7 @@ def test_raises_uniform():
 
 
 def test_points_clenshaw():
+    r"""Test points in the ClenshawRadialGrid."""
     grid = ClenshawRadialGrid(10, 10, 20, [1000])
     # check core points
     core = [(1. - np.cos(np.pi * x / 20)) / 20. for x in range(0, 10)]
@@ -90,6 +93,7 @@ def test_points_clenshaw():
 
 
 def test_points_uniform():
+    r"""Test points in UniformRadialGrid."""
     # check 1 point
     grid = UniformRadialGrid(1, 0, 1)
     assert_almost_equal(grid.points, np.array([0.]), decimal=8)
@@ -105,6 +109,7 @@ def test_points_uniform():
 
 
 def test_integration_uniform_gaussian():
+    r"""Test integration of UniformRadialGrid of different Gaussians."""
     grid = UniformRadialGrid(100, 0.0, 15.0)
     pnts = grid.points
     # integrate s-type gaussian functions
@@ -132,6 +137,7 @@ def test_integration_uniform_gaussian():
 
 
 def test_integration_uniform_gaussian_on_x_axis():
+    r"""Test integration of UniformRadialGrid of different Gaussians."""
     # integrating from -15 to 15, which is twice as much as integrating from 0 to 15
     grid = UniformRadialGrid(300, -15., 15., spherical=True)
     pnts = grid.points
@@ -162,6 +168,7 @@ def test_integration_uniform_gaussian_on_x_axis():
 
 
 def test_integration_uniform_gaussian_shifted():
+    r"""Test integration of a shifted Gaussian using UniformRadialGrid."""
     # spherical=False is used but r^2 is added to the integrand
     grid = UniformRadialGrid(300, 0.0, 30.0, False)
     pnts = grid.points - 15.
@@ -194,6 +201,7 @@ def test_integration_uniform_gaussian_shifted():
 
 
 def test_integration_clenshaw_gaussian():
+    r"""Test integration of ClenshawRadialGrid of different Gaussians."""
     # clenshaw grid & points
     grid = ClenshawRadialGrid(10, 10000, 10000, spherical=True)
     pnts = grid.points
@@ -222,6 +230,7 @@ def test_integration_clenshaw_gaussian():
 
 
 def test_raises_cubic():
+    r"""Test CubicGrid raises error."""
     assert_raises(AttributeError, CubicGrid, "blah", 2., 3.)
     assert_raises(AttributeError, CubicGrid, -1., "blah", 3.)
     assert_raises(AttributeError, CubicGrid, -1., 2., "blah")
@@ -230,6 +239,7 @@ def test_raises_cubic():
 
 
 def test_integration_cubic():
+    r"""Test integration of a cubic grid."""
     axes = np.array([[0.01, 0.0, 0.0], [0.0, 0.01, 0.0], [0.0, 0.0, 0.01]])
     grid = CubicGrid(np.zeros(3), axes, (25, 25, 25))
     # integrate constant value of 1.
@@ -243,6 +253,7 @@ def test_integration_cubic():
 
 
 def test_integration_cubic_gaussian():
+    r"""Test integration of a Gaussian using CubicGrid."""
     axes = np.array([[0.25, 0.0, 0.0], [0.0, 0.25, 0.0], [0.0, 0.0, 0.25]])
     grid = CubicGrid(np.array([-15.0, -15.0, -15.0]), axes, (120, 120, 120))
     dist = np.linalg.norm(grid.points, axis=1)
@@ -271,6 +282,7 @@ def test_integration_cubic_gaussian():
 
 
 def test_integration_cubic_gaussian_shifted():
+    r"""Test integration of a shifted Gaussian using CubicGrid."""
     axes = np.array([[0.25, 0.0, 0.0], [0.0, 0.25, 0.0], [0.0, 0.0, 0.25]])
     grid = CubicGrid(np.zeros(3), axes, (120, 120, 120))
     # place the function at the center of cubic grid with coordinates of [15, 15, 15]

@@ -20,66 +20,11 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-r"""
-Models used for fitting.
-
-Based on Gaussian-Type Models for electronic structure theory.
-
-Classes
--------
-    AtomicGaussianDensity - Gaussian density model for modeling atomic densities
-    MolecularGaussianDensity - Gaussian density model for modeling multiple atomic densities.
-
-
-Notes
------
-There are two choices of Gaussian functions for both Atomic and Molecular Electronic Densities.
-S-type Gaussian functions are defined to be the standard Gaussian functions.
-.. math ::
-        e^{-\alpha r^2}.
-
-P-type Gaussian functions are defined as,
-.. math ::
-     r^2 e^{-\alpha r^2}
-
-where :math:`\alpha` is defined to be the exponent and :math:`r` is the radius to the center.
-
-- Atomic Gaussian density is defined to be a single center Gaussian function. Note that it
-    can be of any dimension. Molecular Gaussian density is defined to be a more than one centers of
-    Gaussian functions.
-
-- The class MolecularGaussianDensity depends on AtomicGaussianDensity class.
-
-
-Examples
---------
-This example shows how to define a single atomic Gaussian density in three dimensions.
-
-First, pick out a grid. Here it is three-dimensional.
->> grid = np.array([[1., 2., 3.], [1., 2., 2.99], [0., 0., 0.]])
-
-Next pick out where the Gaussian density is centered.
-Since it is AtomicGaussianDensity, then only one center can be provided.
->> coord = np.array([1., 1., 1.])
-
-Define number of S-type to be 3 and P-type to be 4.
->> model = AtomicGaussianDensity(grid, center=coord, num_s=3, num_p=4, normalize=True)
-
-Evaluate the model based on coefficients and exponents.
-First 3 coefficients are for S-type and the last four are for P-type.
->> coeffs = np.array([1., 1., 1., 2., 2., 2., 2.])
->> exps = np.array([0.001, 0.2, 0.3, 10., 100., 1000.])
-
-Finally, evaluate the model based on those coefficients and exponents.
->> points = model.evaluate(coeffs, exps)
-
-"""
-
-
-import numpy as np
+r"""Models used for fitting."""
 
 from numbers import Integral
 
+import numpy as np
 
 __all__ = ["AtomicGaussianDensity", "MolecularGaussianDensity"]
 
@@ -96,45 +41,6 @@ class AtomicGaussianDensity:
         :math:`c_i, d_i` are the coefficients of S-type and P-type functions.
         :math:`c` is the center of the Gaussian functions.
         :math:`x` is the real coordinates, can be multi-dimensional.
-
-    Attributes
-    ----------
-    points : ndarray(N, D)
-        The grid points, where N is the number of points and D is the dimension of a point.
-    radii : ndarray(N, D)
-        Distance of points from the center :math:`c`.
-    num_s : int
-        Number of S-type Gaussian basis functions.
-    num_p : int
-        Number of P-type Gaussian basis functions.
-    nbasis : int
-        Total number of basis functions (including S-type and P-type Gaussians).
-    natoms : int
-        Number of atom or number of centers for Gaussian function.
-
-    Methods
-    -------
-    evaluate(deriv='False') :
-        Return Gaussian density function on `radii` by providing coefficients and exponents.
-        If `deriv` is True, then derivative with respect to the coefficient and exponent is
-        also returned.
-
-    Examples
-    --------
-    First define a grid.
-    >> point = [-0.5, -0.25, 0., 0.25, 0.5]
-
-    Define the center.
-    >> center = np.array([-1.])
-
-    Define the Model using 5 S-Type and P-type.
-    >> model = AtomicGaussianDensity(point, center=center, num_s=5, num_p=5)
-
-    Put first 5 coefficients of S-type followed by P-type. Same with exponents.
-    >> coeff = np.array([1., 2., 3., 4., 5., 1., 2., 3., 4., 5.])
-    >> exps = np.array([0.05, 0.1, 0.2, 0.3, 0.4, 0.01, 0.02, 0.03, 0.04, 0.05])
-    >> model.evaluate(coeff, exps)
-
     """
 
     def __init__(self, points, center=None, num_s=1, num_p=0, normalize=False):
@@ -226,17 +132,20 @@ class AtomicGaussianDensity:
 
     def change_numb_s_and_numb_p(self, new_s, new_p):
         r"""
-        Change the number of
+        Change the number of s-type and p-type Gaussians.
 
         Parameters
         ----------
-        new_s
-        new_p
-
-        Returns
-        -------
+        new_s : int
+            New number of s-type Gaussians.
+        new_p : int
+            New number of p-type Gaussians.
 
         """
+        if not isinstance(new_s, int):
+            raise TypeError(f"New number of s-type {new_s} should be of type int.")
+        if not isinstance(new_p, int):
+            raise TypeError(f"New number of p-type {new_p} should be of type int.")
         self.ns = new_s
         self.np = new_p
 
@@ -278,7 +187,7 @@ class AtomicGaussianDensity:
         if coeffs.size != expons.size:
             raise ValueError("Arguments coeffs and expons should have the same length.")
         if coeffs.size != self.nbasis:
-            raise ValueError("Argument coeffs should have size {0}.".format(self.nbasis))
+            raise ValueError(f"Argument coeffs should have size {self.nbasis}.")
 
         # evaluate all Gaussian basis on the grid, i.e., exp(-a * r**2)
         matrix = np.exp(-expons[None, :] * np.power(self.radii, 2)[:, None])
@@ -412,29 +321,6 @@ class MolecularGaussianDensity:
             :math:`M_j` is the total number of basis functions of the jth center.
             :math:`m_j` is the coordinate of the jth center.
             :math:`x` is the real coordinates of the point. It can be of any dimension.
-
-    Attributes
-    ----------
-    points : (N, 3) ndarray
-        The grid points in a two-dimensional array, where N is the number of points.
-    radii : (M, N) ndarray
-        Distance of `points` from each center, where M is the number of centers.
-    num_s : int
-        Number of S-type Gaussian basis functions.
-    num_p : int
-        Number of P-type Gaussian basis functions.
-    nbasis : int
-        Total number of basis functions (including S-type and P-type Gaussians).
-    natoms : int
-        Number of atom or number of centers.
-
-    Methods
-    -------
-    evaluate(deriv='False') :
-        Return Gaussian density function on `radii` by providing coefficients and exponents.
-        If `deriv` is True, then derivative with respect to the coefficient and exponent is
-        also returned.
-
     """
 
     def __init__(self, points, coords, basis, normalize=False):
@@ -518,7 +404,7 @@ class MolecularGaussianDensity:
 
         """
         if index >= self.nbasis:
-            raise ValueError("The {0} is invalid for {1} basis.".format(index, self.nbasis))
+            raise ValueError(f"The {index} is invalid for {self.nbasis} basis.")
         # compute the number of basis on each center
         nbasis = np.sum(self._basis, axis=1)
         # get the center to which the basis function belongs
@@ -570,8 +456,8 @@ class MolecularGaussianDensity:
         if coeffs.ndim != 1 or expons.ndim != 1:
             raise ValueError("Arguments coeffs & expons should be 1D arrays.")
         if coeffs.size != self.nbasis or expons.size != self.nbasis:
-            raise ValueError("Arguments coeffs & expons shape != ({0},)".format(self.nbasis))
-        
+            raise ValueError(f"Arguments coeffs & expons shape != ({self.nbasis},)")
+
         # assign arrays
         total_g = np.zeros(len(self.points))
         if deriv:

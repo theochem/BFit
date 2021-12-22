@@ -20,14 +20,14 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-
-
-import numpy as np
+r"""Test bfit._slater module."""
 
 from bfit._slater import load_slater_wfn
+import numpy as np
 
 
 def test_parsing_slater_density_be():
+    r"""Test correct parsing of beryllium Slater file."""
     # Load the Be file
     be = load_slater_wfn("be")
 
@@ -62,6 +62,7 @@ def test_parsing_slater_density_be():
 
 
 def test_parsing_slater_density_ag():
+    r"""Test correct parsing of silver Slater file."""
     # Load the Ag file.
     ag = load_slater_wfn("ag")
 
@@ -85,26 +86,29 @@ def test_parsing_slater_density_ag():
     assert (abs(ag['orbitals_energy'] - energy) < 1.e-6).all()
 
     # Check exponents of D orbitals
-    exp_D = np.array([53.296212, 40.214567, 21.872645, 17.024065, 10.708021, 7.859216, 5.770205,
+    exp_d = np.array([53.296212, 40.214567, 21.872645, 17.024065, 10.708021, 7.859216, 5.770205,
                       3.610289, 2.243262, 1.397570, 0.663294])
-    assert (abs(ag['orbitals_exp']['D'] - exp_D.reshape(11, 1)) < 1.e-6).all()
+    assert (abs(ag['orbitals_exp']['D'] - exp_d.reshape(11, 1)) < 1.e-6).all()
 
     # Check coefficients of 3D orbital
-    coeff_3D = np.array([0.0006646, 0.0037211, -0.0072310, 0.1799224, 0.5205360, 0.3265622,
+    coeff_3d = np.array([0.0006646, 0.0037211, -0.0072310, 0.1799224, 0.5205360, 0.3265622,
                          0.0373867, 0.0007434, 0.0001743, -0.0000474, 0.0000083])
-    assert (abs(ag['orbitals_coeff']['3D'] - coeff_3D.reshape(11, 1)) < 1.e-6).all()
+    assert (abs(ag['orbitals_coeff']['3D'] - coeff_3d.reshape(11, 1)) < 1.e-6).all()
 
     # Check coefficients of 4D orbital
-    coeff_4D = np.array([-0.0002936, -0.0016839, 0.0092799, -0.0743431, -0.1179494, -0.2809146,
+    coeff_4d = np.array([-0.0002936, -0.0016839, 0.0092799, -0.0743431, -0.1179494, -0.2809146,
                          0.1653040, 0.4851980, 0.4317110, 0.1737644, 0.0013751])
-    assert (abs(ag['orbitals_coeff']['4D'] - coeff_4D.reshape(11, 1)) < 1.e-6).all()
+    assert (abs(ag['orbitals_coeff']['4D'] - coeff_4d.reshape(11, 1)) < 1.e-6).all()
 
     # Check occupation numbers
     assert len(ag['orbitals_occupation']) == 10
-    assert (ag['orbitals_occupation'] == np.array([2, 2, 2, 2, 1, 6, 6, 6, 10, 10]).reshape(10, 1)).all()
+    assert (
+        ag['orbitals_occupation'] == np.array([2, 2, 2, 2, 1, 6, 6, 6, 10, 10]).reshape(10, 1)
+    ).all()
 
 
 def test_parsing_slater_density_ne():
+    r"""Test correct parsing of neon Slater file."""
     # Load the Ne file
     ne = load_slater_wfn("ne")
 
@@ -116,8 +120,12 @@ def test_parsing_slater_density_ne():
     assert ne["potential_energy"] == -257.094196219
 
     # Check orbital energy and cusp
-    assert (abs(ne['orbitals_energy'] - np.array([-32.7724425, -1.9303907, -0.8504095])[:, None]) < 1.e-6).all()
-    assert (abs(ne['orbitals_cusp'] - np.array([1.0000603, 0.9996584, 1.0000509])[:, None]) < 1.e-6).all()
+    assert (abs(
+        ne['orbitals_energy'] - np.array([-32.7724425, -1.9303907, -0.8504095])[:, None]) < 1.e-6
+    ).all()
+    assert (abs(
+        ne['orbitals_cusp'] - np.array([1.0000603, 0.9996584, 1.0000509])[:, None]) < 1.e-6
+    ).all()
 
     # Check basis
     assert ne['orbitals_basis']['P'] == ['3P', '2P', '3P', '2P', '2P', '2P', '2P']
@@ -133,6 +141,7 @@ def test_parsing_slater_density_ne():
 
 
 def test_parsing_slater_density_h():
+    r"""Test correct parsing of hydrogen Slater file."""
     # Load the H file
     h = load_slater_wfn("h")
 
@@ -159,6 +168,7 @@ def test_parsing_slater_density_h():
 
 
 def test_parsing_slater_density_k():
+    r"""Test correct parsing of potassium Slater file."""
     # Load the K file
     k = load_slater_wfn("k")
 
@@ -170,20 +180,24 @@ def test_parsing_slater_density_k():
     assert k['orbitals'] == ["1S", "2S", "3S", "4S", "2P", "3P"]
     assert np.all(abs(k['orbitals_cusp'] - np.array([1.0003111, 0.9994803, 1.0005849, 1.0001341,
                                                      1.0007902, 0.9998975])[:, None]) < 1.e-6)
-    assert np.all(abs(k['orbitals_energy'] - np.array([-133.5330493, -14.4899575, -1.7487797, -0.1474751, -11.5192795,
-                                                       -0.9544227])[:, None]) < 1.e-6)
+    assert np.all(
+        abs(k['orbitals_energy'] - np.array([
+            -133.5330493, -14.4899575, -1.7487797, -0.1474751, -11.5192795, -0.9544227])[:, None]
+            ) < 1.e-6
+    )
     assert k['orbitals_basis']['P'] == ['2P', '3P', '2P', '3P', '2P', '2P', '3P', '2P', '2P', '2P']
 
     basis_numbers = np.array([[2], [3], [2], [3], [2], [2], [3], [2], [2], [2]])
     assert np.all(np.abs(k['basis_numbers']['P'] - basis_numbers) < 1e-5)
 
     # Check coefficients of 3P orbital
-    coeff_3P = np.array([0.0000354, 0.0011040, -0.0153622, 0.0620133, -0.1765320, -0.3537264,
+    coeff_3p = np.array([0.0000354, 0.0011040, -0.0153622, 0.0620133, -0.1765320, -0.3537264,
                          -0.3401560, 1.3735350, 0.1055549, 0.0010773])
-    assert (abs(k['orbitals_coeff']['3P'] - coeff_3P.reshape(10, 1)) < 1.e-6).all()
+    assert (abs(k['orbitals_coeff']['3P'] - coeff_3p.reshape(10, 1)) < 1.e-6).all()
 
 
 def test_parsing_slater_density_i():
+    r"""Test correct parsing of iodine Slater file."""
     i = load_slater_wfn("i")
     assert i["configuration"] == "K(2)L(8)M(18)4S(2)4P(6)5S(2)4D(10)5P(5)"
     assert i["orbitals"] == ["1S", "2S", "3S", "4S", "5S", "2P", "3P", "4P", "5P", "3D", "4D"]
@@ -191,11 +205,12 @@ def test_parsing_slater_density_i():
     assert (i["orbitals_occupation"] == occupation).all()
 
     exponents = np.array([[58.400845, 45.117174, 24.132009, 20.588554, 12.624386, 10.217388,
-                             8.680013, 4.627159, 3.093797, 1.795536, 0.897975]])
+                           8.680013, 4.627159, 3.093797, 1.795536, 0.897975]])
     assert np.all(np.abs(i["orbitals_exp"]["D"] - exponents.reshape((11, 1))) < 1e-4)
 
 
 def test_parsing_slater_density_xe():
+    r"""Test correct parsing of xenon Slater file."""
     # Load the Xe file
     xe = load_slater_wfn("xe")
     assert xe['configuration'] == "K(2)L(8)M(18)4S(2)4P(6)5S(2)4D(10)5P(6)"
@@ -208,11 +223,12 @@ def test_parsing_slater_density_xe():
 
     # Check coeffs of D orbitals.
     coeffs = np.array([-0.0006386, -0.0030974, 0.0445101, -0.1106186, -0.0924762, -0.4855794,
-                     0.1699923, 0.7240230, 0.3718553, 0.0251152, 0.0001040])
+                       0.1699923, 0.7240230, 0.3718553, 0.0251152, 0.0001040])
     assert (abs(xe['orbitals_coeff']["4D"] - coeffs.reshape((len(coeffs), 1))) < 1e-10).all()
 
 
 def test_parsing_slater_density_xe_cation():
+    r"""Test correct parsing of xenon cation Slater file."""
     # Load the Xe file
     np.testing.assert_raises(ValueError, load_slater_wfn, "xe", anion=True)
     xe = load_slater_wfn("xe", cation=True)
@@ -231,6 +247,7 @@ def test_parsing_slater_density_xe_cation():
 
 
 def test_parsing_slater_density_c_cation():
+    r"""Test correct parsing of carbon cation Slater file."""
     # Load the Xe file
     c = load_slater_wfn("c", cation=True)
     assert c['configuration'] == "1S(2)2S(2)2P(1)"
@@ -247,6 +264,7 @@ def test_parsing_slater_density_c_cation():
 
 
 def test_parsing_slater_density_h_anion():
+    r"""Test correct parsing of hydrogen anion Slater file."""
     # Load the Hydrogen file
     # There is no cation of hydrogen in data folder.
     np.testing.assert_raises(ValueError, load_slater_wfn, "h", cation=True)
@@ -269,6 +287,7 @@ def test_parsing_slater_density_h_anion():
 
 
 def test_parsing_slater_heavy_atom_cs():
+    r"""Test correct parsing of cesium Slater file."""
     np.testing.assert_raises(ValueError, load_slater_wfn, "cs", cation=True)
     np.testing.assert_raises(ValueError, load_slater_wfn, "cs", anion=True)
     # Load the Xe file
@@ -294,6 +313,7 @@ def test_parsing_slater_heavy_atom_cs():
 
 
 def test_parsing_slater_heavy_atom_rn():
+    r"""Test correct parsing of radom Slater file."""
     # Load the Xe file
     rn = load_slater_wfn("rn")
     assert rn['configuration'] == "K(2)L(8)M(18)4S(2)4P(6)5S(2)4D(10)5P(6)4F(14)6S(2)5D(10)6P(6)"
@@ -313,6 +333,7 @@ def test_parsing_slater_heavy_atom_rn():
 
 
 def test_parsing_slater_heavy_atom_lr():
+    r"""Test correct parsing of lawrencium Slater file."""
     # Load the lr file
     lr = load_slater_wfn("lr")
     assert lr['configuration'] == "K(2)L(8)M(18)4S(2)4P(6)5S(2)4D(10)5P(6)4F(14)6S(2)5D(10)6P(6)" \
@@ -340,6 +361,7 @@ def test_parsing_slater_heavy_atom_lr():
 
 
 def test_parsing_slater_heavy_atom_dy():
+    r"""Test correct parsing of dysprosium Slater file."""
     # Load the dy file
     dy = load_slater_wfn("dy")
     assert dy['configuration'] == "K(2)L(8)M(18)4S(2)4P(6)5S(2)4D(10)5P(6)6S(2)5D(0)4F(10)"

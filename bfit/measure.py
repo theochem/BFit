@@ -63,9 +63,6 @@ class Measure(ABC):
 
 class SquaredDifference(Measure):
     r"""Squared Difference Class for performing the Least-Squared method."""
-    def __init__(self):
-        r"""Construct the SquaredDifference class."""
-        super(SquaredDifference, self).__init__()
 
     def evaluate(self, density, model, deriv=False):
         r"""
@@ -106,7 +103,9 @@ class SquaredDifference(Measure):
 
         """
         if not isinstance(model, np.ndarray):
-            raise ValueError("Argument model should be {0} array.".format(density.shape))
+            raise ValueError(
+                f"Argument model should be {density.shape} array."
+            )
         if not isinstance(density, np.ndarray) or density.ndim != 1:
             raise ValueError("Arguments density should be a 1D numpy array.")
         if model.shape != density.shape:
@@ -138,7 +137,7 @@ class KLDivergence(Measure):
             and then replaced with the value of one so that logarithm of one is zero.
 
         """
-        super(KLDivergence, self).__init__()
+        super().__init__()
         self._mask_value = mask_value
 
     @property
@@ -193,7 +192,9 @@ class KLDivergence(Measure):
         """
         # check model density
         if not isinstance(model, np.ndarray):
-            raise ValueError("Argument model should be {0} array.".format(density.shape))
+            raise ValueError(
+                f"Argument model should be {density.shape} array."
+            )
         if not isinstance(density, np.ndarray) or density.ndim != 1:
             raise ValueError("Arguments density should be a 1D numpy array.")
         if model.shape != density.shape:
@@ -217,7 +218,8 @@ class KLDivergence(Measure):
 
 
 class TsallisDivergence(Measure):
-    r"""Tsallis Divergence Class"""
+    r"""Tsallis Divergence Class."""
+
     def __init__(self, alpha=1.001, mask_value=1.e-12):
         r"""
         Construct the Kullback-Leibler class.
@@ -238,22 +240,23 @@ class TsallisDivergence(Measure):
         if np.abs(self._alpha - 1.0) < 1e-10:
             raise ValueError(f"Alpha parameter {alpha} shouldn't be equal to one."
                              f"Use Kullback-Leibler divergence instead.")
-        super(TsallisDivergence, self).__init__()
+        super().__init__()
 
     @property
     def alpha(self):
-        r"""Alpha parameter of the Tsallis divergence."""
+        r"""Return alpha parameter of the Tsallis divergence."""
         return self._alpha
 
     @property
     def mask_value(self):
-        r"""Masking value used when evaluating the measure."""
+        r"""Return masking value used when evaluating the measure."""
         return self._mask_value
 
     def evaluate(self, density, model, deriv=False):
         r"""
-        The integrand of Tsallis divergence:
+        Evaluate the integrand of Tsallis divergence on grid points.
 
+        Defined as follows:
         .. math::
             \int_G \frac{1}{\alpha - 1} f(x) \bigg(\frac{f(x)}{g(x)}^{q- 1} - 1\bigg) dx,
         where
@@ -283,9 +286,9 @@ class TsallisDivergence(Measure):
         - This does not impose non-negativity of the model density, unlike the Kullback-Leibler.
         - Values of Model density that are less than `mask_value` are masked when used in
             division and then replaced with the value of 0.
-        - As :math:`\alpha` parameter tends towards one, then this converges to the Kullback-Leibler.
-            This is particularly useful for trust-region methods that don't impose strict constraints
-            during the optimization procedure.
+        - As :math:`\alpha` parameter tends towards one, then this converges to the
+            Kullback-Leibler. This is particularly useful for trust-region methods that don't
+            impose strict constraints during the optimization procedure.
 
         References
         ----------
@@ -297,7 +300,9 @@ class TsallisDivergence(Measure):
         """
         # check model density
         if not isinstance(model, np.ndarray):
-            raise ValueError("Argument model should be {0} array.".format(density.shape))
+            raise ValueError(
+                f"Argument model should be {density.shape} array."
+            )
         if not isinstance(density, np.ndarray) or density.ndim != 1:
             raise ValueError("Arguments density should be a 1D numpy array.")
         if model.shape != density.shape:

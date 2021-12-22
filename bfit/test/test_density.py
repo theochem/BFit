@@ -20,17 +20,15 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-
-
-import numpy as np
-
-from numpy.testing import assert_equal, assert_almost_equal, assert_raises
+r"""Test bfit.density module."""
 
 from bfit.density import SlaterAtoms
+import numpy as np
+from numpy.testing import assert_almost_equal, assert_equal, assert_raises
 
 
 def slater(e, n, r, derivative=False):
-    """Calculates single normalized slater function at a given point."""
+    """Calculate single normalized slater function at a given point."""
     norm = np.power(2. * e, n) * np.sqrt(2. * e / np.math.factorial(2. * n))
     slater = norm * np.power(r, n - 1) * np.exp(-e * r)
 
@@ -40,6 +38,7 @@ def slater(e, n, r, derivative=False):
 
 
 def test_slater_type_orbital_be():
+    r"""Test evaluation of Slater-type orbitals of Beryllium."""
     # load Be atomic wave function
     be = SlaterAtoms("Be")
     # check values of a single orbital at r=1.0
@@ -57,6 +56,7 @@ def test_slater_type_orbital_be():
 
 
 def test_derivative_slater_type_orbital_be():
+    r"""Test derivative of Slater-type orbitals of Beryllium."""
     # load Be atomic wave function
     be = SlaterAtoms("Be")
     # check values of a single orbital at r=1.0
@@ -82,6 +82,7 @@ def test_derivative_slater_type_orbital_be():
 
 
 def test_positive_definite_kinetic_energy_he():
+    r"""Test integral of kinetic energy density of helium against actual value."""
     # load he atomic wave function
     he = SlaterAtoms("he")
     # compute density on an equally distant grid
@@ -92,6 +93,7 @@ def test_positive_definite_kinetic_energy_he():
 
 
 def test_positive_definite_kinetic_energy_be():
+    r"""Test integral of kinetic energy density of beryllium against actual value."""
     # load be atomic wave function
     be = SlaterAtoms("be")
     # compute density on an equally distant grid
@@ -102,6 +104,7 @@ def test_positive_definite_kinetic_energy_be():
 
 
 def test_positive_definite_kinetic_energy_most_atoms():
+    r"""Test integral of kinetic energy density of various atoms against actual value."""
     # load c atomic wave function
     for atom in ["b", "cl", "ag"]:
         adens = SlaterAtoms(atom)
@@ -113,27 +116,29 @@ def test_positive_definite_kinetic_energy_most_atoms():
 
 
 def test_phi_derivative_lcao_b():
+    r"""Test derivative of molecular orbitals of Beryllium."""
     # load Be atomic wave function
     b = SlaterAtoms("b")
     # check the values of the phi_matrix at point 1.0
     phi_matrix = b.phi_matrix(np.array([1]), deriv=True)
+
     def _slater_deriv(r):
         # compute expected value of 1S
-        phi1S = slater(16.109305, 2, r, True) * -0.0005529 + slater(7.628062, 1, r, True) * -0.23501
-        phi1S += slater(6.135799, 2, r, True) * -0.1508924 + slater(4.167618, 1, r, True) * -0.64211
-        phi1S += slater(2.488602, 1, r, True) * -0.0011507 + slater(1.642523, 2, r, True) * -0.00086
-        phi1S += slater(0.991698, 1, r, True) * 0.0004712 + slater(0.787218, 1, r, True) * -0.000232
+        phi1s = slater(16.109305, 2, r, True) * -0.0005529 + slater(7.628062, 1, r, True) * -0.23501
+        phi1s += slater(6.135799, 2, r, True) * -0.1508924 + slater(4.167618, 1, r, True) * -0.64211
+        phi1s += slater(2.488602, 1, r, True) * -0.0011507 + slater(1.642523, 2, r, True) * -0.00086
+        phi1s += slater(0.991698, 1, r, True) * 0.0004712 + slater(0.787218, 1, r, True) * -0.000232
         # compute expected value of 2S
-        phi2S = slater(16.109305, 2, r, True) * -0.0001239 + slater(7.628062, 1, r, True) * 0.012224
-        phi2S += slater(6.135799, 2, r, True) * 0.0355967 + slater(4.167618, 1, r, True) * -0.198721
-        phi2S += slater(2.488602, 1, r, True) * -0.5378967 + slater(1.642523, 2, r, True) * -0.11997
-        phi2S += slater(0.991698, 1, r, True) * 1.4382402 + slater(0.787218, 1, r, True) * 0.0299258
+        phi2s = slater(16.109305, 2, r, True) * -0.0001239 + slater(7.628062, 1, r, True) * 0.012224
+        phi2s += slater(6.135799, 2, r, True) * 0.0355967 + slater(4.167618, 1, r, True) * -0.198721
+        phi2s += slater(2.488602, 1, r, True) * -0.5378967 + slater(1.642523, 2, r, True) * -0.11997
+        phi2s += slater(0.991698, 1, r, True) * 1.4382402 + slater(0.787218, 1, r, True) * 0.0299258
         # compute expected value of 1P
-        phi3S = slater(12.135370, 3, r, True) * 0.0000599 + slater(5.508493, 2, r, True) * 0.0113751
-        phi3S += slater(3.930298, 3, r, True) * 0.0095096 + slater(2.034395, 2, r, True) * 0.1647518
-        phi3S += slater(1.301082, 2, r, True) * 0.3367860 + slater(0.919434, 2, r, True) * 0.4099162
-        phi3S += slater(0.787218, 2, r, True) * 0.1329396
-        return [phi1S, phi2S, phi3S]
+        phi3s = slater(12.135370, 3, r, True) * 0.0000599 + slater(5.508493, 2, r, True) * 0.0113751
+        phi3s += slater(3.930298, 3, r, True) * 0.0095096 + slater(2.034395, 2, r, True) * 0.1647518
+        phi3s += slater(1.301082, 2, r, True) * 0.3367860 + slater(0.919434, 2, r, True) * 0.4099162
+        phi3s += slater(0.787218, 2, r, True) * 0.1329396
+        return [phi1s, phi2s, phi3s]
     # check shape & orbital values
     assert_equal(phi_matrix.shape, (1, 3))
     assert_almost_equal(phi_matrix, np.array([_slater_deriv(1)]), decimal=4)
@@ -147,6 +152,7 @@ def test_phi_derivative_lcao_b():
 
 
 def test_coeff_matrix_be():
+    r"""Test the coefficients of Beryllium is correctly parsed."""
     # load Be atomic wave function
     be = SlaterAtoms("be")
     # using one _grid point at 1.0
@@ -159,51 +165,33 @@ def test_coeff_matrix_be():
 
 
 def test_phi_lcao_be():
+    r"""Test evaluation of molecular orbitals of beryllium."""
     # load Be atomic wave function
     be = SlaterAtoms("BE")
     # check the values of the phi_matrix at point 1.0
     phi_matrix = be.phi_matrix(np.array([1]))
     # compute expected value of 1S
-    phi1S = slater(12.683501, 1, 1) * -0.0024917 + slater(8.105927, 1, 1) * 0.0314015
-    phi1S += slater(5.152556, 1, 1) * 0.0849694 + slater(3.472467, 1, 1) * 0.8685562
-    phi1S += slater(2.349757, 1, 1) * 0.0315855 + slater(1.406429, 1, 1) * -0.0035284
-    phi1S += slater(0.821620, 2, 1) * -0.0004149 + slater(0.786473, 1, 1) * 0.0012299
+    phi1s = slater(12.683501, 1, 1) * -0.0024917 + slater(8.105927, 1, 1) * 0.0314015
+    phi1s += slater(5.152556, 1, 1) * 0.0849694 + slater(3.472467, 1, 1) * 0.8685562
+    phi1s += slater(2.349757, 1, 1) * 0.0315855 + slater(1.406429, 1, 1) * -0.0035284
+    phi1s += slater(0.821620, 2, 1) * -0.0004149 + slater(0.786473, 1, 1) * 0.0012299
     # compute expected value of 2S
-    phi2S = slater(12.683501, 1, 1) * 0.0004442 + slater(8.105927, 1, 1) * -0.0030990
-    phi2S += slater(5.152556, 1, 1) * -0.0367056 + slater(3.472467, 1, 1) * 0.0138910
-    phi2S += slater(2.349757, 1, 1) * -0.3598016 - slater(1.406429, 1, 1) * 0.2563459
-    phi2S += slater(0.821620, 2, 1) * 0.2434108 + slater(0.786473, 1, 1) * 1.1150995
+    phi2s = slater(12.683501, 1, 1) * 0.0004442 + slater(8.105927, 1, 1) * -0.0030990
+    phi2s += slater(5.152556, 1, 1) * -0.0367056 + slater(3.472467, 1, 1) * 0.0138910
+    phi2s += slater(2.349757, 1, 1) * -0.3598016 - slater(1.406429, 1, 1) * 0.2563459
+    phi2s += slater(0.821620, 2, 1) * 0.2434108 + slater(0.786473, 1, 1) * 1.1150995
     # check shape & orbital values
     assert_equal(phi_matrix.shape, (1, 2))
-    assert_almost_equal(phi_matrix, np.array([[phi1S, phi2S]]), decimal=6)
+    assert_almost_equal(phi_matrix, np.array([[phi1s, phi2s]]), decimal=6)
     # check the values of the phi_matrix at point 1.0, 2.0, 3.0
     phi_matrix = be.phi_matrix(np.array([1., 2., 3.]))
     # check shape & orbital values
     assert_equal(phi_matrix.shape, (3, 2))
-    assert_almost_equal(phi_matrix[0, :], np.array([phi1S, phi2S]), decimal=6)
-
-
-def test_orbitals_function_be():
-    # load Be atomic wave function
-    be = SlaterAtoms("bE")
-    # check the values of the phi_matrix at point 1.0
-    phi_matrix = be.phi_matrix(np.array([1]))
-    # compute expected value of 1S
-    phi1S = slater(12.683501, 1, 1.) * -0.0024917 + slater(8.105927, 1, 1.) * 0.0314015
-    phi1S += slater(5.152556, 1, 1.) * 0.0849694 + slater(3.472467, 1, 1.) * 0.8685562
-    phi1S += slater(2.349757, 1, 1.) * 0.0315855 + slater(1.406429, 1, 1.) * -0.0035284
-    phi1S += slater(0.821620, 2, 1.) * -0.0004149 + slater(0.786473, 1, 1.) * 0.00122991
-    # compute expected value of 2S
-    phi2S = slater(12.683501, 1, 1.) * 0.0004442 + slater(8.105927, 1, 1.) * -0.0030990
-    phi2S += slater(5.152556, 1, 1.) * -0.0367056 + slater(3.472467, 1, 1.) * 0.0138910
-    phi2S += slater(2.349757, 1, 1.) * -0.3598016 + slater(1.406429, 1, 1.) * -0.2563459
-    phi2S += slater(0.821620, 2, 1.) * 0.2434108 + slater(0.786473, 1, 1.) * 1.1150995
-    # check shape & orbital values
-    assert_equal(phi_matrix.shape, (1, 2))
-    assert_almost_equal(phi_matrix, np.array([[phi1S, phi2S]]), decimal=6)
+    assert_almost_equal(phi_matrix[0, :], np.array([phi1s, phi2s]), decimal=6)
 
 
 def test_orbitals_norm_be():
+    r"""Test that molecular orbitals are normalized of beryllium."""
     # load Be atomic wave function
     be = SlaterAtoms("be")
     # compute orbital density on an equally distant grid
@@ -217,6 +205,7 @@ def test_orbitals_norm_be():
 
 
 def test_orbitals_norm_ne():
+    r"""Test that molecular orbitals are normalized of neon."""
     # load Ne atomic wave function
     ne = SlaterAtoms("ne")
     # compute orbital density on an equally distant grid
@@ -231,6 +220,7 @@ def test_orbitals_norm_ne():
 
 
 def test_orbitals_norm_c():
+    r"""Test that molecular orbitals are normalized of carbon."""
     # load C atomic wave function
     c = SlaterAtoms("c")
     # compute orbital density on an equally distant grid
@@ -245,6 +235,7 @@ def test_orbitals_norm_c():
 
 
 def test_atomic_density_be():
+    r"""Test integral of atomic densities matches atomic number of beryllium."""
     # load Be atomic wave function
     be = SlaterAtoms("be")
     # compute density on an equally distant grid
@@ -263,6 +254,7 @@ def test_atomic_density_be():
 
 
 def test_atomic_density_ne():
+    r"""Test integral of atomic densities matches atomic number of neon."""
     # load Ne atomic wave function
     ne = SlaterAtoms("ne")
     # compute density on an equally distant grid
@@ -281,6 +273,7 @@ def test_atomic_density_ne():
 
 
 def test_atomic_density_c():
+    r"""Test integral of atomic densities matches atomic number of carbon."""
     # load C atomic wave function
     c = SlaterAtoms("c")
     # compute density on an equally distant grid
@@ -353,6 +346,7 @@ def test_atomic_density_heavy_rn():
 
 
 def test_kinetic_energy_cation_anion_c():
+    r"""Test integral of kinetic energy density of cation/anion of carbon."""
     c = SlaterAtoms("c", cation=True)
     grid = np.arange(0.0, 25.0, 0.0001)
     energ = c.lagrangian_kinetic_energy(grid)
@@ -367,6 +361,7 @@ def test_kinetic_energy_cation_anion_c():
 
 
 def test_derivative_electron_density_c():
+    r"""Test derivative of atomic density of cation of carbon."""
     c = SlaterAtoms("c", cation=True)
     eps = 1e-10
     grid = np.array([0.1, 0.1 + eps, 0.5, 0.5 + eps])
@@ -378,6 +373,7 @@ def test_derivative_electron_density_c():
 
 
 def test_derivative_electron_density_cr():
+    r"""Test derivative of atomic density of chromium."""
     cr = SlaterAtoms("cr")
     eps = 2.0e-8
     grid = np.array([0.1 - eps, 0.1, 0.1 + eps, 1. - eps, 1., 1. + eps])
@@ -389,6 +385,7 @@ def test_derivative_electron_density_cr():
 
 
 def test_kinetic_energy_heavy_element_ce():
+    r"""Test integral of kinetic energy of cesium."""
     c = SlaterAtoms("ce")
     grid = np.arange(0.0, 25.0, 0.0001)
     energ = c.lagrangian_kinetic_energy(grid)
@@ -396,6 +393,7 @@ def test_kinetic_energy_heavy_element_ce():
 
 
 def test_raises():
+    r"""Test raises error of SlaterAtoms."""
     assert_raises(TypeError, SlaterAtoms, 25)
     assert_raises(TypeError, SlaterAtoms, "be2")
     assert_raises(ValueError, SlaterAtoms.slater_orbital, np.array([[1]]), np.array([[2]]),

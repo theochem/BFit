@@ -22,11 +22,9 @@
 # ---
 r"""Slater Atomic Density Module."""
 
-
+from bfit._slater import load_slater_wfn
 import numpy as np
 from scipy.special import factorial
-
-from bfit._slater import load_slater_wfn
 
 
 __all__ = ["SlaterAtoms"]
@@ -66,8 +64,18 @@ class SlaterAtoms:
             raise ValueError("Both anion and cation cannot be true.")
 
         data = load_slater_wfn(element, anion, cation)
-        for key, value in data.items():
-            setattr(self, "_" + key, value)
+        self._energy = data["energy"]
+        self._potential_energy = data["potential_energy"]
+        self._kinetic_energy = data["kinetic_energy"]
+        self._configuration = data["configuration"]
+        self._orbitals = data["orbitals"]
+        self._orbitals_occupation = data["orbitals_occupation"]
+        self._orbitals_basis = data["orbitals_basis"]
+        self._basis_numbers = data["basis_numbers"]
+        self._orbitals_exp = data["orbitals_exp"]
+        self._orbitals_coeff = data["orbitals_coeff"]
+        self._orbitals_energy = data["orbitals_energy"]
+        self._orbitals_cusp = data["orbitals_cusp"]
 
     @property
     def energy(self):
@@ -87,7 +95,7 @@ class SlaterAtoms:
     @property
     def configuration(self):
         r"""
-        The electron configuration of the element.
+        Return electron configuration of the element.
 
         For example, Beryllium returns "1S(2)2S(2)".
         """
@@ -115,7 +123,7 @@ class SlaterAtoms:
     @property
     def orbitals_basis(self):
         r"""
-        Grouping of Slater-type orbitals to the type ("S", "P", ...).
+        Return grouping of Slater-type orbitals to the type ("S", "P", ...).
 
         Dictionary mapping type of orbital (e.g. "S", "P") to the number
         and type of the :math:`N` Slater-type orbitals. For example, Helium could
@@ -126,7 +134,7 @@ class SlaterAtoms:
     @property
     def basis_numbers(self):
         r"""
-        The type of Slater-type orbital to the type, e.g. "S".
+        Return type of Slater-type orbital to the type, e.g. "S".
 
         Dictionary mapping type of orbital (e.g. "S", "P") to array
         containing :math:`n` of the :math:`N` Slater-type orbital. These play the
@@ -381,7 +389,7 @@ class SlaterAtoms:
         phi_matrix = np.zeros((len(points), len(self.orbitals)))
         for index, orbital in enumerate(self.orbitals):
             exps, number = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
-            # Take second derivative of the Slater-Type Orbitals without division by r^2 (added this below)
+            # Take second derivative of the Slater-Type Orbitals without division by r^2
             slater = SlaterAtoms.slater_orbital(exps, number, points)
             # derivative
             deriv_pref = (number.T - 1.) - exps.T * np.reshape(points, (points.shape[0], 1))

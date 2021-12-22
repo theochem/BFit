@@ -20,12 +20,11 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-
-
-import numpy as np
-from numpy.testing import assert_raises, assert_almost_equal
+r"""Test bfit.measure module."""
 
 from bfit.measure import KLDivergence, SquaredDifference, TsallisDivergence
+import numpy as np
+from numpy.testing import assert_almost_equal, assert_raises
 
 
 def test_raises_kl():
@@ -40,9 +39,13 @@ def test_raises_kl():
     # check model argument
     assert_raises(ValueError, measure.evaluate, np.array([1., 2., 3.]), 1.75)
     assert_raises(ValueError, measure.evaluate, np.array([1., 2., 3.]), np.array([1., 2., 3., 4.]))
-    assert_raises(ValueError, measure.evaluate, np.array([1., 2., 3.]), np.array([[1.], [2.], [3.]]))
+    assert_raises(
+        ValueError, measure.evaluate, np.array([1., 2., 3.]), np.array([[1.], [2.], [3.]])
+    )
     assert_raises(ValueError, measure.evaluate, np.array([1., 2., 3.]), np.array([1., 2., -3.]))
-    assert_raises(ValueError, measure.evaluate, np.array([1., 2., 3.]), np.array([-0.5, -1.3, -2.8]))
+    assert_raises(
+        ValueError, measure.evaluate, np.array([1., 2., 3.]), np.array([-0.5, -1.3, -2.8])
+    )
 
 
 def test_evaluate_kl_equal():
@@ -51,12 +54,24 @@ def test_evaluate_kl_equal():
     dens = np.array([0.0, 1.0, 2.0])
     model = np.array([0., 0., 0.])
     measure = KLDivergence(mask_value=1.e-12)
-    assert_almost_equal(np.array([0., 0., 0.]), measure.evaluate(dens, dens, deriv=False), decimal=8)
-    assert_almost_equal(np.array([0., 0., 0.]), measure.evaluate(dens, dens, deriv=True)[0], decimal=8)
-    assert_almost_equal(-np.array([1., 1., 1.]), measure.evaluate(dens, dens, deriv=True)[1], decimal=8)
-    assert_almost_equal(np.array([0., 0., 0.]), measure.evaluate(dens, model, deriv=False), decimal=8)
-    assert_almost_equal(np.array([0., 0., 0.]), measure.evaluate(dens, model, deriv=True)[0], decimal=8)
-    assert_almost_equal(-np.array([1., 1., 1.]), measure.evaluate(dens, model, deriv=True)[1], decimal=8)
+    assert_almost_equal(
+        np.array([0., 0., 0.]), measure.evaluate(dens, dens, deriv=False), decimal=8
+    )
+    assert_almost_equal(
+        np.array([0., 0., 0.]), measure.evaluate(dens, dens, deriv=True)[0], decimal=8
+    )
+    assert_almost_equal(
+        -np.array([1., 1., 1.]), measure.evaluate(dens, dens, deriv=True)[1], decimal=8
+    )
+    assert_almost_equal(
+        np.array([0., 0., 0.]), measure.evaluate(dens, model, deriv=False), decimal=8
+    )
+    assert_almost_equal(
+        np.array([0., 0., 0.]), measure.evaluate(dens, model, deriv=True)[0], decimal=8
+    )
+    assert_almost_equal(
+        -np.array([1., 1., 1.]), measure.evaluate(dens, model, deriv=True)[1], decimal=8
+    )
 
 
 def test_evaluate_kl():

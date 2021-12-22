@@ -20,16 +20,19 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
+r"""Parsing Slater files."""
 import os
 import re
+
 import numpy as np
+
 
 __all__ = ["load_slater_wfn"]
 
 
 def load_slater_wfn(element, anion=False, cation=False):
     """
-    Return the data recorded in the atomic Slater '.slater' files wave-function file as a dictionary.
+    Return the data inside the atomic Slater '.slater' files wave-function file as a dictionary.
 
     Parameters
     ----------
@@ -60,16 +63,20 @@ def load_slater_wfn(element, anion=False, cation=False):
     is_heavy_element = element.lower() in heavy_atoms
     if anion:
         if element.lower() in anion_atoms:
-            file_path = "/data/anion/%s.an" % element.lower()
+            file_path = f"/data/anion/{element.lower()}.an"
         else:
-            raise ValueError("Anion Slater File for element %s does not exist." % element)
+            raise ValueError(
+                f"Anion Slater File for element {element} does not exist."
+            )
     elif cation:
         if element.lower() in cation_atoms:
-            file_path = "/data/cation/%s.cat" % element.lower()
+            file_path = f"/data/cation/{element.lower()}.cat"
         else:
-            raise ValueError("Cation Slater File for element %s does not exist." % element)
+            raise ValueError(
+                f"Cation Slater File for element {element} does not exist."
+            )
     else:
-        file_path = "/data/neutral/%s.slater" % element.lower()
+        file_path = f"/data/neutral/{element.lower()}.slater"
 
     file_name = os.path.join(os.path.dirname(__file__) + file_path)
 
@@ -122,7 +129,6 @@ def load_slater_wfn(element, anion=False, cation=False):
                 orbital = (electron_config_list[index: index + 2])
 
                 if orbital[1] == "D" or orbital[1] == "F":
-                    # num_electrons = re.sub('[(){}<>,]', "", electron_config_list.split(orbital)[1])
                     num_electrons = re.search(orbital + r"\((.*?)\)", electron_config_list).group(1)
                     out[orbital] = int(num_electrons)
                 else:
@@ -157,10 +163,10 @@ def load_slater_wfn(element, anion=False, cation=False):
         elif t_orbital[1] == "F":
             return int(t_orbital[0]) - 2
         else:
-            raise ValueError("Did not recognize orbital %s " % t_orbital)
+            raise ValueError(f"Did not recognize orbital {t_orbital}.")
 
     def _configuration_exact_for_heavy_elements(configuration):
-        r"""later file for heavy elements does not contain the configuration in right format."""
+        r"""Later file for heavy elements does not contain the configuration in right format."""
         true_configuration = ""
         if "[XE]" in configuration:
             true_configuration += "K(2)L(8)M(18)4S(2)4P(6)5S(2)4D(10)5P(6)"
@@ -173,10 +179,10 @@ def load_slater_wfn(element, anion=False, cation=False):
             # Add rest
             true_configuration += configuration.split("[RN]")[1]
         else:
-            raise ValueError("Heavy element is not the right format for parsing. ")
+            raise ValueError("Heavy element is not the right format for parsing.")
         return true_configuration
 
-    with open(file_name, "r") as f:
+    with open(file_name, "r", encoding="utf8") as f:
         line = f.readline()
         configuration = line.split()[1].replace(",", "")
         if is_heavy_element:
@@ -188,7 +194,7 @@ def load_slater_wfn(element, anion=False, cation=False):
             next_line = f.readline()
         if is_heavy_element:
             # Heavy element slater files has extra redundant information of 5 lines.
-            for i in range(0, 6):
+            for _ in range(0, 6):
                 next_line = f.readline()
 
         # Get energy from "E=..." line
@@ -254,8 +260,9 @@ def load_slater_wfn(element, anion=False, cation=False):
             'orbitals_cusp': np.array(orbitals_cusp)[:, None],
             'orbitals_basis': orbitals_basis,
             'orbitals_exp':
-                {key: np.asarray(value).reshape(len(value), 1) for key, value in orbitals_exp.items()
-                 if value != []},
+                {key: np.asarray(value).reshape(len(value), 1)
+                 for key, value in orbitals_exp.items()
+                 if value},
             'orbitals_coeff':
                 {key: np.asarray(value).reshape(len(value), 1)
                  for key, value in orbitals_coeff.items() if value != []},

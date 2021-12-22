@@ -19,16 +19,15 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-r"""Greedy Fitting Module"""
+r"""Greedy Fitting Module."""
 
 from abc import ABCMeta, abstractmethod
 
+from bfit.fit import _BaseFit, KLDivergenceSCF, ScipyFit
+from bfit.measure import SquaredDifference
+from bfit.model import AtomicGaussianDensity
 import numpy as np
 from scipy.optimize import nnls
-
-from bfit.model import AtomicGaussianDensity
-from bfit.fit import ScipyFit, KLDivergenceSCF, _BaseFit
-from bfit.measure import SquaredDifference
 
 __all__ = ["GreedyLeastSquares", "GreedyKLSCF"]
 
@@ -101,7 +100,7 @@ def get_next_choices(factor, coeffs, fparams, coeff_val=100.):
     .. math::
         \begin{align*}
             \[a_1 / factor, a_2,  .., a_n\] &,\quad coeffs = [c1, c^\prime, c2, ..., cn], \\
-            \[[a_1, a_2, ..., (a_i + a_{(i+1)/2}, a_{i+1}, ..., an\] &,\quad \text{similar coeffs}, \\
+            \[[a_1, a_2,...,(a_i + a_{(i+1)/2}, a_{i+1}, ..., an\] &,\quad \text{similar coeffs},\\
             \[[a_1, a_2, ..., factor * a_n\] &,\quad \text{similar coeffs},
         \end{align*}
 
@@ -254,7 +253,7 @@ def pick_two_lose_one(factor, coeffs, exps, coeff_val=100.):
     """
     all_choices = []
     two_choices = get_two_next_choices(factor, coeffs, exps, coeff_val)
-    for i, p in enumerate(two_choices):
+    for p in two_choices:
         coeff, exp = p[:len(p) // 2], p[len(p) // 2:]
         for j in range(0, len(p) // 2):
             new_coeff = np.delete(coeff, j)
@@ -264,7 +263,7 @@ def pick_two_lose_one(factor, coeffs, exps, coeff_val=100.):
 
 
 class GreedyStrategy(metaclass=ABCMeta):
-    r"""Base greedy strategy class for fitting s-type, p-type Gaussians"""
+    r"""Base greedy strategy class for fitting s-type, p-type Gaussians."""
 
     def __init__(self, fitting_obj, choice_function="pick-one"):
         r"""
@@ -308,27 +307,27 @@ class GreedyStrategy(metaclass=ABCMeta):
 
     @property
     def numb_func_increase(self):
-        r"""Number of basis-functions to add in each iteration."""
+        r"""Return number of basis-functions to add in each iteration."""
         return self._numb_func_increase
 
     @property
     def density(self):
-        r"""Density that is fitted to."""
+        r"""Return density that is fitted to."""
         return self.fitting_obj.density
 
     @property
     def grid(self):
-        r"""Grid class object."""
+        r"""Return grid class object."""
         return self.fitting_obj.grid
 
     @property
     def model(self):
-        r"""Model class."""
+        r"""Return model class."""
         return self.fitting_obj.model
 
     @property
     def integral_dens(self):
-        r"""Integral of the density."""
+        r"""Return the integral of the density."""
         return self.fitting_obj.integral_dens
 
     @abstractmethod
@@ -338,7 +337,8 @@ class GreedyStrategy(metaclass=ABCMeta):
         raise NotImplementedError()
 
     @abstractmethod
-    def get_optimization_routine(self, params, local=False, *args):
+    def get_optimization_routine(self, params, *args, local=False):
+        r"""Run the optimization for fitting the Gaussian model to a density."""
         raise NotImplementedError()
 
     def eval_obj_function(self, params):
@@ -387,10 +387,14 @@ class GreedyStrategy(metaclass=ABCMeta):
             # Update model for the new number of S-type and P-type functions.
             if i < num_s_choices:
                 # Update the number of s-type basis functions for this guess.
-                self.model.change_numb_s_and_numb_p(self.num_s + self.numb_func_increase, self.num_p)
+                self.model.change_numb_s_and_numb_p(
+                    self.num_s + self.numb_func_increase, self.num_p
+                )
             else:
                 # Update the number of p-type basis functions for this guess.
-                self.model.change_numb_s_and_numb_p(self.num_s, self.num_p + self.numb_func_increase)
+                self.model.change_numb_s_and_numb_p(
+                    self.num_s, self.num_p + self.numb_func_increase
+                )
 
             # Optimize using this initial guess and get cost-function value.
             local_param = self.get_optimization_routine(param, local=True)
@@ -399,14 +403,11 @@ class GreedyStrategy(metaclass=ABCMeta):
             if cost_func < best_local_value:
                 best_local_value = self.eval_obj_function(local_param)
                 best_local_param = local_param
-                if i < num_s_choices:
-                    is_s_optimal = True
-                else:
-                    is_s_optimal = False
+                is_s_optimal = bool(i < num_s_choices)
         return best_local_value, best_local_param, is_s_optimal
 
     def _split_parameters(self, params):
-        r"""Splits parameters into the s-type, p-type coefficients and exponents."""
+        r"""Split parameters into the s-type, p-type coefficients and exponents."""
         s_coeffs = params[:self.num_s]
         p_coeffs = params[self.num_s:self.num_s + self.num_p]
         s_exps = params[self.num_s + self.num_p:2 * self.num_s + self.num_p]
@@ -439,7 +440,7 @@ class GreedyStrategy(metaclass=ABCMeta):
 
     def run(self, factor, d_threshold=1e-8, max_numb_funcs=30, add_extra_choices=None, disp=False):
         r"""
-        Keep adding new Gaussians to fit to a density until convergence is achieved.
+        Add new Gaussians to fit to a density until convergence is achieved.
 
         Initially, the algorithm solves for the best one-function basis-function.
         Then it generates a group of initial guesses of size `(1 + C)`
@@ -505,7 +506,8 @@ class GreedyStrategy(metaclass=ABCMeta):
             template_iters = self._print_header()
 
         success = True
-        while numb_funcs <= max_numb_funcs - 1 and numb_redum < 5 and np.abs(best_gval - prev_gval) >= d_threshold:
+        while numb_funcs <= max_numb_funcs - 1 and numb_redum < 5 and \
+                np.abs(best_gval - prev_gval) >= d_threshold:
             s_coeffs, s_exps, p_coeffs, p_exps = self._split_parameters(gparams)
 
             # Get the next list of choices of parameters for S-type and P-type orbitals.
@@ -534,12 +536,13 @@ class GreedyStrategy(metaclass=ABCMeta):
                 total_choices.append(add_extra_choices(gparams))
 
             # Run fast, quick optimization and find the best parameter out of the choices.
-            best_lval, best_lparam, is_s_optimal = self._find_best_lparams(
+            _, best_lparam, is_s_optimal = self._find_best_lparams(
                 total_choices, num_s_choices, num_p_choices
             )
 
             # Update model for the new number of S-type and P-type functions.
             if is_s_optimal:
+                # If adding s-type was optimal then increase number of s-type.
                 self.num_s += self.numb_func_increase
             else:
                 self.num_p += self.numb_func_increase
@@ -553,8 +556,8 @@ class GreedyStrategy(metaclass=ABCMeta):
             # Check if redundancies were found in the coefficients and exponents, remove them,
             #   change the factor and try again.
             s_coeffs, s_exps, p_coeffs, p_exps = self._split_parameters(opt_lparam)
-            s_coeffs_new, s_exps_new = remove_redundancies(s_coeffs, s_exps)
-            p_coeffs_new, p_exps_new = remove_redundancies(p_coeffs, p_exps)
+            s_coeffs_new, _ = remove_redundancies(s_coeffs, s_exps)
+            p_coeffs_new, _ = remove_redundancies(p_coeffs, p_exps)
             found_s_redundances = self.num_s != len(s_coeffs_new)
             found_p_redundancies = self.num_p != len(p_coeffs_new)
             if found_s_redundances or found_p_redundancies:
@@ -592,7 +595,8 @@ class GreedyStrategy(metaclass=ABCMeta):
 
             if disp:
                 print(template_iters.format(
-                    numb_funcs, self.num_s, self.num_p, *self.err_arr[-1], np.abs(best_gval - prev_gval)
+                    numb_funcs, self.num_s, self.num_p, *self.err_arr[-1],
+                    np.abs(best_gval - prev_gval)
                 ))
 
         if numb_funcs == max_numb_funcs - 1 or numb_redum == 5:
@@ -627,7 +631,8 @@ class GreedyStrategy(metaclass=ABCMeta):
                    "exit_information": exit_info}
         return results
 
-    def _final_exit_info(self, num_func, max_func, best_val, prev_gval, redum, d_threshold):
+    @staticmethod
+    def _final_exit_info(num_func, max_func, best_val, prev_gval, redum, d_threshold):
         r"""Return string that holds how the greedy algorithm teminated."""
         exit_info = None
         if not num_func < max_func - 1:
@@ -701,30 +706,30 @@ class GreedyLeastSquares(GreedyStrategy):
         model = AtomicGaussianDensity(grid.points, num_s=1, num_p=0, normalize=normalize)
         gaussian_obj = ScipyFit(grid, density, model, measure=SquaredDifference(), method=method,
                                 integral_dens=integral_dens)
-        super(GreedyLeastSquares, self).__init__(gaussian_obj, choice)
+        super().__init__(gaussian_obj, choice)
 
     @property
     def local_tol(self):
-        r"""Local tolerance for convergence in `scipy.optimize`."""
+        r"""Return local tolerance for convergence in `scipy.optimize`."""
         return self._local_tol
 
     @property
     def global_tol(self):
-        r"""Global tolerance for convergence in `scipy.optimize`."""
+        r"""Return global tolerance for convergence in `scipy.optimize`."""
         return self._global_tol
 
     @property
     def maxiter(self):
-        r"""Maximum number of iterations in optimization routine."""
+        r"""Return maximum number of iterations in optimization routine."""
         return self._maxiter
 
     @property
     def with_constraint(self):
-        r"""Constraint that integral of model should equal integral of density."""
+        r"""Return constraint that integral of model should equal integral of density."""
         return self._with_constraint
 
     def _solve_one_function_weight(self, weight):
-        r"""Helper function for solving best one-basis function solution."""
+        r"""Solve the best one-basis function solution."""
         a = 2.0 * np.sum(weight)
         sum_of_grid_squared = np.sum(weight * np.power(self.grid.points, 2))
         b = 2.0 * sum_of_grid_squared
@@ -740,7 +745,7 @@ class GreedyLeastSquares(GreedyStrategy):
         return np.array([coefficient, exponent])
 
     def get_best_one_function_solution(self):
-        r"""Obtain the best one s-type function solution to least-squares using different weights."""
+        r"""Obtain the best s-type function solution to least-squares using different weights."""
         # Minimizing weighted least squares with three different weights
         weight1 = np.ones(len(self.grid.points))
         weight3 = np.power(self.density, 2.)
@@ -771,14 +776,16 @@ class GreedyLeastSquares(GreedyStrategy):
             )
         return exponential
 
-    def optimize_using_nnls(self, true_dens, cofactor_matrix):
-        r"""Solve for the coefficients using non-linear least squares"""
+    @staticmethod
+    def optimize_using_nnls(true_dens, cofactor_matrix):
+        r"""Solve for the coefficients using non-linear least squares."""
         b_vector = np.copy(true_dens)
         b_vector = np.ravel(b_vector)
         row_nnls_coefficients = nnls(cofactor_matrix, b_vector)
         return row_nnls_coefficients[0]
 
     def get_optimization_routine(self, params, local=False):
+        r"""Optimize least-squares using nnls and scipy.optimize from ScipyFit."""
         # First solves the optimal coefficients (while exponents are fixed) using NNLS.
         # Then it optimizes both coefficients and exponents using scipy.optimize.
         exps = params[len(params)//2:]
@@ -827,10 +834,10 @@ class GreedyKLSCF(GreedyStrategy):
                                       a new guess each time.
         g_eps_coeff : float, optional
             The tolerance for convergence of coefficients in KL-SCF method for further
-            refining and optimizing the  best found local guess.
+            refining and optimizing the best found local guess.
         g_eps_exp : float, optional
-            The tolerance for convergence of exponents in KL-SCF method for further refining/optimizing
-            the best local guess found out of all choices.
+            The tolerance for convergence of exponents in KL-SCF method for further
+            refining/optimizing the best local guess found out of all choices.
         g_eps_obj : float, optional
             The tolerance for convergence of objective function in KL-SCF method for
             further refining/optimizing the best local guess found out of all choices.
@@ -865,41 +872,41 @@ class GreedyKLSCF(GreedyStrategy):
         # Model that is fitted to.
         model = AtomicGaussianDensity(grid.points, num_s=1, num_p=0, normalize=True)
         scf_obj = KLDivergenceSCF(grid, density, model, mask_value, integral_dens)
-        super(GreedyKLSCF, self).__init__(scf_obj, choice)
+        super().__init__(scf_obj, choice)
 
     @property
     def l_threshold_coeff(self):
-        r"""Local threshold for KL-SCF method for convergence of coefficients."""
+        r"""Return local threshold for KL-SCF method for convergence of coefficients."""
         return self._l_threshold_coeff
 
     @property
     def l_threshold_exp(self):
-        r"""Local threshold for KL-SCF method for convergence of exponents."""
+        r"""Return local threshold for KL-SCF method for convergence of exponents."""
         return self._l_threshold_exp
 
     @property
     def l_threshold_obj(self):
-        r"""Local threshold for KL-SCF method for convergence of objective function."""
+        r"""Return local threshold for KL-SCF method for convergence of objective function."""
         return self._l_threshold_obj
 
     @property
     def g_threshold_coeff(self):
-        r"""Global threshold for KL-SCF method for convergence of coefficients."""
+        r"""Return global threshold for KL-SCF method for convergence of coefficients."""
         return self._g_threshold_coeff
 
     @property
     def g_threshold_exp(self):
-        r"""Global threshold for KL-SCF method for convergence of exponents."""
+        r"""Return global threshold for KL-SCF method for convergence of exponents."""
         return self._g_threshold_exp
 
     @property
     def g_threshold_obj(self):
-        r"""Global threshold for KL-SCF method for convergence of objective function."""
+        r"""Return global threshold for KL-SCF method for convergence of objective function."""
         return self._g_threshold_obj
 
     @property
     def maxiter(self):
-        r"""Maximum iteration for KL-SCF method."""
+        r"""Return maximum iteration for KL-SCF method."""
         return self._maxiter
 
     def get_best_one_function_solution(self):
@@ -909,6 +916,7 @@ class GreedyKLSCF(GreedyStrategy):
         return np.array([self.integral_dens, exps])
 
     def get_optimization_routine(self, params, local=False):
+        r"""Optimize KL using KL-SCF method."""
         coeffs, exps = params[:len(params)//2], params[len(params)//2:]
         if local:
             result = self.fitting_obj.run(

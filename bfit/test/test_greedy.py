@@ -19,16 +19,15 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-r"""Test file for 'bfit.greedy'. """
+r"""Test file for 'bfit.greedy'."""
 
+from bfit.greedy import (
+    get_next_choices, get_two_next_choices, GreedyKLSCF,
+    GreedyLeastSquares, pick_two_lose_one, remove_redundancies
+)
+from bfit.grid import UniformRadialGrid
 import numpy as np
 import numpy.testing as npt
-
-from bfit.grid import UniformRadialGrid
-from bfit.greedy import (
-    remove_redundancies, get_next_choices, get_two_next_choices, pick_two_lose_one,
-    GreedyLeastSquares, GreedyKLSCF
-)
 
 
 def test_check_redundancies():
