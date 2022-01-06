@@ -331,7 +331,6 @@ class KLDivergenceSCF(_BaseFit):
             )
         while ((max_diff_expons > e_threshold or max_diff_coeffs > c_threshold) and
                diff_divergence > d_threshold) and maxiter > niter:
-
             # update old coeffs & expons
             old_cs, old_es = new_cs, new_es
             # update coeffs and/or exponents
@@ -364,7 +363,7 @@ class KLDivergenceSCF(_BaseFit):
         time = end - start
 
         # check whether convergence is reached.
-        if maxiter == niter and diff_divergence > d_threshold:
+        if (maxiter == niter and diff_divergence > d_threshold) or np.isnan(diff_divergence):
             success = False
         else:
             success = True
