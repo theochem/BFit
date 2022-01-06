@@ -961,7 +961,9 @@ def test_gaussian_model_p_integrate_uniform():
     value = model.evaluate(np.array([1.2]), np.array([1.0]), deriv=False)
     assert_almost_equal(grid.integrate(value * spherical), 1.2 * 1.5 * np.pi**1.5, decimal=6)
     value = model.evaluate(np.array([2.5]), np.array([1.1]), deriv=False)
-    assert_almost_equal(grid.integrate(value * spherical), 2.5 * 1.5 * np.pi**1.5 / 1.1**2.5, decimal=6)
+    assert_almost_equal(
+        grid.integrate(value * spherical), 2.5 * 1.5 * np.pi**1.5 / 1.1**2.5, decimal=6
+    )
     # normalized p-type Gaussian at origin
     model = AtomicGaussianDensity(grid.points, num_s=0, num_p=1, normalize=True)
     # check center

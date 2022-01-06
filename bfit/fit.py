@@ -37,7 +37,7 @@ class _BaseFit:
     r"""Base Fitting Class."""
 
     def __init__(self, grid, density, model, measure, integral_dens=None, spherical=False):
-        """
+        r"""
         Construct the base fitting class.
 
         Parameters
@@ -172,12 +172,8 @@ class _BaseFit:
             This is defined to be :math:`L_2^2(f, g) = \int (f(x) - g(x))^2 dx`.
         kullback_leibler : float
             Kullback-Leibler divergence between density and approximate model density.
-<<<<<<< HEAD
             This is defined to be :math:`KL(f, g) = \int f(x) \log\bigg(\frac{f(x)}{g(x)}\bigg)dx`.
-=======
-            This is defined to be :math:`KL(f, g) = \int f(x) \log\bigg(\frac{f(x)}{g(x)}\bigg) dx`.
             If :math:`g` is negative, then this returns infinity.
->>>>>>> d9ae383b8f87fd87fc20b94b6df73942d560bd05
 
         """
         # evaluate approximate model density

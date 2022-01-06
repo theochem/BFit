@@ -167,7 +167,9 @@ def test_integration_uniform_gaussian_on_x_axis():
     )
     assert_almost_equal(value, 2 * 1.0, decimal=6)
     # integrate s-type + p-type gaussians
-    value = grid.integrate((np.exp(-4.01 * pnts**2) + pnts**2 * np.exp(-1.25 * pnts**2)) * spherical)
+    value = grid.integrate(
+        (np.exp(-4.01 * pnts**2) + pnts**2 * np.exp(-1.25 * pnts**2)) * spherical
+    )
     expected_value = 2 * ((np.pi / 4.01)**1.5 + 1.5 * (np.pi**1.5 / 1.25**2.5))
     assert_almost_equal(value, expected_value, decimal=6)
     value = (0.5 / np.pi)**1.5 * np.exp(-0.5 * pnts**2) + 3.62 * pnts**2 * np.exp(-0.85 * pnts**2)
