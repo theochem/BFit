@@ -132,11 +132,11 @@ def test_greedy_kl_two_function():
     greedy = GreedyKLSCF(grid, density, "pick-one",
                          g_eps_coeff=1e-10, g_eps_exp=1e-10,
                          l_eps_exp=1e-5, g_eps_obj=1e-15,
-                         l_eps_obj=1e-10, l_eps_coeff=1e-6, mask_value=0.0,
-                         maxiter=10000, integral_dens=1.0)
+                         l_eps_obj=1e-10, l_eps_coeff=1e-8, mask_value=0.0,
+                         maxiter=15000, integral_dens=1.0, spherical=True)
     result = greedy.run(2.5, max_numb_funcs=2, disp=True)
 
-    npt.assert_almost_equal(result["fun"], 0.0, decimal=10)
+    npt.assert_almost_equal(result["fun"], 0.0, decimal=6)
     npt.assert_almost_equal(np.sort(result["coeffs"]), [0.25, 0.75], decimal=3)
     npt.assert_almost_equal(np.sort(result["exps"]), [5.0, 10.0], decimal=3)
     assert result["success"]
@@ -152,7 +152,7 @@ def test_greedy_ls_two_function():
     density = eval_density(grid.points)
     greedy = GreedyLeastSquares(
         grid, density, "pick-one", local_tol=1e-10, global_tol=1e-15,
-        integral_dens=1.0, normalize=True,
+        integral_dens=1.0, normalize=True, spherical=True,
     )
     result = greedy.run(2.5, d_threshold=1e-10, max_numb_funcs=2, disp=True)
 

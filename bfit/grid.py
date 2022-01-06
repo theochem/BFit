@@ -30,53 +30,38 @@ __all__ = ["ClenshawRadialGrid", "UniformRadialGrid", "CubicGrid"]
 class _BaseRadialGrid:
     r"""Radial Grid Base Class."""
 
-    def __init__(self, points, spherical=True):
-        r"""
+    def __init__(self, points):
+        """
         Construct BaseRadialGrid object.
 
         Parameters
         ----------
         points : ndarray, (N,)
             The radial grid points.
-        spherical : bool, optional
-            If true, then trapezoidal integration is done spherically,
-            i.e. with a factor of :math:`4 \pi r^2`.
 
         """
         if not isinstance(points, np.ndarray) or points.ndim != 1:
             raise TypeError("Argument points should be a 1D numpy array.")
         self._points = np.ravel(points)
-        self._spherical = spherical
 
     @property
     def points(self):
         """Radial grid points."""
         return self._points
 
-    @property
-    def spherical(self):
-        """Whether to perform spherical integration."""
-        return self._spherical
-
     def __len__(self):
         """Return number of grid points."""
         return self._points.shape[0]
 
-    def integrate(self, arr, force_no_spherical=False):
+    def integrate(self, arr):
         r"""Compute trapezoidal integration of a function evaluated on the radial grid points.
 
-        .. math:: \int p * f(r) dr
-
-        where :math:'f(r)' is the integrand and :math:`p=4 \times \pi` if `spherical=True`,
-        otherwise :math:`p=1.0`.
+        :math:`\int f(r) dr`, where :math:'f(r)' is the integrand.
 
         Parameters
         ----------
         arr : ndarray
             The integrand evaluated on the radial grid points.
-        force_no_spherical : bool
-            This forces spherical integration to not occur even if spherical coordinates is
-            True, ie the class attribute `_spherical` is True.
 
         Returns
         -------
@@ -88,20 +73,17 @@ class _BaseRadialGrid:
             raise ValueError(
                 f"The argument arr should have {self.points.shape} shape!"
             )
-        if self._spherical and not force_no_spherical:
-            value = 4. * np.pi * np.trapz(y=self.points ** 2 * arr, x=self.points)
-        else:
-            value = np.trapz(y=arr, x=self.points)
-        return value
+        return np.trapz(y=arr, x=self.points)
 
 
 class UniformRadialGrid(_BaseRadialGrid):
-    r"""Uniformly Distributed Radial Grid Class.
+    r"""
+    Uniformly Distributed Radial Grid Class.
 
     The grid points are equally-spaced in :math:`[0, max_points)` interval.
     """
 
-    def __init__(self, num_pts, min_radii=0., max_radii=100., spherical=True, dtype=np.longdouble):
+    def __init__(self, num_pts, min_radii=0., max_radii=100., dtype=np.longdouble):
         """
         Construct the UniformRadialGrid object.
 
@@ -113,8 +95,6 @@ class UniformRadialGrid(_BaseRadialGrid):
             The smallest radial grid point.
         max_radii : float, optional
             The largest radial grid point.
-        spherical : bool, optional
-            If `True`, the spherical integration of function is computed.
         dtype : data-type, optional
             The desired NumPy data-type.
 
@@ -134,7 +114,7 @@ class UniformRadialGrid(_BaseRadialGrid):
 
         # compute points
         points = np.linspace(start=min_radii, stop=max_radii, num=num_pts, dtype=dtype)
-        super().__init__(points, spherical)
+        super().__init__(points)
 
 
 class ClenshawRadialGrid(_BaseRadialGrid):
@@ -156,7 +136,7 @@ class ClenshawRadialGrid(_BaseRadialGrid):
     """
 
     def __init__(self, atomic_number, num_core_pts, num_diffuse_pts, extra_pts=None,
-                 spherical=True, dtype=np.longdouble):
+                 dtype=np.longdouble):
         r"""
         Construct ClenshawRadialGrid grid object.
 
@@ -170,9 +150,6 @@ class ClenshawRadialGrid(_BaseRadialGrid):
             The number of points far from the origin/core region.
         extra_pts : list
             Additional points to be added to the grid, commonly points far away from origin.
-        spherical : bool
-            If true, then trapezoidal integration is done spherically,
-            i.e. with a factor of :math:`4 \pi r^2`.
         dtype : data-type, optional
             The desired NumPy data-type.
 
@@ -199,7 +176,7 @@ class ClenshawRadialGrid(_BaseRadialGrid):
         else:
             points = np.concatenate((core_points, diff_points[1:]))
 
-        super().__init__(np.sort(points), spherical)
+        super().__init__(np.sort(points))
 
     @property
     def atomic_number(self):
@@ -250,22 +227,7 @@ class ClenshawRadialGrid(_BaseRadialGrid):
 
 
 class CubicGrid:
-    r"""
-    Equally-Spaced 3D Cubic Grid Class.
-
-    Attributes
-    ----------
-    points : ndarray, (N, 3)
-        The three-dimensional array containing the `N` grid points that are uniform.
-    step : float
-        The positive number representing the step-size of any two consequent grid points.
-
-    Methods
-    -------
-    integrate(arr) :
-        Integrate an array `arr` defined over the `points` using Riemannian sum.
-
-    """
+    r"""Equally-Spaced 3D Cubic Grid Class."""
 
     def __init__(self, origin, axes, shape):
         """
@@ -273,12 +235,12 @@ class CubicGrid:
 
         Parameters
         ----------
-        smallest_pnt : float
-            The smallest point on any axis in the 3D cubic grid.
-        largest_pnt : float
-            The largest point on any axis in the 3D cubic grid.
-        step_size : float
-            The step-size between two consecutive points on any axis in the 3D cubic grid.
+        origin : float
+            The origin (left-most, down-most) of the 3D cubic grid.
+        axes : ndarray(3, 3)
+            The axes that point to the direction of the grid.
+        shape : (int, int, int)
+            The number of points in each axes.
 
         """
         # TODO: Add raise error for Type and Values here for origin, axes.

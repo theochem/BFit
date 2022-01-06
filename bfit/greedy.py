@@ -654,7 +654,7 @@ class GreedyLeastSquares(GreedyStrategy):
     def __init__(
         self, grid, density, choice="pick-one", local_tol=1e-5, global_tol=1e-8,
         method="SLSQP", normalize=False, integral_dens=None, with_constraint=False,
-            maxiter=1000,
+        maxiter=1000, spherical=False,
     ):
         r"""
         Construct the GreedyLestSquares object.
@@ -697,6 +697,10 @@ class GreedyLeastSquares(GreedyStrategy):
         maxiter : int, optional
             Maximum number of iterations when optimizing an initial guess in the `scipy.optimize`
             method.
+        spherical : bool
+            Whether to perform spherical integration by adding :math:`4 \pi r^2` term
+            to the integrand when calculating the objective function.
+            Only used when grid is one-dimensional and positive (radial grid).
 
         """
         self._local_tol = local_tol
@@ -705,7 +709,7 @@ class GreedyLeastSquares(GreedyStrategy):
         self._with_constraint = with_constraint
         model = AtomicGaussianDensity(grid.points, num_s=1, num_p=0, normalize=normalize)
         gaussian_obj = ScipyFit(grid, density, model, measure=SquaredDifference(), method=method,
-                                integral_dens=integral_dens)
+                                integral_dens=integral_dens, spherical=spherical)
         super().__init__(gaussian_obj, choice)
 
     @property
@@ -810,8 +814,7 @@ class GreedyKLSCF(GreedyStrategy):
     def __init__(
         self, grid, density, choice="pick-one", g_eps_coeff=1e-4, g_eps_exp=1e-5,
             g_eps_obj=1e-10, l_eps_coeff=1e-2, l_eps_exp=1e-3, l_eps_obj=1e-8,
-            mask_value=1e-12, integral_dens=None,
-            maxiter=1000
+            mask_value=1e-12, integral_dens=None, maxiter=1000, spherical=False,
     ):
         r"""
         Construct the GreedyKLSCF object.
@@ -859,6 +862,10 @@ class GreedyKLSCF(GreedyStrategy):
             density. Useful when one knows the actual integration value of the density.
         maxiter : int, optional
             Maximum number of iterations when optimizing an initial guess in the KL-SCF method.
+        spherical : bool
+            Whether to perform spherical integration by adding :math:`4 \pi r^2` term
+            to the integrand when calculating objective function.
+            Only used when grid is one-dimensional and positive (radial grid).
 
         """
         # Algorithm parameters for KL-SCF (KLDivergenceSCF) method.
@@ -871,7 +878,7 @@ class GreedyKLSCF(GreedyStrategy):
         self._maxiter = maxiter
         # Model that is fitted to.
         model = AtomicGaussianDensity(grid.points, num_s=1, num_p=0, normalize=True)
-        scf_obj = KLDivergenceSCF(grid, density, model, mask_value, integral_dens)
+        scf_obj = KLDivergenceSCF(grid, density, model, mask_value, integral_dens, spherical)
         super().__init__(scf_obj, choice)
 
     @property
