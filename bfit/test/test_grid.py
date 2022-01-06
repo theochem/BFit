@@ -41,7 +41,7 @@ def test_raises_base():
 def test_integration_base():
     r"""Test integration of _BaseRadialGrid."""
     # integrate a triangle
-    grid = _BaseRadialGrid(np.arange(0., 2., 0.000001), spherical=False)
+    grid = _BaseRadialGrid(np.arange(0., 2., 0.000001))
     value = grid.integrate(grid.points)
     assert_almost_equal(value, 2. * 2. / 2, decimal=5)
     # integrate a square
@@ -51,7 +51,7 @@ def test_integration_base():
 
 def test_raises_integration():
     r"""Test integration over BaseRadialGrid returns an error if dimension aren't specified."""
-    grid = _BaseRadialGrid(np.arange(0., 2., 0.000001), spherical=False)
+    grid = _BaseRadialGrid(np.arange(0., 2., 0.000001))
     # Obtain an array with different dimension than the "grid.points".
     arr = np.arange(0., 2., 0.1)
     assert_raises(ValueError, grid.integrate, arr)
@@ -112,65 +112,75 @@ def test_integration_uniform_gaussian():
     r"""Test integration of UniformRadialGrid of different Gaussians."""
     grid = UniformRadialGrid(100, 0.0, 15.0)
     pnts = grid.points
+    spherical_comp = 4.0 * np.pi * pnts**2.0
     # integrate s-type gaussian functions
-    value = grid.integrate(np.exp(-pnts**2))
+    value = grid.integrate(np.exp(-pnts**2) * 4.0 * np.pi * pnts**2.0)
     assert_almost_equal(value, np.pi**1.5, decimal=6)
-    value = grid.integrate(1.23 * np.exp(-0.5 * pnts**2))
+    value = grid.integrate(1.23 * np.exp(-0.5 * pnts**2) * 4.0 * np.pi * pnts**2.0)
     assert_almost_equal(value, 1.23 * (np.pi / 0.5)**1.5, decimal=6)
-    value += grid.integrate(0.91 * np.exp(-0.1 * pnts**2))
+    value += grid.integrate(0.91 * np.exp(-0.1 * pnts**2) * 4.0 * np.pi * pnts**2.0)
     assert_almost_equal(value, 1.23 * (np.pi / 0.5)**1.5 + 0.91 * (np.pi / 0.1)**1.5, decimal=6)
     # integrate p-type gaussian functions
-    value = grid.integrate(grid.points**2 * np.exp(-2.5 * pnts**2))
+    value = grid.integrate(grid.points**2 * np.exp(-2.5 * pnts**2) * spherical_comp)
     assert_almost_equal(value, 1.5 * np.pi**1.5 / 2.5**2.5, decimal=6)
-    value = grid.integrate(1.2 * pnts**2 * np.exp(-pnts**2))
+    value = grid.integrate(1.2 * pnts**2 * np.exp(-pnts**2) * spherical_comp)
     assert_almost_equal(value, 1.2 * 1.5 * np.pi**1.5, decimal=6)
-    value = grid.integrate(2.5 * pnts**2 * np.exp(-1.1 * pnts**2))
+    value = grid.integrate(2.5 * pnts**2 * np.exp(-1.1 * pnts**2) * spherical_comp)
     assert_almost_equal(value, 2.5 * 1.5 * np.pi**1.5 / 1.1**2.5, decimal=6)
-    value = grid.integrate(2. * 2.75**2.5 * pnts**2 * np.exp(-2.75 * pnts**2) / (3. * np.pi**1.5))
+    value = grid.integrate(
+        2. * 2.75**2.5 * pnts**2 * np.exp(-2.75 * pnts**2) / (3. * np.pi**1.5) * spherical_comp
+    )
     assert_almost_equal(value, 1.0, decimal=6)
     # integrate s-type + p-type gaussians
-    value = grid.integrate(np.exp(-4.01 * pnts**2) + pnts**2 * np.exp(-1.25 * pnts**2))
+    value = grid.integrate(
+        (np.exp(-4.01 * pnts**2) + pnts**2 * np.exp(-1.25 * pnts**2)) * spherical_comp
+    )
     assert_almost_equal(value, (np.pi / 4.01)**1.5 + 1.5 * (np.pi**1.5 / 1.25**2.5), decimal=6)
     value = (0.5 / np.pi)**1.5 * np.exp(-0.5 * pnts**2) + 3.62 * pnts**2 * np.exp(-0.85 * pnts**2)
-    value = grid.integrate(value)
+    value = grid.integrate(value * spherical_comp)
     assert_almost_equal(value, 1.0 + 3.62 * 1.5 * (np.pi**1.5 / 0.85**2.5), decimal=6)
 
 
 def test_integration_uniform_gaussian_on_x_axis():
     r"""Test integration of UniformRadialGrid of different Gaussians."""
     # integrating from -15 to 15, which is twice as much as integrating from 0 to 15
-    grid = UniformRadialGrid(300, -15., 15., spherical=True)
+    grid = UniformRadialGrid(300, -15., 15.)
     pnts = grid.points
+    spherical = 4.0 * np.pi * pnts**2.0
     # integrate s-type gaussian functions
-    value = grid.integrate(np.exp(-pnts**2))
+    value = grid.integrate(np.exp(-pnts**2) * spherical)
     assert_almost_equal(value, 2 * np.pi**1.5, decimal=6)
-    value = grid.integrate(1.23 * np.exp(-0.5 * pnts**2))
+    value = grid.integrate(1.23 * np.exp(-0.5 * pnts**2) * spherical)
     assert_almost_equal(value, 2 * 1.23 * (np.pi / 0.5)**1.5, decimal=6)
-    value += grid.integrate(0.91 * np.exp(-0.1 * pnts**2))
+    value += grid.integrate(0.91 * np.exp(-0.1 * pnts**2) * spherical)
     expected_value = 2 * (1.23 * (np.pi / 0.5)**1.5 + 0.91 * (np.pi / 0.1)**1.5)
     assert_almost_equal(value, expected_value, decimal=6)
     # integrate p-type gaussian functions
-    value = grid.integrate(pnts**2 * np.exp(-2.5 * pnts**2))
+    value = grid.integrate(pnts**2 * np.exp(-2.5 * pnts**2) * spherical)
     assert_almost_equal(value, 2 * 1.5 * np.pi**1.5 / 2.5**2.5, decimal=6)
-    value = grid.integrate(1.2 * pnts**2 * np.exp(-pnts**2))
+    value = grid.integrate(1.2 * pnts**2 * np.exp(-pnts**2) * spherical)
     assert_almost_equal(value, 2 * 1.2 * 1.5 * np.pi**1.5, decimal=6)
-    value = grid.integrate(2.5 * pnts**2 * np.exp(-1.1 * pnts**2))
+    value = grid.integrate(2.5 * pnts**2 * np.exp(-1.1 * pnts**2) * spherical)
     assert_almost_equal(value, 2 * 2.5 * 1.5 * np.pi**1.5 / 1.1**2.5, decimal=6)
-    value = grid.integrate(2. * 2.75**2.5 * pnts**2 * np.exp(-2.75 * pnts**2) / (3. * np.pi**1.5))
+    value = grid.integrate(
+        2. * 2.75**2.5 * pnts**2 * np.exp(-2.75 * pnts**2) / (3. * np.pi**1.5) * spherical
+    )
     assert_almost_equal(value, 2 * 1.0, decimal=6)
     # integrate s-type + p-type gaussians
-    value = grid.integrate(np.exp(-4.01 * pnts**2) + pnts**2 * np.exp(-1.25 * pnts**2))
+    value = grid.integrate(
+        (np.exp(-4.01 * pnts**2) + pnts**2 * np.exp(-1.25 * pnts**2)) * spherical
+    )
     expected_value = 2 * ((np.pi / 4.01)**1.5 + 1.5 * (np.pi**1.5 / 1.25**2.5))
     assert_almost_equal(value, expected_value, decimal=6)
     value = (0.5 / np.pi)**1.5 * np.exp(-0.5 * pnts**2) + 3.62 * pnts**2 * np.exp(-0.85 * pnts**2)
-    value = grid.integrate(value)
+    value = grid.integrate(value * spherical)
     assert_almost_equal(value, 2 * (1.0 + 3.62 * 1.5 * (np.pi**1.5 / 0.85**2.5)), decimal=6)
 
 
 def test_integration_uniform_gaussian_shifted():
     r"""Test integration of a shifted Gaussian using UniformRadialGrid."""
     # spherical=False is used but r^2 is added to the integrand
-    grid = UniformRadialGrid(300, 0.0, 30.0, False)
+    grid = UniformRadialGrid(300, 0.0, 30.0)
     pnts = grid.points - 15.
     # integrate s-type gaussian functions
     value = 4 * np.pi * grid.integrate(pnts**2 * np.exp(-pnts**2))
@@ -203,29 +213,34 @@ def test_integration_uniform_gaussian_shifted():
 def test_integration_clenshaw_gaussian():
     r"""Test integration of ClenshawRadialGrid of different Gaussians."""
     # clenshaw grid & points
-    grid = ClenshawRadialGrid(10, 10000, 10000, spherical=True)
+    grid = ClenshawRadialGrid(10, 10000, 10000)
     pnts = grid.points
+    spherical = 4.0 * np.pi * pnts**2.0
     # integrate s-type gaussian functions
-    value = grid.integrate(np.exp(-pnts**2))
+    value = grid.integrate(np.exp(-pnts**2) * spherical)
     assert_almost_equal(value, np.pi**1.5, decimal=6)
-    value = grid.integrate(1.23 * np.exp(-0.5 * pnts**2))
+    value = grid.integrate(1.23 * np.exp(-0.5 * pnts**2) * spherical)
     assert_almost_equal(value, 1.23 * (np.pi / 0.5)**1.5, decimal=6)
-    value += grid.integrate(0.91 * np.exp(-0.1 * pnts**2))
+    value += grid.integrate(0.91 * np.exp(-0.1 * pnts**2) * spherical)
     assert_almost_equal(value, 1.23 * (np.pi / 0.5)**1.5 + 0.91 * (np.pi / 0.1)**1.5, decimal=6)
     # integrate p-type gaussian functions
-    value = grid.integrate(grid.points**2 * np.exp(-2.5 * pnts**2))
+    value = grid.integrate(grid.points**2 * np.exp(-2.5 * pnts**2) * spherical)
     assert_almost_equal(value, 1.5 * np.pi**1.5 / 2.5**2.5, decimal=6)
-    value = grid.integrate(1.2 * pnts**2 * np.exp(-pnts**2))
+    value = grid.integrate(1.2 * pnts**2 * np.exp(-pnts**2) * spherical)
     assert_almost_equal(value, 1.2 * 1.5 * np.pi**1.5, decimal=6)
-    value = grid.integrate(2.5 * pnts**2 * np.exp(-1.1 * pnts**2))
+    value = grid.integrate(2.5 * pnts**2 * np.exp(-1.1 * pnts**2) * spherical)
     assert_almost_equal(value, 2.5 * 1.5 * np.pi**1.5 / 1.1**2.5, decimal=6)
-    value = grid.integrate(2. * 2.75**2.5 * pnts**2 * np.exp(-2.75 * pnts**2) / (3. * np.pi**1.5))
+    value = grid.integrate(
+        2. * 2.75**2.5 * pnts**2 * np.exp(-2.75 * pnts**2) / (3. * np.pi**1.5) * spherical
+    )
     assert_almost_equal(value, 1.0, decimal=6)
     # integrate s-type + p-type gaussians
-    value = grid.integrate(np.exp(-4.01 * pnts**2) + pnts**2 * np.exp(-1.25 * pnts**2))
+    value = grid.integrate(
+        (np.exp(-4.01 * pnts**2) + pnts**2 * np.exp(-1.25 * pnts**2)) * spherical
+    )
     assert_almost_equal(value, (np.pi / 4.01)**1.5 + 1.5 * (np.pi**1.5 / 1.25**2.5), decimal=6)
     value = (0.5 / np.pi)**1.5 * np.exp(-0.5 * pnts**2) + 3.62 * pnts**2 * np.exp(-0.85 * pnts**2)
-    value = grid.integrate(value)
+    value = grid.integrate(value * spherical)
     assert_almost_equal(value, 1.0 + 3.62 * 1.5 * (np.pi**1.5 / 0.85**2.5), decimal=6)
 
 
