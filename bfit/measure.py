@@ -210,7 +210,9 @@ class KLDivergence(Measure):
         ratio = np.ma.filled(ratio, fill_value=1.0)
 
         # compute KL divergence
-        value = density * np.log(ratio)
+        # Add ignoring division by zero and multiplying by np.nan
+        with np.errstate(divide='ignore', invalid="ignore"):
+            value = density * np.log(ratio)
         # compute derivative
         if deriv:
             return value, -ratio
