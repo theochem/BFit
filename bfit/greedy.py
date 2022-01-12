@@ -473,6 +473,10 @@ class GreedyStrategy(metaclass=ABCMeta):
                 The optimized coefficients of Gaussian model.
             "exps" : ndarray
                 The optimized exponents of Gaussian model.
+            "num_s" : int
+                Number of s-type Gaussian functions.
+            "num_p" : int
+                Number of p-type Gaussian functions.
             "success": bool
                 Whether or not the optimization exited successfully.
             "fun" : ndarray
@@ -624,6 +628,8 @@ class GreedyStrategy(metaclass=ABCMeta):
 
         results = {"coeffs": coeffs,
                    "exps": expons,
+                   "num_s": self.num_s,
+                   "num_p": self.num_p,
                    "fun": obj_func,
                    "success": success,
                    "parameters_iteration": params_iter,
