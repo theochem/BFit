@@ -37,15 +37,21 @@ Dependencies
 
 Installation
 ------------
-On your terminal run:
+Three options to install BFit:
 
 ```bash
-# install BFit from source
+# install from source
 git clone https://github.com/theochem/bfit.git
-python ./setup.py install
+pip install .
+
+ # or install using conda.
+conda install -c theochem qc-bfit
+
+# or install using pip.
+pip install qc-bfit
 
 # run tests to make sure BFit was installed properly
-nosetests -v bfit
+pytest -v . 
 ```
 
 
@@ -54,20 +60,25 @@ Features
 
 The features of this software are:
 
-* Gaussian Basis sets:
-    * Handle S-type and P-type Gaussian functions.
-    * Handle Atomic Densities or Molecular Densities. 
-    * Handle any dimensions.
+* Gaussian Basis set model:
+    * Construct s-type and p-type Gaussian functions,
+    * Compute Atomic Densities or Molecular Densities. 
 
-* Fitting Measures:
-    * Least-squares method,
-    * Kullback-Leibler method.
+* Fitting measures:
+    * Least-squares,
+    * Kullback-Leibler divergence,
+    * Tsallis divergence.
 
-* Optimization Procedures
-    * Optimize using "scipy.minimize" procedures.
+* Optimization procedures
+    * Optimize using SLSQP in "scipy.minimize" procedures.
     * Optimize Kullback-Leibler using self-consistent iterative method see [paper](#citing).
+    * Greedy method for optimization of Kullback-Leibler and Least-Squares, see [paper](#citing).
 
-* Construct Slater atomic densities, including anions, cations and heavy elements, see [data page](data/README.md).
+* Read/Parse Slater wavefunctions for atomic systems:
+  * Includes: anions, cations and heavy elements, see [data](data/README.md) page.
+  * Compute:
+    * Atomic density,
+    * Kinetic density.
 
 
 ## Example
@@ -83,7 +94,7 @@ grid = UniformRadialGrid(num_pts=100, min_radii=0., max_radii=50.)
 See [grid.py](bfit/grid.py), for different assortment of grids.
 
 ### 2. Specify the Model Object.
-Here, the model distribution is 5 S-type, normalized Gaussian functions with center at the origin.
+Here, the model distribution is 5 s-type, normalized Gaussian functions with center at the origin.
 ```python
 from bfit.model import AtomicGaussianDensity
 model = AtomicGaussianDensity(grid.points, num_s=5, num_p=0, normalize=True)
@@ -101,7 +112,8 @@ fit = KLDivergenceSCF(grid, density, model)
 ```
 See [fit.py](bfit/fit.py) for options of fitting algorithms.
 
-### 4. Run it.
+### 4. Run the optimization procedure.
+Initial guesses for the coefficients and exponents of the 5 s-type Gaussians must be provided.
 ```python
 # Provide Initial Guesses
 c0 = np.array([1., 1., 1., 1.])
@@ -110,10 +122,10 @@ e0 = np.array([0.001, 0.1, 1., 5., 100.])
 # Optimize both coefficients and exponents and print while running.
 result = fit.run(c0, e0, opt_coeffs=True, opt_expons=True, maxiter=1000, disp=True)
 
-print("Optimized coefficients are: ", result["x"][0])
-print("Optimized exponents are: ", result["x"][1])
-print("Final performance measures are: ", result["performance"][-1])
 print("Was it successful? ", result["success"])
+print("Optimized coefficients are: ", result["coeffs"])
+print("Optimized exponents are: ", result["exps"])
+print("Final performance measures are: ", result["fun"][-1])
 ```
-See the [example directory](examples/) for more examples or the interactive binder 
+See the [example directory](examples/) for more examples or launch the interactive binder 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/theochem/bfit/master?labpath=%2Fexamples%2F)
