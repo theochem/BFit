@@ -479,8 +479,8 @@ class GreedyStrategy(metaclass=ABCMeta):
                 Number of p-type Gaussian functions.
             "success": bool
                 Whether or not the optimization exited successfully.
-            "fun" : ndarray
-                Values of KL divergence (objective function) at each iteration.
+            "fun" : float
+                Objective function at the last iteration.
             "performance" : ndarray
                 Values of various performance measures of modeled density at each iteration,
                 as computed by `goodness_of_fit()` method.
@@ -564,11 +564,11 @@ class GreedyStrategy(metaclass=ABCMeta):
             p_coeffs_new, _ = remove_redundancies(p_coeffs, p_exps)
             found_s_redundances = self.num_s != len(s_coeffs_new)
             found_p_redundancies = self.num_p != len(p_coeffs_new)
-            if found_s_redundances or found_p_redundancies:
+            if found_s_redundances or found_p_redundancies or opt_lvalue > best_gval:
                 # Move back one function and try a different factor to generate
                 #    better initial guesses.
                 numb_redum += 1  # Update the termination criteria
-                factor += 5      # Increase the factor that changes the kinds of potential choices.
+                factor *= 2      # Increase the factor that changes the kinds of potential choices.
                 if is_s_optimal:
                     self.num_s -= self.numb_func_increase
                 else:
@@ -583,19 +583,6 @@ class GreedyStrategy(metaclass=ABCMeta):
                 prev_gval, best_gval = best_gval, opt_lvalue
                 numb_redum = 0    # Reset the number of redundancies.
                 factor = factor0  # Reset Original Factor.
-            else:
-                exit_info = f"Next Iteration Did Not Find The Best Choice at" \
-                            f" number of s-type {self.num_s} and p-type {self.num_p}"
-                # Revert the number of s-type and p-type
-                if is_s_optimal:
-                    self.num_s -= self.numb_func_increase
-                    self.model.change_numb_s_and_numb_p(self.num_s, self.num_p)
-                else:
-                    self.num_p -= self.numb_func_increase
-                    self.model.change_numb_s_and_numb_p(self.num_s, self.num_p)
-                numb_funcs -= self.numb_func_increase
-                success = False
-                break
 
             if disp:
                 print(template_iters.format(
@@ -605,6 +592,9 @@ class GreedyStrategy(metaclass=ABCMeta):
 
         if numb_funcs == max_numb_funcs - 1 or numb_redum == 5:
             success = False
+            if numb_redum == 5:
+                exit_info = f"Next Iteration Did Not Find The Best Choice at" \
+                            f" number of s-type {self.num_s} and p-type {self.num_p}"
 
         if exit_info is None:
             exit_info = self._final_exit_info(
@@ -633,7 +623,7 @@ class GreedyStrategy(metaclass=ABCMeta):
                    "fun": obj_func,
                    "success": success,
                    "parameters_iteration": params_iter,
-                   "performance": np.array(self.err_arr).T,
+                   "performance": np.array(self.err_arr),
                    "exit_information": exit_info}
         return results
 
@@ -646,8 +636,6 @@ class GreedyStrategy(metaclass=ABCMeta):
         elif np.abs(best_val - prev_gval) < d_threshold:
             exit_info = "Cost function is less than some epsilon: " + \
                              str(best_val - prev_gval) + " <= " + str(d_threshold)
-        elif redum >= 5:
-            exit_info = " Number of redudancies " + str(redum) + " found in a row is more than 5."
         if exit_info is None:
             raise RuntimeError(f"Exit information {exit_info} should not be None. "
                                f"There is an error in the termination of the algorithm.")

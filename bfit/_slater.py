@@ -106,6 +106,7 @@ def load_slater_wfn(element, anion=False, cation=False):
             # Initialize all atomic orbitals to zero electrons
             out[orb] = 0
 
+        # Sometimes electron configuration includes K L M N for simplicity
         for x in shells:
             if x in electron_config_list:
                 if x == "K":
