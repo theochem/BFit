@@ -43,14 +43,14 @@ def test_slater_type_orbital_be():
     # load Be atomic wave function
     be = SlaterAtoms("Be")
     # check values of a single orbital at r=1.0
-    orbital = be.slater_orbital(np.array([[12.683501]]), np.array([[1]]), np.array([1]))
+    orbital = be.radial_slater_orbital(np.array([[12.683501]]), np.array([[1]]), np.array([1]))
     assert_almost_equal(orbital, slater(12.683501, 1, 1.0), decimal=6)
     # check values of a single orbital at r=2.0
-    orbital = be.slater_orbital(np.array([[0.821620]]), np.array([[2]]), np.array([2]))
+    orbital = be.radial_slater_orbital(np.array([[0.821620]]), np.array([[2]]), np.array([2]))
     assert_almost_equal(orbital, slater(0.821620, 2, 2.0), decimal=6)
     # check value of tow orbitals at r=1.0 & r=2.0
     exps, nums = np.array([[12.683501], [0.821620]]), np.array([[1], [2]])
-    orbitals = be.slater_orbital(exps, nums, np.array([1., 2.]))
+    orbitals = be.radial_slater_orbital(exps, nums, np.array([1., 2.]))
     expected = np.array([[slater(exps[0, 0], nums[0, 0], 1.), slater(exps[1, 0], nums[1, 0], 1.)],
                          [slater(exps[0, 0], nums[0, 0], 2.), slater(exps[1, 0], nums[1, 0], 2.)]])
     assert_almost_equal(orbitals, expected, decimal=6)
@@ -61,20 +61,20 @@ def test_derivative_slater_type_orbital_be():
     # load Be atomic wave function
     be = SlaterAtoms("Be")
     # check values of a single orbital at r=1.0
-    orbital = be.derivative_slater_type_orbital(np.array([[12.683501]]),
-                                                np.array([[1]]), np.array([1]))
+    orbital = be.derivative_radial_slater_type_orbital(np.array([[12.683501]]),
+                                                       np.array([[1]]), np.array([1]))
     assert_almost_equal(orbital, slater(12.683501, 1, 1.0, derivative=True), decimal=6)
     # check values of a single orbital at r=2.0
-    orbital = be.derivative_slater_type_orbital(np.array([[0.821620]]), np.array([[2]]),
-                                                np.array([2]))
+    orbital = be.derivative_radial_slater_type_orbital(np.array([[0.821620]]), np.array([[2]]),
+                                                       np.array([2]))
     assert_almost_equal(orbital, slater(0.821620, 2, 2.0, derivative=True), decimal=6)
     # check value of single orbital at r = 0.0
-    orbital = be.derivative_slater_type_orbital(np.array([[0.821620]]), np.array([[2]]),
-                                                np.array([0.]))
+    orbital = be.derivative_radial_slater_type_orbital(np.array([[0.821620]]), np.array([[2]]),
+                                                       np.array([0.]))
     assert_almost_equal(orbital, 0.0, decimal=6)
     # check value of tow orbitals at r=1.0 & r=2.0
     exps, nums = np.array([[12.683501], [0.821620]]), np.array([[1], [2]])
-    orbitals = be.derivative_slater_type_orbital(exps, nums, np.array([1., 2.]))
+    orbitals = be.derivative_radial_slater_type_orbital(exps, nums, np.array([1., 2.]))
     expected = np.array([[slater(exps[0, 0], nums[0, 0], 1., True),
                           slater(exps[1, 0], nums[1, 0], 1., True)],
                          [slater(exps[0, 0], nums[0, 0], 2., True),
@@ -397,7 +397,7 @@ def test_raises():
     r"""Test raises error of SlaterAtoms."""
     assert_raises(TypeError, SlaterAtoms, 25)
     assert_raises(TypeError, SlaterAtoms, "be2")
-    assert_raises(ValueError, SlaterAtoms.slater_orbital, np.array([[1]]), np.array([[2]]),
+    assert_raises(ValueError, SlaterAtoms.radial_slater_orbital, np.array([[1]]), np.array([[2]]),
                   np.array([[1.]]))
     c = SlaterAtoms("c")
     assert_raises(ValueError, c.atomic_density, np.array([[1.]]), "not total")
