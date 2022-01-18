@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
-# FittingBasisSets is a basis-set curve-fitting optimization package.
+# BFit - python program that fits a convex sum of
+# positive basis functions to any probability distribution. .
 #
-# Copyright (C) 2018 The FittingBasisSets Development Team.
+# Copyright (C) 2020 The BFit Development Team.
 #
-# This file is part of FittingBasisSets.
+# This file is part of BFit.
 #
-# FittingBasisSets is free software; you can redistribute it and/or
+# BFit is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 3
 # of the License, or (at your option) any later version.
 #
-# FittingBasisSets is distributed in the hope that it will be useful,
+# BFit is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
@@ -34,7 +35,7 @@ __all__ = ["GreedyLeastSquares", "GreedyKLSCF"]
 
 def remove_redundancies(coeffs, fparams, eps=1e-3):
     r"""
-    Check if the exponents have similar values and groups them together.
+    Check if the exponents have similar values and group them together.
 
     If any two function parameters have similar values, then one of the
     function parameters is removed, and the corresponding coefficient,
@@ -53,11 +54,9 @@ def remove_redundancies(coeffs, fparams, eps=1e-3):
 
     Returns
     -------
-    (np.ndarray, np.ndarray)
-                            New coefficients and new function parameters, where close
-                            values of the function parameters are removed and
-                            the coefficients corresponding to that parameter
-                            are added together.
+    (np.ndarray, np.ndarray) :
+        New coefficients and new function parameters, where close values of the function parameters
+        are removed and the coefficients corresponding to that parameter are added together.
 
     """
     new_coeffs = coeffs.copy()
@@ -118,7 +117,7 @@ def get_next_choices(factor, coeffs, fparams, coeff_val=100.):
     Returns
     -------
     List[np.ndarray]
-        List of the next possible initial guesses for `(n+1)` basis-functions,
+        List of the next possible initial guesses for :math:`(n+1)` basis-functions,
         coefficients are listed first, then exponents.
     """
     size = fparams.shape[0]
@@ -169,7 +168,7 @@ def get_two_next_choices(factor, coeffs, fparams, coeff_val=100.):
     Returns
     -------
     List[np.ndarray]
-        List of the next possible initial guesses for `(n+2)` basis-functions,
+        List of the next possible initial guesses for :math:`(n+2)` basis-functions,
         coefficients are listed first, then exponents.
 
     """
