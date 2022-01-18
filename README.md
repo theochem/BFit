@@ -4,16 +4,19 @@ BFit
 <a href='https://docs.python.org/3.7/'><img src='https://img.shields.io/badge/python-3.7-blue.svg'></a>
 <a href='https://docs.python.org/3.8/'><img src='https://img.shields.io/badge/python-3.8-blue.svg'></a>
 <a href='https://docs.python.org/3.9/'><img src='https://img.shields.io/badge/python-3.9-blue.svg'></a>
+[![GitHub Actions CI Tox Status](https://github.com/theochem/bfit/actions/workflows/ci_tox.yml/badge.svg?branch=master)](https://github.com/theochem/bfit/actions/workflows/ci_tox.yml)
 [![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/theochem/bfit/master?labpath=%2Fexamples%2F)
 
-BFit is a Python library for (best) fitting a convex sum of positive basis functions to any
+BFit is a Python library for fitting a convex sum of Gaussian functions to any
 probability distribution. It is primarily intended for quantum chemistry applications, where the
 basis functions are Gaussians and the fitted probability distribution is a scalar function like
 the electron density.
 
+For further information, please visit [**BFit Documentation**](https://bfit.qcdevs.org/). 
+
 To report any issues or ask questions, either [open an issue](
-https://github.com/QuantumElephant/bfit/issues/new) or email [qcdevs@gmail.com]().
+https://github.com/theochem/bfit/issues/new) or email [qcdevs@gmail.com]().
 
 
 Citation
@@ -23,7 +26,7 @@ Please use the following citation in any publication using BFit library:
 > **"BFit: Information-Theoretic Approach to Basis-Set Fitting of Electron Densities."**,
 > A. Tehrani, F. Heidar-Zadeh, J. S. M. Anderson, T. Verstraelen, R. Cuevas-Saavedra,
 > I. Vinogradov, D. Chakraborty, P. W. Ayers
-> `REFERENCE <https://doi.org/10.1002/jcc.26468>`__.
+> `REFERENCE <https://doi.org/TODO>`__.
 
 
 Dependencies
@@ -74,7 +77,7 @@ The features of this software are:
     * Optimize Kullback-Leibler using self-consistent iterative method see [paper](#citing).
     * Greedy method for optimization of Kullback-Leibler and Least-Squares, see [paper](#citing).
 
-* Read/Parse Slater wavefunctions for atomic systems:
+* Read/Parse Hatree-Fock wavefunctions for atomic systems:
   * Includes: anions, cations and heavy elements, see [data](data/README.md) page.
   * Compute:
     * Atomic density,
