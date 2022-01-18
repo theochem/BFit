@@ -36,7 +36,7 @@ class _BaseRadialGrid:
 
         Parameters
         ----------
-        points : ndarray, (N,)
+        points : ndarray(N,)
             The radial grid points.
 
         """
@@ -54,19 +54,20 @@ class _BaseRadialGrid:
         return self._points.shape[0]
 
     def integrate(self, arr):
-        r"""Compute trapezoidal integration of a function evaluated on the radial grid points.
+        r"""
+        Compute trapezoidal integration of a function evaluated on the radial grid points.
 
-        :math:`\int f(r) dr`, where :math:'f(r)' is the integrand.
+        In other words, :math:`\int f(r) dr`, where :math:'f(r)' is the integrand.
 
         Parameters
         ----------
-        arr : ndarray
-            The integrand evaluated on the radial grid points.
+        arr : ndarray(N,)
+            The integrand evaluated on the :math:`N` radial grid points.
 
         Returns
         -------
-        value : float
-            The value of integral.
+        float :
+            The value of the integral.
 
         """
         if arr.shape != self.points.shape:
@@ -80,7 +81,8 @@ class UniformRadialGrid(_BaseRadialGrid):
     r"""
     Uniformly Distributed Radial Grid Class.
 
-    The grid points are equally-spaced in :math:`[0, max_points)` interval.
+    The grid points are equally-spaced in :math:`[0, K)` interval, where K is the upper bound
+    on the grid.
     """
 
     def __init__(self, num_pts, min_radii=0., max_radii=100., dtype=np.longdouble):
@@ -123,15 +125,15 @@ class ClenshawRadialGrid(_BaseRadialGrid):
     The Clenshaw-Curtis grid places more points closer to the origin of the interval
     :math:`[0, \inf).`
     It is defined as follows. Let :math:`Z, m, n` be the atomic number, number of points near
-    origin, and the number of points far from the origin, respectively.
+    the origin, and the number of points far from the origin, respectively.
 
-    Then each point :math:`r_p` of the Clenshaw radial grid is defined as:
+    Then each point :math:`r_p` of the Clenshaw radial grid is either
 
     .. math::
         \begin{eqnarray}
             r_p = \frac{1}{2Z} \bigg(1 - \cos\bigg(\frac{\pi p}{400} \bigg)\bigg)  &
             p = 0, 1, \cdots, m - 1 \\
-            r_p = 25 \bigg(1 - \cos\bigg(\frac{\pi p}{600} \bigg)\bigg) & p = 0, 1, \cdots, n - 1\\
+            r_p = 25 \bigg(1 - \cos\bigg(\frac{\pi p}{600} \bigg)\bigg) & p = 1, \cdots, n - 1\\
         \end{eqnarray}
     """
 
@@ -184,15 +186,17 @@ class ClenshawRadialGrid(_BaseRadialGrid):
         return self._atomic_number
 
     def _get_points(self, num_pts, mode="core", dtype=np.longdouble):
-        r"""Generate radial points on [0, inf) based on Clenshaw-Curtis grid.
+        r"""Generate radial points on :math:`[0, \inf)` based on Clenshaw-Curtis grid.
 
         The "core" points are concentrated near the origin based on:
 
-        .. math:: r_p = 25 (1 - cos(\frac{\pi p}{2N})) for p =0,1..N-1
+        .. math::
+            r_p = 25 \bigg(1 - \cos\bigg(\frac{\pi p}{2N})\bigg) \quad \text{for } p =0,1, \cdots, N-1
 
         The "diffuse" points are concentrated away from the origin based on:
 
-        .. math:: r_p = \frac{1}[2Z} (1 - cos(\frac{\pi p}{2N})) for p=0,1...N-1,
+        .. math::
+            r_p = \frac{1}{2Z} \bigg(1 - \cos\bigg(\frac{p\pi}{2N}\bigg)\bigg) \quad \text{for } p=0,1,\cdots, N-1,
 
         where :math:`Z` is the atomic number and :math:`N` is the number of points.
 
@@ -368,9 +372,11 @@ class CubicGrid:
     def integrate(self, arr):
         r"""Compute the integral of a function evaluated on the grid points based on Riemann sums.
 
-        .. math:: \int\int\int f(x, y, z) dx dy dz
+        .. math::
+            \int\int\int f(x, y, z) dx dy dz \approx \sum_i \sum_j \sum_k f(x_i, y_j, z_k) w_{ijk}
 
-        where :math:'f(r)' is the integrand.
+        where :math:'f(r)' is the integrand, and :math:`w_{ijk}` is the weight associated with
+        the (i, j, k)th point.
 
         Parameters
         ----------
@@ -380,7 +386,7 @@ class CubicGrid:
         Returns
         -------
         value : float
-            The value of integral.
+            The value of the integral.
 
         """
         if arr.shape != (len(self),):
