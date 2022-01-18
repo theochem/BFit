@@ -46,7 +46,7 @@ class Measure(ABC):
             The model evaluated on the same :math:`N` points that `density` is
             evaluated on.
         deriv : bool, optional
-            Whether it should return the derivatives of the  measure w.r.t. to the
+            Whether it should return the derivatives of the measure w.r.t. to the
             model parameters.
 
         Returns
@@ -70,8 +70,8 @@ class SquaredDifference(Measure):
 
         This is defined to be :math:`(f(x) - g(x))^2`,
         where,
-            :math:`f` is the true function, and
-            :math:`g` is the model function,
+        :math:`f` is the true function, and
+        :math:`g` is the model function,
 
         Parameters
         ----------
@@ -94,12 +94,7 @@ class SquaredDifference(Measure):
         Notes
         -----
         - This class returns the squared difference at each point in the domain.
-        One would need to integrate this to get the desired measure.
-
-        Notes
-        -----
-        - This class does not return the Least-Squared but rather the squared difference.
-            One would need to integrate this to get the Least Squared.
+          One would need to integrate this to get the desired least-squares.
 
         """
         if not isinstance(model, np.ndarray):
@@ -150,14 +145,15 @@ class KLDivergence(Measure):
         Evaluate the integrand of Kullback-Leibler divergence b/w true & model.
 
         .. math ::
-            D(f, g) := \int_G f(x) \ln ( \frac{f(x)}{g(x)} ) dx
-        where,
-            :math:`f` is the true probability distribution,
-            :math:`g` is the model probability distribution,
-            :math:`G` is the grid being integrated on.
+            D(f, g) := \int_G f(x) \ln \bigg( \frac{f(x)}{g(x)} \bigg) dx
 
-        If the model density is negative, then this function will return extremely large values,
-        for optimization purposes.
+        where,
+        :math:`f` is the true probability distribution,
+        :math:`g` is the model probability distribution,
+        :math:`G` is the grid being integrated on.
+
+        If the model density is negative, then this function will return infinity.
+        If :math:`g(x) < \text{mask value}` then :math:`\frac{f(x)}{g(x)} = 1`.
 
         Parameters
         ----------
@@ -184,10 +180,10 @@ class KLDivergence(Measure):
 
         Notes
         -----
-        - Values of Model density that are less than `mask_value` are masked when used in
-            division and then replaced with the value of 1 so that logarithm of one is zero.
-        - This class does not return the Kullback-Leibler but rather the integrand.
-            One would need to integrate this to get the Least Squared.
+        - Values of nodel density that are less than `mask_value` are masked when used in
+          division and then replaced with the value of 1 so that logarithm of one is zero.
+        - This class does not return the Kullback-Leibler divergence.
+          One would need to integrate this to get the KL value.
 
         """
         # check model density
@@ -259,12 +255,14 @@ class TsallisDivergence(Measure):
         Evaluate the integrand of Tsallis divergence on grid points.
 
         Defined as follows:
+
         .. math::
             \int_G \frac{1}{\alpha - 1} f(x) \bigg(\frac{f(x)}{g(x)}^{q- 1} - 1\bigg) dx,
+
         where
-            :math:`f` is the true probability distribution,
-            :math:`g` is the model probability distribution.
-            :math:`G` is the grid being integrated on.
+        :math:`f` is the true probability distribution,
+        :math:`g` is the model probability distribution.
+        :math:`G` is the grid being integrated on.
 
         Parameters
         ----------
@@ -286,11 +284,13 @@ class TsallisDivergence(Measure):
         Notes
         -----
         - This does not impose non-negativity of the model density, unlike the Kullback-Leibler.
+
         - Values of Model density that are less than `mask_value` are masked when used in
-            division and then replaced with the value of 0.
+          division and then replaced with the value of 0.
+
         - As :math:`\alpha` parameter tends towards one, then this converges to the
-            Kullback-Leibler. This is particularly useful for trust-region methods that don't
-            impose strict constraints during the optimization procedure.
+          Kullback-Leibler. This is particularly useful for trust-region methods that don't
+          impose strict constraints during the optimization procedure.
 
         References
         ----------
