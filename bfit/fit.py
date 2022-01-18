@@ -163,7 +163,7 @@ class _BaseFit:
             Integral of approximate model density, i.e. norm of approximate model density.
         l_1 : float
             Integral of absolute difference between density and approximate model density.
-            This is defined to be :math:`L_`(f, g) = \int |f(x) - g(x)| dx`.
+            This is defined to be :math:`L_(f, g) = \int |f(x) - g(x)| dx`.
         l_infinity : float
             The maximum absolute difference between density and approximate model density.
             This is defined to be :math:`L_\infty(f, g) = \max |f(x) - g(x)|`.
@@ -193,13 +193,16 @@ class KLDivergenceSCF(_BaseFit):
     Kullback-Leibler Divergence Self-Consistent Fitting.
 
     This class optimizes the following objective function using self-consistent fitting method
+
     .. math::
-        \min_{\{c_i\}, \{\alpha\}} f(x) \log \bigg(\frac{f(x)}{\sum c_i b_k(x)} \bigg)dx +
-         \lambda(N - \sum c_i)
-    where,
-        :math:`f` is the true density to be fitted,
-        :math:`c_i` is the coefficients of the model that sum to a constant number :math:`N`,
-        :math:`\alpha_i` is the exponent of the basis function :math:`b_k`.
+        \min_{\{c_i\}, \{\alpha\}} \int f(x) \log \bigg(\frac{f(x)}{\sum c_i b_i(x, \alpha_i)}
+         \bigg)dx + \lambda(N - \sum c_i)
+
+    where :math:`f` is the true density to be fitted,
+    :math:`\lambda` is the Lagrange multiplier,
+    :math:`c_i` is the coefficient of the ith basis function
+    that all sum to the integral of density function :math:`N= \int f(x)dx`, and
+    :math:`\alpha_i` is the exponent of the basis function :math:`b_i`.
 
     """
 
@@ -324,16 +327,17 @@ class KLDivergenceSCF(_BaseFit):
 
         Returns
         -------
-        result : dict
-            The optimization results presented as a dictionary containing:
+        dict :
+            The optimization results presented as a dictionary with keys:
+
             "coeffs" : ndarray
-                The optimized coefficients of Gaussian model.
+                The optimized coefficients of the Gaussian model.
             "exps" : ndarray
-                The optimized exponents of Gaussian model.
+                The optimized exponents of the Gaussian model.
             "success": bool
-                Whether or not the optimization exited successfully.
+                Whether the optimization exited successfully.
             "fun" : ndarray
-                Values of KL divergence (objective function) at each iteration.
+                Values of the KL divergence (objective function) at each iteration.
             "performance" : ndarray
                 Values of various performance measures of modeled density at each iteration,
                 as computed by `goodness_of_fit()` method.
@@ -434,24 +438,28 @@ class KLDivergenceSCF(_BaseFit):
 
 class ScipyFit(_BaseFit):
     r"""
-    Optimizes either least-squares or Kullback-Leibler of Gaussian functions using `Scipy.optimize`.
+    Optimize least-squares or Kullback-Leibler of Gaussian functions using `Scipy.optimize`.
 
-    The Gaussian functions can be constrained to have their integral be a fixed value.
-        Although it is not recommended. The coefficients and exponents are always bounded to be
-        positive.
+    Least-squares objective function w.r.t. Gaussian basis-functions is defined as
+
+    .. math::
+        \min_{\{c_i\}, \{\alpha\}} \int \bigg(f(x) - \sum c_i b_k(x, \alpha_i) \bigg)^2 dx
+
+    The Kullback-Leibler divergence function is defined as
+
+    .. math::
+        \min_{\{c_i\}, \{\alpha\}, \sum c_i = N} \int f(x) \log \bigg(\frac{f(x)}{\sum c_i b_i(x, \alpha_i)}
+         \bigg)dx,
+
+    where :math:`f` is the density to be fitted to,
+    :math:`c_i, \alpha_i` are the coefficeints and exponents of the Gaussian
+    basis functions, and :math:`N = \int f(x)dx` is the integral of the density function.
 
     Notes
     -----
-    - The coefficients and exponents are bounded to be positive.
-
-    - These methods in this class was found to be extremely hard to optimize. There appears
-        to have many local minimas and Quasi-Newton methods seems inadequate in order to optimize
-        these. Just the mere act of placing the initial guess to be close to the solution causes
-        problems. It is highly recommended to have `with_constraint` to be False.
-
-    - Note that the Kullback-Leibler between two functions f and g is positive if and only if
-        the integrals of f and g are identical.  This constraint must be added for
-        these optimizers.
+    - Note that the Kullback-Leibler between two functions :math:`f` and :math:`g` is positive
+      if and only if the integrals of :math:`f` and :math:`g` are identical.  The `with_constraint`
+      attribute must be True for optimizing Kullback-Leibler.
 
     """
 
@@ -520,7 +528,7 @@ class ScipyFit(_BaseFit):
             Maximum number of iterations.
         tol : float, optional
             For slsqp. precision goal for the value of objective function in the stopping criterion.
-            For trust-constr, it is precision goal for the change in independent variables.
+            For trust-constr, it is precision goal for the change in the variables.
         disp : bool
             If True, then it will print the iteration errors, convergence messages from the
             optimizer and will print out various error measures at each iteration.
@@ -530,20 +538,21 @@ class ScipyFit(_BaseFit):
 
         Returns
         -------
-        result : dict
+        dict :
             The optimization results presented as a dictionary containing:
+
             "coeffs" : ndarray
-                The optimized coefficients of Gaussian model.
+                The optimized coefficients of the Gaussian model.
             "exps" : ndarray
-                The optimized exponents of Gaussian model.
+                The optimized exponents of the Gaussian model.
             "success": bool
-                Whether or not the optimization exited successfully.
+                Whether the optimization exited successfully.
             "message" : str
-                Message about the cause of termination.
+                Information about the cause of termination.
             "fun" : float
                 Values of KL divergence (objective function) at the final iteration.
             "jacobian": ndarray
-                The Jacobian of the coefficients and exponents.
+                The Jacobian of the objective function w.r.t. coefficients and exponents.
             "performance" : list
                 Values of various performance measures of modeled density at each iteration,
                 as computed by `_BaseFit.goodness_of_fit` method.
@@ -552,8 +561,6 @@ class ScipyFit(_BaseFit):
 
         Notes
         -----
-        - This is a constrained optimization such that the integration of the model density is
-            a fixed value. Hence, only certain optimization algorithms can be used.
         - The coefficients and exponents are bounded to be positive.
 
         """
@@ -710,12 +717,12 @@ class ScipyFit(_BaseFit):
         return obj, d_obj
 
     def const_norm(self, x, *args):
-        r"""Compute deviation in normalization constraint.
+        r"""Compute deviation in normalization constraint :math:`\sum c_i - \int f(x) dx`.
 
         Parameters
         ----------
         x : ndarray
-            The parameters of Gaussian basis which is being optimized. Contains both the
+            The parameters of Gaussian basis-functions. Contains both the
             coefficients and exponents together in a 1-D array.
         args :
             Additional parameters for the model.
@@ -738,7 +745,7 @@ class ScipyFit(_BaseFit):
         Parameters
         ----------
         x : ndarray
-            The parameters of Gaussian basis which is being optimized. Contains both the
+            The parameters of Gaussian basis-functions. Contains both the
             coefficients and exponents together in a 1-D array.
         args :
             Additional parameters for the model.
