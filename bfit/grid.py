@@ -191,12 +191,14 @@ class ClenshawRadialGrid(_BaseRadialGrid):
         The "core" points are concentrated near the origin based on:
 
         .. math::
-            r_p = 25 \bigg(1 - \cos\bigg(\frac{\pi p}{2N})\bigg) \quad \text{for } p =0,1, \cdots, N-1
+            r_p = 25 \bigg(1 - \cos\bigg(\frac{\pi p}{2N})\bigg) \quad \text{for } p =0,1,
+            \cdots, N-1
 
         The "diffuse" points are concentrated away from the origin based on:
 
         .. math::
-            r_p = \frac{1}{2Z} \bigg(1 - \cos\bigg(\frac{p\pi}{2N}\bigg)\bigg) \quad \text{for } p=0,1,\cdots, N-1,
+            r_p = \frac{1}{2Z} \bigg(1 - \cos\bigg(\frac{p\pi}{2N}\bigg)\bigg) \quad \text{for }
+            p=0,1,\cdots, N-1,
 
         where :math:`Z` is the atomic number and :math:`N` is the number of points.
 

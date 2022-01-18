@@ -523,7 +523,7 @@ class GreedyStrategy(metaclass=ABCMeta):
             ]
             if self.num_p == 0:
                 # Random choices from 0 to 100 for the first P-type guess.
-                choices_parameters_p = [np.random.random((2 * self.numb_func_increase,)) * 100]
+                choices_parameters_p = [np.random.random((2 * self.numb_func_increase,)) * factor]
             else:
                 choices_parameters_p = self.next_param_func(factor, p_coeffs, p_exps)
             choices_parameters_p = [
@@ -597,7 +597,7 @@ class GreedyStrategy(metaclass=ABCMeta):
 
         if exit_info is None:
             exit_info = self._final_exit_info(
-                numb_funcs, max_numb_funcs, best_gval, prev_gval, numb_redum, d_threshold
+                numb_funcs, max_numb_funcs, best_gval, prev_gval, d_threshold
             )
 
         # Get the coefficients and exponents of the most recent parameters stored.
@@ -627,7 +627,7 @@ class GreedyStrategy(metaclass=ABCMeta):
         return results
 
     @staticmethod
-    def _final_exit_info(num_func, max_func, best_val, prev_gval, redum, d_threshold):
+    def _final_exit_info(num_func, max_func, best_val, prev_gval, d_threshold):
         r"""Return string that holds how the greedy algorithm teminated."""
         exit_info = None
         if not num_func < max_func - 1:

@@ -448,8 +448,8 @@ class ScipyFit(_BaseFit):
     The Kullback-Leibler divergence function is defined as
 
     .. math::
-        \min_{\{c_i\}, \{\alpha\}, \sum c_i = N} \int f(x) \log \bigg(\frac{f(x)}{\sum c_i b_i(x, \alpha_i)}
-         \bigg)dx,
+        \min_{\{c_i\}, \{\alpha\}, \sum c_i = N} \int f(x) \log \bigg(\frac{f(x)}{\sum c_i
+        b_i(x, \alpha_i)} \bigg)dx,
 
     where :math:`f` is the density to be fitted to,
     :math:`c_i, \alpha_i` are the coefficeints and exponents of the Gaussian

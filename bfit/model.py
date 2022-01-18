@@ -216,7 +216,8 @@ class AtomicGaussianDensity:
             return gs + gp
 
     def _eval_s(self, matrix, coeffs, expons, deriv):
-        """Compute linear combination of s-type Gaussian basis & its derivative on the grid points.
+        r"""
+        Compute linear combination of s-type Gaussian basis & its derivative on the grid points.
 
         Parameters
         ----------

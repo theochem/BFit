@@ -117,8 +117,7 @@ class SlaterAtoms:
 
     @property
     def configuration(self):
-        r"""
-        String representing the electron configuration of the atom.
+        r"""Return string representing the electron configuration of the atom.
 
         The electron configuration of the atom is written in form that writes out the
         atomic subshells with the number of electrons assigned to that atomic subshell.
