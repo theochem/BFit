@@ -34,13 +34,17 @@ class AtomicGaussianDensity:
     Gaussian density model for modeling the electronic density of a single atom.
 
     Atomic Gaussian density is a linear combination of Gaussian functions of S-type
-     and P-type functions:
+    and p-type functions:
+
     .. math::
-        f(x) := \sum_i c_i e^{-\alpha_i |x - c|^2} + d_i |x - c|^2 e^{-\beta |x - c|^2}
+        f(x) := \sum_i c_i e^{-\alpha_i |x - c|^2} + \sum_j d_j |x - c|^2 e^{-\beta_j |x - c|^2}
+
     where
-        :math:`c_i, d_i` are the coefficients of S-type and P-type functions.
-        :math:`c` is the center of the Gaussian functions.
-        :math:`x` is the real coordinates, can be multi-dimensional.
+    :math:`c_i, d_i` are the coefficients of s-type and p-type Gaussian functions,
+    :math:`\alpha_i, \beta_j` are teh exponents of the s-type and p-type Gaussian functions,
+    :math:`c` is the center of all Gaussian functions.
+    :math:`x` is the real coordinates, can be multi-dimensional.
+
     """
 
     def __init__(self, points, center=None, num_s=1, num_p=0, normalize=False):
@@ -154,21 +158,22 @@ class AtomicGaussianDensity:
         Compute linear combination of Gaussian basis & its derivatives on the grid points.
 
         .. math::
-            f(x) := \sum_i c_i e^{-\alpha_i |x - c|^2} + d_i |x - c|^2 e^{-\beta |x-c|^2}
+            f(x):= \sum_i c_i e^{-\alpha_i |x - c|^2} + \sum_j d_j |x - c|^2 e^{-\beta_j |x - c|^2}
 
         where
-            :math:`c_i, d_i` are the coefficients of S-type and P-type functions.
-            :math:`c` is the center of the Gaussian functions.
-            :math:`x` is the real coordinates, can be multi-dimensional.
+        :math:`c_i, d_i` are the coefficients of s-type and p-type Gaussian functions,
+        :math:`\alpha_i, \beta_j` are teh exponents of the s-type and p-type Gaussian functions,
+        :math:`c` is the center of all Gaussian functions.
+        :math:`x` is the real coordinates, can be multi-dimensional.
 
         Parameters
         ----------
-        coeffs : ndarray, (`nbasis`,)
-            The coefficients of `num_s` s-type Gaussian basis functions followed by the
-            coefficients of `num_p` p-type Gaussian basis functions.
-        expons : ndarray, (`nbasis`,)
-            The exponents of `num_s` s-type Gaussian basis functions followed by the
-            exponents of `num_p` p-type Gaussian basis functions.
+        coeffs : ndarray(`nbasis`,)
+            The coefficients :math:`c_i` of `num_s` s-type Gaussian basis functions
+            followed by the coefficients :math:`d_j` of `num_p` p-type Gaussian basis functions.
+        expons : ndarray(`nbasis`,)
+            The exponents :math:`\alpha_i` of `num_s` s-type Gaussian basis functions
+            followed by the exponents :math:`\beta_j` of `num_p` p-type Gaussian basis functions.
         deriv : bool, optional
             Whether to compute derivative of Gaussian basis functions w.r.t. coefficients &
             exponents.
@@ -216,7 +221,7 @@ class AtomicGaussianDensity:
         Parameters
         ----------
         matrix : ndarray, (N, M)
-             The exp(-a * r**2) array evaluated on grid points for each exponent.
+             The exp(-\alpha_i * r**2) array evaluated on grid points for each exponent.
         coeffs : ndarray, (M,)
             The coefficients of Gaussian basis functions.
         expons : ndarray, (M,)
@@ -255,12 +260,12 @@ class AtomicGaussianDensity:
         return g
 
     def _eval_p(self, matrix, coeffs, expons, deriv):
-        """Compute linear combination of P-type Gaussian basis & its derivative on the grid points.
+        """Compute linear combination of p-type Gaussian basis & its derivative on the grid points.
 
         Parameters
         ----------
         matrix : ndarray, (N, M)
-             The exp(-a * r**2) array evaluated on grid points for each exponent.
+             The exp(-beta_i * r**2) array evaluated on grid points for each exponent.
         coeffs : ndarray, (M,)
             The coefficients of Gaussian basis functions.
         expons : ndarray, (M,)
@@ -304,23 +309,23 @@ class AtomicGaussianDensity:
 
 
 class MolecularGaussianDensity:
-    r"""Molecular Atom-Centered Gaussian Density Model.
+    r"""
+    Molecular Atom-Centered Gaussian Density Model.
 
     The Molecular Gaussian Density model is based on multiple centers each associated with a
-        Gaussian density model (S or P-type) of any dimension.
+    Gaussian density model (s or p-type) of any dimension.
 
     .. math::
-            f(x) := \sum_j \sum_{i =1}^{M_j} c_{ji} e^{-\alpha_{ji} |x - m_j|^2} +
-                                             d_{ji} |x - m_j|^2 e^{-\beta_{ji} |x - m_j|^2}
+        f(x) := \sum_j \bigg[ \sum_{i =1}^{M^s_j} c_{ji} e^{-\alpha_{ji} |x - m_j|^2} +
+                         \sum_{i=1}^{M_j^p}d_{ji} |x - m_j|^2 e^{-\beta_{ji} |x - m_j|^2} \bigg]
 
-        where
-            :math:`c_{ji}, d_{ji}` are the ith coefficients of S-type and P-type functions of the
-                jth center.
-            :math:`\alpha_{ji}, \beta_{ji}` are the ith exponents of S-type and P-type functions of
-                the jth center.
-            :math:`M_j` is the total number of basis functions of the jth center.
-            :math:`m_j` is the coordinate of the jth center.
-            :math:`x` is the real coordinates of the point. It can be of any dimension.
+    where
+    :math:`c_{ji}, d_{ji}` are the ith coefficients of s-type and p-type functions of the
+    jth center, :math:`\alpha_{ji}, \beta_{ji}` are the ith exponents of S-type and P-type
+    functions of the jth center, :math:`M_j^s, M_j^p` is the total number of s-type or p-type
+    Gaussians functions of the jth center respectively,
+    :math:`m_j` is the coordinate of the jth center, and
+    :math:`x` is the real coordinates of the point. It can be of any dimension.
     """
 
     def __init__(self, points, coords, basis, normalize=False):
@@ -412,25 +417,22 @@ class MolecularGaussianDensity:
         return index
 
     def evaluate(self, coeffs, expons, deriv=False):
-        r"""Compute linear combination of Gaussian basis & its derivatives on the grid points.
+        r"""
+        Compute linear combination of Gaussian basis & its derivatives on the grid points.
 
         The Molecular Gaussian is defined to be:
-        .. math::
-            f(x) := \sum_j \sum_{i =1}^{M_j} c_{ji} e^{-\alpha_{ji} |x - m_j|^2} +
-                                             d_{ji} |x - m_j|^2 e^{-\beta_{ji} |x - m_j|^2}
+
+         .. math::
+            f(x) := \sum_j \bigg[ \sum_{i =1}^{M^s_j} c_{ji} e^{-\alpha_{ji} |x - m_j|^2} +
+                    \sum_{i=1}^{M_j^p}d_{ji} |x - m_j|^2 e^{-\beta_{ji} |x - m_j|^2} \bigg]
 
         where
-            :math:`c_{ji}, d_{ji}` are the ith coefficients of S-type and P-type functions of the
-                jth center.
-            :math:`\alpha_{ji}, \beta_{ji}` are the ith exponents of S-type and P-type functions of
-                the jth center.
-            :math:`M_j` is the total number of basis functions of the jth center.
-            :math:`m_j` is the coordinate of the jth center.
-            :math:`x` is the real coordinates of the point.
-
-        Its derivative with respect to exponent of a single Gaussian with center :math:`m_j` is:
-        .. math::
-            \frac{\partial f}{\partial \alpha_{ji}} = -e^{-\alpha_{ji} |x - m_j|^2}.
+        :math:`c_{ji}, d_{ji}` are the ith coefficients of s-type and p-type functions of the
+        jth center, :math:`\alpha_{ji}, \beta_{ji}` are the ith exponents of S-type and P-type
+        functions of the jth center, :math:`M_j^s, M_j^p` is the total number of s-type or p-type
+        Gaussians functions of the jth center respectively,
+        :math:`m_j` is the coordinate of the jth center, and
+        :math:`x` is the real coordinates of the point. It can be of any dimension.
 
         Parameters
         ----------
