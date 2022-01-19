@@ -13,8 +13,8 @@
   
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
 
   
   
@@ -24,7 +24,7 @@
   
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+    <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -42,7 +42,7 @@
 
     
     <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" /> 
+    <link rel="search" title="Search" href="../../search.html" />
 </head>
 
 <body class="wy-body-for-nav">
@@ -87,7 +87,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../autoapi/index.html">API Reference</a></li>
 </ul>
@@ -138,8 +138,6 @@
         
           <li><a href="../index.html">Module code</a> &raquo;</li>
         
-          <li><a href="../bfit.html">bfit</a> &raquo;</li>
-        
       <li>bfit.greedy</li>
     
     
@@ -157,18 +155,19 @@
             
   <h1>Source code for bfit.greedy</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="c1"># FittingBasisSets is a basis-set curve-fitting optimization package.</span>
+<span class="c1"># BFit - python program that fits a convex sum of</span>
+<span class="c1"># positive basis functions to any probability distribution. .</span>
 <span class="c1">#</span>
-<span class="c1"># Copyright (C) 2018 The FittingBasisSets Development Team.</span>
+<span class="c1"># Copyright (C) 2020 The BFit Development Team.</span>
 <span class="c1">#</span>
-<span class="c1"># This file is part of FittingBasisSets.</span>
+<span class="c1"># This file is part of BFit.</span>
 <span class="c1">#</span>
-<span class="c1"># FittingBasisSets is free software; you can redistribute it and/or</span>
+<span class="c1"># BFit is free software; you can redistribute it and/or</span>
 <span class="c1"># modify it under the terms of the GNU General Public License</span>
 <span class="c1"># as published by the Free Software Foundation; either version 3</span>
 <span class="c1"># of the License, or (at your option) any later version.</span>
 <span class="c1">#</span>
-<span class="c1"># FittingBasisSets is distributed in the hope that it will be useful,</span>
+<span class="c1"># BFit is distributed in the hope that it will be useful,</span>
 <span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
 <span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
 <span class="c1"># GNU General Public License for more details.</span>
@@ -177,9 +176,918 @@
 <span class="c1"># along with this program; if not, see &lt;http://www.gnu.org/licenses/&gt;</span>
 <span class="c1">#</span>
 <span class="c1"># ---</span>
-<span class="kn">from</span> <span class="nn">bfit.greedy.greedy_strat</span> <span class="kn">import</span> <span class="n">GreedyStrategy</span>
-<span class="kn">from</span> <span class="nn">bfit.greedy.greedy_kl</span> <span class="kn">import</span> <span class="n">GreedyKL</span>
-<span class="kn">from</span> <span class="nn">bfit.greedy.greedy_lq</span> <span class="kn">import</span> <span class="n">GreedyLeastSquares</span>
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;Greedy Fitting Module.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+<span class="kn">from</span> <span class="nn">bfit.fit</span> <span class="kn">import</span> <span class="n">_BaseFit</span><span class="p">,</span> <span class="n">KLDivergenceSCF</span><span class="p">,</span> <span class="n">ScipyFit</span>
+<span class="kn">from</span> <span class="nn">bfit.measure</span> <span class="kn">import</span> <span class="n">SquaredDifference</span>
+<span class="kn">from</span> <span class="nn">bfit.model</span> <span class="kn">import</span> <span class="n">AtomicGaussianDensity</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">nnls</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;GreedyLeastSquares&quot;</span><span class="p">,</span> <span class="s2">&quot;GreedyKLSCF&quot;</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">remove_redundancies</span><span class="p">(</span><span class="n">coeffs</span><span class="p">,</span> <span class="n">fparams</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if the exponents have similar values and group them together.</span>
+
+<span class="sd">    If any two function parameters have similar values, then one of the</span>
+<span class="sd">    function parameters is removed, and the corresponding coefficient,</span>
+<span class="sd">    are added together.</span>
+<span class="sd">    Note: as of now this only works if each basis function depends on only one</span>
+<span class="sd">    parameters e.g. e^(-x), not e^(-x + y).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    coeffs : np.ndarray(M,)</span>
+<span class="sd">        Coefficients of the basis function set of size :math:`M`.</span>
+<span class="sd">    fparams : np.ndarray(M,)</span>
+<span class="sd">        Function parameters of the basis function set of size :math:`M`.</span>
+<span class="sd">    eps : float</span>
+<span class="sd">        Value that indicates the threshold for how close two parameters are.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    (np.ndarray, np.ndarray) :</span>
+<span class="sd">        New coefficients and new function parameters, where close values of the function parameters</span>
+<span class="sd">        are removed and the coefficients corresponding to that parameter are added together.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">new_coeffs</span> <span class="o">=</span> <span class="n">coeffs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">new_exps</span> <span class="o">=</span> <span class="n">fparams</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1"># Indexes where they&#39;re the same.</span>
+    <span class="n">indexes_same</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">alpha</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fparams</span><span class="p">):</span>
+        <span class="n">similar_indexes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">fparams</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">j</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">similar_indexes</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">alpha</span> <span class="o">-</span> <span class="n">fparams</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">eps</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">similar_indexes</span><span class="p">:</span>
+                        <span class="n">similar_indexes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                    <span class="n">similar_indexes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">similar_indexes</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">indexes_same</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">similar_indexes</span><span class="p">)</span>
+
+    <span class="c1"># Add the coefficients together and add/group them, if need be</span>
+    <span class="k">for</span> <span class="n">group_similar_items</span> <span class="ow">in</span> <span class="n">indexes_same</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">group_similar_items</span><span class="p">)):</span>
+            <span class="n">new_coeffs</span><span class="p">[</span><span class="n">group_similar_items</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">+=</span> <span class="n">coeffs</span><span class="p">[</span><span class="n">group_similar_items</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">indexes_same</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">y</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">indexes_same</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span>
+        <span class="n">new_exps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">new_exps</span><span class="p">,</span> <span class="n">indices</span><span class="p">)</span>
+        <span class="n">new_coeffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">new_coeffs</span><span class="p">,</span> <span class="n">indices</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_coeffs</span><span class="p">,</span> <span class="n">new_exps</span>
+
+
+<span class="k">def</span> <span class="nf">get_next_choices</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">,</span> <span class="n">fparams</span><span class="p">,</span> <span class="n">coeff_val</span><span class="o">=</span><span class="mf">100.</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the next set of (n+1) fparams, used by the greedy-fitting algorithm.</span>
+
+<span class="sd">    Assuming coeffs=:math:`\[c1, c2 ,... ,cn\]` and fparams =:math:`\[a1, a2, ..., an\]`,</span>
+<span class="sd">    this method gets the next (n+1) fparams by using a constant factor</span>
+<span class="sd">    and coefficient value :math:`c^\prime`. A list of (n+1) choices are</span>
+<span class="sd">    returned. They are determined as follows:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \begin{align*}</span>
+<span class="sd">            \[a_1 / factor, a_2,  .., a_n\] &amp;,\quad coeffs = [c1, c^\prime, c2, ..., cn], \\</span>
+<span class="sd">            \[[a_1, a_2,...,(a_i + a_{(i+1)/2}, a_{i+1}, ..., an\] &amp;,\quad \text{similar coeffs},\\</span>
+<span class="sd">            \[[a_1, a_2, ..., factor * a_n\] &amp;,\quad \text{similar coeffs},</span>
+<span class="sd">        \end{align*}</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    factor : float</span>
+<span class="sd">        Number used to give two choices by multiplying each end point.</span>
+<span class="sd">    coeffs : np.ndarray</span>
+<span class="sd">        Coefficients of the basis functions.</span>
+<span class="sd">    fparams : np.ndarray</span>
+<span class="sd">        Function parameters.</span>
+<span class="sd">    coeff_val : float</span>
+<span class="sd">        Number used to fill in the coefficient value for each guess.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    List[np.ndarray]</span>
+<span class="sd">        List of the next possible initial guesses for :math:`(n+1)` basis-functions,</span>
+<span class="sd">        coefficients are listed first, then exponents.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="n">fparams</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">all_choices</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">exp</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndenumerate</span><span class="p">(</span><span class="n">fparams</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">exps_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">fparams</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">exp</span> <span class="o">/</span> <span class="n">factor</span><span class="p">)</span>
+            <span class="n">coeffs_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">coeffs</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">coeff_val</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">size</span><span class="p">:</span>
+            <span class="n">exps_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">fparams</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="p">(</span><span class="n">fparams</span><span class="p">[</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span>
+                                                  <span class="n">fparams</span><span class="p">[</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">coeffs_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">coeffs</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">coeff_val</span><span class="p">)</span>
+        <span class="n">all_choices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coeffs_arr</span><span class="p">,</span> <span class="n">exps_arr</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">exps_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fparams</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">exp</span> <span class="o">*</span> <span class="n">factor</span><span class="p">]))</span>
+            <span class="n">endpt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coeffs</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">coeff_val</span><span class="p">]))</span>
+            <span class="n">all_choices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">endpt</span><span class="p">,</span> <span class="n">exps_arr</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">all_choices</span>
+
+
+<span class="k">def</span> <span class="nf">get_two_next_choices</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">,</span> <span class="n">fparams</span><span class="p">,</span> <span class="n">coeff_val</span><span class="o">=</span><span class="mf">100.</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a list of (n+2) set of initial guess for fparams for greedy.</span>
+
+<span class="sd">    Assuming coeffs=:math:`\[c1, c2 ,... ,cn\]` and fparams=:math:`\[a1, a2, ..., an\]`.</span>
+<span class="sd">    The next (n+2) choice is either a combination of an endpoint guess and a</span>
+<span class="sd">    midpoint, or two mid point guess or two endpoint guess.</span>
+<span class="sd">    This is two-times recursion of the function `get_next_choices`.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \begin{align*}</span>
+<span class="sd">            \[a_1 / factor, ..., (a_i + a_{(i+1))/2}, ..., a_n\],</span>
+<span class="sd">            \[a_1, ..., (a_j + a_{(j+1))/2}, a_{j+1} ..., (a_i + a_{(i+1))/2}, a_{i+1}, .., a_n\],</span>
+<span class="sd">            \[a_1 / factor, a_2, a_3, ..., a_{n-1}, factor * a_n\]</span>
+<span class="sd">        \end{align*}</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    factor : float</span>
+<span class="sd">        Number used to give two choices by multiplying each end point.</span>
+<span class="sd">    coeffs : np.ndarray(M,)</span>
+<span class="sd">        Coefficients of the basis function set of size :math:`M`.</span>
+<span class="sd">    fparams : np.ndarray(M,)</span>
+<span class="sd">        Function parameters of the basis function set of size :math:`M`.</span>
+<span class="sd">    coeff_val : float</span>
+<span class="sd">        Number used to fill in the coefficient value for each guess.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    List[np.ndarray]</span>
+<span class="sd">        List of the next possible initial guesses for :math:`(n+2)` basis-functions,</span>
+<span class="sd">        coefficients are listed first, then exponents.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_get_next_possible_coeffs_and_exps2</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">,</span> <span class="n">exps</span><span class="p">,</span> <span class="n">coeff_val</span><span class="o">=</span><span class="mf">100.</span><span class="p">):</span>
+        <span class="c1"># This is the same function as get_next_choices except that</span>
+        <span class="c1">#   it returns the coefficients and exponents separately.</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">exps</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">all_choices_of_exponents</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">all_choices_of_coeffs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">exp</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ndenumerate</span><span class="p">(</span><span class="n">exps</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">exponent_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">exps</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">exp</span> <span class="o">/</span> <span class="n">factor</span><span class="p">)</span>
+                <span class="n">coefficient_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">coeffs</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">coeff_val</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">size</span><span class="p">:</span>
+                <span class="n">exponent_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">exps</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="p">(</span><span class="n">exps</span><span class="p">[</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">exps</span><span class="p">[</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="n">coefficient_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">coeffs</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">coeff_val</span><span class="p">)</span>
+            <span class="n">all_choices_of_exponents</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exponent_array</span><span class="p">)</span>
+            <span class="n">all_choices_of_coeffs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coefficient_array</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">exponent_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exps</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">exp</span> <span class="o">*</span> <span class="n">factor</span><span class="p">]))</span>
+                <span class="n">all_choices_of_exponents</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exponent_array</span><span class="p">)</span>
+                <span class="n">all_choices_of_coeffs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coeffs</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">coeff_val</span><span class="p">])))</span>
+        <span class="k">return</span> <span class="n">all_choices_of_coeffs</span><span class="p">,</span> <span class="n">all_choices_of_exponents</span>
+
+    <span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">fparams</span><span class="p">)</span>
+    <span class="n">choices_coeff</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">choices_fparams</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fparams</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">fparam_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">fparams</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">e</span> <span class="o">/</span> <span class="n">factor</span><span class="p">)</span>
+            <span class="n">coeff_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">coeffs</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">coeff_val</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">size</span><span class="p">:</span>
+            <span class="n">fparam_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">fparams</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">fparams</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">fparams</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">coeff_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">coeffs</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">coeff_val</span><span class="p">)</span>
+
+        <span class="n">coeff2</span><span class="p">,</span> <span class="n">exp2</span> <span class="o">=</span> <span class="n">_get_next_possible_coeffs_and_exps2</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">coeff_arr</span><span class="p">,</span> <span class="n">fparam_arr</span><span class="p">,</span> <span class="n">coeff_val</span><span class="p">)</span>
+        <span class="n">choices_coeff</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">coeff2</span><span class="p">[</span><span class="n">i</span><span class="p">:])</span>
+        <span class="n">choices_fparams</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">exp2</span><span class="p">[</span><span class="n">i</span><span class="p">:])</span>
+
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">fparam_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fparams</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">e</span> <span class="o">*</span> <span class="n">factor</span><span class="p">]))</span>
+            <span class="n">endpt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coeffs</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">coeff_val</span><span class="p">]))</span>
+            <span class="n">coeff2</span><span class="p">,</span> <span class="n">exp2</span> <span class="o">=</span> <span class="n">_get_next_possible_coeffs_and_exps2</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">endpt</span><span class="p">,</span> <span class="n">fparam_arr</span><span class="p">,</span> <span class="n">coeff_val</span><span class="p">)</span>
+            <span class="n">choices_coeff</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">coeff2</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:])</span>
+            <span class="n">choices_fparams</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">exp2</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:])</span>
+
+    <span class="c1"># Append coefficients and exponents together.</span>
+    <span class="n">all_choices_params</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">choices_coeff</span><span class="p">):</span>
+        <span class="n">all_choices_params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">choices_fparams</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="n">all_choices_params</span>
+
+
+<span class="k">def</span> <span class="nf">pick_two_lose_one</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">,</span> <span class="n">exps</span><span class="p">,</span> <span class="n">coeff_val</span><span class="o">=</span><span class="mf">100.</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get (n+1) initial guesses by choosing (n+2) guesses and losing one value each time.</span>
+
+<span class="sd">    Most accurate out of the other methods in this file but has returns</span>
+<span class="sd">    a large number of possible (n+1) initial guesses for greedy-algorithm.</span>
+
+<span class="sd">    Using the choices from &#39;get_two_next_choices&#39;, this</span>
+<span class="sd">    method removes each possible exponent, to get another (n+1) choice.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    factor : float</span>
+<span class="sd">        Number used to give two choices by multiplying each end point.</span>
+<span class="sd">    coeffs : np.ndarray(M,)</span>
+<span class="sd">        Coefficients of the basis function set of size :math:`M`.</span>
+<span class="sd">    fparams : np.ndarray(M,)</span>
+<span class="sd">        Function parameters of the basis function set of size :math:`M`.</span>
+<span class="sd">    coeff_val : float</span>
+<span class="sd">        Number used to fill in the coefficient value for each guess.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    List[np.ndarray]</span>
+<span class="sd">        List of the next possible initial guesses for `(n+1)` basis-functions,</span>
+<span class="sd">        coefficients are listed first, then exponents.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">all_choices</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">two_choices</span> <span class="o">=</span> <span class="n">get_two_next_choices</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">,</span> <span class="n">exps</span><span class="p">,</span> <span class="n">coeff_val</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">two_choices</span><span class="p">:</span>
+        <span class="n">coeff</span><span class="p">,</span> <span class="n">exp</span> <span class="o">=</span> <span class="n">p</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">:]</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="n">new_coeff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">coeff</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
+            <span class="n">new_exp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
+            <span class="n">all_choices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_coeff</span><span class="p">,</span> <span class="n">new_exp</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">all_choices</span>
+
+
+<span class="k">class</span> <span class="nc">GreedyStrategy</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Base greedy strategy class for fitting s-type, p-type Gaussians.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fitting_obj</span><span class="p">,</span> <span class="n">choice_function</span><span class="o">=</span><span class="s2">&quot;pick-one&quot;</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct the base greedy class.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        choice_function : str</span>
+<span class="sd">            Determines how the next set of basis-functions are chosen.</span>
+<span class="sd">            Can be either:</span>
+<span class="sd">                &quot;pick-one&quot; : Add a new basis-function by taking the average between every two</span>
+<span class="sd">                             s-type or p-type exponents.</span>
+<span class="sd">                &quot;pick-two&quot; : Add two new basis-functions by recursion of &quot;pick-one&quot; over each</span>
+<span class="sd">                             guess from &quot;pick-one&quot;.</span>
+<span class="sd">                &quot;pick-two-lose-one&quot; : Add new basis-function by iterating though each guess</span>
+<span class="sd">                                      in &quot;pick-two&quot; and removing one basis-function, generating</span>
+<span class="sd">                                      a new guess each time.</span>
+<span class="sd">        fitting_obj : _BaseFit</span>
+<span class="sd">            The fitting class that is a child of _BaseFit class.  This is used to</span>
+<span class="sd">            optimize the objective function.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fitting_obj</span><span class="p">,</span> <span class="n">_BaseFit</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fitting object </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">fitting_obj</span><span class="p">)</span><span class="si">}</span><span class="s2"> should be of type _BaseFit.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">choice_function</span> <span class="o">==</span> <span class="s2">&quot;pick-one&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">next_param_func</span> <span class="o">=</span> <span class="n">get_next_choices</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_numb_func_increase</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># How many basis functions were increased</span>
+        <span class="k">elif</span> <span class="n">choice_function</span> <span class="o">==</span> <span class="s2">&quot;pick-two&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">next_param_func</span> <span class="o">=</span> <span class="n">get_two_next_choices</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_numb_func_increase</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="k">elif</span> <span class="n">choice_function</span> <span class="o">==</span> <span class="s2">&quot;pick-two-lose-one&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">next_param_func</span> <span class="o">=</span> <span class="n">pick_two_lose_one</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_numb_func_increase</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Choice parameter </span><span class="si">{</span><span class="n">choice_function</span><span class="si">}</span><span class="s2"> was not recognized.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_s</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_p</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">err_arr</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fitting_obj</span> <span class="o">=</span> <span class="n">fitting_obj</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="GreedyKLSCF.numb_func_increase"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyKLSCF.numb_func_increase">[docs]</a><div class="viewcode-block" id="GreedyLeastSquares.numb_func_increase"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyLeastSquares.numb_func_increase">[docs]</a>    <span class="k">def</span> <span class="nf">numb_func_increase</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return number of basis-functions to add in each iteration.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numb_func_increase</span></div></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="GreedyKLSCF.density"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyKLSCF.density">[docs]</a><div class="viewcode-block" id="GreedyLeastSquares.density"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyLeastSquares.density">[docs]</a>    <span class="k">def</span> <span class="nf">density</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return density that is fitted to.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fitting_obj</span><span class="o">.</span><span class="n">density</span></div></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="GreedyKLSCF.grid"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyKLSCF.grid">[docs]</a><div class="viewcode-block" id="GreedyLeastSquares.grid"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyLeastSquares.grid">[docs]</a>    <span class="k">def</span> <span class="nf">grid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return grid class object.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fitting_obj</span><span class="o">.</span><span class="n">grid</span></div></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="GreedyKLSCF.model"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyKLSCF.model">[docs]</a><div class="viewcode-block" id="GreedyLeastSquares.model"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyLeastSquares.model">[docs]</a>    <span class="k">def</span> <span class="nf">model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return model class.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fitting_obj</span><span class="o">.</span><span class="n">model</span></div></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="GreedyKLSCF.integral_dens"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyKLSCF.integral_dens">[docs]</a><div class="viewcode-block" id="GreedyLeastSquares.integral_dens"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyLeastSquares.integral_dens">[docs]</a>    <span class="k">def</span> <span class="nf">integral_dens</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return the integral of the density.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fitting_obj</span><span class="o">.</span><span class="n">integral_dens</span></div></div>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_best_one_function_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return the solution of the model parameters for one basis function.&quot;&quot;&quot;</span>
+        <span class="c1"># Usually the model with single basis function can be solved analytically.</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_optimization_routine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">local</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Run the optimization for fitting the Gaussian model to a density.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+<div class="viewcode-block" id="GreedyKLSCF.eval_obj_function"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyKLSCF.eval_obj_function">[docs]</a><div class="viewcode-block" id="GreedyLeastSquares.eval_obj_function"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyLeastSquares.eval_obj_function">[docs]</a>    <span class="k">def</span> <span class="nf">eval_obj_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return evaluation the objective function.&quot;&quot;&quot;</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">params</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">:])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fitting_obj</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">,</span> <span class="n">model</span><span class="p">))</span></div></div>
+
+<div class="viewcode-block" id="GreedyKLSCF.store_errors"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyKLSCF.store_errors">[docs]</a><div class="viewcode-block" id="GreedyLeastSquares.store_errors"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyLeastSquares.store_errors">[docs]</a>    <span class="k">def</span> <span class="nf">store_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Store errors inside the attribute `err_arr`.&quot;&quot;&quot;</span>
+        <span class="n">coeffs</span><span class="p">,</span> <span class="n">exps</span> <span class="o">=</span> <span class="n">params</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">:]</span>
+        <span class="n">err</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fitting_obj</span><span class="o">.</span><span class="n">goodness_of_fit</span><span class="p">(</span><span class="n">coeffs</span><span class="p">,</span> <span class="n">exps</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">err_arr</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">err_arr</span> <span class="o">=</span> <span class="p">[</span><span class="n">err</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">err_arr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">err</span><span class="p">)</span></div></div>
+
+    <span class="k">def</span> <span class="nf">_find_best_lparams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_list</span><span class="p">,</span> <span class="n">num_s_choices</span><span class="p">,</span> <span class="n">num_p_choices</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the best initial guess from a list of potential model parameter choices.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        param_list : List[`num_s_choices` + `num_p_choices`]</span>
+<span class="sd">            List of size `num_s_choices` + `num_p_choices` of each initial guess.</span>
+<span class="sd">        num_s_choices : int</span>
+<span class="sd">            Number of guesses for adding extra s-type Gaussians.</span>
+<span class="sd">        num_p_choices : int</span>
+<span class="sd">            Number of guesses for adding extra p-type Gaussians.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        (float, List, bool) :</span>
+<span class="sd">            Returns the value of the cost-function and the best parameters corresponding</span>
+<span class="sd">            to that value of cost-function.</span>
+<span class="sd">            True if adding S-type is the most optimal, False otherwise.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Initialize the values being returned.</span>
+        <span class="n">best_local_value</span> <span class="o">=</span> <span class="mf">1e10</span>
+        <span class="n">best_local_param</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">is_s_optimal</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_s_choices</span> <span class="o">+</span> <span class="n">num_p_choices</span><span class="p">):</span>
+            <span class="c1"># Get the function parameter guess.</span>
+            <span class="n">param</span> <span class="o">=</span> <span class="n">param_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+            <span class="c1"># Update model for the new number of S-type and P-type functions.</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">num_s_choices</span><span class="p">:</span>
+                <span class="c1"># Update the number of s-type basis functions for this guess.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">change_numb_s_and_numb_p</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">num_s</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">numb_func_increase</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_p</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Update the number of p-type basis functions for this guess.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">change_numb_s_and_numb_p</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">num_s</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_p</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">numb_func_increase</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Optimize using this initial guess and get cost-function value.</span>
+            <span class="n">local_param</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_optimization_routine</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">local</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">cost_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval_obj_function</span><span class="p">(</span><span class="n">local_param</span><span class="p">)</span>
+            <span class="c1"># If it is the best found, then return it.</span>
+            <span class="k">if</span> <span class="n">cost_func</span> <span class="o">&lt;</span> <span class="n">best_local_value</span><span class="p">:</span>
+                <span class="n">best_local_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval_obj_function</span><span class="p">(</span><span class="n">local_param</span><span class="p">)</span>
+                <span class="n">best_local_param</span> <span class="o">=</span> <span class="n">local_param</span>
+                <span class="n">is_s_optimal</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="n">num_s_choices</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">best_local_value</span><span class="p">,</span> <span class="n">best_local_param</span><span class="p">,</span> <span class="n">is_s_optimal</span>
+
+    <span class="k">def</span> <span class="nf">_split_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Split parameters into the s-type, p-type coefficients and exponents.&quot;&quot;&quot;</span>
+        <span class="n">s_coeffs</span> <span class="o">=</span> <span class="n">params</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">num_s</span><span class="p">]</span>
+        <span class="n">p_coeffs</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">num_s</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">num_s</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_p</span><span class="p">]</span>
+        <span class="n">s_exps</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">num_s</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_p</span><span class="p">:</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_s</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_p</span><span class="p">]</span>
+        <span class="n">p_exps</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_s</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_p</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="n">s_coeffs</span><span class="p">,</span> <span class="n">s_exps</span><span class="p">,</span> <span class="n">p_coeffs</span><span class="p">,</span> <span class="n">p_exps</span>
+
+    <span class="k">def</span> <span class="nf">_print_header</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Print the initial output for the greedy algorithm.&quot;&quot;&quot;</span>
+        <span class="c1"># Template for the header.</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="p">(</span><span class="mi">10</span> <span class="o">+</span> <span class="mi">12</span> <span class="o">+</span> <span class="mi">15</span> <span class="o">+</span> <span class="mi">15</span> <span class="o">+</span> <span class="mi">15</span> <span class="o">+</span> <span class="mi">15</span> <span class="o">+</span> <span class="mi">15</span> <span class="o">+</span> <span class="mi">15</span> <span class="o">+</span> <span class="mi">15</span> <span class="o">+</span> <span class="mi">17</span><span class="p">))</span>
+        <span class="c1"># Format is {identifier:width}, ^ means center it, | means put a bar in it</span>
+        <span class="n">template_header</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;|</span><span class="si">{0:^15}</span><span class="s2">|</span><span class="si">{1:^13}</span><span class="s2">|</span><span class="si">{2:^13}</span><span class="s2">|</span><span class="si">{3:^15}</span><span class="s2">|</span><span class="si">{4:^15}</span><span class="s2">|</span><span class="si">{5:^16}</span><span class="s2">|</span><span class="si">{6:^15}</span><span class="s2">|</span><span class="si">{7:^16}</span><span class="s2">|</span><span class="si">{8:^16}</span><span class="s2">|&quot;</span>
+        <span class="p">)</span>
+        <span class="c1"># Print the headers</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">template_header</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="s2">&quot;# of Functions&quot;</span><span class="p">,</span> <span class="s2">&quot;# of S-type&quot;</span><span class="p">,</span> <span class="s2">&quot;# of P-type&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Integration&quot;</span><span class="p">,</span> <span class="s2">&quot;L1&quot;</span><span class="p">,</span> <span class="s2">&quot;L Infinity&quot;</span><span class="p">,</span> <span class="s2">&quot;Least-squares&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Kullback-Leibler&quot;</span><span class="p">,</span> <span class="s2">&quot;Change Objective&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="p">(</span><span class="mi">10</span> <span class="o">+</span> <span class="mi">12</span> <span class="o">+</span> <span class="mi">15</span> <span class="o">+</span> <span class="mi">15</span> <span class="o">+</span> <span class="mi">15</span> <span class="o">+</span> <span class="mi">15</span> <span class="o">+</span> <span class="mi">15</span> <span class="o">+</span> <span class="mi">15</span> <span class="o">+</span> <span class="mi">15</span> <span class="o">+</span> <span class="mi">17</span><span class="p">))</span>
+        <span class="c1"># Template for float iteration</span>
+        <span class="n">template_iters</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;|</span><span class="si">{0:^15d}</span><span class="s2">|</span><span class="si">{1:^13d}</span><span class="s2">|</span><span class="si">{2:^13d}</span><span class="s2">|</span><span class="si">{3:^15f}</span><span class="s2">|</span><span class="si">{4:^15e}</span><span class="s2">|</span><span class="si">{5:^16e}</span><span class="s2">|</span><span class="si">{6:^15e}</span><span class="s2">|</span><span class="si">{7:^16e}</span><span class="s2">|</span><span class="si">{8:^16e}</span><span class="s2">|&quot;</span>
+        <span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">template_iters</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_s</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_p</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">err_arr</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="p">))</span>
+        <span class="k">return</span> <span class="n">template_iters</span>
+
+<div class="viewcode-block" id="GreedyKLSCF.run"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyKLSCF.run">[docs]</a><div class="viewcode-block" id="GreedyLeastSquares.run"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyLeastSquares.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">d_threshold</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">max_numb_funcs</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">add_extra_choices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">disp</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add new Gaussians to fit to a density until convergence is achieved.</span>
+
+<span class="sd">        Initially, the algorithm solves for the best one-function basis-function.</span>
+<span class="sd">        Then it generates a group of initial guesses of size `(1 + C)`</span>
+<span class="sd">        based on the previous optimal fit. It then optimizes each initial guess</span>
+<span class="sd">        from that group, with a small threshold for convergence.</span>
+<span class="sd">        It takes the best found initial guess from that set and optimizes it further.</span>
+<span class="sd">        Then this process repeats for `(1 + 2C)` basis-functions until convergence or</span>
+<span class="sd">        termination criteria is met.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        factor : float</span>
+<span class="sd">            The factor that is used to generate new initial guess.</span>
+<span class="sd">        d_threshold : float</span>
+<span class="sd">            The convergence threshold for the objective function being minimized.</span>
+<span class="sd">        max_numb_funcs : int</span>
+<span class="sd">            Maximum number of basis-functions to have.</span>
+<span class="sd">        add_extra_choices : callable(List, List[List])</span>
+<span class="sd">            Function that returns extra initial guesses to add.</span>
+<span class="sd">            Input must be the model parameters and the output should be a</span>
+<span class="sd">            list of initial guesses that should match attribute `numb_func_increase`.</span>
+<span class="sd">        disp : bool</span>
+<span class="sd">            Whether to display the output.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : dict</span>
+<span class="sd">            The optimization results presented as a dictionary containing:</span>
+<span class="sd">            &quot;coeffs&quot; : ndarray</span>
+<span class="sd">                The optimized coefficients of Gaussian model.</span>
+<span class="sd">            &quot;exps&quot; : ndarray</span>
+<span class="sd">                The optimized exponents of Gaussian model.</span>
+<span class="sd">            &quot;num_s&quot; : int</span>
+<span class="sd">                Number of s-type Gaussian functions.</span>
+<span class="sd">            &quot;num_p&quot; : int</span>
+<span class="sd">                Number of p-type Gaussian functions.</span>
+<span class="sd">            &quot;success&quot;: bool</span>
+<span class="sd">                Whether or not the optimization exited successfully.</span>
+<span class="sd">            &quot;fun&quot; : float</span>
+<span class="sd">                Objective function at the last iteration.</span>
+<span class="sd">            &quot;performance&quot; : ndarray</span>
+<span class="sd">                Values of various performance measures of modeled density at each iteration,</span>
+<span class="sd">                as computed by `goodness_of_fit()` method.</span>
+<span class="sd">            &quot;parameters_iteration&quot;: List</span>
+<span class="sd">                List of the optimal parameters of each iteration.</span>
+<span class="sd">            &quot;exit_information&quot;: str</span>
+<span class="sd">                Information about termination of the greedy algorithm.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Factor </span><span class="si">{</span><span class="n">factor</span><span class="si">}</span><span class="s2"> parameter should be a float.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">factor</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Scale </span><span class="si">{</span><span class="n">factor</span><span class="si">}</span><span class="s2"> should be positive.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Initialize all the variables</span>
+        <span class="n">gparams</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_best_one_function_solution</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">store_errors</span><span class="p">(</span><span class="n">gparams</span><span class="p">)</span>
+        <span class="n">exit_info</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># String containing information about how it exits.</span>
+        <span class="n">numb_funcs</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># Number of current functions in model.</span>
+        <span class="n">prev_gval</span><span class="p">,</span> <span class="n">best_gval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval_obj_function</span><span class="p">(</span><span class="n">gparams</span><span class="p">)</span>
+        <span class="n">params_iter</span> <span class="o">=</span> <span class="p">[</span><span class="n">gparams</span><span class="p">]</span>  <span class="c1"># Storing the parameters at each iteration.</span>
+        <span class="n">numb_redum</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Number of redundancies, termination criteria.</span>
+        <span class="n">factor0</span> <span class="o">=</span> <span class="n">factor</span>  <span class="c1"># Scaling parameter that changes.</span>
+
+        <span class="c1"># Start the greedy algorithm</span>
+        <span class="k">if</span> <span class="n">disp</span><span class="p">:</span>
+            <span class="n">template_iters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_print_header</span><span class="p">()</span>
+
+        <span class="n">success</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">while</span> <span class="n">numb_funcs</span> <span class="o">&lt;=</span> <span class="n">max_numb_funcs</span> <span class="o">-</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">numb_redum</span> <span class="o">&lt;</span> <span class="mi">5</span> <span class="ow">and</span> \
+                <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">best_gval</span> <span class="o">-</span> <span class="n">prev_gval</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">d_threshold</span><span class="p">:</span>
+            <span class="n">s_coeffs</span><span class="p">,</span> <span class="n">s_exps</span><span class="p">,</span> <span class="n">p_coeffs</span><span class="p">,</span> <span class="n">p_exps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_parameters</span><span class="p">(</span><span class="n">gparams</span><span class="p">)</span>
+
+            <span class="c1"># Get the next list of choices of parameters for S-type and P-type orbitals.</span>
+            <span class="c1"># Add new S-type and then P-types initial guess.</span>
+            <span class="n">choices_parameters_s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_param_func</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">s_coeffs</span><span class="p">,</span> <span class="n">s_exps</span><span class="p">)</span>
+            <span class="n">choices_parameters_s</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">x</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">num_s</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">numb_func_increase</span><span class="p">],</span> <span class="n">p_coeffs</span><span class="p">,</span>
+                           <span class="n">x</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">num_s</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">numb_func_increase</span><span class="p">:],</span> <span class="n">p_exps</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">choices_parameters_s</span>
+            <span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_p</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># Random choices from 0 to 100 for the first P-type guess.</span>
+                <span class="n">choices_parameters_p</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">numb_func_increase</span><span class="p">,))</span> <span class="o">*</span> <span class="n">factor</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">choices_parameters_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_param_func</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">p_coeffs</span><span class="p">,</span> <span class="n">p_exps</span><span class="p">)</span>
+            <span class="n">choices_parameters_p</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">s_coeffs</span><span class="p">,</span> <span class="n">x</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">num_p</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">numb_func_increase</span><span class="p">],</span>
+                           <span class="n">s_exps</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">num_p</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">numb_func_increase</span><span class="p">:]))</span>
+                <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">choices_parameters_p</span>
+            <span class="p">]</span>
+            <span class="n">num_s_choices</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">choices_parameters_s</span><span class="p">)</span>
+            <span class="n">num_p_choices</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">choices_parameters_p</span><span class="p">)</span>
+            <span class="n">total_choices</span> <span class="o">=</span> <span class="n">choices_parameters_s</span> <span class="o">+</span> <span class="n">choices_parameters_p</span>
+            <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">add_extra_choices</span><span class="p">):</span>
+                <span class="c1"># When you want extra choices to be added.</span>
+                <span class="n">total_choices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">add_extra_choices</span><span class="p">(</span><span class="n">gparams</span><span class="p">))</span>
+
+            <span class="c1"># Run fast, quick optimization and find the best parameter out of the choices.</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">best_lparam</span><span class="p">,</span> <span class="n">is_s_optimal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_best_lparams</span><span class="p">(</span>
+                <span class="n">total_choices</span><span class="p">,</span> <span class="n">num_s_choices</span><span class="p">,</span> <span class="n">num_p_choices</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Update model for the new number of S-type and P-type functions.</span>
+            <span class="k">if</span> <span class="n">is_s_optimal</span><span class="p">:</span>
+                <span class="c1"># If adding s-type was optimal then increase number of s-type.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">num_s</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numb_func_increase</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">num_p</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numb_func_increase</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">change_numb_s_and_numb_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_s</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_p</span><span class="p">)</span>
+            <span class="n">numb_funcs</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numb_func_increase</span>
+
+            <span class="c1"># Optimize further the best local answer and get new objective func</span>
+            <span class="n">opt_lparam</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_optimization_routine</span><span class="p">(</span><span class="n">best_lparam</span><span class="p">,</span> <span class="n">local</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">opt_lvalue</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval_obj_function</span><span class="p">(</span><span class="n">opt_lparam</span><span class="p">)</span>
+
+            <span class="c1"># Check if redundancies were found in the coefficients and exponents, remove them,</span>
+            <span class="c1">#   change the factor and try again.</span>
+            <span class="n">s_coeffs</span><span class="p">,</span> <span class="n">s_exps</span><span class="p">,</span> <span class="n">p_coeffs</span><span class="p">,</span> <span class="n">p_exps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_parameters</span><span class="p">(</span><span class="n">opt_lparam</span><span class="p">)</span>
+            <span class="n">s_coeffs_new</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">remove_redundancies</span><span class="p">(</span><span class="n">s_coeffs</span><span class="p">,</span> <span class="n">s_exps</span><span class="p">)</span>
+            <span class="n">p_coeffs_new</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">remove_redundancies</span><span class="p">(</span><span class="n">p_coeffs</span><span class="p">,</span> <span class="n">p_exps</span><span class="p">)</span>
+            <span class="n">found_s_redundances</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_s</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s_coeffs_new</span><span class="p">)</span>
+            <span class="n">found_p_redundancies</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_p</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">p_coeffs_new</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">found_s_redundances</span> <span class="ow">or</span> <span class="n">found_p_redundancies</span> <span class="ow">or</span> <span class="n">opt_lvalue</span> <span class="o">&gt;</span> <span class="n">best_gval</span><span class="p">:</span>
+                <span class="c1"># Move back one function and try a different factor to generate</span>
+                <span class="c1">#    better initial guesses.</span>
+                <span class="n">numb_redum</span> <span class="o">+=</span> <span class="mi">1</span>  <span class="c1"># Update the termination criteria</span>
+                <span class="n">factor</span> <span class="o">*=</span> <span class="mi">2</span>      <span class="c1"># Increase the factor that changes the kinds of potential choices.</span>
+                <span class="k">if</span> <span class="n">is_s_optimal</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">num_s</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numb_func_increase</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">num_p</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numb_func_increase</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">change_numb_s_and_numb_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_s</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_p</span><span class="p">)</span>
+                <span class="n">numb_funcs</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numb_func_increase</span>
+            <span class="k">elif</span> <span class="n">opt_lvalue</span> <span class="o">&lt;=</span> <span class="n">best_gval</span><span class="p">:</span>
+                <span class="c1"># Take the best local choice and optimization even further.</span>
+                <span class="n">gparams</span> <span class="o">=</span> <span class="n">opt_lparam</span>  <span class="c1"># Store for next iteration.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">store_errors</span><span class="p">(</span><span class="n">gparams</span><span class="p">)</span>
+                <span class="n">params_iter</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gparams</span><span class="p">)</span>  <span class="c1"># Store parameters.</span>
+                <span class="n">prev_gval</span><span class="p">,</span> <span class="n">best_gval</span> <span class="o">=</span> <span class="n">best_gval</span><span class="p">,</span> <span class="n">opt_lvalue</span>
+                <span class="n">numb_redum</span> <span class="o">=</span> <span class="mi">0</span>    <span class="c1"># Reset the number of redundancies.</span>
+                <span class="n">factor</span> <span class="o">=</span> <span class="n">factor0</span>  <span class="c1"># Reset Original Factor.</span>
+
+            <span class="k">if</span> <span class="n">disp</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">template_iters</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">numb_funcs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_s</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_p</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">err_arr</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">best_gval</span> <span class="o">-</span> <span class="n">prev_gval</span><span class="p">)</span>
+                <span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">numb_funcs</span> <span class="o">==</span> <span class="n">max_numb_funcs</span> <span class="o">-</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">numb_redum</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="n">success</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="n">numb_redum</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+                <span class="n">exit_info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Next Iteration Did Not Find The Best Choice at&quot;</span> \
+                            <span class="sa">f</span><span class="s2">&quot; number of s-type </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_s</span><span class="si">}</span><span class="s2"> and p-type </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_p</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="k">if</span> <span class="n">exit_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">exit_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_final_exit_info</span><span class="p">(</span>
+                <span class="n">numb_funcs</span><span class="p">,</span> <span class="n">max_numb_funcs</span><span class="p">,</span> <span class="n">best_gval</span><span class="p">,</span> <span class="n">prev_gval</span><span class="p">,</span> <span class="n">d_threshold</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Get the coefficients and exponents of the most recent parameters stored.</span>
+        <span class="n">coeffs_s</span><span class="p">,</span> <span class="n">exps_s</span><span class="p">,</span> <span class="n">coeffs_p</span><span class="p">,</span> <span class="n">exps_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_parameters</span><span class="p">(</span><span class="n">params_iter</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">obj_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval_obj_function</span><span class="p">(</span><span class="n">params_iter</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">coeffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">coeffs_s</span><span class="p">,</span> <span class="n">coeffs_p</span><span class="p">))</span>
+        <span class="n">expons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">exps_s</span><span class="p">,</span> <span class="n">exps_p</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">disp</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="p">(</span><span class="mi">10</span> <span class="o">+</span> <span class="mi">12</span> <span class="o">+</span> <span class="mi">15</span> <span class="o">+</span> <span class="mi">15</span> <span class="o">+</span> <span class="mi">15</span> <span class="o">+</span> <span class="mi">15</span> <span class="o">+</span> <span class="mi">15</span> <span class="o">+</span> <span class="mi">15</span> <span class="o">+</span> <span class="mi">15</span> <span class="o">+</span> <span class="mi">17</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successful?: </span><span class="si">{</span><span class="n">success</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of s-type: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_s</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of p-type: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_p</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Termination Information: &quot;</span> <span class="o">+</span> <span class="n">exit_info</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Objective Function: </span><span class="si">{</span><span class="n">obj_func</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Coefficients </span><span class="si">{</span><span class="n">coeffs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Exponents </span><span class="si">{</span><span class="n">expons</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;coeffs&quot;</span><span class="p">:</span> <span class="n">coeffs</span><span class="p">,</span>
+                   <span class="s2">&quot;exps&quot;</span><span class="p">:</span> <span class="n">expons</span><span class="p">,</span>
+                   <span class="s2">&quot;num_s&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_s</span><span class="p">,</span>
+                   <span class="s2">&quot;num_p&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_p</span><span class="p">,</span>
+                   <span class="s2">&quot;fun&quot;</span><span class="p">:</span> <span class="n">obj_func</span><span class="p">,</span>
+                   <span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="n">success</span><span class="p">,</span>
+                   <span class="s2">&quot;parameters_iteration&quot;</span><span class="p">:</span> <span class="n">params_iter</span><span class="p">,</span>
+                   <span class="s2">&quot;performance&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">err_arr</span><span class="p">),</span>
+                   <span class="s2">&quot;exit_information&quot;</span><span class="p">:</span> <span class="n">exit_info</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">results</span></div></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_final_exit_info</span><span class="p">(</span><span class="n">num_func</span><span class="p">,</span> <span class="n">max_func</span><span class="p">,</span> <span class="n">best_val</span><span class="p">,</span> <span class="n">prev_gval</span><span class="p">,</span> <span class="n">d_threshold</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return string that holds how the greedy algorithm teminated.&quot;&quot;&quot;</span>
+        <span class="n">exit_info</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">num_func</span> <span class="o">&lt;</span> <span class="n">max_func</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">exit_info</span> <span class="o">=</span> <span class="s2">&quot;Max number of functions reached,  &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">num_func</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">best_val</span> <span class="o">-</span> <span class="n">prev_gval</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">d_threshold</span><span class="p">:</span>
+            <span class="n">exit_info</span> <span class="o">=</span> <span class="s2">&quot;Cost function is less than some epsilon: &quot;</span> <span class="o">+</span> \
+                             <span class="nb">str</span><span class="p">(</span><span class="n">best_val</span> <span class="o">-</span> <span class="n">prev_gval</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &lt;= &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">d_threshold</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">exit_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Exit information </span><span class="si">{</span><span class="n">exit_info</span><span class="si">}</span><span class="s2"> should not be None. &quot;</span>
+                               <span class="sa">f</span><span class="s2">&quot;There is an error in the termination of the algorithm.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">exit_info</span>
+
+
+<div class="viewcode-block" id="GreedyLeastSquares"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyLeastSquares">[docs]</a><span class="k">class</span> <span class="nc">GreedyLeastSquares</span><span class="p">(</span><span class="n">GreedyStrategy</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Optimize Least-Squares using Greedy and ScipyFit methods.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">choice</span><span class="o">=</span><span class="s2">&quot;pick-one&quot;</span><span class="p">,</span> <span class="n">local_tol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">global_tol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span>
+        <span class="n">method</span><span class="o">=</span><span class="s2">&quot;SLSQP&quot;</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">integral_dens</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_constraint</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">maxiter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">spherical</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct the GreedyLestSquares object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        grid : (_BaseRadialGrid, CubicGrid)</span>
+<span class="sd">            Grid class that contains the grid points and integration methods on them.</span>
+<span class="sd">        density : ndarray</span>
+<span class="sd">            The true density evaluated on the grid points.</span>
+<span class="sd">        choice : str, optional</span>
+<span class="sd">            Determines how the next set of basis-functions are chosen.</span>
+<span class="sd">            Can be either:</span>
+<span class="sd">                &quot;pick-one&quot; : Add a new basis-function by taking the average between every two</span>
+<span class="sd">                             s-type or p-type exponents.</span>
+<span class="sd">                &quot;pick-two&quot; : Add two new basis-functions by recursion of &quot;pick-one&quot; over each</span>
+<span class="sd">                             guess from &quot;pick-one&quot;.</span>
+<span class="sd">                &quot;pick-two-lose-one&quot; : Add new basis-function by iterating though each guess</span>
+<span class="sd">                                      in &quot;pick-two&quot; and removing one basis-function, generating</span>
+<span class="sd">                                      a new guess each time.</span>
+<span class="sd">        local_tol : float, optional</span>
+<span class="sd">            The tolerance for convergence of scipy.optimize method for optimizing each local guess.</span>
+<span class="sd">            Should be larger than `global_tol`.</span>
+<span class="sd">        global_tol : float, optional</span>
+<span class="sd">            The tolerance for convergence of scipy.optimize method for further refining/optimizing</span>
+<span class="sd">            the best local guess found out of all choices.  Should be smaller than</span>
+<span class="sd">            `local_tol`.</span>
+<span class="sd">        method : str, optional</span>
+<span class="sd">            The method used for optimizing parameters. Default is &quot;slsqp&quot;.</span>
+<span class="sd">            See &quot;scipy.optimize.minimize&quot; for options.</span>
+<span class="sd">        normalize : bool, optional</span>
+<span class="sd">            Whether to fit with a normalized s-type and p-type Gaussian model.</span>
+<span class="sd">        integral_dens : float, optional</span>
+<span class="sd">            If this is provided, then the model is constrained to integrate to this value.</span>
+<span class="sd">            If not, then the model is constrained to the numerical integration of the</span>
+<span class="sd">            density. Useful when one knows the actual integration value of the density.</span>
+<span class="sd">        with_constraint : bool</span>
+<span class="sd">            If true, then adds the constraint that the integration of the model density must</span>
+<span class="sd">            be equal to the constraint of true density. The default is True.</span>
+<span class="sd">        maxiter : int, optional</span>
+<span class="sd">            Maximum number of iterations when optimizing an initial guess in the `scipy.optimize`</span>
+<span class="sd">            method.</span>
+<span class="sd">        spherical : bool</span>
+<span class="sd">            Whether to perform spherical integration by adding :math:`4 \pi r^2` term</span>
+<span class="sd">            to the integrand when calculating the objective function.</span>
+<span class="sd">            Only used when grid is one-dimensional and positive (radial grid).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_local_tol</span> <span class="o">=</span> <span class="n">local_tol</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_global_tol</span> <span class="o">=</span> <span class="n">global_tol</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_maxiter</span> <span class="o">=</span> <span class="n">maxiter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_with_constraint</span> <span class="o">=</span> <span class="n">with_constraint</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">AtomicGaussianDensity</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">num_s</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_p</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">)</span>
+        <span class="n">gaussian_obj</span> <span class="o">=</span> <span class="n">ScipyFit</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">measure</span><span class="o">=</span><span class="n">SquaredDifference</span><span class="p">(),</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+                                <span class="n">integral_dens</span><span class="o">=</span><span class="n">integral_dens</span><span class="p">,</span> <span class="n">spherical</span><span class="o">=</span><span class="n">spherical</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">gaussian_obj</span><span class="p">,</span> <span class="n">choice</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="GreedyLeastSquares.local_tol"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyLeastSquares.local_tol">[docs]</a>    <span class="k">def</span> <span class="nf">local_tol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return local tolerance for convergence in `scipy.optimize`.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_local_tol</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="GreedyLeastSquares.global_tol"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyLeastSquares.global_tol">[docs]</a>    <span class="k">def</span> <span class="nf">global_tol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return global tolerance for convergence in `scipy.optimize`.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_global_tol</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="GreedyLeastSquares.maxiter"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyLeastSquares.maxiter">[docs]</a>    <span class="k">def</span> <span class="nf">maxiter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return maximum number of iterations in optimization routine.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_maxiter</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="GreedyLeastSquares.with_constraint"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyLeastSquares.with_constraint">[docs]</a>    <span class="k">def</span> <span class="nf">with_constraint</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return constraint that integral of model should equal integral of density.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_with_constraint</span></div>
+
+    <span class="k">def</span> <span class="nf">_solve_one_function_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weight</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Solve the best one-basis function solution.&quot;&quot;&quot;</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">weight</span><span class="p">)</span>
+        <span class="n">sum_of_grid_squared</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">weight</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">sum_of_grid_squared</span>
+        <span class="n">sum_ln_electron_density</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">weight</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">))</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">sum_ln_electron_density</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">b</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">weight</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">weight</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">))</span>
+        <span class="n">big_a</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span> <span class="o">*</span> <span class="n">f</span> <span class="o">-</span> <span class="n">c</span> <span class="o">*</span> <span class="n">e</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">b</span> <span class="o">*</span> <span class="n">d</span> <span class="o">-</span> <span class="n">a</span> <span class="o">*</span> <span class="n">e</span><span class="p">)</span>
+        <span class="n">big_b</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="n">f</span> <span class="o">-</span> <span class="n">c</span> <span class="o">*</span> <span class="n">d</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="n">e</span> <span class="o">-</span> <span class="n">b</span> <span class="o">*</span> <span class="n">d</span><span class="p">)</span>
+        <span class="n">coefficient</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">big_a</span><span class="p">)</span>
+        <span class="n">exponent</span> <span class="o">=</span> <span class="o">-</span> <span class="n">big_b</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">coefficient</span><span class="p">,</span> <span class="n">exponent</span><span class="p">])</span>
+
+<div class="viewcode-block" id="GreedyLeastSquares.get_best_one_function_solution"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyLeastSquares.get_best_one_function_solution">[docs]</a>    <span class="k">def</span> <span class="nf">get_best_one_function_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Obtain the best s-type function solution to least-squares using different weights.&quot;&quot;&quot;</span>
+        <span class="c1"># Minimizing weighted least squares with three different weights</span>
+        <span class="n">weight1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">points</span><span class="p">))</span>
+        <span class="n">weight3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">,</span> <span class="mf">2.</span><span class="p">)</span>
+        <span class="n">p1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve_one_function_weight</span><span class="p">(</span><span class="n">weight1</span><span class="p">)</span>
+        <span class="n">cost_func1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval_obj_function</span><span class="p">(</span><span class="n">p1</span><span class="p">)</span>
+
+        <span class="n">p2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve_one_function_weight</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">)</span>
+        <span class="n">cost_func2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval_obj_function</span><span class="p">(</span><span class="n">p2</span><span class="p">)</span>
+
+        <span class="n">p3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve_one_function_weight</span><span class="p">(</span><span class="n">weight3</span><span class="p">)</span>
+        <span class="n">cost_func3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval_obj_function</span><span class="p">(</span><span class="n">p3</span><span class="p">)</span>
+
+        <span class="n">p_min</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span>
+            <span class="p">[(</span><span class="n">cost_func1</span><span class="p">,</span> <span class="n">p1</span><span class="p">),</span> <span class="p">(</span><span class="n">cost_func2</span><span class="p">,</span> <span class="n">p2</span><span class="p">),</span> <span class="p">(</span><span class="n">cost_func3</span><span class="p">,</span> <span class="n">p3</span><span class="p">)],</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">p_min</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></div>
+
+    <span class="k">def</span> <span class="nf">_create_cofactor_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exponents</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Create cofactor matrix for solving nnls.&quot;&quot;&quot;</span>
+        <span class="n">exponents_s</span> <span class="o">=</span> <span class="n">exponents</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">num_s</span><span class="p">]</span>
+        <span class="n">grid_squared_col</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">points</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">exponential</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">exponents_s</span> <span class="o">*</span> <span class="n">grid_squared_col</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">num_p</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">exponents_p</span> <span class="o">=</span> <span class="n">exponents</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">num_s</span><span class="p">:]</span>
+            <span class="n">exponential</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">exponential</span><span class="p">,</span> <span class="n">grid_squared_col</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">exponents_p</span> <span class="o">*</span> <span class="n">grid_squared_col</span><span class="p">))</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">exponential</span>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="GreedyLeastSquares.optimize_using_nnls"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyLeastSquares.optimize_using_nnls">[docs]</a>    <span class="k">def</span> <span class="nf">optimize_using_nnls</span><span class="p">(</span><span class="n">true_dens</span><span class="p">,</span> <span class="n">cofactor_matrix</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Solve for the coefficients using non-linear least squares.&quot;&quot;&quot;</span>
+        <span class="n">b_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">true_dens</span><span class="p">)</span>
+        <span class="n">b_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">b_vector</span><span class="p">)</span>
+        <span class="n">row_nnls_coefficients</span> <span class="o">=</span> <span class="n">nnls</span><span class="p">(</span><span class="n">cofactor_matrix</span><span class="p">,</span> <span class="n">b_vector</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">row_nnls_coefficients</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="GreedyLeastSquares.get_optimization_routine"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyLeastSquares.get_optimization_routine">[docs]</a>    <span class="k">def</span> <span class="nf">get_optimization_routine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">local</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Optimize least-squares using nnls and scipy.optimize from ScipyFit.&quot;&quot;&quot;</span>
+        <span class="c1"># First solves the optimal coefficients (while exponents are fixed) using NNLS.</span>
+        <span class="c1"># Then it optimizes both coefficients and exponents using scipy.optimize.</span>
+        <span class="n">exps</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">:]</span>
+        <span class="n">cofac_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_cofactor_matrix</span><span class="p">(</span><span class="n">exps</span><span class="p">)</span>
+        <span class="n">coeffs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_using_nnls</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="p">,</span> <span class="n">cofac_matrix</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">local</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fitting_obj</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                <span class="n">coeffs</span><span class="p">,</span> <span class="n">exps</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">local_tol</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">maxiter</span><span class="p">,</span>
+                <span class="n">with_constraint</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">with_constraint</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fitting_obj</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                <span class="n">coeffs</span><span class="p">,</span> <span class="n">exps</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">global_tol</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">maxiter</span><span class="p">,</span>
+                <span class="n">with_constraint</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">with_constraint</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;coeffs&quot;</span><span class="p">],</span> <span class="n">results</span><span class="p">[</span><span class="s2">&quot;exps&quot;</span><span class="p">]))</span></div></div>
+
+
+<div class="viewcode-block" id="GreedyKLSCF"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyKLSCF">[docs]</a><span class="k">class</span> <span class="nc">GreedyKLSCF</span><span class="p">(</span><span class="n">GreedyStrategy</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Optimize Kullback-Leibler using the Greedy method and self-consistent method.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">choice</span><span class="o">=</span><span class="s2">&quot;pick-one&quot;</span><span class="p">,</span> <span class="n">g_eps_coeff</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">g_eps_exp</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
+            <span class="n">g_eps_obj</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">,</span> <span class="n">l_eps_coeff</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span> <span class="n">l_eps_exp</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">l_eps_obj</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span>
+            <span class="n">mask_value</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">,</span> <span class="n">integral_dens</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">spherical</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct the GreedyKLSCF object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        grid : (_BaseRadialGrid, CubicGrid)</span>
+<span class="sd">            Grid class that contains the grid points and integration methods on them.</span>
+<span class="sd">        density : ndarray</span>
+<span class="sd">            The true density evaluated on the grid points.</span>
+<span class="sd">        choice : str, optional</span>
+<span class="sd">            Determines how the next set of basis-functions are chosen.</span>
+<span class="sd">            Can be either:</span>
+<span class="sd">                &quot;pick-one&quot; : Add a new basis-function by taking the average between every two</span>
+<span class="sd">                             s-type or p-type exponents.</span>
+<span class="sd">                &quot;pick-two&quot; : Add two new basis-functions by recursion of &quot;pick-one&quot; over each</span>
+<span class="sd">                             guess from &quot;pick-one&quot;.</span>
+<span class="sd">                &quot;pick-two-lose-one&quot; : Add new basis-function by iterating though each guess</span>
+<span class="sd">                                      in &quot;pick-two&quot; and removing one basis-function, generating</span>
+<span class="sd">                                      a new guess each time.</span>
+<span class="sd">        g_eps_coeff : float, optional</span>
+<span class="sd">            The tolerance for convergence of coefficients in KL-SCF method for further</span>
+<span class="sd">            refining and optimizing the best found local guess.</span>
+<span class="sd">        g_eps_exp : float, optional</span>
+<span class="sd">            The tolerance for convergence of exponents in KL-SCF method for further</span>
+<span class="sd">            refining/optimizing the best local guess found out of all choices.</span>
+<span class="sd">        g_eps_obj : float, optional</span>
+<span class="sd">            The tolerance for convergence of objective function in KL-SCF method for</span>
+<span class="sd">            further refining/optimizing the best local guess found out of all choices.</span>
+<span class="sd">        l_eps_coeff : float, optional</span>
+<span class="sd">            The tolerance for convergence of coefficients in KL-SCF method for optimizing</span>
+<span class="sd">            each local initial guess. Should be larger than `g_eps_coeff`.</span>
+<span class="sd">        l_eps_exp : float, optional</span>
+<span class="sd">            The tolerance for convergence of exponents in KL-SCF method for optimizing</span>
+<span class="sd">            each local initial guess. Should be larger than `g_eps_exp`.</span>
+<span class="sd">        l_eps_obj : float, optional</span>
+<span class="sd">            The tolerance for convergence of objective function in KL-SCF method for optimizing</span>
+<span class="sd">            each local initial guess. Should be larger than `g_eps_obj`.</span>
+<span class="sd">        mask_value : str, optional</span>
+<span class="sd">            The method used for optimizing parameters. Default is &quot;slsqp&quot;.</span>
+<span class="sd">            See &quot;scipy.optimize.minimize&quot; for options.</span>
+<span class="sd">        integral_dens : float, optional</span>
+<span class="sd">            If this is provided, then the model is constrained to integrate to this value.</span>
+<span class="sd">            If not, then the model is constrained to the numerical integration of the</span>
+<span class="sd">            density. Useful when one knows the actual integration value of the density.</span>
+<span class="sd">        maxiter : int, optional</span>
+<span class="sd">            Maximum number of iterations when optimizing an initial guess in the KL-SCF method.</span>
+<span class="sd">        spherical : bool</span>
+<span class="sd">            Whether to perform spherical integration by adding :math:`4 \pi r^2` term</span>
+<span class="sd">            to the integrand when calculating objective function.</span>
+<span class="sd">            Only used when grid is one-dimensional and positive (radial grid).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Algorithm parameters for KL-SCF (KLDivergenceSCF) method.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_l_threshold_coeff</span> <span class="o">=</span> <span class="n">l_eps_coeff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_l_threshold_exp</span> <span class="o">=</span> <span class="n">l_eps_exp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_l_threshold_obj</span> <span class="o">=</span> <span class="n">l_eps_obj</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_g_threshold_coeff</span> <span class="o">=</span> <span class="n">g_eps_coeff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_g_threshold_exp</span> <span class="o">=</span> <span class="n">g_eps_exp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_g_threshold_obj</span> <span class="o">=</span> <span class="n">g_eps_obj</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_maxiter</span> <span class="o">=</span> <span class="n">maxiter</span>
+        <span class="c1"># Model that is fitted to.</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">AtomicGaussianDensity</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">num_s</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_p</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">scf_obj</span> <span class="o">=</span> <span class="n">KLDivergenceSCF</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">mask_value</span><span class="p">,</span> <span class="n">integral_dens</span><span class="p">,</span> <span class="n">spherical</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">scf_obj</span><span class="p">,</span> <span class="n">choice</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="GreedyKLSCF.l_threshold_coeff"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyKLSCF.l_threshold_coeff">[docs]</a>    <span class="k">def</span> <span class="nf">l_threshold_coeff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return local threshold for KL-SCF method for convergence of coefficients.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_l_threshold_coeff</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="GreedyKLSCF.l_threshold_exp"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyKLSCF.l_threshold_exp">[docs]</a>    <span class="k">def</span> <span class="nf">l_threshold_exp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return local threshold for KL-SCF method for convergence of exponents.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_l_threshold_exp</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="GreedyKLSCF.l_threshold_obj"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyKLSCF.l_threshold_obj">[docs]</a>    <span class="k">def</span> <span class="nf">l_threshold_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return local threshold for KL-SCF method for convergence of objective function.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_l_threshold_obj</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="GreedyKLSCF.g_threshold_coeff"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyKLSCF.g_threshold_coeff">[docs]</a>    <span class="k">def</span> <span class="nf">g_threshold_coeff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return global threshold for KL-SCF method for convergence of coefficients.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_g_threshold_coeff</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="GreedyKLSCF.g_threshold_exp"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyKLSCF.g_threshold_exp">[docs]</a>    <span class="k">def</span> <span class="nf">g_threshold_exp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return global threshold for KL-SCF method for convergence of exponents.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_g_threshold_exp</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="GreedyKLSCF.g_threshold_obj"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyKLSCF.g_threshold_obj">[docs]</a>    <span class="k">def</span> <span class="nf">g_threshold_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return global threshold for KL-SCF method for convergence of objective function.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_g_threshold_obj</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="GreedyKLSCF.maxiter"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyKLSCF.maxiter">[docs]</a>    <span class="k">def</span> <span class="nf">maxiter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return maximum iteration for KL-SCF method.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_maxiter</span></div>
+
+<div class="viewcode-block" id="GreedyKLSCF.get_best_one_function_solution"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyKLSCF.get_best_one_function_solution">[docs]</a>    <span class="k">def</span> <span class="nf">get_best_one_function_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Obtain the best one s-type function to Kullback-Leibler.&quot;&quot;&quot;</span>
+        <span class="n">denom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">density</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">points</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">2.</span><span class="p">))</span>
+        <span class="n">exps</span> <span class="o">=</span> <span class="mf">3.</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">integral_dens</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="mf">4.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">denom</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">integral_dens</span><span class="p">,</span> <span class="n">exps</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="GreedyKLSCF.get_optimization_routine"><a class="viewcode-back" href="../../autoapi/bfit/greedy/index.html#bfit.greedy.GreedyKLSCF.get_optimization_routine">[docs]</a>    <span class="k">def</span> <span class="nf">get_optimization_routine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">local</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Optimize KL using KL-SCF method.&quot;&quot;&quot;</span>
+        <span class="n">coeffs</span><span class="p">,</span> <span class="n">exps</span> <span class="o">=</span> <span class="n">params</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">:]</span>
+        <span class="k">if</span> <span class="n">local</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fitting_obj</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                <span class="n">coeffs</span><span class="p">,</span> <span class="n">exps</span><span class="p">,</span> <span class="n">opt_coeffs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">opt_expons</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">maxiter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">maxiter</span><span class="p">,</span> <span class="n">c_threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">l_threshold_coeff</span><span class="p">,</span>
+                <span class="n">e_threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">l_threshold_exp</span><span class="p">,</span> <span class="n">d_threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">l_threshold_obj</span><span class="p">,</span>
+                <span class="n">disp</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;coeffs&quot;</span><span class="p">],</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;exps&quot;</span><span class="p">]))</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fitting_obj</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="n">coeffs</span><span class="p">,</span> <span class="n">exps</span><span class="p">,</span> <span class="n">opt_coeffs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">opt_expons</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">maxiter</span><span class="p">,</span>
+            <span class="n">c_threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">g_threshold_coeff</span><span class="p">,</span> <span class="n">e_threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">g_threshold_exp</span><span class="p">,</span>
+            <span class="n">d_threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">g_threshold_obj</span><span class="p">,</span> <span class="n">disp</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;coeffs&quot;</span><span class="p">],</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;exps&quot;</span><span class="p">]))</span></div></div>
 </pre></div>
 
            </div>

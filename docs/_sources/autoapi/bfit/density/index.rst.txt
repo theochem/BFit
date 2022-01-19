@@ -5,12 +5,7 @@
 
 .. autoapi-nested-parse::
 
-   Density Module.
-
-   AtomicDensity:
-       Information about atoms obtained from .slater file and able to construct atomic density
-           (total, core and valence) from the linear combination of Slater-type orbitals.
-       Elements supported by default from "./bfit/data/examples/" range from Hydrogen to Xenon.
+   Slater Atomic Density Module.
 
    ..
        !! processed by numpydoc !!
@@ -24,130 +19,54 @@ Classes
 
 .. autoapisummary::
 
-   bfit.density.AtomicDensity
+   bfit.density.SlaterAtoms
 
 
 
 
-.. py:class:: AtomicDensity(element, anion=False, cation=False)
+.. py:class:: SlaterAtoms(element, anion=False, cation=False)
 
-   
    Atomic Density Class.
 
-   Reads and Parses information from the .slater file of a atom and stores it inside this class.
-   It is then able to construct the (total, core and valence) electron density based
-   on linear combination of orbitals where each orbital is a linear combination of
-   Slater-type orbitals.
-   Elements supported by default from "./bfit/data/examples/" range from Hydrogen to Xenon.
+   Reads and parses information from the .slater file [1], [2] of an atom and stores it inside
+   this class. Elements supported by default from "./bfit/data/examples/" range from Hydrogen
+   to Xenon.
 
-   .. attribute:: Attributes relating to the standard electron configuration.
+   Each electron of the atom is associated to a molecular spin-orbital written as:
 
-   .. attribute:: energy
+   .. math::
+       \phi_i(r, \theta, \phi) = \bigg[\sum_{j=1}^{M_i} c^i_j R_{n^i_j}(r, \alpha^i_j) \bigg]
+       Y_{l_i}^{m_i}(\theta, \phi) \sigma(m_i),
 
-      Energy of that atom.
-
-      :type: list
-
-   .. attribute:: configuration
-
-      Return the electron configuration of the element.
-
-      :type: str
-
-   .. attribute:: orbitals
-
-      List of strings representing each of the orbitals in the electron configuration.
-      For example, Beryllium has ["1S", "2S"] in its electron configuration.
-      Ordered based on "S", "P", "D", etc.
-
-      :type: list, (M,)
-
-   .. attribute:: orbitals_occupation
-
-      Returns the number of electrons in each of the orbitals in the electron configuration.
-      e.g. Beryllium has two electrons in "1S" and two electrons in "2S".
-
-      :type: ndarray, (M, 1)
-
-   .. attribute:: Attributes relating to representing orbitals as linear combination of Slater-type orbitals.
-
-   .. attribute:: orbital_energy
-
-      Energy of each of the N Slater-type orbital.
-
-      :type: list, (N, 1)
-
-   .. attribute:: orbitals_cusp
-
-      Cusp of each of the N Slater-type orbital. Same ordering as `orbitals`. Does not exist
-      for Heavy atoms past Xenon.
-
-      :type: list, (N, 1)
-
-   .. attribute:: orbitals_basis
-
-      Keys are the orbitals in the electron configuration. Each orbital has N Slater-type orbital
-      attached to them.
-
-      :type: dict
-
-   .. attribute:: orbitals_exp
-
-      Key is the orbital in the electron configuration and the item of that key is the Slater
-       exponents attached
-       to each N Slater-type orbital.
-
-      :type: dict (str : ndarray(N, 1))
-
-   .. attribute:: orbitals_coeff
-
-      Key is the orbital in the electron configuration (e. 1S, 2S or 2P) and the item is the
-      Slater coefficients attached to each of the N Slater-type orbital.
-
-      :type: dict (str : ndarray(N, 1))
-
-   .. attribute:: basis_numbers
-
-      Key is orbital in electron configuration and the item is the basis number of each of
-      the N Slater-type orbital. These are the principal quantum number to each Slater-type
-      orbital.
-
-      :type: dict (str : ndarray(N, 1))
-
-   .. method:: atomic_density(mode="total") :
-
-      Construct the atomic density from the linear combinations of slater-type orbitals.
-      Can compute the total (default), core and valence atomic density.
-
-   .. method:: lagrangian_kinetic_energy :
-
-      Construct the Positive Definite Kinetic energy.
-
-   .. rubric:: Examples
-
-   Grab information about Beryllium.
-   >> be =  AtomicDensity("be")
-
-   Some of the attributes are the following.
-   >> print(be.configuration) #  Should "1S(2)2S(2)".
-   >> print(be.orbitals)  # ['1S', '2S'].
-   >> print(be.orbitals_occupation) # [[2], [2]] Two electrons in each orbital.
-   >> print(be.orbitals_cusp)  # [1.0001235, 0.9998774].
-
-   The Slatar coefficients and exponents of the 1S orbital can be obtained as:
-   >> print(be.orbital_coeff["1S"])
-   >> print(be.orbitals_exp["1S"])
-
-   The total, core and valence electron density can be obtained as:
-   >> points = np.arange(0., 25., 0.01)
-   >> total_density = be.atomic_density(points, "total")
-   >> core_density = be.atomic_density(points, "core")
-   >> valence_density = be.atomic_density(points, "valence")
+   where :math:`R_{n^i_j}(r)` is a Slater-type function with quantum number :math:`n^i_j`,
+   :math:`c^i_j` is the coefficient of the jth Slater-type function,
+   :math:`\alpha_j^i` is the exponent of the jth Slater-type function,
+   :math:`Y_{l_i}^{m_i}` is the spherical harmonic with complex form, angular momentum :math:`l_i`
+   determined by the electron in the electron configuration and :math:`m_i` is the spin determined
+   by applying Hund's rule to the electron configuration, and
+   :math:`\sigma` is the spin-function determined from applying Hund's rule to the electron.
 
    .. rubric:: References
 
-   [1] "Analytical Hartree–Fock wave functions subject to cusp and asymptotic constraints:
-       He to Xe, Li+ to Cs+, H− to I−" by T. Koga, K. Kanayama, S. Watanabe and A.J. Thakkar.
+   .. [1] Koga, T. , Kanayama, K. , Watanabe, S. and Thakkar, A. J. (1999),
+      Analytical Hartree–Fock wave functions subject to cusp and asymptotic
+      constraints: He to Xe, Li+ to Cs+, H−  Int. J. Quantum Chem., 71: 491-497.
+      doi:10.1002/(SICI)1097-461X(1999)71:6<491::AID-QUA6>3.0.CO;2-T
+
+   .. [2] Koga, T., Kanayama, K., Watanabe, T. et al. Analytical Hartree–Fock wave functions
+      for the atoms Cs to Lr. Theor Chem Acc 104, 411–413 (2000).
+      https://doi.org/10.1007/s002140000150
+
+   Construct SlaterAtoms object.
+
+   :param element: Symbol of element.
+   :type element: str
+   :param anion: If true, then the anion of element is used. Some elements do not have
+                 anion information.
+   :type anion: bool
+   :param cation: If true, then the cation of element is used. Some elements do not
+                  have cation information.
+   :type cation: bool
 
 
 
@@ -165,33 +84,347 @@ Classes
 
    ..
        !! processed by numpydoc !!
-   .. py:method:: slater_orbital(exponent, number, points)
+
+   .. py:method:: energy(self)
+      :property:
+
+      
+      Energy of atom.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: kinetic_energy(self)
+      :property:
+
+      
+      Kinetic energy of atom.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: potential_energy(self)
+      :property:
+
+      
+      Potential energy of atom.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: configuration(self)
+      :property:
+
+      
+      Return string representing the electron configuration of the atom.
+
+      The electron configuration of the atom is written in form that writes out the
+      atomic subshells with the number of electrons assigned to that atomic subshell.
+      For example, Beryllium returns "1S(2)2S(2)".
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: orbitals(self)
+      :property:
+
+      
+      List of strings representing each of the atomic subshells in the electron configuration.
+
+      For example, Beryllium returns ["1S", "2S"] in its electron configuration.
+      Ordered based on "S", "P", "D", etc.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: orbitals_occupation(self)
+      :property:
+
+      
+      Array returning number of electrons in each of the orbitals in the electron configuration.
+
+      For example, Beryllium returns ndarray([[2], [2]]).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: orbitals_basis(self)
+      :property:
+
+      
+      Return grouping of Slater-type functions to the azimuthal quantum number ("S", "P", ...).
+
+      Dictionary mapping type of orbital (e.g. "S", "P") to the number
+      and type of the :math:`N` Slater-type functions. For example, Helium would
+      map "S" to ['2S', '1S', '1S', '1S', '2S']. This implies that all
+      molecular orbitals corresponding to s-orbital will have it's radial component
+      expanded in that Slater-type functions according to the label.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: basis_numbers(self)
+      :property:
+
+      
+      Return type of Slater-type orbital to the type, e.g. "S".
+
+      Dictionary mapping type of orbital (e.g. "S", "P") to array
+      containing :math:`n` of the :math:`N` Slater-type functions. These play the
+      role of the principal quantum number to each Slater-type function.
+      With the Helium example, "S" will map to [[2], [1], [1], [1], [2]].
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: orbitals_exp(self)
+      :property:
+
+      
+      Exponent of each Slater-type orbital grouped by type of orbital.
+
+      Dictionary mapping type of orbitals (e.g. "S", "P") to the
+      exponent :math:`\alpha_j^i` of each of the :math:`M_i` Slater-type function.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: orbitals_coeff(self)
+      :property:
+
+      
+      Coefficients of each Slater-type orbital grouped by type of orbital.
+
+      Dictionary mapping the molecular orbital (e.g. "1S", "2S", ..) to
+      the coefficients :math:`c^i_j` of expansion w.r.t. the :math:`M_i` Slater-type function.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: orbitals_energy(self)
+      :property:
+
+      
+      Energy of each of the :math:`N` Slater-type orbital.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: orbitals_cusp(self)
+      :property:
+
+      
+      Cusp values of each of the N Slater-type orbital.
+
+      Same ordering as `orbitals`. Does not exist for Heavy atoms past Xenon.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: radial_slater_orbital(exponent, number, points)
       :staticmethod:
 
       
-      Compute the Slater-type orbitals on the given points.
+      Compute the radial component of Slater-type orbitals on the given points.
 
-      A Slater-type orbital is defined as:
+      The radial component of the Slater-type orbital is defined as:
+
       .. math::
-          R(r) = N r^{n-1} e^{- C r)
+          R(r) = N r^{n-1} e^{- \alpha r}
 
       where,
-          :math:`n` is the principal quantum number of that orbital.
-          :math:`N` is the normalizing constant.
-          :math:`r` is the radial point, distance to the origin.
-          :math:`C` is the zeta exponent of that orbital.
+      :math:`n` is the principal quantum number of that orbital,
+      :math:`N` is the normalizing constant,
+      :math:`r` is the radial point, distance to the origin, and
+      :math:`\alpha` is the zeta exponent of that orbital.
 
-      :param exponent: The zeta exponents of Slater orbitals.
+      :param exponent: The zeta exponents :math:`\zeta` of :math:`M` Slater orbitals.
       :type exponent: ndarray, (M, 1)
-      :param number: The principle quantum numbers of Slater orbitals.
+      :param number: The principal quantum numbers :math:`n` of :math:`M` Slater orbitals.
       :type number: ndarray, (M, 1)
-      :param points: The radial grid points.
+      :param points: The radial :math:`r` grid points.
       :type points: ndarray, (N,)
 
-      :returns: **slater** -- The Slater-type orbitals evaluated on the grid points.
+      :returns: **slater** -- The :math:`M` Slater-type orbitals evaluated on :math:`N` grid points.
       :rtype: ndarray, (N, M)
 
-      .. seealso:: :meth:`The`, :meth:`The`
+      .. rubric:: Notes
+
+      - The principal quantum number of all functions are stored in `basis_numbers`.
+
+      - The alpha exponents of all functions are stored in the attribute `orbitals_exp`.
 
 
 
@@ -213,35 +446,36 @@ Classes
    .. py:method:: phi_matrix(self, points, deriv=False)
 
       
-      Compute the linear combination of Slater-type atomic orbitals on the given points.
+      Compute the linear combination of Slater-type functions on the given points.
 
       Each row corresponds to a point on the grid, represented as :math:`r` and
-       each column is represented as a linear combination of Slater-type atomic orbitals
-       of the form:
+      each column is represented as a linear combination of Slater-type atomic orbitals
+      of the form:
 
       .. math::
-          \sum c_i R(r, n_i, C_i)
+          \sum_{i=1}^{M} c_i R(r, n_i, \alpha_i)
 
       where,
-          :math:`c_i` is the coefficient of the Slater-type orbital.
-          :math:`C_i` is the zeta exponent attached to the Slater-type orbital.
-          :math:`n_i` is the principal quantum number attached to the Slater-type orbital.
-          :math:`R(r, n_i, C_i)` is the Slater-type orbital.
-          i ranges from 0 to K-1 where K is the number of orbitals in electron configuration.
+      :math:`c_i` is the coefficient of the Slater-type orbital,
+      :math:`\alpha_i` is the zeta exponent attached to the Slater-type orbital,
+      :math:`n_i` is the principal quantum number attached to the Slater-type orbital,
+      :math:`R(r, n_i, C_i)` is the radial component of the Slater-type function,
+      :math:`M` is the number of orbitals.
 
       :param points: The radial grid points.
       :type points: ndarray, (N,)
       :param deriv: If true, use the derivative of the slater-orbitals.
       :type deriv: bool
 
-      :returns: **phi_matrix** -- The linear combination of Slater-type orbitals evaluated on the grid points, where K is
-                the number of orbitals. The order is S orbitals, then P then D.
+      :returns: **phi_matrix** -- The linear combination of Slater-type orbitals evaluated on the :math:`N` grid points,
+                and :math:`M` is the number of atomic subshells (ignoring spin) within the electron
+                configuration. The order is S orbitals, then P then D and spin is ignored.
       :rtype: ndarray(N, K)
 
       .. rubric:: Notes
 
       - At r = 0, the derivative of slater-orbital is undefined and this function returns
-          zero instead. See "derivative_slater_type_orbital".
+        zero instead. See "derivative_radial_slater_type_orbital".
 
 
 
@@ -265,17 +499,19 @@ Classes
       
       Compute atomic density on the given points.
 
-      The total density is written as a linear combination of Slater-type orbital
+      The total density is written as a linear combination of molecular orbitals squared
       whose coefficients is the orbital occupation number of the electron configuration:
+
       .. math::
-          \sum n_i |P(r, n_i, C_i)|^2
+          \sum n_i |\phi_i(r)|^2
 
       where,
-          :math:`n_i` is the number of electrons in orbital i.
-          :math:`P(r, n_i, C_i)` is a linear combination of Slater-type orbitals evaluated
-              on the point :math:`r`.
+      :math:`n_i` is the number of electrons in the ith molecular orbital,
+      :math:`\phi_i(r)` is the ith molecular orbital, whose radial component is
+      a linear combination of Slater-type functions evaluated on the point :math:`r` and
+      whose angles within the spherical coordinates are integrated.
 
-      For core and valence density, please see More Info below.
+      For core and valence density, please see more Info below.
 
       :param points: The radial grid points.
       :type points: ndarray, (N,)
@@ -288,13 +524,16 @@ Classes
       .. rubric:: Notes
 
       The core density and valence density is respectively written as:
+
       .. math::
-          \sum n_i (1 - e^{-|e_i - e_{homo}|^2}) |P(r, n_i, C_i)|
-          \sum n_i e^{-|e_i - e_{homo}|^2}) |P(r, n_i. C_i)|
+          \begin{align*}
+              \rho^{core}(r) &= \sum n_i (1 - e^{-|e_i - e_{homo}|^2}) |\phi_i(r)| \\
+              \rho^{valence}(r) &= \sum n_i e^{-|e_i - e_{homo}|^2} |\phi_i(r)|
+          \end{align*}
 
       where,
-          :math:`e_i` is the energy of the orbital i.
-          :math:`e_{homo}` is the energy of the highest occupying orbital.
+      :math:`e_i` is the energy of the orbital i.
+      :math:`e_{HOMO}` is the energy of the highest occupying orbital.
 
 
 
@@ -313,21 +552,22 @@ Classes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: derivative_slater_type_orbital(exponent, number, points)
+   .. py:method:: derivative_radial_slater_type_orbital(exponent, number, points)
       :staticmethod:
 
       
-      Compute the derivative of Slater-type orbitals on the given points.
+      Compute the derivative of the radial component of Slater-type function on the given points.
 
-      A Slater-type orbital is defined as:
+      The derivative of the Slater-type function is defined as:
+
       .. math::
-          \frac{d R(r)}{dr} = \bigg(\frac{n-1}{r} - C \bigg) N r^{n-1} e^{- C r),
+          \frac{d R(r)}{dr} = \bigg(\frac{n-1}{r} - \alpha \bigg) N r^{n-1} e^{- \alpha r},
 
-      where,
-          :math:`n` is the principal quantum number of that orbital.
-          :math:`N` is the normalizing constant.
-          :math:`r` is the radial point, distance to the origin.
-          :math:`C` is the zeta exponent of that orbital.
+      where
+      :math:`n` is the principal quantum number of that orbital,
+      :math:`N` is the normalizing constant,
+      :math:`r` is the radial point, distance to the origin, and
+      :math:`\alpha` is the zeta exponent of that orbital.
 
       :param exponent: The zeta exponents of Slater orbitals.
       :type exponent: ndarray, (M, 1)
@@ -337,7 +577,7 @@ Classes
                      points and set to zero.
       :type points: ndarray, (N,)
 
-      :returns: **slater** -- The Slater-type orbitals evaluated on the grid points.
+      :returns: **slater** -- The Slater-type orbitals evaluated on the :math:`N` grid points.
       :rtype: ndarray, (N, M)
 
       .. rubric:: Notes
@@ -398,11 +638,11 @@ Classes
       
       Return the derivative of the atomic density on a set of points.
 
-      :param points: The radial grid points.
-      :type points: ndarray,(N,)
+      :param points: The :math:`N` radial grid points.
+      :type points: ndarray(N,)
 
       :returns: **deriv** -- The derivative of atomic density on the grid points.
-      :rtype: ndarray, (N,)
+      :rtype: ndarray(N,)
 
 
 

@@ -13,8 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
   <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
 
   
   
@@ -24,7 +24,7 @@
   
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+    <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -87,7 +87,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="autoapi/index.html">API Reference</a></li>
 </ul>
@@ -181,14 +181,61 @@
 </style>
 <div class="section" id="welcome-to-bfit-s-documentation">
 <h1>Welcome to BFit’s documentation!<a class="headerlink" href="#welcome-to-bfit-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://github.com/theochem/bfit">BFit</a> is a free, open-source, and cross-platform
+Python library for fitting a convex sum of Gaussian functions of s-type and p-type to any
+probability distribution.</p>
+<p>BFIt is released under the
+<a class="reference external" href="https://github.com/theochem/procrustes/blob/master/LICENSE">GNU General Public License v3.0</a>.
+Please report any issues you encounter while using BFit library on
+<a class="reference external" href="https://github.com/theochem/bfit/issues">GitHub Issues</a>.
+For further information and inquiries please contact us at <a class="reference external" href="mailto:qcdevs&#37;&#52;&#48;gmail&#46;com">qcdevs<span>&#64;</span>gmail<span>&#46;</span>com</a>.</p>
+<p>Please use the following citation in any publication using BFit library:</p>
+<blockquote>
+<div><p><strong>“BFit: Information-Theoretic Approach to Basis-Set Fitting of Electron Densities.”</strong>,
+A. Tehrani, F. Heidar-Zadeh, J. S. M. Anderson, T. Verstraelen, R. Cuevas-Saavedra,
+I. Vinogradov, D. Chakraborty, P. W. Ayers</p>
+</div></blockquote>
+<div class="section" id="models">
+<h2>Models<a class="headerlink" href="#models" title="Permalink to this headline">¶</a></h2>
+<p>BFit supports fitting any probability distribution to a linear combination of Gaussian functions of the form:</p>
+<div class="math notranslate nohighlight">
+\[\sum_i c_i e^{-\alpha_i ||\vec{r} - \vec{v}||^2} + \sum_j d_j ||\vec{r} - \vec{c}||^2 e^{-\beta_j ||\vec{r} - \vec{c}||^2}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\vec{c}\)</span> is the center of the Gaussian.</p>
+<p>The first type of Gaussian function <span class="math notranslate nohighlight">\(e^{-\alpha_i ||\vec{r} - \vec{v}||^2}\)</span> are referred to as s-type Gaussians
+and the second type of Gaussian function <span class="math notranslate nohighlight">\(||\vec{r} - \vec{c}||^2 e^{-\beta_j ||\vec{r} - \vec{c}||^2}\)</span> are referred to
+as p-type Gaussian functions.</p>
+<p>In addition, it supports mixture of Gaussians placed on different centers.</p>
+</div>
+<div class="section" id="objective-functions">
+<h2>Objective Functions<a class="headerlink" href="#objective-functions" title="Permalink to this headline">¶</a></h2>
+<p>BFit supports the minimization of least-squares formula for fitting a model <span class="math notranslate nohighlight">\(g(x)\)</span>
+to a probability density <span class="math notranslate nohighlight">\(f(x)\)</span>,</p>
+<div class="math notranslate nohighlight">
+\[\int (f(x) - g(x))^2 dx,\]</div>
+<p>and minimization of the Kullback-Leibler divergence formula,</p>
+<div class="math notranslate nohighlight">
+\[\int f(x) \log \bigg( \frac{f(x)}{g(x)} \bigg) dx.\]</div>
 <div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Contents:</span></p>
+<p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="autoapi/index.html">API Reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="autoapi/bfit/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">bfit</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="autoapi/bfit/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">bfit</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/bfit/index.html#submodules">Submodules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/bfit/density/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">bfit.density</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/bfit/fit/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">bfit.fit</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/bfit/greedy/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">bfit.greedy</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/bfit/grid/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">bfit.grid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/bfit/measure/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">bfit.measure</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/bfit/model/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">bfit.model</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/bfit/parse_ugbs/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">bfit.parse_ugbs</span></code></a></li>
 </ul>
 </li>
 </ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
 </div>
 </div>
 <div class="section" id="indices-and-tables">

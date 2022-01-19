@@ -13,8 +13,8 @@
   
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
 
   
   
@@ -24,7 +24,7 @@
   
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+    <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -42,7 +42,7 @@
 
     
     <link rel="index" title="Index" href="../../../genindex.html" />
-    <link rel="search" title="Search" href="../../../search.html" /> 
+    <link rel="search" title="Search" href="../../../search.html" />
 </head>
 
 <body class="wy-body-for-nav">
@@ -87,7 +87,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../index.html">API Reference</a></li>
 </ul>
@@ -181,15 +181,11 @@
 </style>
 <div class="section" id="module-bfit._slater">
 <span id="bfit-slater"></span><h1><a class="reference internal" href="#module-bfit._slater" title="bfit._slater"><code class="xref py py-mod docutils literal notranslate"><span class="pre">bfit._slater</span></code></a><a class="headerlink" href="#module-bfit._slater" title="Permalink to this headline">¶</a></h1>
-<p>Module responsible for reading and storing information from ‘.slater’ files.</p>
-<div class="section" id="functions">
-<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
-<p>load_slater_wfn : Function for reading and returning information from ‘.slater’ files.</p>
-</div>
+<p>Parsing Slater files.</p>
 <div class="section" id="module-contents">
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id1">
-<h3>Functions<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h3>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -197,18 +193,18 @@
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#bfit._slater.load_slater_wfn" title="bfit._slater.load_slater_wfn"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_slater_wfn</span></code></a>(element, anion=False, cation=False)</p></td>
-<td><p>Return the data recorded in the atomic Slater wave-function file as a dictionary.</p></td>
+<td><p>Return the data inside the atomic Slater ‘.slater’ files wave-function file as a dictionary.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py function">
 <dt id="bfit._slater.load_slater_wfn">
 <code class="sig-prename descclassname">bfit._slater.</code><code class="sig-name descname">load_slater_wfn</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">element</span></em>, <em class="sig-param"><span class="n">anion</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">cation</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/_slater.html#load_slater_wfn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit._slater.load_slater_wfn" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the data recorded in the atomic Slater wave-function file as a dictionary.</p>
+<dd><p>Return the data inside the atomic Slater ‘.slater’ files wave-function file as a dictionary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>file_name</strong> (<em>str</em>) – The path to the Slater atomic file.</p></li>
+<li><p><strong>element</strong> (<em>str</em>) – The atom/element.</p></li>
 <li><p><strong>anion</strong> (<em>bool</em>) – If true, then the anion of element is used.</p></li>
 <li><p><strong>cation</strong> (<em>bool</em>) – If true, then the cation of element is used.</p></li>
 </ul>

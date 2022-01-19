@@ -13,8 +13,8 @@
   
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
 
   
   
@@ -24,7 +24,7 @@
   
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+    <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -42,7 +42,7 @@
 
     
     <link rel="index" title="Index" href="../../../genindex.html" />
-    <link rel="search" title="Search" href="../../../search.html" /> 
+    <link rel="search" title="Search" href="../../../search.html" />
 </head>
 
 <body class="wy-body-for-nav">
@@ -87,7 +87,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../index.html">API Reference</a></li>
 </ul>
@@ -181,68 +181,11 @@
 </style>
 <div class="section" id="module-bfit.fit">
 <span id="bfit-fit"></span><h1><a class="reference internal" href="#module-bfit.fit" title="bfit.fit"><code class="xref py py-mod docutils literal notranslate"><span class="pre">bfit.fit</span></code></a><a class="headerlink" href="#module-bfit.fit" title="Permalink to this headline">¶</a></h1>
-<p>Fitting Algorithms Module.</p>
-<p>Contains the optimization algorithms for fitting a linear combination of Gaussian functions.</p>
-<div class="section" id="classes">
-<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
-<blockquote>
-<div><p>KLDivergenceSCF : Optimizes coefficients and exponents using self-consistent method.
-GaussianBasisFit : Optimizes coefficients and exponents using <cite>Scipy.optimize</cite> function.</p>
-</div></blockquote>
-<p class="rubric">Examples</p>
-<p>The goal is to fit a Gaussian density to some function.
-def f(x) :</p>
-<blockquote>
-<div><p># Insert what it does here.
-return …</p>
-</div></blockquote>
-<p>The first step is to define the grid object.
-&gt;&gt; from bfit.grid import CubicGrid
-&gt;&gt; grid = CubicGrid(0.01, 0.99, 0.01)</p>
-<p>Place the values of <cite>f</cite> on those grid points in an array.
-&gt;&gt; density = f(grid.points)</p>
-<p>Define the model, that you want to fit with.
-&gt;&gt; from bfit.model import AtomicGaussianDensity, MolecularGaussianDensity
-&gt;&gt; model = AtomicGaussianDensity(grid.points, num_s=5, num_p=5, normalize=True)
-&gt;&gt; # model = MolecularGaussianDensity(grid.points, np.array([[0., 0., 0.], [1., 1., 1.]]),</p>
-<blockquote>
-<div><p># np.array([[5, 5], [5, 5]]))</p>
-</div></blockquote>
-<p>Define which algorithm you want to optmize.
-&gt;&gt; fit = KLDivergenceSCF(grid, density, model)</p>
-<p>Optimize the coefficients and exponents but give an initial guess.
-&gt;&gt; initc = [1.] * 10
-&gt;&gt; inite = np.array([0.001, 0.01, 0.1, 1., 2., 5., 10., 50., 75., 100.])
-&gt;&gt; result = fit.run(initc, inite)</p>
-<p>Print out the results.
-&gt;&gt; print(“Optimized coefficients are: “, result[“x”][0])
-&gt;&gt; print(“Optimized exponents are: “, result[“x”][1])
-&gt;&gt; print(“Final performance measures are: “, result[“performance”][-1])
-&gt;&gt; print(“Was it successful? “, result[“success”])</p>
-<p class="rubric">Notes</p>
-<ul class="simple">
-<li><dl class="simple">
-<dt>The algorithm uses masked value for floating point precision for KLDivergenceSCF.</dt><dd><p>This is due to the division found in the Kullback-Leibler formula. It is recommended to use
-<cite>np.float64</cite> or <cite>np.float128</cite> when storing the arrays. A higher Mask value will work as well
-but may cause poor precision. Alternatively, a well-chosen grid and/or initial guesses will
-avoid overflow/underflow floating-point issues.</p>
-</dd>
-</dl>
-</li>
-</ul>
-<p class="rubric">References</p>
-<dl class="simple">
-<dt>[1] BFit: Information-Theoretic Approach to Basis-Set Fitting of Electron Densities</dt><dd><dl class="simple">
-<dt>Alireza Tehrani, Farnaz Heidar-Zadeh, James S. M. Anderson, Toon Verstraelen, and</dt><dd><p>TODO Add more authors if needed … Paul W. Ayers.</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</div>
+<p>Fitting Algorithms.</p>
 <div class="section" id="module-contents">
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id1">
-<h3>Classes<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h3>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -250,160 +193,47 @@ avoid overflow/underflow floating-point issues.</p>
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#bfit.fit.KLDivergenceSCF" title="bfit.fit.KLDivergenceSCF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KLDivergenceSCF</span></code></a></p></td>
-<td><p>Kullback-Leiber Divergence Self-Consistent Fitting.</p></td>
+<td><p>Kullback-Leibler Divergence Self-Consistent Fitting.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#bfit.fit.GaussianBasisFit" title="bfit.fit.GaussianBasisFit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GaussianBasisFit</span></code></a></p></td>
-<td><p>Optimizes either least-squares or Kullback-Leibler of Gaussian funcs using <cite>Scipy.optimize</cite>.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#bfit.fit.ScipyFit" title="bfit.fit.ScipyFit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ScipyFit</span></code></a></p></td>
+<td><p>Optimize least-squares or Kullback-Leibler of Gaussian functions using <cite>Scipy.optimize</cite>.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py class">
 <dt id="bfit.fit.KLDivergenceSCF">
-<em class="property">class </em><code class="sig-prename descclassname">bfit.fit.</code><code class="sig-name descname">KLDivergenceSCF</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grid</span></em>, <em class="sig-param"><span class="n">density</span></em>, <em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">mask_value</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">integration_val</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#KLDivergenceSCF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.KLDivergenceSCF" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">bfit.fit.</code><code class="sig-name descname">KLDivergenceSCF</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grid</span></em>, <em class="sig-param"><span class="n">density</span></em>, <em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">mask_value</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">integral_dens</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">spherical</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#KLDivergenceSCF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.KLDivergenceSCF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">_BaseFit</span></code></p>
-<p>Kullback-Leiber Divergence Self-Consistent Fitting.</p>
-<p>Optimizes the coefficients and exponents of the Gaussian Model to a function using the
-Kullback-Leibler divergence measure with the constraint that it is normalized.</p>
-<dl class="py attribute">
-<dt id="bfit.fit.KLDivergenceSCF.grid">
-<code class="sig-name descname">grid</code><a class="headerlink" href="#bfit.fit.KLDivergenceSCF.grid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Grid class that contains the grid points and integration methods on them.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>(_BaseRadialGrid, <a class="reference internal" href="../grid/index.html#bfit.grid.CubicGrid" title="bfit.grid.CubicGrid">CubicGrid</a>)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt id="bfit.fit.KLDivergenceSCF.density">
-<code class="sig-name descname">density</code><a class="headerlink" href="#bfit.fit.KLDivergenceSCF.density" title="Permalink to this definition">¶</a></dt>
-<dd><p>The true function evaluated on the grid points from <cite>grid</cite>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>ndarray(N,)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt id="bfit.fit.KLDivergenceSCF.model">
-<code class="sig-name descname">model</code><a class="headerlink" href="#bfit.fit.KLDivergenceSCF.model" title="Permalink to this definition">¶</a></dt>
-<dd><p>The Gaussian basis model density. Located in <cite>model.py</cite>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>(<a class="reference internal" href="../index.html#bfit.AtomicGaussianDensity" title="bfit.AtomicGaussianDensity">AtomicGaussianDensity</a>, <a class="reference internal" href="../index.html#bfit.MolecularGaussianDensity" title="bfit.MolecularGaussianDensity">MolecularGaussianDensity</a>)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt id="bfit.fit.KLDivergenceSCF.measure">
-<code class="sig-name descname">measure</code><a class="headerlink" href="#bfit.fit.KLDivergenceSCF.measure" title="Permalink to this definition">¶</a></dt>
-<dd><p>The deviation measure between true density and model density. Located in <cite>measure.py</cite></p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>(<a class="reference internal" href="../index.html#bfit.SquaredDifference" title="bfit.SquaredDifference">SquaredDifference</a>, <a class="reference internal" href="../index.html#bfit.KLDivergence" title="bfit.KLDivergence">KLDivergence</a>)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt id="bfit.fit.KLDivergenceSCF.norm">
-<code class="sig-name descname">norm</code><a class="headerlink" href="#bfit.fit.KLDivergenceSCF.norm" title="Permalink to this definition">¶</a></dt>
-<dd><p>The integral of the attribute <cite>density</cite>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt id="bfit.fit.KLDivergenceSCF.lagrange_multiplier">
-<code class="sig-name descname">lagrange_multiplier</code><a class="reference internal" href="../../../_modules/bfit/fit.html#KLDivergenceSCF.lagrange_multiplier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.KLDivergenceSCF.lagrange_multiplier" title="Permalink to this definition">¶</a></dt>
-<dd><p>Lagrange multiplier.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt>
-<code class="sig-name descname">run(): dict</code></dt>
-<dd><p>Runs the optimizing algorithm for optimizing coefficients and exponents to a linear
-combination of Gaussian functions.</p>
-</dd></dl>
-
-<p class="rubric">Examples</p>
-<p>The goal is to fit a Gaussian density to some function.
-def f(x) :</p>
-<blockquote>
-<div><p># Insert what it does here.
-return …</p>
-</div></blockquote>
-<p>The first step is to define the grid object.
-&gt;&gt; grid = CubicGrid(0.01, 0.99, 0.01)</p>
-<p>Place the values of <cite>f</cite> on those grid points in an array.
-&gt;&gt; density = f(grid.points)</p>
-<p>Define the model, that you want to fit with.
-&gt;&gt; model = AtomicGaussianDensity(grid.points, num_s=5, num_p=5, normalize=True)</p>
-<p>Define which algorithm you want to optmize.
-&gt;&gt; fit = KLDivergenceSCF(grid, density, model)</p>
-<p>Optimize the coefficients and exponents but give an initial guess.
-&gt;&gt; initc = [1.] * 10
-&gt;&gt; inite = np.array([0.001, 0.01, 0.1, 1., 2., 5., 10., 50., 75., 100.])
-&gt;&gt; result = fit.run(initc, inite)</p>
-<p>Print out the results.
-&gt;&gt; print(“Optimized coefficients are: “, result[“x”][0])
-&gt;&gt; print(“Optimized exponents are: “, result[“x”][1])
-&gt;&gt; print(“Final performance measures are: “, result[“performance”][-1])
-&gt;&gt; print(“Was it successful? “, result[“success”])</p>
-<p class="rubric">Notes</p>
-<ul class="simple">
-<li><p>The algorithm uses masked value for floating point precision. This is due to the division found</p></li>
-</ul>
-<p>in the Kullback-Leibler formula. It is recommended to use <cite>np.float64</cite> or <cite>np.float128</cite> when
-storing the arrays. A higher Mask value will work as well but may cause poor precision.
-Alternatively, a well-chosen grid and/or initial guesses will avoid overflow/underflow
-floating-point issues.</p>
-<p class="rubric">References</p>
-<dl class="simple">
-<dt>[1] BFit: Information-Theoretic Approach to Basis-Set Fitting of Electron Densities</dt><dd><dl class="simple">
-<dt>Alireza Tehrani, Farnaz Heidar-Zadeh, James S. M. Anderson, Toon Verstraelen, and</dt><dd><p>TODO Add more authors if needed … Paul W. Ayers.</p>
-</dd>
-</dl>
-</dd>
-</dl>
-<dl class="py method">
-<dt id="id0">
-<em class="property">property </em><code class="sig-name descname">lagrange_multiplier</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#KLDivergenceSCF.lagrange_multiplier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
-<dd><p>Obtain the lagrange multiplier.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="bfit.fit.KLDivergenceSCF._update_params">
-<code class="sig-name descname">_update_params</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">coeffs</span></em>, <em class="sig-param"><span class="n">expons</span></em>, <em class="sig-param"><span class="n">update_coeffs</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">update_expons</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#KLDivergenceSCF._update_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.KLDivergenceSCF._update_params" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute updated coefficients &amp; exponents of Gaussian basis functions.</p>
+<p>Kullback-Leibler Divergence Self-Consistent Fitting.</p>
+<p>This class optimizes the following objective function using self-consistent fitting method</p>
+<div class="math notranslate nohighlight">
+\[\min_{\{c_i\}, \{\alpha\}} \int f(x) \log \bigg(\frac{f(x)}{\sum c_i b_i(x, \alpha_i)}
+ \bigg)dx + \lambda(N - \sum c_i)\]</div>
+<p>where <span class="math notranslate nohighlight">\(f\)</span> is the true density to be fitted,
+<span class="math notranslate nohighlight">\(\lambda\)</span> is the Lagrange multiplier,
+<span class="math notranslate nohighlight">\(c_i\)</span> is the coefficient of the ith basis function
+that all sum to the integral of density function <span class="math notranslate nohighlight">\(N= \int f(x)dx\)</span>, and
+<span class="math notranslate nohighlight">\(\alpha_i\)</span> is the exponent of the basis function <span class="math notranslate nohighlight">\(b_i\)</span>.</p>
+<p>Construct the KLDivergenceSCF class.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>coeffs</strong> (<em>ndarray</em>) – The initial coefficients of Gaussian basis functions.</p></li>
-<li><p><strong>expons</strong> (<em>ndarray</em>) – The initial exponents of Gaussian basis functions.</p></li>
-<li><p><strong>update_coeffs</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to optimize coefficients of Gaussian basis functions.</p></li>
-<li><p><strong>update_expons</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to optimize exponents of Gaussian basis functions.</p></li>
+<li><p><strong>grid</strong> (<em>(</em><em>_BaseRadialGrid</em><em>, </em><a class="reference internal" href="../grid/index.html#bfit.grid.CubicGrid" title="bfit.grid.CubicGrid"><em>CubicGrid</em></a><em>)</em>) – Grid class that contains the grid points and integration methods on them.</p></li>
+<li><p><strong>density</strong> (<em>ndarray</em>) – The true density evaluated on the grid points.</p></li>
+<li><p><strong>model</strong> (<em>(</em><a class="reference internal" href="../model/index.html#bfit.model.AtomicGaussianDensity" title="bfit.model.AtomicGaussianDensity"><em>AtomicGaussianDensity</em></a><em>, </em><a class="reference internal" href="../model/index.html#bfit.model.MolecularGaussianDensity" title="bfit.model.MolecularGaussianDensity"><em>MolecularGaussianDensity</em></a><em>)</em>) – The Gaussian basis model density. Located in <cite>model.py</cite>.</p></li>
+<li><p><strong>mask_value</strong> (<em>float</em><em>, </em><em>optional</em>) – The elements less than or equal to this number are masked in a division.</p></li>
+<li><p><strong>integral_dens</strong> (<em>float</em><em>, </em><em>optional</em>) – If this is provided, then the model is constrained to integrate to this value.
+If not, then the model is constrained to the numerical integration of the
+density. Useful when one knows the actual integration value of the density.</p></li>
+<li><p><strong>spherical</strong> (<em>bool</em>) – Whether to perform spherical integration by adding <span class="math notranslate nohighlight">\(4 \pi r^2\)</span> term
+to the integrand. Only used when grid is one-dimensional and positive (radial grid).</p></li>
 </ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>coeffs</strong> (<em>ndarray</em>) – The updated coefficients of Gaussian basis functions. Only returned if <cite>deriv=True</cite>.</p></li>
-<li><p><strong>expons</strong> (<em>ndarray</em>) – The updated exponents of Gaussian basis functions. Only returned if <cite>deriv=True</cite>.</p></li>
-</ul>
-</p>
 </dd>
 </dl>
+<dl class="py method">
+<dt id="bfit.fit.KLDivergenceSCF.lagrange_multiplier">
+<em class="property">property </em><code class="sig-name descname">lagrange_multiplier</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#KLDivergenceSCF.lagrange_multiplier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.KLDivergenceSCF.lagrange_multiplier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lagrange multiplier of Kullback-Leibler optimization problem.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -415,26 +245,27 @@ floating-point issues.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>c0</strong> (<em>ndarray</em>) – The initial coefficients of Gaussian basis functions.</p></li>
 <li><p><strong>e0</strong> (<em>ndarray</em>) – The initial exponents of Gaussian basis functions.</p></li>
-<li><p><strong>opt_coeffs</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to optimize coefficients of Gaussian basis functions.</p></li>
-<li><p><strong>opt_expons</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to optimize exponents of Gaussian basis functions.</p></li>
+<li><p><strong>opt_coeffs</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to optimize coefficients of Gaussian basis functions.
+Default is true.</p></li>
+<li><p><strong>opt_expons</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to optimize exponents of Gaussian basis functions.
+Default is true.</p></li>
 <li><p><strong>maxiter</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum number of iterations.</p></li>
-<li><p><strong>c_threshold</strong> (<em>float</em>) – The convergence threshold for absolute change in coefficients. Default is 1e-6.</p></li>
-<li><p><strong>e_threshold</strong> (<em>float</em>) – The convergence threshold for absolute change in exponents. Default is 1e-6.</p></li>
-<li><p><strong>d_threshold</strong> (<em>float</em>) – The convergence threshold for absolute change in divergence value. Default is 1e-6.</p></li>
-<li><p><strong>disp</strong> (<em>bool</em>) – If true, then at each iteration the integral, <span class="math notranslate nohighlight">\(L_1\)</span>, <span class="math notranslate nohighlight">\(L_\infty\)</span> and
-Kullback-Leibler measure is printed. Default is False.</p></li>
+<li><p><strong>c_threshold</strong> (<em>float</em>) – The termination threshold for absolute change in coefficients. Default is 1e-6.</p></li>
+<li><p><strong>e_threshold</strong> (<em>float</em>) – The termination threshold for absolute change in exponents. Default is 1e-6.</p></li>
+<li><p><strong>d_threshold</strong> (<em>float</em>) – The termination threshold for absolute change in divergence value. Default is 1e-6.</p></li>
+<li><p><strong>disp</strong> (<em>bool</em>) – If true, then at each iteration various error measures will be printed.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><p><strong>result</strong> – The optimization results presented as a dictionary containing:
-“x” : (ndarray, ndarray)</p>
-<blockquote>
-<div><p>The optimized coefficients and exponents.</p>
-</div></blockquote>
+<dd class="field-even"><p><p>The optimization results presented as a dictionary with keys:</p>
 <dl class="simple">
-<dt>”success”: bool</dt><dd><p>Whether or not the optimization exited successfully.</p>
+<dt>”coeffs”<span class="classifier">ndarray</span></dt><dd><p>The optimized coefficients of the Gaussian model.</p>
 </dd>
-<dt>”fun”<span class="classifier">ndarray</span></dt><dd><p>Values of KL divergence (objective function) at each iteration.</p>
+<dt>”exps”<span class="classifier">ndarray</span></dt><dd><p>The optimized exponents of the Gaussian model.</p>
+</dd>
+<dt>”success”: bool</dt><dd><p>Whether the optimization exited successfully.</p>
+</dd>
+<dt>”fun”<span class="classifier">ndarray</span></dt><dd><p>Values of the KL divergence (objective function) at each iteration.</p>
 </dd>
 <dt>”performance”<span class="classifier">ndarray</span></dt><dd><p>Values of various performance measures of modeled density at each iteration,
 as computed by <cite>goodness_of_fit()</cite> method.</p>
@@ -450,136 +281,140 @@ as computed by <cite>goodness_of_fit()</cite> method.</p>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt id="bfit.fit.KLDivergenceSCF.grid">
+<em class="property">property </em><code class="sig-name descname">grid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#KLDivergenceSCF.grid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.KLDivergenceSCF.grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return grid object containing points and integration method.</p>
 </dd></dl>
 
-<dl class="py class">
-<dt id="bfit.fit.GaussianBasisFit">
-<em class="property">class </em><code class="sig-prename descclassname">bfit.fit.</code><code class="sig-name descname">GaussianBasisFit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grid</span></em>, <em class="sig-param"><span class="n">density</span></em>, <em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">measure</span><span class="o">=</span><span class="default_value">'KL'</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'SLSQP'</span></em>, <em class="sig-param"><span class="n">weights</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mask_value</span><span class="o">=</span><span class="default_value">1e-10</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#GaussianBasisFit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.GaussianBasisFit" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">_BaseFit</span></code></p>
-<p>Optimizes either least-squares or Kullback-Leibler of Gaussian funcs using <cite>Scipy.optimize</cite>.</p>
-<dl class="simple">
-<dt>The Gaussian functions can be constrained to have their integral be a fixed value.</dt><dd><dl class="simple">
-<dt>Although it is not recommended. The coefficients and exponents are always bounded to be</dt><dd><p>positive.</p>
-</dd>
-</dl>
-</dd>
-</dl>
-<dl class="py attribute">
-<dt id="bfit.fit.GaussianBasisFit.grid">
-<code class="sig-name descname">grid</code><a class="headerlink" href="#bfit.fit.GaussianBasisFit.grid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Grid class that contains the grid points and integration methods on them.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>(_BaseRadialGrid, <a class="reference internal" href="../grid/index.html#bfit.grid.CubicGrid" title="bfit.grid.CubicGrid">CubicGrid</a>)</p>
-</dd>
-</dl>
+<dl class="py method">
+<dt id="bfit.fit.KLDivergenceSCF.density">
+<em class="property">property </em><code class="sig-name descname">density</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#KLDivergenceSCF.density"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.KLDivergenceSCF.density" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the true density evaluated on the grid points.</p>
 </dd></dl>
 
-<dl class="py attribute">
-<dt id="bfit.fit.GaussianBasisFit.density">
-<code class="sig-name descname">density</code><a class="headerlink" href="#bfit.fit.GaussianBasisFit.density" title="Permalink to this definition">¶</a></dt>
-<dd><p>The true function evaluated on the grid points from <cite>grid</cite>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>ndarray(N,)</p>
-</dd>
-</dl>
+<dl class="py method">
+<dt id="bfit.fit.KLDivergenceSCF.model">
+<em class="property">property </em><code class="sig-name descname">model</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#KLDivergenceSCF.model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.KLDivergenceSCF.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Gaussian basis model density.</p>
 </dd></dl>
 
-<dl class="py attribute">
-<dt id="bfit.fit.GaussianBasisFit.model">
-<code class="sig-name descname">model</code><a class="headerlink" href="#bfit.fit.GaussianBasisFit.model" title="Permalink to this definition">¶</a></dt>
-<dd><p>The Gaussian basis model density. Located in <cite>model.py</cite>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>(<a class="reference internal" href="../index.html#bfit.AtomicGaussianDensity" title="bfit.AtomicGaussianDensity">AtomicGaussianDensity</a>, <a class="reference internal" href="../index.html#bfit.MolecularGaussianDensity" title="bfit.MolecularGaussianDensity">MolecularGaussianDensity</a>)</p>
-</dd>
-</dl>
+<dl class="py method">
+<dt id="bfit.fit.KLDivergenceSCF.measure">
+<em class="property">property </em><code class="sig-name descname">measure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#KLDivergenceSCF.measure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.KLDivergenceSCF.measure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the deviation measure between true density and model density.</p>
 </dd></dl>
 
-<dl class="py attribute">
-<dt id="bfit.fit.GaussianBasisFit.measure">
-<code class="sig-name descname">measure</code><a class="headerlink" href="#bfit.fit.GaussianBasisFit.measure" title="Permalink to this definition">¶</a></dt>
-<dd><p>The deviation measure between true density and model density that is minimized.
-Can be either be “KL” (Kullback-Leibler, default) or “LS” (least-squares).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>str, optional</p>
-</dd>
-</dl>
+<dl class="py method">
+<dt id="bfit.fit.KLDivergenceSCF.integral_dens">
+<em class="property">property </em><code class="sig-name descname">integral_dens</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#KLDivergenceSCF.integral_dens"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.KLDivergenceSCF.integral_dens" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return integration value of the density.</p>
 </dd></dl>
 
-<dl class="py attribute">
-<dt id="bfit.fit.GaussianBasisFit.norm">
-<code class="sig-name descname">norm</code><a class="headerlink" href="#bfit.fit.GaussianBasisFit.norm" title="Permalink to this definition">¶</a></dt>
-<dd><p>The integration of the density over the grid.</p>
+<dl class="py method">
+<dt id="bfit.fit.KLDivergenceSCF.spherical">
+<em class="property">property </em><code class="sig-name descname">spherical</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#KLDivergenceSCF.spherical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.KLDivergenceSCF.spherical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether to perform spherical integration.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="bfit.fit.KLDivergenceSCF.integrate">
+<code class="sig-name descname">integrate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">integrand</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#KLDivergenceSCF.integrate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.KLDivergenceSCF.integrate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Integrate the integrand.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>integrand</strong> (<em>ndarray</em><em>(</em><em>N</em><em>,</em><em>)</em>) – The integrand <span class="math notranslate nohighlight">\(f(x)\)</span> being integrated defined on <span class="math notranslate nohighlight">\(N\)</span> points.
+If <cite>spherical</cite> attribute is true, then the radial component is
+integrated in spherical coordinates.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns the integration <span class="math notranslate nohighlight">\(\int f(x) dx\)</span> or if spherical
+is true then returns <span class="math notranslate nohighlight">\(\int_0^\infty f(r) 4 \pi r^2 dr\)</span>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt>
-<code class="sig-name descname">run() :</code></dt>
-<dd></dd></dl>
+<dt id="bfit.fit.KLDivergenceSCF.goodness_of_fit">
+<code class="sig-name descname">goodness_of_fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">coeffs</span></em>, <em class="sig-param"><span class="n">expons</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#KLDivergenceSCF.goodness_of_fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.KLDivergenceSCF.goodness_of_fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute various measures over the grid to determine the accuracy of the fitted model.</p>
+<p>In particular, it computes the integral of the model, the <span class="math notranslate nohighlight">\(L_1\)</span> distance,
+the <span class="math notranslate nohighlight">\(L_\infty\)</span> distance and attribute <cite>measure</cite> distance between true and model
+functions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coeffs</strong> (<em>ndarray</em>) – The coefficients of Gaussian basis functions.</p></li>
+<li><p><strong>expons</strong> (<em>ndarray</em>) – The exponents of Gaussian basis functions.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>integral</strong> (<em>float</em>) – Integral of approximate model density, i.e. norm of approximate model density.</p></li>
+<li><p><strong>l_1</strong> (<em>float</em>) – Integral of absolute difference between density and approximate model density.
+This is defined to be <span class="math notranslate nohighlight">\(L_(f, g) = \int |f(x) - g(x)| dx\)</span>.</p></li>
+<li><p><strong>l_infinity</strong> (<em>float</em>) – The maximum absolute difference between density and approximate model density.
+This is defined to be <span class="math notranslate nohighlight">\(L_\infty(f, g) = \max |f(x) - g(x)|\)</span>.</p></li>
+<li><p><strong>least_squares</strong> (<em>float</em>) – Square of the <span class="math notranslate nohighlight">\(L_2\)</span> norm between density and approximate model density.
+This is defined to be <span class="math notranslate nohighlight">\(L_2^2(f, g) = \int (f(x) - g(x))^2 dx\)</span>.</p></li>
+<li><p><strong>kullback_leibler</strong> (<em>float</em>) – Kullback-Leibler divergence between density and approximate model density.
+This is defined to be <span class="math notranslate nohighlight">\(KL(f, g) = \int f(x) \log\bigg(\frac{f(x)}{g(x)}\bigg)dx\)</span>.
+If <span class="math notranslate nohighlight">\(g\)</span> is negative, then this returns infinity.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
 
-<dl class="py method">
-<dt>
-<code class="sig-name descname">func() :</code></dt>
-<dd></dd></dl>
+</dd></dl>
 
-<dl class="py method">
-<dt>
-<code class="sig-name descname">evaluate_model() :</code></dt>
-<dd></dd></dl>
-
-<p class="rubric">Examples</p>
-<p>The goal is to fit a Gaussian density to some function.
-def f(x) :</p>
-<blockquote>
-<div><p># Insert what it does here.
-return …</p>
-</div></blockquote>
-<p>The first step is to define the grid object.
-&gt;&gt; grid = CubicGrid(0.01, 0.99, 0.01)</p>
-<p>Place the values of <cite>f</cite> on those grid points in an array.
-&gt;&gt; density = f(grid.points)</p>
-<p>Define the model, that you want to fit with.
-&gt;&gt; model = AtomicGaussianDensity(grid.points, num_s=5, num_p=5, normalize=True)</p>
-<p>Define which measure (least-squares) and “scipy.optimize” algorithm to use.
-&gt;&gt; fit = GaussianBasisFit(grid, density, model, measure=”LS”, method=”SLSQP”)</p>
-<p>Optimize the coefficients and exponents but give an initial guess.
-&gt;&gt; initc = [1.] * 10
-&gt;&gt; inite = np.array([0.001, 0.01, 0.1, 1., 2., 5., 10., 50., 75., 100.])
-&gt;&gt; result = fit.run(initc, inite)</p>
-<p>Print out the results.
-&gt;&gt; print(“Optimized coefficients are: “, result[“x”][0])
-&gt;&gt; print(“Optimized exponents are: “, result[“x”][1])
-&gt;&gt; print(“Final performance measures are: “, result[“performance”])
-&gt;&gt; print(“Was it successful? “, result[“success”])
-&gt;&gt; print(“Why it terminated? “, result[“message”])</p>
+<dl class="py class">
+<dt id="bfit.fit.ScipyFit">
+<em class="property">class </em><code class="sig-prename descclassname">bfit.fit.</code><code class="sig-name descname">ScipyFit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grid</span></em>, <em class="sig-param"><span class="n">density</span></em>, <em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">measure</span><span class="o">=</span><span class="default_value">KLDivergence</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'SLSQP'</span></em>, <em class="sig-param"><span class="n">weights</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">integral_dens</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">spherical</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#ScipyFit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.ScipyFit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">_BaseFit</span></code></p>
+<p>Optimize least-squares or Kullback-Leibler of Gaussian functions using <cite>Scipy.optimize</cite>.</p>
+<p>Least-squares objective function w.r.t. Gaussian basis-functions is defined as</p>
+<div class="math notranslate nohighlight">
+\[\min_{\{c_i\}, \{\alpha\}} \int \bigg(f(x) - \sum c_i b_k(x, \alpha_i) \bigg)^2 dx\]</div>
+<p>The Kullback-Leibler divergence function is defined as</p>
+<div class="math notranslate nohighlight">
+\[\min_{\{c_i\}, \{\alpha\}, \sum c_i = N} \int f(x) \log \bigg(\frac{f(x)}{\sum c_i
+b_i(x, \alpha_i)} \bigg)dx,\]</div>
+<p>where <span class="math notranslate nohighlight">\(f\)</span> is the density to be fitted to,
+<span class="math notranslate nohighlight">\(c_i, \alpha_i\)</span> are the coefficeints and exponents of the Gaussian
+basis functions, and <span class="math notranslate nohighlight">\(N = \int f(x)dx\)</span> is the integral of the density function.</p>
 <p class="rubric">Notes</p>
 <ul class="simple">
-<li><p>The coefficients and exponents are bounded to be positive.</p></li>
-<li><dl class="simple">
-<dt>These methods in this class was found to be extremely hard to optimize. There appears</dt><dd><p>to have many local minimas and Quasi-Newton methods seems inadequate in order to optimize
-these. Just the mere act of placing the initial guess to be close to the solution causes
-problems. It is highly recommended to have <cite>with_constraint</cite> to be False.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>Note that the Kullback-Leibler between two functions f and g is positive if and only if</dt><dd><p>the integrals of f and g are identical.  This constraint must be added for
-these optimizers.</p>
-</dd>
-</dl>
-</li>
+<li><p>Note that the Kullback-Leibler between two functions <span class="math notranslate nohighlight">\(f\)</span> and <span class="math notranslate nohighlight">\(g\)</span> is positive
+if and only if the integrals of <span class="math notranslate nohighlight">\(f\)</span> and <span class="math notranslate nohighlight">\(g\)</span> are identical.  The <cite>with_constraint</cite>
+attribute must be True for optimizing Kullback-Leibler.</p></li>
 </ul>
+<p>Construct the ScipyFit object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>grid</strong> (<em>(</em><em>_BaseRadialGrid</em><em>, </em><a class="reference internal" href="../grid/index.html#bfit.grid.CubicGrid" title="bfit.grid.CubicGrid"><em>CubicGrid</em></a><em>)</em>) – The grid class.</p></li>
+<li><p><strong>density</strong> (<em>ndarray</em><em>(</em><em>N</em><em>,</em><em>)</em>) – The true density evaluated on the grid points.</p></li>
+<li><p><strong>model</strong> (<em>(</em><a class="reference internal" href="../model/index.html#bfit.model.AtomicGaussianDensity" title="bfit.model.AtomicGaussianDensity"><em>AtomicGaussianDensity</em></a><em>, </em><a class="reference internal" href="../model/index.html#bfit.model.MolecularGaussianDensity" title="bfit.model.MolecularGaussianDensity"><em>MolecularGaussianDensity</em></a><em>)</em>) – The Gaussian basis model density.</p></li>
+<li><p><strong>measure</strong> (<em>bfit.measure.Measure</em>) – The deviation measure between true density and model density.
+See bfit.measure.py for examples of measures to use.</p></li>
+<li><p><strong>method</strong> (<em>str</em><em>, </em><em>optional</em>) – The method used for optimizing parameters. Default is “slsqp”.
+See “scipy.optimize.minimize” for options.</p></li>
+<li><p><strong>weights</strong> (<em>ndarray</em><em>, </em><em>optional</em>) – The weights of objective function at each point. If <cite>None</cite>, 1.0 is used.</p></li>
+<li><p><strong>integral_dens</strong> (<em>float</em><em>, </em><em>optional</em>) – If this is provided, then the model is constrained to integrate to this value.
+If not, then the model is constrained to the numerical integration of the
+density. Useful when one knows the actual integration value of the density.</p></li>
+<li><p><strong>spherical</strong> (<em>bool</em>) – Whether to perform spherical integration by adding <span class="math notranslate nohighlight">\(4 \pi r^2\)</span> term
+to the integrand. Only used when grid is one-dimensional and positive (radial grid).</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="py method">
-<dt id="bfit.fit.GaussianBasisFit.run">
-<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">c0</span></em>, <em class="sig-param"><span class="n">e0</span></em>, <em class="sig-param"><span class="n">opt_coeffs</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">opt_expons</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">maxiter</span><span class="o">=</span><span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">1e-14</span></em>, <em class="sig-param"><span class="n">disp</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">with_constraint</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#GaussianBasisFit.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.GaussianBasisFit.run" title="Permalink to this definition">¶</a></dt>
+<dt id="bfit.fit.ScipyFit.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">c0</span></em>, <em class="sig-param"><span class="n">e0</span></em>, <em class="sig-param"><span class="n">opt_coeffs</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">opt_expons</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">maxiter</span><span class="o">=</span><span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">1e-14</span></em>, <em class="sig-param"><span class="n">disp</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">with_constraint</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#ScipyFit.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.ScipyFit.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Optimize coefficients and/or exponents of Gaussian basis functions with constraint.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -590,26 +425,27 @@ these optimizers.</p>
 <li><p><strong>opt_expons</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to optimize exponents of Gaussian basis functions.</p></li>
 <li><p><strong>maxiter</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum number of iterations.</p></li>
 <li><p><strong>tol</strong> (<em>float</em><em>, </em><em>optional</em>) – For slsqp. precision goal for the value of objective function in the stopping criterion.
-For trust-constr, it is precision goal for the change in independent variables.</p></li>
-<li><p><strong>disp</strong> (<em>bool</em>) – If True, then it will print the convergence messages from the optimizer.</p></li>
+For trust-constr, it is precision goal for the change in the variables.</p></li>
+<li><p><strong>disp</strong> (<em>bool</em>) – If True, then it will print the iteration errors, convergence messages from the
+optimizer and will print out various error measures at each iteration.</p></li>
 <li><p><strong>with_constraint</strong> (<em>bool</em>) – If true, then adds the constraint that the integration of the model density must
 be equal to the constraint of true density. The default is True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><p><strong>result</strong> – The optimization results presented as a dictionary containing:
-“x” : (ndarray, ndarray)</p>
-<blockquote>
-<div><p>The optimized coefficients and exponents, respectively.</p>
-</div></blockquote>
+<dd class="field-even"><p><p>The optimization results presented as a dictionary containing:</p>
 <dl class="simple">
-<dt>”success”: bool</dt><dd><p>Whether or not the optimization exited successfully.</p>
+<dt>”coeffs”<span class="classifier">ndarray</span></dt><dd><p>The optimized coefficients of the Gaussian model.</p>
 </dd>
-<dt>”message”<span class="classifier">str</span></dt><dd><p>Message about the cause of termination.</p>
+<dt>”exps”<span class="classifier">ndarray</span></dt><dd><p>The optimized exponents of the Gaussian model.</p>
+</dd>
+<dt>”success”: bool</dt><dd><p>Whether the optimization exited successfully.</p>
+</dd>
+<dt>”message”<span class="classifier">str</span></dt><dd><p>Information about the cause of termination.</p>
 </dd>
 <dt>”fun”<span class="classifier">float</span></dt><dd><p>Values of KL divergence (objective function) at the final iteration.</p>
 </dd>
-<dt>”jacobian”: ndarray</dt><dd><p>The Jacobian of the coefficients and exponents.</p>
+<dt>”jacobian”: ndarray</dt><dd><p>The Jacobian of the objective function w.r.t. coefficients and exponents.</p>
 </dd>
 <dt>”performance”<span class="classifier">list</span></dt><dd><p>Values of various performance measures of modeled density at each iteration,
 as computed by <cite>_BaseFit.goodness_of_fit</cite> method.</p>
@@ -625,18 +461,13 @@ as computed by <cite>_BaseFit.goodness_of_fit</cite> method.</p>
 </dl>
 <p class="rubric">Notes</p>
 <ul class="simple">
-<li><dl class="simple">
-<dt>This is a constrained optimization such that the integration of the model density is</dt><dd><p>a fixed value. Hence, only certain optimization algorithms can be used.</p>
-</dd>
-</dl>
-</li>
 <li><p>The coefficients and exponents are bounded to be positive.</p></li>
 </ul>
 </dd></dl>
 
 <dl class="py method">
-<dt id="bfit.fit.GaussianBasisFit.func">
-<code class="sig-name descname">func</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#GaussianBasisFit.func"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.GaussianBasisFit.func" title="Permalink to this definition">¶</a></dt>
+<dt id="bfit.fit.ScipyFit.func">
+<code class="sig-name descname">func</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#ScipyFit.func"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.ScipyFit.func" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute objective function and its derivative w.r.t. Gaussian basis parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -650,19 +481,19 @@ coefficients and exponents together in a 1-D array.</p></li>
 <dd class="field-even"><p>The objective function value and its derivative wrt to coefficients and exponents.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>float, ndarray</p>
+<dd class="field-odd"><p>(float, ndarray)</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="bfit.fit.GaussianBasisFit.const_norm">
-<code class="sig-name descname">const_norm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#GaussianBasisFit.const_norm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.GaussianBasisFit.const_norm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute deviation in normalization constraint.</p>
+<dt id="bfit.fit.ScipyFit.const_norm">
+<code class="sig-name descname">const_norm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#ScipyFit.const_norm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.ScipyFit.const_norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute deviation in normalization constraint <span class="math notranslate nohighlight">\(\sum c_i - \int f(x) dx\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>ndarray</em>) – The parameters of Gaussian basis which is being optimized. Contains both the
+<li><p><strong>x</strong> (<em>ndarray</em>) – The parameters of Gaussian basis-functions. Contains both the
 coefficients and exponents together in a 1-D array.</p></li>
 <li><p><strong>args</strong> – Additional parameters for the model.</p></li>
 </ul>
@@ -677,13 +508,13 @@ coefficients and exponents together in a 1-D array.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="bfit.fit.GaussianBasisFit.evaluate_model">
-<code class="sig-name descname">evaluate_model</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#GaussianBasisFit.evaluate_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.GaussianBasisFit.evaluate_model" title="Permalink to this definition">¶</a></dt>
+<dt id="bfit.fit.ScipyFit.evaluate_model">
+<code class="sig-name descname">evaluate_model</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#ScipyFit.evaluate_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.ScipyFit.evaluate_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluate the model density &amp; its derivative.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>ndarray</em>) – The parameters of Gaussian basis which is being optimized. Contains both the
+<li><p><strong>x</strong> (<em>ndarray</em>) – The parameters of Gaussian basis-functions. Contains both the
 coefficients and exponents together in a 1-D array.</p></li>
 <li><p><strong>args</strong> – Additional parameters for the model.</p></li>
 </ul>
@@ -693,6 +524,94 @@ coefficients and exponents together in a 1-D array.</p></li>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>float, ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="bfit.fit.ScipyFit.grid">
+<em class="property">property </em><code class="sig-name descname">grid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#ScipyFit.grid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.ScipyFit.grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return grid object containing points and integration method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="bfit.fit.ScipyFit.density">
+<em class="property">property </em><code class="sig-name descname">density</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#ScipyFit.density"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.ScipyFit.density" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the true density evaluated on the grid points.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="bfit.fit.ScipyFit.model">
+<em class="property">property </em><code class="sig-name descname">model</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#ScipyFit.model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.ScipyFit.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Gaussian basis model density.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="bfit.fit.ScipyFit.measure">
+<em class="property">property </em><code class="sig-name descname">measure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#ScipyFit.measure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.ScipyFit.measure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the deviation measure between true density and model density.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="bfit.fit.ScipyFit.integral_dens">
+<em class="property">property </em><code class="sig-name descname">integral_dens</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#ScipyFit.integral_dens"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.ScipyFit.integral_dens" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return integration value of the density.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="bfit.fit.ScipyFit.spherical">
+<em class="property">property </em><code class="sig-name descname">spherical</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#ScipyFit.spherical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.ScipyFit.spherical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether to perform spherical integration.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="bfit.fit.ScipyFit.integrate">
+<code class="sig-name descname">integrate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">integrand</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#ScipyFit.integrate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.ScipyFit.integrate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Integrate the integrand.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>integrand</strong> (<em>ndarray</em><em>(</em><em>N</em><em>,</em><em>)</em>) – The integrand <span class="math notranslate nohighlight">\(f(x)\)</span> being integrated defined on <span class="math notranslate nohighlight">\(N\)</span> points.
+If <cite>spherical</cite> attribute is true, then the radial component is
+integrated in spherical coordinates.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns the integration <span class="math notranslate nohighlight">\(\int f(x) dx\)</span> or if spherical
+is true then returns <span class="math notranslate nohighlight">\(\int_0^\infty f(r) 4 \pi r^2 dr\)</span>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="bfit.fit.ScipyFit.goodness_of_fit">
+<code class="sig-name descname">goodness_of_fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">coeffs</span></em>, <em class="sig-param"><span class="n">expons</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/fit.html#ScipyFit.goodness_of_fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.fit.ScipyFit.goodness_of_fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute various measures over the grid to determine the accuracy of the fitted model.</p>
+<p>In particular, it computes the integral of the model, the <span class="math notranslate nohighlight">\(L_1\)</span> distance,
+the <span class="math notranslate nohighlight">\(L_\infty\)</span> distance and attribute <cite>measure</cite> distance between true and model
+functions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coeffs</strong> (<em>ndarray</em>) – The coefficients of Gaussian basis functions.</p></li>
+<li><p><strong>expons</strong> (<em>ndarray</em>) – The exponents of Gaussian basis functions.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>integral</strong> (<em>float</em>) – Integral of approximate model density, i.e. norm of approximate model density.</p></li>
+<li><p><strong>l_1</strong> (<em>float</em>) – Integral of absolute difference between density and approximate model density.
+This is defined to be <span class="math notranslate nohighlight">\(L_(f, g) = \int |f(x) - g(x)| dx\)</span>.</p></li>
+<li><p><strong>l_infinity</strong> (<em>float</em>) – The maximum absolute difference between density and approximate model density.
+This is defined to be <span class="math notranslate nohighlight">\(L_\infty(f, g) = \max |f(x) - g(x)|\)</span>.</p></li>
+<li><p><strong>least_squares</strong> (<em>float</em>) – Square of the <span class="math notranslate nohighlight">\(L_2\)</span> norm between density and approximate model density.
+This is defined to be <span class="math notranslate nohighlight">\(L_2^2(f, g) = \int (f(x) - g(x))^2 dx\)</span>.</p></li>
+<li><p><strong>kullback_leibler</strong> (<em>float</em>) – Kullback-Leibler divergence between density and approximate model density.
+This is defined to be <span class="math notranslate nohighlight">\(KL(f, g) = \int f(x) \log\bigg(\frac{f(x)}{g(x)}\bigg)dx\)</span>.
+If <span class="math notranslate nohighlight">\(g\)</span> is negative, then this returns infinity.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>

@@ -5,61 +5,75 @@
 
 .. autoapi-nested-parse::
 
-   
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+   Greedy Fitting Module.
 
    ..
        !! processed by numpydoc !!
 
 
-Submodules
-----------
-.. toctree::
-   :titlesonly:
-   :maxdepth: 1
-
-   greedy_kl/index.rst
-   greedy_lq/index.rst
-   greedy_strat/index.rst
-   greedy_utils/index.rst
-   optimize/index.rst
-
-
-Package Contents
-----------------
+Module Contents
+---------------
 
 Classes
 ~~~~~~~
 
 .. autoapisummary::
 
-   bfit.greedy.GreedyStrategy
-   bfit.greedy.GreedyKL
    bfit.greedy.GreedyLeastSquares
+   bfit.greedy.GreedyKLSCF
 
 
 
 
-.. py:class:: GreedyStrategy
+.. py:class:: GreedyLeastSquares(grid, density, choice='pick-one', local_tol=1e-05, global_tol=1e-08, method='SLSQP', normalize=False, integral_dens=None, with_constraint=False, maxiter=1000, spherical=False)
 
-   Bases: :py:obj:`object`
+   Bases: :py:obj:`GreedyStrategy`
 
-   
+   Optimize Least-Squares using Greedy and ScipyFit methods.
 
+
+   Construct the GreedyLestSquares object.
+
+   :param grid: Grid class that contains the grid points and integration methods on them.
+   :type grid: (_BaseRadialGrid, CubicGrid)
+   :param density: The true density evaluated on the grid points.
+   :type density: ndarray
+   :param choice: Determines how the next set of basis-functions are chosen.
+                  Can be either:
+                      "pick-one" : Add a new basis-function by taking the average between every two
+                                   s-type or p-type exponents.
+                      "pick-two" : Add two new basis-functions by recursion of "pick-one" over each
+                                   guess from "pick-one".
+                      "pick-two-lose-one" : Add new basis-function by iterating though each guess
+                                            in "pick-two" and removing one basis-function, generating
+                                            a new guess each time.
+   :type choice: str, optional
+   :param local_tol: The tolerance for convergence of scipy.optimize method for optimizing each local guess.
+                     Should be larger than `global_tol`.
+   :type local_tol: float, optional
+   :param global_tol: The tolerance for convergence of scipy.optimize method for further refining/optimizing
+                      the best local guess found out of all choices.  Should be smaller than
+                      `local_tol`.
+   :type global_tol: float, optional
+   :param method: The method used for optimizing parameters. Default is "slsqp".
+                  See "scipy.optimize.minimize" for options.
+   :type method: str, optional
+   :param normalize: Whether to fit with a normalized s-type and p-type Gaussian model.
+   :type normalize: bool, optional
+   :param integral_dens: If this is provided, then the model is constrained to integrate to this value.
+                         If not, then the model is constrained to the numerical integration of the
+                         density. Useful when one knows the actual integration value of the density.
+   :type integral_dens: float, optional
+   :param with_constraint: If true, then adds the constraint that the integration of the model density must
+                           be equal to the constraint of true density. The default is True.
+   :type with_constraint: bool
+   :param maxiter: Maximum number of iterations when optimizing an initial guess in the `scipy.optimize`
+                   method.
+   :type maxiter: int, optional
+   :param spherical: Whether to perform spherical integration by adding :math:`4 \pi r^2` term
+                     to the integrand when calculating the objective function.
+                     Only used when grid is one-dimensional and positive (radial grid).
+   :type spherical: bool
 
 
 
@@ -77,10 +91,12 @@ Classes
 
    ..
        !! processed by numpydoc !!
-   .. py:attribute:: __metaclass__
-      
+
+   .. py:method:: local_tol(self)
+      :property:
 
       
+      Return local tolerance for convergence in `scipy.optimize`.
 
 
 
@@ -100,10 +116,59 @@ Classes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: get_cost_function(self)
-      :abstractmethod:
+   .. py:method:: global_tol(self)
+      :property:
 
       
+      Return global tolerance for convergence in `scipy.optimize`.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: maxiter(self)
+      :property:
+
+      
+      Return maximum number of iterations in optimization routine.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: with_constraint(self)
+      :property:
+
+      
+      Return constraint that integral of model should equal integral of density.
 
 
 
@@ -124,9 +189,9 @@ Classes
           !! processed by numpydoc !!
 
    .. py:method:: get_best_one_function_solution(self)
-      :abstractmethod:
 
       
+      Obtain the best s-type function solution to least-squares using different weights.
 
 
 
@@ -146,10 +211,11 @@ Classes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: get_next_iter_params(self)
-      :abstractmethod:
+   .. py:method:: optimize_using_nnls(true_dens, cofactor_matrix)
+      :staticmethod:
 
       
+      Solve for the coefficients using non-linear least squares.
 
 
 
@@ -169,10 +235,10 @@ Classes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: get_optimization_routine(self, local=False, *args)
-      :abstractmethod:
+   .. py:method:: get_optimization_routine(self, params, local=False)
 
       
+      Optimize least-squares using nnls and scipy.optimize from ScipyFit.
 
 
 
@@ -192,10 +258,11 @@ Classes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: get_errors_from_model(self, params)
-      :abstractmethod:
+   .. py:method:: numb_func_increase(self)
+      :property:
 
       
+      Return number of basis-functions to add in each iteration.
 
 
 
@@ -215,145 +282,11 @@ Classes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: store_errors(self, params)
-
-      
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: _find_best_lparams(self, param_list)
-
-      
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: __call__(self, factor, max_numb_funcs=30, backward_elim_funcs=None, add_choice_funcs=None, ioutput=False)
-
-      
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: _final_exit_info(self, num_func, max_func, best_val, prev_gval, redum)
-
-      
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-
-.. py:class:: GreedyKL(grid, density, norm, splitting_func=get_next_choices, eps_coeff=0.001, eps_exp=0.0001, factor=2)
-
-   Bases: :py:obj:`bfit.greedy.greedy_strat.GreedyStrategy`
-
-   
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   ..
-       !! processed by numpydoc !!
    .. py:method:: density(self)
       :property:
 
       
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: norm(self)
-      :property:
-
-      
+      Return density that is fitted to.
 
 
 
@@ -377,6 +310,7 @@ Classes
       :property:
 
       
+      Return grid class object.
 
 
 
@@ -396,9 +330,11 @@ Classes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: get_model(self, params)
+   .. py:method:: model(self)
+      :property:
 
       
+      Return model class.
 
 
 
@@ -418,9 +354,363 @@ Classes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: get_cost_function(self, params)
+   .. py:method:: integral_dens(self)
+      :property:
 
       
+      Return the integral of the density.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: eval_obj_function(self, params)
+
+      
+      Return evaluation the objective function.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: store_errors(self, params)
+
+      
+      Store errors inside the attribute `err_arr`.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: run(self, factor, d_threshold=1e-08, max_numb_funcs=30, add_extra_choices=None, disp=False)
+
+      
+      Add new Gaussians to fit to a density until convergence is achieved.
+
+      Initially, the algorithm solves for the best one-function basis-function.
+      Then it generates a group of initial guesses of size `(1 + C)`
+      based on the previous optimal fit. It then optimizes each initial guess
+      from that group, with a small threshold for convergence.
+      It takes the best found initial guess from that set and optimizes it further.
+      Then this process repeats for `(1 + 2C)` basis-functions until convergence or
+      termination criteria is met.
+
+      :param factor: The factor that is used to generate new initial guess.
+      :type factor: float
+      :param d_threshold: The convergence threshold for the objective function being minimized.
+      :type d_threshold: float
+      :param max_numb_funcs: Maximum number of basis-functions to have.
+      :type max_numb_funcs: int
+      :param add_extra_choices: Function that returns extra initial guesses to add.
+                                Input must be the model parameters and the output should be a
+                                list of initial guesses that should match attribute `numb_func_increase`.
+      :type add_extra_choices: callable(List, List[List])
+      :param disp: Whether to display the output.
+      :type disp: bool
+
+      :returns: **result** -- The optimization results presented as a dictionary containing:
+                "coeffs" : ndarray
+                    The optimized coefficients of Gaussian model.
+                "exps" : ndarray
+                    The optimized exponents of Gaussian model.
+                "num_s" : int
+                    Number of s-type Gaussian functions.
+                "num_p" : int
+                    Number of p-type Gaussian functions.
+                "success": bool
+                    Whether or not the optimization exited successfully.
+                "fun" : float
+                    Objective function at the last iteration.
+                "performance" : ndarray
+                    Values of various performance measures of modeled density at each iteration,
+                    as computed by `goodness_of_fit()` method.
+                "parameters_iteration": List
+                    List of the optimal parameters of each iteration.
+                "exit_information": str
+                    Information about termination of the greedy algorithm.
+      :rtype: dict
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+.. py:class:: GreedyKLSCF(grid, density, choice='pick-one', g_eps_coeff=0.0001, g_eps_exp=1e-05, g_eps_obj=1e-10, l_eps_coeff=0.01, l_eps_exp=0.001, l_eps_obj=1e-08, mask_value=1e-12, integral_dens=None, maxiter=1000, spherical=False)
+
+   Bases: :py:obj:`GreedyStrategy`
+
+   Optimize Kullback-Leibler using the Greedy method and self-consistent method.
+
+
+   Construct the GreedyKLSCF object.
+
+   :param grid: Grid class that contains the grid points and integration methods on them.
+   :type grid: (_BaseRadialGrid, CubicGrid)
+   :param density: The true density evaluated on the grid points.
+   :type density: ndarray
+   :param choice: Determines how the next set of basis-functions are chosen.
+                  Can be either:
+                      "pick-one" : Add a new basis-function by taking the average between every two
+                                   s-type or p-type exponents.
+                      "pick-two" : Add two new basis-functions by recursion of "pick-one" over each
+                                   guess from "pick-one".
+                      "pick-two-lose-one" : Add new basis-function by iterating though each guess
+                                            in "pick-two" and removing one basis-function, generating
+                                            a new guess each time.
+   :type choice: str, optional
+   :param g_eps_coeff: The tolerance for convergence of coefficients in KL-SCF method for further
+                       refining and optimizing the best found local guess.
+   :type g_eps_coeff: float, optional
+   :param g_eps_exp: The tolerance for convergence of exponents in KL-SCF method for further
+                     refining/optimizing the best local guess found out of all choices.
+   :type g_eps_exp: float, optional
+   :param g_eps_obj: The tolerance for convergence of objective function in KL-SCF method for
+                     further refining/optimizing the best local guess found out of all choices.
+   :type g_eps_obj: float, optional
+   :param l_eps_coeff: The tolerance for convergence of coefficients in KL-SCF method for optimizing
+                       each local initial guess. Should be larger than `g_eps_coeff`.
+   :type l_eps_coeff: float, optional
+   :param l_eps_exp: The tolerance for convergence of exponents in KL-SCF method for optimizing
+                     each local initial guess. Should be larger than `g_eps_exp`.
+   :type l_eps_exp: float, optional
+   :param l_eps_obj: The tolerance for convergence of objective function in KL-SCF method for optimizing
+                     each local initial guess. Should be larger than `g_eps_obj`.
+   :type l_eps_obj: float, optional
+   :param mask_value: The method used for optimizing parameters. Default is "slsqp".
+                      See "scipy.optimize.minimize" for options.
+   :type mask_value: str, optional
+   :param integral_dens: If this is provided, then the model is constrained to integrate to this value.
+                         If not, then the model is constrained to the numerical integration of the
+                         density. Useful when one knows the actual integration value of the density.
+   :type integral_dens: float, optional
+   :param maxiter: Maximum number of iterations when optimizing an initial guess in the KL-SCF method.
+   :type maxiter: int, optional
+   :param spherical: Whether to perform spherical integration by adding :math:`4 \pi r^2` term
+                     to the integrand when calculating objective function.
+                     Only used when grid is one-dimensional and positive (radial grid).
+   :type spherical: bool
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: l_threshold_coeff(self)
+      :property:
+
+      
+      Return local threshold for KL-SCF method for convergence of coefficients.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: l_threshold_exp(self)
+      :property:
+
+      
+      Return local threshold for KL-SCF method for convergence of exponents.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: l_threshold_obj(self)
+      :property:
+
+      
+      Return local threshold for KL-SCF method for convergence of objective function.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: g_threshold_coeff(self)
+      :property:
+
+      
+      Return global threshold for KL-SCF method for convergence of coefficients.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: g_threshold_exp(self)
+      :property:
+
+      
+      Return global threshold for KL-SCF method for convergence of exponents.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: g_threshold_obj(self)
+      :property:
+
+      
+      Return global threshold for KL-SCF method for convergence of objective function.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: maxiter(self)
+      :property:
+
+      
+      Return maximum iteration for KL-SCF method.
 
 
 
@@ -443,28 +733,7 @@ Classes
    .. py:method:: get_best_one_function_solution(self)
 
       
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: get_next_iter_params(self, factor, params)
-
-      
+      Obtain the best one s-type function to Kullback-Leibler.
 
 
 
@@ -487,6 +756,7 @@ Classes
    .. py:method:: get_optimization_routine(self, params, local=False)
 
       
+      Optimize KL using KL-SCF method.
 
 
 
@@ -506,9 +776,11 @@ Classes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: get_errors_from_model(self, params)
+   .. py:method:: numb_func_increase(self)
+      :property:
 
       
+      Return number of basis-functions to add in each iteration.
 
 
 
@@ -528,34 +800,11 @@ Classes
       ..
           !! processed by numpydoc !!
 
-
-.. py:class:: GreedyLeastSquares(grid, density, splitting_func=get_next_choices, factor=2)
-
-   Bases: :py:obj:`bfit.greedy.greedy_strat.GreedyStrategy`
-
-   
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   ..
-       !! processed by numpydoc !!
    .. py:method:: density(self)
       :property:
 
       
+      Return density that is fitted to.
 
 
 
@@ -575,9 +824,11 @@ Classes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: get_cost_function(self, params)
+   .. py:method:: grid(self)
+      :property:
 
       
+      Return grid class object.
 
 
 
@@ -597,9 +848,11 @@ Classes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: _solve_one_function_weight(self, weight)
+   .. py:method:: model(self)
+      :property:
 
       
+      Return model class.
 
 
 
@@ -619,9 +872,11 @@ Classes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: get_best_one_function_solution(self)
+   .. py:method:: integral_dens(self)
+      :property:
 
       
+      Return the integral of the density.
 
 
 
@@ -641,9 +896,10 @@ Classes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: get_next_iter_params(self, params)
+   .. py:method:: eval_obj_function(self, params)
 
       
+      Return evaluation the objective function.
 
 
 
@@ -663,9 +919,10 @@ Classes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: get_optimization_routine(self, params)
+   .. py:method:: store_errors(self, params)
 
       
+      Store errors inside the attribute `err_arr`.
 
 
 
@@ -685,10 +942,53 @@ Classes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: get_errors_from_model(self, params)
+   .. py:method:: run(self, factor, d_threshold=1e-08, max_numb_funcs=30, add_extra_choices=None, disp=False)
 
       
+      Add new Gaussians to fit to a density until convergence is achieved.
 
+      Initially, the algorithm solves for the best one-function basis-function.
+      Then it generates a group of initial guesses of size `(1 + C)`
+      based on the previous optimal fit. It then optimizes each initial guess
+      from that group, with a small threshold for convergence.
+      It takes the best found initial guess from that set and optimizes it further.
+      Then this process repeats for `(1 + 2C)` basis-functions until convergence or
+      termination criteria is met.
+
+      :param factor: The factor that is used to generate new initial guess.
+      :type factor: float
+      :param d_threshold: The convergence threshold for the objective function being minimized.
+      :type d_threshold: float
+      :param max_numb_funcs: Maximum number of basis-functions to have.
+      :type max_numb_funcs: int
+      :param add_extra_choices: Function that returns extra initial guesses to add.
+                                Input must be the model parameters and the output should be a
+                                list of initial guesses that should match attribute `numb_func_increase`.
+      :type add_extra_choices: callable(List, List[List])
+      :param disp: Whether to display the output.
+      :type disp: bool
+
+      :returns: **result** -- The optimization results presented as a dictionary containing:
+                "coeffs" : ndarray
+                    The optimized coefficients of Gaussian model.
+                "exps" : ndarray
+                    The optimized exponents of Gaussian model.
+                "num_s" : int
+                    Number of s-type Gaussian functions.
+                "num_p" : int
+                    Number of p-type Gaussian functions.
+                "success": bool
+                    Whether or not the optimization exited successfully.
+                "fun" : float
+                    Objective function at the last iteration.
+                "performance" : ndarray
+                    Values of various performance measures of modeled density at each iteration,
+                    as computed by `goodness_of_fit()` method.
+                "parameters_iteration": List
+                    List of the optimal parameters of each iteration.
+                "exit_information": str
+                    Information about termination of the greedy algorithm.
+      :rtype: dict
 
 
 

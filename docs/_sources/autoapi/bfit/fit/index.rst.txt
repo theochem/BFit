@@ -5,63 +5,7 @@
 
 .. autoapi-nested-parse::
 
-   Fitting Algorithms Module.
-
-   Contains the optimization algorithms for fitting a linear combination of Gaussian functions.
-
-   Classes
-   -------
-       KLDivergenceSCF : Optimizes coefficients and exponents using self-consistent method.
-       GaussianBasisFit : Optimizes coefficients and exponents using `Scipy.optimize` function.
-
-
-   .. rubric:: Examples
-
-   The goal is to fit a Gaussian density to some function.
-   def f(x) :
-       # Insert what it does here.
-       return ...
-
-   The first step is to define the grid object.
-   >> from bfit.grid import CubicGrid
-   >> grid = CubicGrid(0.01, 0.99, 0.01)
-
-   Place the values of `f` on those grid points in an array.
-   >> density = f(grid.points)
-
-   Define the model, that you want to fit with.
-   >> from bfit.model import AtomicGaussianDensity, MolecularGaussianDensity
-   >> model = AtomicGaussianDensity(grid.points, num_s=5, num_p=5, normalize=True)
-   >> # model = MolecularGaussianDensity(grid.points, np.array([[0., 0., 0.], [1., 1., 1.]]),
-                                       # np.array([[5, 5], [5, 5]]))
-
-   Define which algorithm you want to optmize.
-   >> fit = KLDivergenceSCF(grid, density, model)
-
-   Optimize the coefficients and exponents but give an initial guess.
-   >> initc = [1.] * 10
-   >> inite = np.array([0.001, 0.01, 0.1, 1., 2., 5., 10., 50., 75., 100.])
-   >> result = fit.run(initc, inite)
-
-   Print out the results.
-   >> print("Optimized coefficients are: ", result["x"][0])
-   >> print("Optimized exponents are: ", result["x"][1])
-   >> print("Final performance measures are: ", result["performance"][-1])
-   >> print("Was it successful? ", result["success"])
-
-   .. rubric:: Notes
-
-   - The algorithm uses masked value for floating point precision for KLDivergenceSCF.
-       This is due to the division found in the Kullback-Leibler formula. It is recommended to use
-       `np.float64` or `np.float128` when storing the arrays. A higher Mask value will work as well
-       but may cause poor precision. Alternatively, a well-chosen grid and/or initial guesses will
-       avoid overflow/underflow floating-point issues.
-
-   .. rubric:: References
-
-   [1] BFit: Information-Theoretic Approach to Basis-Set Fitting of Electron Densities
-               Alireza Tehrani, Farnaz Heidar-Zadeh, James S. M. Anderson, Toon Verstraelen, and
-                TODO Add more authors if needed ... Paul W. Ayers.
+   Fitting Algorithms.
 
    ..
        !! processed by numpydoc !!
@@ -76,105 +20,48 @@ Classes
 .. autoapisummary::
 
    bfit.fit.KLDivergenceSCF
-   bfit.fit.GaussianBasisFit
+   bfit.fit.ScipyFit
 
 
 
 
-.. py:class:: KLDivergenceSCF(grid, density, model, mask_value=0.0, integration_val=None)
+.. py:class:: KLDivergenceSCF(grid, density, model, mask_value=0.0, integral_dens=None, spherical=False)
 
    Bases: :py:obj:`_BaseFit`
 
-   
-   Kullback-Leiber Divergence Self-Consistent Fitting.
+   Kullback-Leibler Divergence Self-Consistent Fitting.
 
-   Optimizes the coefficients and exponents of the Gaussian Model to a function using the
-   Kullback-Leibler divergence measure with the constraint that it is normalized.
+   This class optimizes the following objective function using self-consistent fitting method
 
-   .. attribute:: grid
+   .. math::
+       \min_{\{c_i\}, \{\alpha\}} \int f(x) \log \bigg(\frac{f(x)}{\sum c_i b_i(x, \alpha_i)}
+        \bigg)dx + \lambda(N - \sum c_i)
 
-      Grid class that contains the grid points and integration methods on them.
+   where :math:`f` is the true density to be fitted,
+   :math:`\lambda` is the Lagrange multiplier,
+   :math:`c_i` is the coefficient of the ith basis function
+   that all sum to the integral of density function :math:`N= \int f(x)dx`, and
+   :math:`\alpha_i` is the exponent of the basis function :math:`b_i`.
 
-      :type: (_BaseRadialGrid, CubicGrid)
 
-   .. attribute:: density
 
-      The true function evaluated on the grid points from `grid`.
+   Construct the KLDivergenceSCF class.
 
-      :type: ndarray(N,)
-
-   .. attribute:: model
-
-      The Gaussian basis model density. Located in `model.py`.
-
-      :type: (AtomicGaussianDensity, MolecularGaussianDensity)
-
-   .. attribute:: measure
-
-      The deviation measure between true density and model density. Located in `measure.py`
-
-      :type: (SquaredDifference, KLDivergence)
-
-   .. attribute:: norm
-
-      The integral of the attribute `density`.
-
-      :type: float
-
-   .. attribute:: lagrange_multiplier
-
-      Lagrange multiplier.
-
-      :type: float
-
-   .. method:: run(): dict
-
-      Runs the optimizing algorithm for optimizing coefficients and exponents to a linear
-      combination of Gaussian functions.
-
-   .. rubric:: Examples
-
-   The goal is to fit a Gaussian density to some function.
-   def f(x) :
-       # Insert what it does here.
-       return ...
-
-   The first step is to define the grid object.
-   >> grid = CubicGrid(0.01, 0.99, 0.01)
-
-   Place the values of `f` on those grid points in an array.
-   >> density = f(grid.points)
-
-   Define the model, that you want to fit with.
-   >> model = AtomicGaussianDensity(grid.points, num_s=5, num_p=5, normalize=True)
-
-   Define which algorithm you want to optmize.
-   >> fit = KLDivergenceSCF(grid, density, model)
-
-   Optimize the coefficients and exponents but give an initial guess.
-   >> initc = [1.] * 10
-   >> inite = np.array([0.001, 0.01, 0.1, 1., 2., 5., 10., 50., 75., 100.])
-   >> result = fit.run(initc, inite)
-
-   Print out the results.
-   >> print("Optimized coefficients are: ", result["x"][0])
-   >> print("Optimized exponents are: ", result["x"][1])
-   >> print("Final performance measures are: ", result["performance"][-1])
-   >> print("Was it successful? ", result["success"])
-
-   .. rubric:: Notes
-
-   - The algorithm uses masked value for floating point precision. This is due to the division found
-   in the Kullback-Leibler formula. It is recommended to use `np.float64` or `np.float128` when
-   storing the arrays. A higher Mask value will work as well but may cause poor precision.
-   Alternatively, a well-chosen grid and/or initial guesses will avoid overflow/underflow
-   floating-point issues.
-
-   .. rubric:: References
-
-   [1] BFit: Information-Theoretic Approach to Basis-Set Fitting of Electron Densities
-           Alireza Tehrani, Farnaz Heidar-Zadeh, James S. M. Anderson, Toon Verstraelen, and
-            TODO Add more authors if needed ... Paul W. Ayers.
+   :param grid: Grid class that contains the grid points and integration methods on them.
+   :type grid: (_BaseRadialGrid, CubicGrid)
+   :param density: The true density evaluated on the grid points.
+   :type density: ndarray
+   :param model: The Gaussian basis model density. Located in `model.py`.
+   :type model: (AtomicGaussianDensity, MolecularGaussianDensity)
+   :param mask_value: The elements less than or equal to this number are masked in a division.
+   :type mask_value: float, optional
+   :param integral_dens: If this is provided, then the model is constrained to integrate to this value.
+                         If not, then the model is constrained to the numerical integration of the
+                         density. Useful when one knows the actual integration value of the density.
+   :type integral_dens: float, optional
+   :param spherical: Whether to perform spherical integration by adding :math:`4 \pi r^2` term
+                     to the integrand. Only used when grid is one-dimensional and positive (radial grid).
+   :type spherical: bool
 
 
 
@@ -192,46 +79,13 @@ Classes
 
    ..
        !! processed by numpydoc !!
+
    .. py:method:: lagrange_multiplier(self)
       :property:
 
       
-      Obtain the lagrange multiplier.
+      Lagrange multiplier of Kullback-Leibler optimization problem.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: _update_params(self, coeffs, expons, update_coeffs=True, update_expons=False)
-
-      
-      Compute updated coefficients & exponents of Gaussian basis functions.
-
-      :param coeffs: The initial coefficients of Gaussian basis functions.
-      :type coeffs: ndarray
-      :param expons: The initial exponents of Gaussian basis functions.
-      :type expons: ndarray
-      :param update_coeffs: Whether to optimize coefficients of Gaussian basis functions.
-      :type update_coeffs: bool, optional
-      :param update_expons: Whether to optimize exponents of Gaussian basis functions.
-      :type update_expons: bool, optional
-
-      :returns: * **coeffs** (*ndarray*) -- The updated coefficients of Gaussian basis functions. Only returned if `deriv=True`.
-                * **expons** (*ndarray*) -- The updated exponents of Gaussian basis functions. Only returned if `deriv=True`.
 
 
 
@@ -260,28 +114,32 @@ Classes
       :param e0: The initial exponents of Gaussian basis functions.
       :type e0: ndarray
       :param opt_coeffs: Whether to optimize coefficients of Gaussian basis functions.
+                         Default is true.
       :type opt_coeffs: bool, optional
       :param opt_expons: Whether to optimize exponents of Gaussian basis functions.
+                         Default is true.
       :type opt_expons: bool, optional
       :param maxiter: Maximum number of iterations.
       :type maxiter: int, optional
-      :param c_threshold: The convergence threshold for absolute change in coefficients. Default is 1e-6.
+      :param c_threshold: The termination threshold for absolute change in coefficients. Default is 1e-6.
       :type c_threshold: float
-      :param e_threshold: The convergence threshold for absolute change in exponents. Default is 1e-6.
+      :param e_threshold: The termination threshold for absolute change in exponents. Default is 1e-6.
       :type e_threshold: float
-      :param d_threshold: The convergence threshold for absolute change in divergence value. Default is 1e-6.
+      :param d_threshold: The termination threshold for absolute change in divergence value. Default is 1e-6.
       :type d_threshold: float
-      :param disp: If true, then at each iteration the integral, :math:`L_1`, :math:`L_\infty` and
-                   Kullback-Leibler measure is printed. Default is False.
+      :param disp: If true, then at each iteration various error measures will be printed.
       :type disp: bool
 
-      :returns: **result** -- The optimization results presented as a dictionary containing:
-                "x" : (ndarray, ndarray)
-                    The optimized coefficients and exponents.
+      :returns: The optimization results presented as a dictionary with keys:
+
+                "coeffs" : ndarray
+                    The optimized coefficients of the Gaussian model.
+                "exps" : ndarray
+                    The optimized exponents of the Gaussian model.
                 "success": bool
-                    Whether or not the optimization exited successfully.
+                    Whether the optimization exited successfully.
                 "fun" : ndarray
-                    Values of KL divergence (objective function) at each iteration.
+                    Values of the KL divergence (objective function) at each iteration.
                 "performance" : ndarray
                     Values of various performance measures of modeled density at each iteration,
                     as computed by `goodness_of_fit()` method.
@@ -306,98 +164,274 @@ Classes
       ..
           !! processed by numpydoc !!
 
+   .. py:method:: grid(self)
+      :property:
 
-.. py:class:: GaussianBasisFit(grid, density, model, measure='KL', method='SLSQP', weights=None, mask_value=1e-10)
+      
+      Return grid object containing points and integration method.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: density(self)
+      :property:
+
+      
+      Return the true density evaluated on the grid points.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: model(self)
+      :property:
+
+      
+      Return the Gaussian basis model density.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: measure(self)
+      :property:
+
+      
+      Return the deviation measure between true density and model density.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: integral_dens(self)
+      :property:
+
+      
+      Return integration value of the density.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: spherical(self)
+      :property:
+
+      
+      Whether to perform spherical integration.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: integrate(self, integrand)
+
+      
+      Integrate the integrand.
+
+      :param integrand: The integrand :math:`f(x)` being integrated defined on :math:`N` points.
+                        If `spherical` attribute is true, then the radial component is
+                        integrated in spherical coordinates.
+      :type integrand: ndarray(N,)
+
+      :returns: Returns the integration :math:`\int f(x) dx` or if spherical
+                is true then returns :math:`\int_0^\infty f(r) 4 \pi r^2 dr`.
+      :rtype: float
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: goodness_of_fit(self, coeffs, expons)
+
+      
+      Compute various measures over the grid to determine the accuracy of the fitted model.
+
+      In particular, it computes the integral of the model, the :math:`L_1` distance,
+      the :math:`L_\infty` distance and attribute `measure` distance between true and model
+      functions.
+
+      :param coeffs: The coefficients of Gaussian basis functions.
+      :type coeffs: ndarray
+      :param expons: The exponents of Gaussian basis functions.
+      :type expons: ndarray
+
+      :returns: * **integral** (*float*) -- Integral of approximate model density, i.e. norm of approximate model density.
+                * **l_1** (*float*) -- Integral of absolute difference between density and approximate model density.
+                  This is defined to be :math:`L_(f, g) = \int |f(x) - g(x)| dx`.
+                * **l_infinity** (*float*) -- The maximum absolute difference between density and approximate model density.
+                  This is defined to be :math:`L_\infty(f, g) = \max |f(x) - g(x)|`.
+                * **least_squares** (*float*) -- Square of the :math:`L_2` norm between density and approximate model density.
+                  This is defined to be :math:`L_2^2(f, g) = \int (f(x) - g(x))^2 dx`.
+                * **kullback_leibler** (*float*) -- Kullback-Leibler divergence between density and approximate model density.
+                  This is defined to be :math:`KL(f, g) = \int f(x) \log\bigg(\frac{f(x)}{g(x)}\bigg)dx`.
+                  If :math:`g` is negative, then this returns infinity.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+.. py:class:: ScipyFit(grid, density, model, measure=KLDivergence, method='SLSQP', weights=None, integral_dens=None, spherical=False)
 
    Bases: :py:obj:`_BaseFit`
 
-   
-   Optimizes either least-squares or Kullback-Leibler of Gaussian funcs using `Scipy.optimize`.
+   Optimize least-squares or Kullback-Leibler of Gaussian functions using `Scipy.optimize`.
 
-   The Gaussian functions can be constrained to have their integral be a fixed value.
-       Although it is not recommended. The coefficients and exponents are always bounded to be
-        positive.
+   Least-squares objective function w.r.t. Gaussian basis-functions is defined as
 
-   .. attribute:: grid
+   .. math::
+       \min_{\{c_i\}, \{\alpha\}} \int \bigg(f(x) - \sum c_i b_k(x, \alpha_i) \bigg)^2 dx
 
-      Grid class that contains the grid points and integration methods on them.
+   The Kullback-Leibler divergence function is defined as
 
-      :type: (_BaseRadialGrid, CubicGrid)
+   .. math::
+       \min_{\{c_i\}, \{\alpha\}, \sum c_i = N} \int f(x) \log \bigg(\frac{f(x)}{\sum c_i
+       b_i(x, \alpha_i)} \bigg)dx,
 
-   .. attribute:: density
-
-      The true function evaluated on the grid points from `grid`.
-
-      :type: ndarray(N,)
-
-   .. attribute:: model
-
-      The Gaussian basis model density. Located in `model.py`.
-
-      :type: (AtomicGaussianDensity, MolecularGaussianDensity)
-
-   .. attribute:: measure
-
-      The deviation measure between true density and model density that is minimized.
-      Can be either be "KL" (Kullback-Leibler, default) or "LS" (least-squares).
-
-      :type: str, optional
-
-   .. attribute:: norm
-
-      The integration of the density over the grid.
-
-      :type: float
-
-   .. method:: run() :
-
-   .. method:: func() :
-
-   .. method:: evaluate_model() :
-
-   .. rubric:: Examples
-
-   The goal is to fit a Gaussian density to some function.
-   def f(x) :
-       # Insert what it does here.
-       return ...
-
-   The first step is to define the grid object.
-   >> grid = CubicGrid(0.01, 0.99, 0.01)
-
-   Place the values of `f` on those grid points in an array.
-   >> density = f(grid.points)
-
-   Define the model, that you want to fit with.
-   >> model = AtomicGaussianDensity(grid.points, num_s=5, num_p=5, normalize=True)
-
-   Define which measure (least-squares) and "scipy.optimize" algorithm to use.
-   >> fit = GaussianBasisFit(grid, density, model, measure="LS", method="SLSQP")
-
-   Optimize the coefficients and exponents but give an initial guess.
-   >> initc = [1.] * 10
-   >> inite = np.array([0.001, 0.01, 0.1, 1., 2., 5., 10., 50., 75., 100.])
-   >> result = fit.run(initc, inite)
-
-   Print out the results.
-   >> print("Optimized coefficients are: ", result["x"][0])
-   >> print("Optimized exponents are: ", result["x"][1])
-   >> print("Final performance measures are: ", result["performance"])
-   >> print("Was it successful? ", result["success"])
-   >> print("Why it terminated? ", result["message"])
+   where :math:`f` is the density to be fitted to,
+   :math:`c_i, \alpha_i` are the coefficeints and exponents of the Gaussian
+   basis functions, and :math:`N = \int f(x)dx` is the integral of the density function.
 
    .. rubric:: Notes
 
-   - The coefficients and exponents are bounded to be positive.
+   - Note that the Kullback-Leibler between two functions :math:`f` and :math:`g` is positive
+     if and only if the integrals of :math:`f` and :math:`g` are identical.  The `with_constraint`
+     attribute must be True for optimizing Kullback-Leibler.
 
-   - These methods in this class was found to be extremely hard to optimize. There appears
-       to have many local minimas and Quasi-Newton methods seems inadequate in order to optimize
-       these. Just the mere act of placing the initial guess to be close to the solution causes
-       problems. It is highly recommended to have `with_constraint` to be False.
+   Construct the ScipyFit object.
 
-   - Note that the Kullback-Leibler between two functions f and g is positive if and only if
-       the integrals of f and g are identical.  This constraint must be added for
-       these optimizers.
+   :param grid: The grid class.
+   :type grid: (_BaseRadialGrid, CubicGrid)
+   :param density: The true density evaluated on the grid points.
+   :type density: ndarray(N,)
+   :param model: The Gaussian basis model density.
+   :type model: (AtomicGaussianDensity, MolecularGaussianDensity)
+   :param measure: The deviation measure between true density and model density.
+                   See bfit.measure.py for examples of measures to use.
+   :type measure: bfit.measure.Measure
+   :param method: The method used for optimizing parameters. Default is "slsqp".
+                  See "scipy.optimize.minimize" for options.
+   :type method: str, optional
+   :param weights: The weights of objective function at each point. If `None`, 1.0 is used.
+   :type weights: ndarray, optional
+   :param integral_dens: If this is provided, then the model is constrained to integrate to this value.
+                         If not, then the model is constrained to the numerical integration of the
+                         density. Useful when one knows the actual integration value of the density.
+   :type integral_dens: float, optional
+   :param spherical: Whether to perform spherical integration by adding :math:`4 \pi r^2` term
+                     to the integrand. Only used when grid is one-dimensional and positive (radial grid).
+   :type spherical: bool
 
 
 
@@ -415,6 +449,7 @@ Classes
 
    ..
        !! processed by numpydoc !!
+
    .. py:method:: run(self, c0, e0, opt_coeffs=True, opt_expons=True, maxiter=1000, tol=1e-14, disp=False, with_constraint=True)
 
       
@@ -431,25 +466,29 @@ Classes
       :param maxiter: Maximum number of iterations.
       :type maxiter: int, optional
       :param tol: For slsqp. precision goal for the value of objective function in the stopping criterion.
-                  For trust-constr, it is precision goal for the change in independent variables.
+                  For trust-constr, it is precision goal for the change in the variables.
       :type tol: float, optional
-      :param disp: If True, then it will print the convergence messages from the optimizer.
+      :param disp: If True, then it will print the iteration errors, convergence messages from the
+                   optimizer and will print out various error measures at each iteration.
       :type disp: bool
       :param with_constraint: If true, then adds the constraint that the integration of the model density must
                               be equal to the constraint of true density. The default is True.
       :type with_constraint: bool
 
-      :returns: **result** -- The optimization results presented as a dictionary containing:
-                "x" : (ndarray, ndarray)
-                    The optimized coefficients and exponents, respectively.
+      :returns: The optimization results presented as a dictionary containing:
+
+                "coeffs" : ndarray
+                    The optimized coefficients of the Gaussian model.
+                "exps" : ndarray
+                    The optimized exponents of the Gaussian model.
                 "success": bool
-                    Whether or not the optimization exited successfully.
+                    Whether the optimization exited successfully.
                 "message" : str
-                    Message about the cause of termination.
+                    Information about the cause of termination.
                 "fun" : float
                     Values of KL divergence (objective function) at the final iteration.
                 "jacobian": ndarray
-                    The Jacobian of the coefficients and exponents.
+                    The Jacobian of the objective function w.r.t. coefficients and exponents.
                 "performance" : list
                     Values of various performance measures of modeled density at each iteration,
                     as computed by `_BaseFit.goodness_of_fit` method.
@@ -459,8 +498,6 @@ Classes
 
       .. rubric:: Notes
 
-      - This is a constrained optimization such that the integration of the model density is
-          a fixed value. Hence, only certain optimization algorithms can be used.
       - The coefficients and exponents are bounded to be positive.
 
 
@@ -491,7 +528,7 @@ Classes
       :param args: Additional arguments to the model.
 
       :returns: The objective function value and its derivative wrt to coefficients and exponents.
-      :rtype: float, ndarray
+      :rtype: (float, ndarray)
 
 
 
@@ -513,9 +550,9 @@ Classes
    .. py:method:: const_norm(self, x, *args)
 
       
-      Compute deviation in normalization constraint.
+      Compute deviation in normalization constraint :math:`\sum c_i - \int f(x) dx`.
 
-      :param x: The parameters of Gaussian basis which is being optimized. Contains both the
+      :param x: The parameters of Gaussian basis-functions. Contains both the
                 coefficients and exponents together in a 1-D array.
       :type x: ndarray
       :param args: Additional parameters for the model.
@@ -545,13 +582,230 @@ Classes
       
       Evaluate the model density & its derivative.
 
-      :param x: The parameters of Gaussian basis which is being optimized. Contains both the
+      :param x: The parameters of Gaussian basis-functions. Contains both the
                 coefficients and exponents together in a 1-D array.
       :type x: ndarray
       :param args: Additional parameters for the model.
 
       :returns: Evaluates the model density & its derivative.
       :rtype: float, ndarray
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: grid(self)
+      :property:
+
+      
+      Return grid object containing points and integration method.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: density(self)
+      :property:
+
+      
+      Return the true density evaluated on the grid points.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: model(self)
+      :property:
+
+      
+      Return the Gaussian basis model density.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: measure(self)
+      :property:
+
+      
+      Return the deviation measure between true density and model density.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: integral_dens(self)
+      :property:
+
+      
+      Return integration value of the density.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: spherical(self)
+      :property:
+
+      
+      Whether to perform spherical integration.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: integrate(self, integrand)
+
+      
+      Integrate the integrand.
+
+      :param integrand: The integrand :math:`f(x)` being integrated defined on :math:`N` points.
+                        If `spherical` attribute is true, then the radial component is
+                        integrated in spherical coordinates.
+      :type integrand: ndarray(N,)
+
+      :returns: Returns the integration :math:`\int f(x) dx` or if spherical
+                is true then returns :math:`\int_0^\infty f(r) 4 \pi r^2 dr`.
+      :rtype: float
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: goodness_of_fit(self, coeffs, expons)
+
+      
+      Compute various measures over the grid to determine the accuracy of the fitted model.
+
+      In particular, it computes the integral of the model, the :math:`L_1` distance,
+      the :math:`L_\infty` distance and attribute `measure` distance between true and model
+      functions.
+
+      :param coeffs: The coefficients of Gaussian basis functions.
+      :type coeffs: ndarray
+      :param expons: The exponents of Gaussian basis functions.
+      :type expons: ndarray
+
+      :returns: * **integral** (*float*) -- Integral of approximate model density, i.e. norm of approximate model density.
+                * **l_1** (*float*) -- Integral of absolute difference between density and approximate model density.
+                  This is defined to be :math:`L_(f, g) = \int |f(x) - g(x)| dx`.
+                * **l_infinity** (*float*) -- The maximum absolute difference between density and approximate model density.
+                  This is defined to be :math:`L_\infty(f, g) = \max |f(x) - g(x)|`.
+                * **least_squares** (*float*) -- Square of the :math:`L_2` norm between density and approximate model density.
+                  This is defined to be :math:`L_2^2(f, g) = \int (f(x) - g(x))^2 dx`.
+                * **kullback_leibler** (*float*) -- Kullback-Leibler divergence between density and approximate model density.
+                  This is defined to be :math:`KL(f, g) = \int f(x) \log\bigg(\frac{f(x)}{g(x)}\bigg)dx`.
+                  If :math:`g` is negative, then this returns infinity.
 
 
 

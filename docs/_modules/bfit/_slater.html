@@ -13,8 +13,8 @@
   
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
 
   
   
@@ -24,7 +24,7 @@
   
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+    <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -42,7 +42,7 @@
 
     
     <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" /> 
+    <link rel="search" title="Search" href="../../search.html" />
 </head>
 
 <body class="wy-body-for-nav">
@@ -87,7 +87,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../autoapi/index.html">API Reference</a></li>
 </ul>
@@ -138,8 +138,6 @@
         
           <li><a href="../index.html">Module code</a> &raquo;</li>
         
-          <li><a href="../bfit.html">bfit</a> &raquo;</li>
-        
       <li>bfit._slater</li>
     
     
@@ -178,34 +176,28 @@
 <span class="c1"># along with this program; if not, see &lt;http://www.gnu.org/licenses/&gt;</span>
 <span class="c1">#</span>
 <span class="c1"># ---</span>
-<span class="sa">r</span><span class="sd">&quot;&quot;&quot;Module responsible for reading and storing information from &#39;.slater&#39; files.</span>
-
-<span class="sd">Functions</span>
-<span class="sd">---------</span>
-<span class="sd">load_slater_wfn : Function for reading and returning information from &#39;.slater&#39; files.</span>
-
-<span class="sd">&quot;&quot;&quot;</span>
-
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;Parsing Slater files.&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">re</span>
+
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;load_slater_wfn&quot;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="load_slater_wfn"><a class="viewcode-back" href="../../autoapi/bfit/_slater/index.html#bfit._slater.load_slater_wfn">[docs]</a><span class="k">def</span> <span class="nf">load_slater_wfn</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">anion</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cation</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Return the data recorded in the atomic Slater wave-function file as a dictionary.</span>
+<span class="sd">    Return the data inside the atomic Slater &#39;.slater&#39; files wave-function file as a dictionary.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    file_name : str</span>
-<span class="sd">        The path to the Slater atomic file.</span>
+<span class="sd">    element : str</span>
+<span class="sd">        The atom/element.</span>
 <span class="sd">    anion : bool</span>
 <span class="sd">        If true, then the anion of element is used.</span>
 <span class="sd">    cation : bool</span>
 <span class="sd">        If true, then the cation of element is used.</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Heavy atoms from atom cs to lr.</span>
     <span class="n">heavy_atoms</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;cs&quot;</span><span class="p">,</span> <span class="s2">&quot;ba&quot;</span><span class="p">,</span> <span class="s2">&quot;la&quot;</span><span class="p">,</span> <span class="s2">&quot;ce&quot;</span><span class="p">,</span> <span class="s2">&quot;pr&quot;</span><span class="p">,</span> <span class="s2">&quot;nd&quot;</span><span class="p">,</span> <span class="s2">&quot;pm&quot;</span><span class="p">,</span> <span class="s2">&quot;sm&quot;</span><span class="p">,</span> <span class="s2">&quot;eu&quot;</span><span class="p">,</span> <span class="s2">&quot;gd&quot;</span><span class="p">,</span> <span class="s2">&quot;tb&quot;</span><span class="p">,</span> <span class="s2">&quot;dy&quot;</span><span class="p">,</span> <span class="s2">&quot;ho&quot;</span><span class="p">,</span>
@@ -225,24 +217,26 @@
                     <span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="s2">&quot;xe&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;zn&quot;</span><span class="p">,</span> <span class="s2">&quot;zr&quot;</span><span class="p">]</span>
 
     <span class="n">is_heavy_element</span> <span class="o">=</span> <span class="n">element</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">heavy_atoms</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">anion</span> <span class="ow">or</span> <span class="n">cation</span><span class="p">)</span> <span class="ow">and</span> <span class="n">is_heavy_element</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Both Anion &amp; Cation Slater File for element </span><span class="si">%s</span><span class="s2"> does not exist.&quot;</span> <span class="o">%</span> <span class="n">element</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">anion</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">anion_atoms</span><span class="p">:</span>
-            <span class="n">file_path</span> <span class="o">=</span> <span class="s2">&quot;/data/anion/</span><span class="si">%s</span><span class="s2">.an&quot;</span> <span class="o">%</span> <span class="n">element</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">file_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/data/anion/</span><span class="si">{</span><span class="n">element</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">.an&quot;</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Anion Slater File for element </span><span class="si">%s</span><span class="s2"> does not exist.&quot;</span> <span class="o">%</span> <span class="n">element</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Anion Slater File for element </span><span class="si">{</span><span class="n">element</span><span class="si">}</span><span class="s2"> does not exist.&quot;</span>
+            <span class="p">)</span>
     <span class="k">elif</span> <span class="n">cation</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">element</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">cation_atoms</span><span class="p">:</span>
-            <span class="n">file_path</span> <span class="o">=</span> <span class="s2">&quot;/data/cation/</span><span class="si">%s</span><span class="s2">.cat&quot;</span> <span class="o">%</span> <span class="n">element</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">file_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/data/cation/</span><span class="si">{</span><span class="n">element</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">.cat&quot;</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cation Slater File for element </span><span class="si">%s</span><span class="s2"> does not exist.&quot;</span> <span class="o">%</span> <span class="n">element</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Cation Slater File for element </span><span class="si">{</span><span class="n">element</span><span class="si">}</span><span class="s2"> does not exist.&quot;</span>
+            <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">file_path</span> <span class="o">=</span> <span class="s2">&quot;/data/neutral/</span><span class="si">%s</span><span class="s2">.slater&quot;</span> <span class="o">%</span> <span class="n">element</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">file_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/data/neutral/</span><span class="si">{</span><span class="n">element</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">.slater&quot;</span>
 
     <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span> <span class="o">+</span> <span class="n">file_path</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">get_number_of_electrons_per_orbital</span><span class="p">(</span><span class="n">configuration</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_get_number_of_electrons_per_orbital</span><span class="p">(</span><span class="n">configuration</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the Occupation Number for all orbitals of an _element returing an dictionary.</span>
 
@@ -268,6 +262,7 @@
             <span class="c1"># Initialize all atomic orbitals to zero electrons</span>
             <span class="n">out</span><span class="p">[</span><span class="n">orb</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
+        <span class="c1"># Sometimes electron configuration includes K L M N for simplicity</span>
         <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">shells</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">electron_config_list</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="s2">&quot;K&quot;</span><span class="p">:</span>
@@ -291,7 +286,6 @@
                 <span class="n">orbital</span> <span class="o">=</span> <span class="p">(</span><span class="n">electron_config_list</span><span class="p">[</span><span class="n">index</span><span class="p">:</span> <span class="n">index</span> <span class="o">+</span> <span class="mi">2</span><span class="p">])</span>
 
                 <span class="k">if</span> <span class="n">orbital</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;D&quot;</span> <span class="ow">or</span> <span class="n">orbital</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;F&quot;</span><span class="p">:</span>
-                    <span class="c1"># num_electrons = re.sub(&#39;[(){}&lt;&gt;,]&#39;, &quot;&quot;, electron_config_list.split(orbital)[1])</span>
                     <span class="n">num_electrons</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">orbital</span> <span class="o">+</span> <span class="sa">r</span><span class="s2">&quot;\((.*?)\)&quot;</span><span class="p">,</span> <span class="n">electron_config_list</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
                     <span class="n">out</span><span class="p">[</span><span class="n">orbital</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">num_electrons</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
@@ -299,7 +293,7 @@
 
         <span class="k">return</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">out</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">value</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">}</span>
 
-    <span class="k">def</span> <span class="nf">get_column</span><span class="p">(</span><span class="n">t_orbital</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_get_column</span><span class="p">(</span><span class="n">t_orbital</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Correct the error in order to retrieve the correct column.</span>
 
@@ -326,10 +320,10 @@
         <span class="k">elif</span> <span class="n">t_orbital</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;F&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">t_orbital</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="mi">2</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Did not recognize orbital </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">t_orbital</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Did not recognize orbital </span><span class="si">{</span><span class="n">t_orbital</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">configuration_exact_for_heavy_elements</span><span class="p">(</span><span class="n">configuration</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;later file for heavy elements does not contain the configuration in right format.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">_configuration_exact_for_heavy_elements</span><span class="p">(</span><span class="n">configuration</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Later file for heavy elements does not contain the configuration in right format.&quot;&quot;&quot;</span>
         <span class="n">true_configuration</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="k">if</span> <span class="s2">&quot;[XE]&quot;</span> <span class="ow">in</span> <span class="n">configuration</span><span class="p">:</span>
             <span class="n">true_configuration</span> <span class="o">+=</span> <span class="s2">&quot;K(2)L(8)M(18)4S(2)4P(6)5S(2)4D(10)5P(6)&quot;</span>
@@ -342,28 +336,35 @@
             <span class="c1"># Add rest</span>
             <span class="n">true_configuration</span> <span class="o">+=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;[RN]&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Heavy element is not the right format for parsing. &quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Heavy element is not the right format for parsing.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">true_configuration</span>
 
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">line</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
         <span class="n">configuration</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">is_heavy_element</span><span class="p">:</span>
-            <span class="n">configuration</span> <span class="o">=</span> <span class="n">configuration_exact_for_heavy_elements</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
+            <span class="n">configuration</span> <span class="o">=</span> <span class="n">_configuration_exact_for_heavy_elements</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
 
         <span class="n">next_line</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
-        <span class="c1"># Sometimes there are blank lin es.</span>
+        <span class="c1"># Sometimes there are blank lines.</span>
         <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">next_line</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">next_line</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
-
         <span class="k">if</span> <span class="n">is_heavy_element</span><span class="p">:</span>
             <span class="c1"># Heavy element slater files has extra redundant information of 5 lines.</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">):</span>
-                <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">):</span>
+                <span class="n">next_line</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
 
-        <span class="n">next_line</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
-        <span class="n">energy</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">next_line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">2</span><span class="p">])]</span> <span class="o">+</span> \
-                 <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[= -]\d+.\d+&quot;</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()))[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="c1"># Get energy from &quot;E=...&quot; line</span>
+        <span class="n">split_energy_line</span> <span class="o">=</span> <span class="n">next_line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">split_energy_line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;E&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Parsing error of energy term &#39;E=&#39;.&quot;</span><span class="p">)</span>
+        <span class="n">energy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">split_energy_line</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="c1"># Split the kinetic, potential energy.</span>
+        <span class="n">split_energy_line</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[= -]\d+.\d+&quot;</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">())</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">split_energy_line</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
+        <span class="n">kinetic_energy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">split_energy_line</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">potential_energy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">split_energy_line</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 
         <span class="n">orbitals</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">orbitals_basis</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;S&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;P&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;D&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;F&quot;</span><span class="p">:</span> <span class="p">[]}</span>
@@ -373,6 +374,8 @@
         <span class="n">orbitals_coeff</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="n">line</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+        <span class="k">while</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
         <span class="k">while</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
             <span class="c1"># If line has ___S___ or P or D where _ = &quot; &quot;.</span>
             <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;  [S|P|D|F]  &#39;</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
@@ -400,24 +403,27 @@
                     <span class="n">orbitals_basis</span><span class="p">[</span><span class="n">subshell</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">list_words</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
 
                     <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">list_of_orbitals</span><span class="p">:</span>
-                        <span class="n">orbitals_coeff</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">list_words</span><span class="p">[</span><span class="n">get_column</span><span class="p">(</span><span class="n">x</span><span class="p">)])]</span>
+                        <span class="n">orbitals_coeff</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">list_words</span><span class="p">[</span><span class="n">_get_column</span><span class="p">(</span><span class="n">x</span><span class="p">)])]</span>
                     <span class="n">line</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">line</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
 
     <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;configuration&#39;</span><span class="p">:</span> <span class="n">configuration</span><span class="p">,</span>
-            <span class="s1">&#39;energy&#39;</span><span class="p">:</span> <span class="n">energy</span><span class="p">,</span>
+            <span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="n">energy</span><span class="p">,</span>
+            <span class="s1">&#39;kinetic_energy&#39;</span><span class="p">:</span> <span class="n">kinetic_energy</span><span class="p">,</span>
+            <span class="s1">&#39;potential_energy&#39;</span><span class="p">:</span> <span class="n">potential_energy</span><span class="p">,</span>
             <span class="s1">&#39;orbitals&#39;</span><span class="p">:</span> <span class="n">orbitals</span><span class="p">,</span>
             <span class="s1">&#39;orbitals_energy&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">orbitals_energy</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">],</span>
             <span class="s1">&#39;orbitals_cusp&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">orbitals_cusp</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">],</span>
             <span class="s1">&#39;orbitals_basis&#39;</span><span class="p">:</span> <span class="n">orbitals_basis</span><span class="p">,</span>
             <span class="s1">&#39;orbitals_exp&#39;</span><span class="p">:</span>
-                <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">orbitals_exp</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-                 <span class="k">if</span> <span class="n">value</span> <span class="o">!=</span> <span class="p">[]},</span>
+                <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+                 <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">orbitals_exp</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                 <span class="k">if</span> <span class="n">value</span><span class="p">},</span>
             <span class="s1">&#39;orbitals_coeff&#39;</span><span class="p">:</span>
                 <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
                  <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">orbitals_coeff</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">value</span> <span class="o">!=</span> <span class="p">[]},</span>
-            <span class="s1">&#39;orbitals_occupation&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">get_number_of_electrons_per_orbital</span><span class="p">(</span><span class="n">configuration</span><span class="p">)[</span><span class="n">k</span><span class="p">]</span>
+            <span class="s1">&#39;orbitals_occupation&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">_get_number_of_electrons_per_orbital</span><span class="p">(</span><span class="n">configuration</span><span class="p">)[</span><span class="n">k</span><span class="p">]</span>
                                              <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">orbitals</span><span class="p">])[:,</span> <span class="kc">None</span><span class="p">],</span>
             <span class="s1">&#39;basis_numbers&#39;</span><span class="p">:</span>
                 <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">value</span><span class="p">])</span>

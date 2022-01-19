@@ -7,55 +7,6 @@
 
    Models used for fitting.
 
-   Based on Gaussian-Type Models for electronic structure theory.
-
-   Classes
-   -------
-       AtomicGaussianDensity - Gaussian density model for modeling atomic densities
-       MolecularGaussianDensity - Gaussian density model for modeling multiple atomic densities.
-
-
-   .. rubric:: Notes
-
-   There are two choices of Gaussian functions for both Atomic and Molecular Electronic Densities.
-   S-type Gaussian functions are defined to be the standard Gaussian functions.
-   .. math ::
-           e^{-\alpha r^2}.
-
-   P-type Gaussian functions are defined as,
-   .. math ::
-        r^2 e^{-\alpha r^2}
-
-   where :math:`\alpha` is defined to be the exponent and :math:`r` is the radius to the center.
-
-   - Atomic Gaussian density is defined to be a single center Gaussian function. Note that it
-       can be of any dimension. Molecular Gaussian density is defined to be a more than one centers of
-       Gaussian functions.
-
-   - The class MolecularGaussianDensity depends on AtomicGaussianDensity class.
-
-   .. rubric:: Examples
-
-   This example shows how to define a single atomic Gaussian density in three dimensions.
-
-   First, pick out a grid. Here it is three-dimensional.
-   >> grid = np.array([[1., 2., 3.], [1., 2., 2.99], [0., 0., 0.]])
-
-   Next pick out where the Gaussian density is centered.
-   Since it is AtomicGaussianDensity, then only one center can be provided.
-   >> coord = np.array([1., 1., 1.])
-
-   Define number of S-type to be 3 and P-type to be 4.
-   >> model = AtomicGaussianDensity(grid, center=coord, num_s=3, num_p=4, normalize=True)
-
-   Evaluate the model based on coefficients and exponents.
-   First 3 coefficients are for S-type and the last four are for P-type.
-   >> coeffs = np.array([1., 1., 1., 2., 2., 2., 2.])
-   >> exps = np.array([0.001, 0.2, 0.3, 10., 100., 1000.])
-
-   Finally, evaluate the model based on those coefficients and exponents.
-   >> points = model.evaluate(coeffs, exps)
-
    ..
        !! processed by numpydoc !!
 
@@ -76,75 +27,35 @@ Classes
 
 .. py:class:: AtomicGaussianDensity(points, center=None, num_s=1, num_p=0, normalize=False)
 
-   
    Gaussian density model for modeling the electronic density of a single atom.
 
    Atomic Gaussian density is a linear combination of Gaussian functions of S-type
-    and P-type functions:
+   and p-type functions:
+
    .. math::
-       f(x) := \sum_i c_i e^{-\alpha_i |x - c|^2} + d_i |x - c|^2 e^{-\beta |x - c|^2}
+       f(x) := \sum_i c_i e^{-\alpha_i |x - c|^2} + \sum_j d_j |x - c|^2 e^{-\beta_j |x - c|^2}
+
    where
-       :math:`c_i, d_i` are the coefficients of S-type and P-type functions.
-       :math:`c` is the center of the Gaussian functions.
-       :math:`x` is the real coordinates, can be multi-dimensional.
+   :math:`c_i, d_i` are the coefficients of s-type and p-type Gaussian functions,
+   :math:`\alpha_i, \beta_j` are teh exponents of the s-type and p-type Gaussian functions,
+   :math:`c` is the center of all Gaussian functions.
+   :math:`x` is the real coordinates, can be multi-dimensional.
 
-   .. attribute:: points
 
-      The grid points, where N is the number of points and D is the dimension of a point.
 
-      :type: ndarray(N, D)
+   Construct class representing atomic density modeled as Gaussian functions.
 
-   .. attribute:: radii
-
-      Distance of points from the center :math:`c`.
-
-      :type: ndarray(N, D)
-
-   .. attribute:: num_s
-
-      Number of S-type Gaussian basis functions.
-
-      :type: int
-
-   .. attribute:: num_p
-
-      Number of P-type Gaussian basis functions.
-
-      :type: int
-
-   .. attribute:: nbasis
-
-      Total number of basis functions (including S-type and P-type Gaussians).
-
-      :type: int
-
-   .. attribute:: natoms
-
-      Number of atom or number of centers for Gaussian function.
-
-      :type: int
-
-   .. method:: evaluate(deriv='False') :
-
-      Return Gaussian density function on `radii` by providing coefficients and exponents.
-      If `deriv` is True, then derivative with respect to the coefficient and exponent is
-      also returned.
-
-   .. rubric:: Examples
-
-   First define a grid.
-   >> point = [-0.5, -0.25, 0., 0.25, 0.5]
-
-   Define the center.
-   >> center = np.array([-1.])
-
-   Define the Model using 5 S-Type and P-type.
-   >> model = AtomicGaussianDensity(point, center=center, num_s=5, num_p=5)
-
-   Put first 5 coefficients of S-type followed by P-type. Same with exponents.
-   >> coeff = np.array([1., 2., 3., 4., 5., 1., 2., 3., 4., 5.])
-   >> exps = np.array([0.05, 0.1, 0.2, 0.3, 0.4, 0.01, 0.02, 0.03, 0.04, 0.05])
-   >> model.evaluate(coeff, exps)
+   :param points: Grid points where N is the number of points and D is the number of dimensions.
+   :type points: ndarray, (N, D)
+   :param center: The D-dimensional coordinates of the single center.
+                  If `None`, then the center is the origin of all zeros.
+   :type center: ndarray (D,), optional
+   :param num_s: Number of s-type Gaussian basis functions.
+   :type num_s: int, optional
+   :param num_p: Number of p-type Gaussian basis functions.
+   :type num_p: int, optional
+   :param normalize: Whether to normalize Gaussian basis functions.
+   :type normalize: bool, optional
 
 
 
@@ -162,6 +73,7 @@ Classes
 
    ..
        !! processed by numpydoc !!
+
    .. py:method:: points(self)
       :property:
 
@@ -330,25 +242,53 @@ Classes
       ..
           !! processed by numpydoc !!
 
+   .. py:method:: change_numb_s_and_numb_p(self, new_s, new_p)
+
+      
+      Change the number of s-type and p-type Gaussians.
+
+      :param new_s: New number of s-type Gaussians.
+      :type new_s: int
+      :param new_p: New number of p-type Gaussians.
+      :type new_p: int
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
    .. py:method:: evaluate(self, coeffs, expons, deriv=False)
 
       
       Compute linear combination of Gaussian basis & its derivatives on the grid points.
 
       .. math::
-          f(x) := \sum_i c_i e^{-\alpha_i |x - c|^2} + d_i |x - c|^2 e^{-\beta |x-c|^2}
+          f(x):= \sum_i c_i e^{-\alpha_i |x - c|^2} + \sum_j d_j |x - c|^2 e^{-\beta_j |x - c|^2}
 
       where
-          :math:`c_i, d_i` are the coefficients of S-type and P-type functions.
-          :math:`c` is the center of the Gaussian functions.
-          :math:`x` is the real coordinates, can be multi-dimensional.
+      :math:`c_i, d_i` are the coefficients of s-type and p-type Gaussian functions,
+      :math:`\alpha_i, \beta_j` are teh exponents of the s-type and p-type Gaussian functions,
+      :math:`c` is the center of all Gaussian functions.
+      :math:`x` is the real coordinates, can be multi-dimensional.
 
-      :param coeffs: The coefficients of `num_s` s-type Gaussian basis functions followed by the
-                     coefficients of `num_p` p-type Gaussian basis functions.
-      :type coeffs: ndarray, (`nbasis`,)
-      :param expons: The exponents of `num_s` s-type Gaussian basis functions followed by the
-                     exponents of `num_p` p-type Gaussian basis functions.
-      :type expons: ndarray, (`nbasis`,)
+      :param coeffs: The coefficients :math:`c_i` of `num_s` s-type Gaussian basis functions
+                     followed by the coefficients :math:`d_j` of `num_p` p-type Gaussian basis functions.
+      :type coeffs: ndarray(`nbasis`,)
+      :param expons: The exponents :math:`\alpha_i` of `num_s` s-type Gaussian basis functions
+                     followed by the exponents :math:`\beta_j` of `num_p` p-type Gaussian basis functions.
+      :type expons: ndarray(`nbasis`,)
       :param deriv: Whether to compute derivative of Gaussian basis functions w.r.t. coefficients &
                     exponents.
       :type deriv: bool, optional
@@ -374,143 +314,37 @@ Classes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: _eval_s(self, matrix, coeffs, expons, deriv)
-
-      
-      Compute linear combination of s-type Gaussian basis & its derivative on the grid points.
-
-      :param matrix: The exp(-a * r**2) array evaluated on grid points for each exponent.
-      :type matrix: ndarray, (N, M)
-      :param coeffs: The coefficients of Gaussian basis functions.
-      :type coeffs: ndarray, (M,)
-      :param expons: The exponents of Gaussian basis functions.
-      :type expons: ndarray, (M,)
-      :param deriv: Whether to compute derivative of Gaussian basis functions w.r.t. coefficients &
-                    exponents.
-      :type deriv: bool, optional
-
-      :returns: * **g** (*ndarray, (N,)*) -- The linear combination of s-type Gaussian basis functions evaluated on the grid points.
-                * **dg** (*ndarray, (N, 2*M)*) -- The derivative of linear combination of s-type Gaussian basis functions w.r.t.
-                  coefficients (the 1st M columns) & exponents (the 2nd M columns) evaluated on the
-                  grid points. Only returned if `deriv=True`.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: _eval_p(self, matrix, coeffs, expons, deriv)
-
-      
-      Compute linear combination of P-type Gaussian basis & its derivative on the grid points.
-
-      :param matrix: The exp(-a * r**2) array evaluated on grid points for each exponent.
-      :type matrix: ndarray, (N, M)
-      :param coeffs: The coefficients of Gaussian basis functions.
-      :type coeffs: ndarray, (M,)
-      :param expons: The exponents of Gaussian basis functions.
-      :type expons: ndarray, (M,)
-      :param deriv: Whether to compute derivative of Gaussian basis functions w.r.t. coefficients &
-                    exponents.
-      :type deriv: bool, optional
-
-      :returns: * **g** (*ndarray, (N,)*) -- The linear combination of p-type Gaussian basis functions evaluated on the grid points.
-                * **dg** (*ndarray, (N, 2*M)*) -- The derivative of linear combination of p-type Gaussian basis functions w.r.t.
-                  coefficients (the 1st M columns) & exponents (the 2nd M columns) evaluated on the
-                  grid points. Only returned if `deriv=True`.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
 
 .. py:class:: MolecularGaussianDensity(points, coords, basis, normalize=False)
 
-   
    Molecular Atom-Centered Gaussian Density Model.
 
    The Molecular Gaussian Density model is based on multiple centers each associated with a
-       Gaussian density model (S or P-type) of any dimension.
+   Gaussian density model (s or p-type) of any dimension.
 
    .. math::
-           f(x) := \sum_j \sum_{i =1}^{M_j} c_{ji} e^{-\alpha_{ji} |x - m_j|^2} +
-                                            d_{ji} |x - m_j|^2 e^{-\beta_{ji} |x - m_j|^2}
+       f(x) := \sum_j \bigg[ \sum_{i =1}^{M^s_j} c_{ji} e^{-\alpha_{ji} |x - m_j|^2} +
+                        \sum_{i=1}^{M_j^p}d_{ji} |x - m_j|^2 e^{-\beta_{ji} |x - m_j|^2} \bigg]
 
-       where
-           :math:`c_{ji}, d_{ji}` are the ith coefficients of S-type and P-type functions of the
-               jth center.
-           :math:`\alpha_{ji}, \beta_{ji}` are the ith exponents of S-type and P-type functions of
-               the jth center.
-           :math:`M_j` is the total number of basis functions of the jth center.
-           :math:`m_j` is the coordinate of the jth center.
-           :math:`x` is the real coordinates of the point. It can be of any dimension.
+   where
+   :math:`c_{ji}, d_{ji}` are the ith coefficients of s-type and p-type functions of the
+   jth center, :math:`\alpha_{ji}, \beta_{ji}` are the ith exponents of S-type and P-type
+   functions of the jth center, :math:`M_j^s, M_j^p` is the total number of s-type or p-type
+   Gaussians functions of the jth center respectively,
+   :math:`m_j` is the coordinate of the jth center, and
+   :math:`x` is the real coordinates of the point. It can be of any dimension.
 
-   .. attribute:: points
 
-      The grid points in a two-dimensional array, where N is the number of points.
+   Construct the MolecularGaussianDensity class.
 
-      :type: (N, 3) ndarray
-
-   .. attribute:: radii
-
-      Distance of `points` from each center, where M is the number of centers.
-
-      :type: (M, N) ndarray
-
-   .. attribute:: num_s
-
-      Number of S-type Gaussian basis functions.
-
-      :type: int
-
-   .. attribute:: num_p
-
-      Number of P-type Gaussian basis functions.
-
-      :type: int
-
-   .. attribute:: nbasis
-
-      Total number of basis functions (including S-type and P-type Gaussians).
-
-      :type: int
-
-   .. attribute:: natoms
-
-      Number of atom or number of centers.
-
-      :type: int
-
-   .. method:: evaluate(deriv='False') :
-
-      Return Gaussian density function on `radii` by providing coefficients and exponents.
-      If `deriv` is True, then derivative with respect to the coefficient and exponent is
-      also returned.
+   :param points: The grid points, where N is the number of grid points and D is the dimension.
+   :type points: ndarray, (N, D)
+   :param coords: The atomic coordinates (M centers) on which Gaussian basis are centered.
+   :type coords: ndarray, (M, D)
+   :param basis: The number of S-type & P-type Gaussian basis functions placed on each center.
+   :type basis: ndarray, (M, 2)
+   :param normalize: Whether to normalize Gaussian basis functions.
+   :type normalize: bool, optional
 
 
 
@@ -528,6 +362,7 @@ Classes
 
    ..
        !! processed by numpydoc !!
+
    .. py:method:: points(self)
       :property:
 
@@ -683,28 +518,26 @@ Classes
       Compute linear combination of Gaussian basis & its derivatives on the grid points.
 
       The Molecular Gaussian is defined to be:
-      .. math::
-          f(x) := \sum_j \sum_{i =1}^{M_j} c_{ji} e^{-\alpha_{ji} |x - m_j|^2} +
-                                           d_{ji} |x - m_j|^2 e^{-\beta_{ji} |x - m_j|^2}
+
+       .. math::
+          f(x) := \sum_j \bigg[ \sum_{i =1}^{M^s_j} c_{ji} e^{-\alpha_{ji} |x - m_j|^2} +
+                  \sum_{i=1}^{M_j^p}d_{ji} |x - m_j|^2 e^{-\beta_{ji} |x - m_j|^2} \bigg]
 
       where
-          :math:`c_{ji}, d_{ji}` are the ith coefficients of S-type and P-type functions of the
-              jth center.
-          :math:`\alpha_{ji}, \beta_{ji}` are the ith exponents of S-type and P-type functions of
-              the jth center.
-          :math:`M_j` is the total number of basis functions of the jth center.
-          :math:`m_j` is the coordinate of the jth center.
-          :math:`x` is the real coordinates of the point.
-
-      Its derivative with respect to exponent of a single Gaussian with center :math:`m_j` is:
-      .. math::
-          \frac{\partial f}{\partial \alpha_{ji}} = -e^{-\alpha_{ji} |x - m_j|^2}.
+      :math:`c_{ji}, d_{ji}` are the ith coefficients of s-type and p-type functions of the
+      jth center, :math:`\alpha_{ji}, \beta_{ji}` are the ith exponents of S-type and P-type
+      functions of the jth center, :math:`M_j^s, M_j^p` is the total number of s-type or p-type
+      Gaussians functions of the jth center respectively,
+      :math:`m_j` is the coordinate of the jth center, and
+      :math:`x` is the real coordinates of the point. It can be of any dimension.
 
       :param coeffs: The coefficients of `num_s` s-type Gaussian basis functions followed by the
-                     coefficients of `num_p` p-type Gaussian basis functions.
+                     coefficients of `num_p` p-type Gaussian basis functions for an atom, then repeat
+                     for the next atom.
       :type coeffs: ndarray, (`nbasis`,)
       :param expons: The exponents of `num_s` s-type Gaussian basis functions followed by the
-                     exponents of `num_p` p-type Gaussian basis functions.
+                     exponents of `num_p` p-type Gaussian basis functions for an atom, then repeat
+                     for the next atom.
       :type expons: ndarray, (`nbasis`,)
       :param deriv: Whether to compute derivative of Gaussian basis functions w.r.t. coefficients &
                     exponents.

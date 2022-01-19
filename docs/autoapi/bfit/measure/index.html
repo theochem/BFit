@@ -13,8 +13,8 @@
   
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
 
   
   
@@ -24,7 +24,7 @@
   
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+    <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -42,7 +42,7 @@
 
     
     <link rel="index" title="Index" href="../../../genindex.html" />
-    <link rel="search" title="Search" href="../../../search.html" /> 
+    <link rel="search" title="Search" href="../../../search.html" />
 </head>
 
 <body class="wy-body-for-nav">
@@ -87,7 +87,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../index.html">API Reference</a></li>
 </ul>
@@ -181,19 +181,11 @@
 </style>
 <div class="section" id="module-bfit.measure">
 <span id="bfit-measure"></span><h1><a class="reference internal" href="#module-bfit.measure" title="bfit.measure"><code class="xref py py-mod docutils literal notranslate"><span class="pre">bfit.measure</span></code></a><a class="headerlink" href="#module-bfit.measure" title="Permalink to this headline">¶</a></h1>
-<p>Deviation Measure Module.</p>
-<p>Classes that measure the deviation between true and model probability distributions.</p>
-<div class="section" id="classes">
-<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
-<blockquote>
-<div><p>KLDivergence - Kullback-Leibler divergence measure.
-SquaredDifference - Square-Difference measure for Least-Squared method.</p>
-</div></blockquote>
-</div>
+<p>Measure Module.</p>
 <div class="section" id="module-contents">
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id1">
-<h3>Classes<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h3>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -206,165 +198,179 @@ SquaredDifference - Square-Difference measure for Least-Squared method.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#bfit.measure.KLDivergence" title="bfit.measure.KLDivergence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KLDivergence</span></code></a></p></td>
 <td><p>Kullback-Leibler Divergence Class.</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bfit.measure.TsallisDivergence" title="bfit.measure.TsallisDivergence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TsallisDivergence</span></code></a></p></td>
+<td><p>Tsallis Divergence Class.</p></td>
+</tr>
 </tbody>
 </table>
 <dl class="py class">
 <dt id="bfit.measure.SquaredDifference">
-<em class="property">class </em><code class="sig-prename descclassname">bfit.measure.</code><code class="sig-name descname">SquaredDifference</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">density</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/measure.html#SquaredDifference"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.measure.SquaredDifference" title="Permalink to this definition">¶</a></dt>
-<dd><p>Squared Difference Class for performing the Least-Squared method.</p>
-<dl class="simple">
-<dt>Least-squared is the defined to be the integral of the squared difference between</dt><dd><p>true and model functions:</p>
-</dd>
-</dl>
-<div class="math notranslate nohighlight">
-\[||f - g|| = \int_G (f(x) - g(x))^2 dx\]</div>
-<dl class="simple">
-<dt>where,</dt><dd><p><span class="math notranslate nohighlight">\(f\)</span> is the true function,
-<span class="math notranslate nohighlight">\(g\)</span> is the model function,
-<span class="math notranslate nohighlight">\(G\)</span> is the grid.</p>
-</dd>
-</dl>
-<p>The term <span class="math notranslate nohighlight">\(|f(x) - g(x)|^2\)</span> is called the Squared Difference between f and g on a point x.</p>
+<em class="property">class </em><code class="sig-prename descclassname">bfit.measure.</code><code class="sig-name descname">SquaredDifference</code><a class="reference internal" href="../../../_modules/bfit/measure.html#SquaredDifference"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.measure.SquaredDifference" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Measure</span></code></p>
+<p>Squared Difference Class for performing the Least-Squared method.</p>
 <dl class="py attribute">
-<dt id="bfit.measure.SquaredDifference.density">
-<code class="sig-name descname">density</code><a class="headerlink" href="#bfit.measure.SquaredDifference.density" title="Permalink to this definition">¶</a></dt>
-<dd><p>The true function (being approximated) evaluated on <cite>N</cite> points.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>ndarray(N,)</p>
-</dd>
-</dl>
-</dd></dl>
+<dt id="bfit.measure.SquaredDifference.__slots__">
+<code class="sig-name descname">__slots__</code><em class="property"> = []</em><a class="reference internal" href="../../../_modules/bfit/measure.html#SquaredDifference.__slots__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.measure.SquaredDifference.__slots__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt id="bfit.measure.SquaredDifference.evaluate">
-<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">deriv</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/measure.html#SquaredDifference.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.measure.SquaredDifference.evaluate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the squared difference between model and true functions. Note that it does not
-integrate the model but rather only computes f(x) - g(x). If <cite>deriv</cite> is True,
-then the derivative with respect to model function is returned.</p>
-</dd></dl>
-
-<p class="rubric">Notes</p>
-<ul class="simple">
-<li><dl class="simple">
-<dt>This class does not return the Least-Squared but rather the squared difference.</dt><dd><p>One would need to integrate this to get the Least Squared.</p>
-</dd>
-</dl>
-</li>
-</ul>
-<dl class="py method">
-<dt id="id0">
-<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">deriv</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/measure.html#SquaredDifference.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">density</span></em>, <em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">deriv</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/measure.html#SquaredDifference.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.measure.SquaredDifference.evaluate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluate squared difference b/w density &amp; model on the grid points.</p>
-<p>This is defined to be <span class="math notranslate nohighlight">\((f(x) - g(x))^2\)</span>.</p>
+<p>This is defined to be <span class="math notranslate nohighlight">\((f(x) - g(x))^2\)</span>,
+where,
+<span class="math notranslate nohighlight">\(f\)</span> is the true function, and
+<span class="math notranslate nohighlight">\(g\)</span> is the model function,</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>model</strong> (<em>ndarray</em><em>, </em><em>(</em><em>N</em><em>,</em><em>)</em>) – The model density evaluated on the grid points.</p></li>
-<li><p><strong>deriv</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to compute the derivative of squared difference w.r.t. model density.</p></li>
+<li><p><strong>density</strong> (<em>ndarray</em><em>(</em><em>N</em><em>,</em><em>)</em>) – The exact density evaluated on the grid points.</p></li>
+<li><p><strong>model</strong> (<em>ndarray</em><em>(</em><em>N</em><em>,</em><em>)</em>) – The model density evaluated on the grid points.</p></li>
+<li><p><strong>deriv</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to compute the derivative of squared difference w.r.t. model density.
+Default is false.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>m</strong> (<em>ndarray, (N,)</em>) – The squared difference between density &amp; model on the grid points.</p></li>
-<li><p><strong>dm</strong> (<em>ndarray, (N,)</em>) – The derivative of squared difference w.r.t. model density evaluated on the
-grid points. Only returned if <cite>deriv=True</cite>.</p></li>
+<li><p><strong>m</strong> (<em>ndarray(N,)</em>) – The squared difference between density &amp; model on the grid points.</p></li>
+<li><p><strong>dm</strong> (<em>ndarray(N,)</em>) – The derivative of squared difference w.r.t. model density evaluated on the
+grid points, only returned if <cite>deriv=True</cite>.</p></li>
 </ul>
 </p>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>This class returns the squared difference at each point in the domain.
+One would need to integrate this to get the desired least-squares.</p></li>
+</ul>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt id="bfit.measure.KLDivergence">
-<em class="property">class </em><code class="sig-prename descclassname">bfit.measure.</code><code class="sig-name descname">KLDivergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">density</span></em>, <em class="sig-param"><span class="n">mask_value</span><span class="o">=</span><span class="default_value">1e-12</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/measure.html#KLDivergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.measure.KLDivergence" title="Permalink to this definition">¶</a></dt>
-<dd><p>Kullback-Leibler Divergence Class.</p>
-<p>This is defined as the integral:
-.. math:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">D</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">g</span><span class="p">)</span> <span class="o">:=</span> \<span class="n">int_G</span> <span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> \<span class="n">ln</span> <span class="p">(</span> \<span class="n">frac</span><span class="p">{</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">)}{</span><span class="n">g</span><span class="p">(</span><span class="n">x</span><span class="p">)}</span> <span class="p">)</span> <span class="n">dx</span>
-</pre></div>
-</div>
-<dl class="simple">
-<dt>where,</dt><dd><p><span class="math notranslate nohighlight">\(f\)</span> is the true probability distribution,
-<span class="math notranslate nohighlight">\(g\)</span> is the model probability distribution,
-<span class="math notranslate nohighlight">\(G\)</span> is the grid.</p>
+<em class="property">class </em><code class="sig-prename descclassname">bfit.measure.</code><code class="sig-name descname">KLDivergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mask_value</span><span class="o">=</span><span class="default_value">1e-12</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/measure.html#KLDivergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.measure.KLDivergence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Measure</span></code></p>
+<p>Kullback-Leibler Divergence Class.</p>
+<p>Construct the Kullback-Leibler class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>mask_value</strong> (<em>float</em><em>, </em><em>optional</em>) – The elements less than or equal to this number are masked in a division,
+and then replaced with the value of one so that logarithm of one is zero.</p>
 </dd>
 </dl>
 <dl class="py attribute">
-<dt id="bfit.measure.KLDivergence.density">
-<code class="sig-name descname">density</code><a class="headerlink" href="#bfit.measure.KLDivergence.density" title="Permalink to this definition">¶</a></dt>
-<dd><p>The true function (being approximated) evaluated on <cite>N</cite> points.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>ndarray(N,)</p>
-</dd>
-</dl>
-</dd></dl>
+<dt id="bfit.measure.KLDivergence.__slots__">
+<code class="sig-name descname">__slots__</code><em class="property"> = []</em><a class="reference internal" href="../../../_modules/bfit/measure.html#KLDivergence.__slots__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.measure.KLDivergence.__slots__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
-<dl class="py attribute">
+<dl class="py method">
 <dt id="bfit.measure.KLDivergence.mask_value">
-<code class="sig-name descname">mask_value</code><a class="headerlink" href="#bfit.measure.KLDivergence.mask_value" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="simple">
-<dt>Values of model density <cite>g</cite> that are less than <cite>mask_value</cite> are masked when used in division</dt><dd><p>and then replaced with the value of 1 so that logarithm of one is zero.</p>
-</dd>
-</dl>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-</dl>
+<em class="property">property </em><code class="sig-name descname">mask_value</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/measure.html#KLDivergence.mask_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.measure.KLDivergence.mask_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Masking value used when evaluating the measure.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="bfit.measure.KLDivergence.evaluate">
-<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">deriv</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/measure.html#KLDivergence.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.measure.KLDivergence.evaluate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the integrand <span class="math notranslate nohighlight">\(f(x) \ln(f(x)/g(x))\)</span> between model and true functions.
-Note that it does not integrate the model, and so it doesn’t exactly return the
-Kullback-Leibler. If <cite>deriv</cite> is True, then the derivative with respect to model function
-is returned.</p>
-</dd></dl>
-
-<p class="rubric">Notes</p>
-<ul class="simple">
-<li><dl class="simple">
-<dt>This class does not return the Kullback-Leibler but rather the integrand.</dt><dd><p>One would need to integrate this to get the Least Squared.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>It using masked values to handle overflow and underflow floating point precision issues. This</dt><dd><p>is due to the division in the Kullback-Leibler formula between two probability
-distributions.</p>
-</dd>
-</dl>
-</li>
-</ul>
-<dl class="py method">
-<dt id="id2">
-<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">deriv</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/measure.html#KLDivergence.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#id2" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">density</span></em>, <em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">deriv</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/measure.html#KLDivergence.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.measure.KLDivergence.evaluate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluate the integrand of Kullback-Leibler divergence b/w true &amp; model.</p>
 <div class="math notranslate nohighlight">
-\[D(f, g) := \int_G f(x) \ln ( \frac{f(x)}{g(x)} ) dx\]</div>
-<dl class="simple">
-<dt>where,</dt><dd><p><span class="math notranslate nohighlight">\(f\)</span> is the true probability distribution,
+\[D(f, g) := \int_G f(x) \ln \bigg( \frac{f(x)}{g(x)} \bigg) dx\]</div>
+<p>where,
+<span class="math notranslate nohighlight">\(f\)</span> is the true probability distribution,
 <span class="math notranslate nohighlight">\(g\)</span> is the model probability distribution,
-<span class="math notranslate nohighlight">\(G\)</span> is the grid.</p>
-</dd>
-</dl>
-<p>If the model density is negative, then this function will return extremely large values,
-for optimization purposes.</p>
+<span class="math notranslate nohighlight">\(G\)</span> is the grid being integrated on.</p>
+<p>If the model density is negative, then this function will return infinity.
+If <span class="math notranslate nohighlight">\(g(x) &lt; \text{mask value}\)</span> then <span class="math notranslate nohighlight">\(\frac{f(x)}{g(x)} = 1\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>model</strong> (<em>ndarray</em><em>, </em><em>(</em><em>N</em><em>,</em><em>)</em>) – The model density evaluated on the grid points.</p></li>
-<li><p><strong>deriv</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to compute the derivative of divergence w.r.t. model density.</p></li>
+<li><p><strong>density</strong> (<em>ndarray</em><em>(</em><em>N</em><em>,</em><em>)</em>) – The exact density evaluated on the grid points.</p></li>
+<li><p><strong>model</strong> (<em>ndarray</em><em>(</em><em>N</em><em>,</em><em>)</em>) – The model density evaluated on the grid points.</p></li>
+<li><p><strong>deriv</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to return the derivative of divergence w.r.t. model density, as well.
+Default is false.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>m</strong> (<em>ndarray, (N,)</em>) – The divergence between density &amp; model on the grid points.</p></li>
-<li><p><strong>dm</strong> (<em>ndarray, (N,)</em>) – The derivative of divergence w.r.t. model density evaluated on the grid points.
+<li><p><strong>m</strong> (<em>ndarray(N,)</em>) – The Kullback-Leibler divergence between density &amp; model on the grid points.</p></li>
+<li><p><strong>dm</strong> (<em>ndarray(N,)</em>) – The derivative of divergence w.r.t. model density evaluated on the grid points.
+Only returned if <cite>deriv=True</cite>.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>ValueError :</strong> – If the model density is negative, then the integrand is un-defined.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Values of nodel density that are less than <cite>mask_value</cite> are masked when used in
+division and then replaced with the value of 1 so that logarithm of one is zero.</p></li>
+<li><p>This class does not return the Kullback-Leibler divergence.
+One would need to integrate this to get the KL value.</p></li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="bfit.measure.TsallisDivergence">
+<em class="property">class </em><code class="sig-prename descclassname">bfit.measure.</code><code class="sig-name descname">TsallisDivergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">alpha</span><span class="o">=</span><span class="default_value">1.001</span></em>, <em class="sig-param"><span class="n">mask_value</span><span class="o">=</span><span class="default_value">1e-12</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/measure.html#TsallisDivergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.measure.TsallisDivergence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Measure</span></code></p>
+<p>Tsallis Divergence Class.</p>
+<p>Construct the Kullback-Leibler class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alpha</strong> (<em>float</em>) – The alpha parameter of the Tsallis divergence. If it tends towards
+one, then Tsallis divergence approaches Kullback-Leibler.</p></li>
+<li><p><strong>mask_value</strong> (<em>float</em><em>, </em><em>optional</em>) – The elements less than or equal to this number are masked in a division,
+and then replaced with the value of one so that logarithm of one is zero.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt id="bfit.measure.TsallisDivergence.__slots__">
+<code class="sig-name descname">__slots__</code><em class="property"> = []</em><a class="reference internal" href="../../../_modules/bfit/measure.html#TsallisDivergence.__slots__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.measure.TsallisDivergence.__slots__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="bfit.measure.TsallisDivergence.alpha">
+<em class="property">property </em><code class="sig-name descname">alpha</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/measure.html#TsallisDivergence.alpha"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.measure.TsallisDivergence.alpha" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return alpha parameter of the Tsallis divergence.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="bfit.measure.TsallisDivergence.mask_value">
+<em class="property">property </em><code class="sig-name descname">mask_value</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/measure.html#TsallisDivergence.mask_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.measure.TsallisDivergence.mask_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return masking value used when evaluating the measure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="bfit.measure.TsallisDivergence.evaluate">
+<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">density</span></em>, <em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">deriv</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/bfit/measure.html#TsallisDivergence.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bfit.measure.TsallisDivergence.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the integrand of Tsallis divergence on grid points.</p>
+<p>Defined as follows:</p>
+<div class="math notranslate nohighlight">
+\[\int_G \frac{1}{\alpha - 1} f(x) \bigg(\frac{f(x)}{g(x)}^{q- 1} - 1\bigg) dx,\]</div>
+<p>where
+<span class="math notranslate nohighlight">\(f\)</span> is the true probability distribution,
+<span class="math notranslate nohighlight">\(g\)</span> is the model probability distribution.
+<span class="math notranslate nohighlight">\(G\)</span> is the grid being integrated on.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>density</strong> (<em>ndarray</em><em>(</em><em>N</em><em>,</em><em>)</em>) – The exact density evaluated on the grid points.</p></li>
+<li><p><strong>model</strong> (<em>ndarray</em><em>(</em><em>N</em><em>,</em><em>)</em>) – The model density evaluated on the grid points.</p></li>
+<li><p><strong>deriv</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to compute the derivative of squared difference w.r.t. model density.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>m</strong> (<em>ndarray(N,)</em>) – The Tsallis divergence between density &amp; model on the grid points.</p></li>
+<li><p><strong>dm</strong> (<em>ndarray(N,)</em>) – The derivative of divergence w.r.t. model density evaluated on the grid points.
 Only returned if <cite>deriv=True</cite>.</p></li>
 </ul>
 </p>
@@ -372,12 +378,20 @@ Only returned if <cite>deriv=True</cite>.</p></li>
 </dl>
 <p class="rubric">Notes</p>
 <ul class="simple">
-<li><dl class="simple">
-<dt>Values of Model density that are less than <cite>mask_value</cite> are masked when used in</dt><dd><p>division and then replaced with the value of 1 so that logarithm of one is zero.</p>
+<li><p>This does not impose non-negativity of the model density, unlike the Kullback-Leibler.</p></li>
+<li><p>Values of Model density that are less than <cite>mask_value</cite> are masked when used in
+division and then replaced with the value of 0.</p></li>
+<li><p>As <span class="math notranslate nohighlight">\(\alpha\)</span> parameter tends towards one, then this converges to the
+Kullback-Leibler. This is particularly useful for trust-region methods that don’t
+impose strict constraints during the optimization procedure.</p></li>
+</ul>
+<p class="rubric">References</p>
+<dl class="simple">
+<dt>[1] Ayers, Paul W. “Information theory, the shape function, and the Hirshfeld atom.”</dt><dd><p>Theoretical Chemistry Accounts 115.5 (2006): 370-378.</p>
+</dd>
+<dt>[2] Heidar-Zadeh, Farnaz, Ivan Vinogradov, and Paul W. Ayers. “Hirshfeld partitioning</dt><dd><p>from non-extensive entropies.” Theoretical Chemistry Accounts 136.4 (2017): 54.</p>
 </dd>
 </dl>
-</li>
-</ul>
 </dd></dl>
 
 </dd></dl>

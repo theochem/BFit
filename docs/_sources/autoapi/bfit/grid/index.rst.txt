@@ -5,26 +5,7 @@
 
 .. autoapi-nested-parse::
 
-   Grid Module - Model the grid and integration methods of the model and true probability distributions.
-
-   Classes
-   -------
-   There are three classes:
-
-   ClenshawRadialGrid -
-       Models a One-dimensional grid via Clenshaw-Curtis pattern.
-       Integration is done via 'np.trapz' method (spherical coordinates, optional).
-       Intended for Atomic fitting.
-
-   UniformRadialGrid -
-       Uniform (equal spacing), one-dimensional grid.
-       Integration is done via 'np.trapz' method (spherical coordinates, optional).
-       Intended for Atomic fitting.
-
-   CubicGrid -
-       Uniform (equal spacing), three-dimensional grid.
-       Integration is done via Riemannian sums.
-       Intended for Molecular fitting.
+   Grid module for integration.
 
    ..
        !! processed by numpydoc !!
@@ -45,30 +26,26 @@ Classes
 
 
 
-.. py:class:: UniformRadialGrid(num_pts, min_radii=0.0, max_radii=100.0, spherical=True)
+.. py:class:: UniformRadialGrid(num_pts, min_radii=0.0, max_radii=100.0, dtype=np.longdouble)
 
    Bases: :py:obj:`_BaseRadialGrid`
 
-   
    Uniformly Distributed Radial Grid Class.
 
-   The grid points are equally-spaced in :math:`[0, max_points)` interval.
+   The grid points are equally-spaced in :math:`[0, K)` interval, where K is the upper bound
+   on the grid.
 
-   .. attribute:: points
 
-      The radial grid points of a one-dimensional grid with N points.
+   Construct the UniformRadialGrid object.
 
-      :type: ndarray, (N,)
-
-   .. attribute:: spherical
-
-      If true, then trapezoidal integration is done spherically (ie with a factor of :math:`4 \pi r^2`).
-
-      :type: bool
-
-   .. method:: integrate(arr)
-
-      Integrate array `arr` defined over "point" array using trapezoidal integration.
+   :param num_pts: The number of grid points.
+   :type num_pts: int
+   :param min_radii: The smallest radial grid point.
+   :type min_radii: float, optional
+   :param max_radii: The largest radial grid point.
+   :type max_radii: float, optional
+   :param dtype: The desired NumPy data-type.
+   :type dtype: data-type, optional
 
 
 
@@ -87,44 +64,117 @@ Classes
    ..
        !! processed by numpydoc !!
 
-.. py:class:: ClenshawRadialGrid(atomic_number, num_core_pts, num_diffuse_pts, extra_pts=None, spherical=True)
+   .. py:method:: points(self)
+      :property:
+
+      
+      Radial grid points.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: __len__(self)
+
+      
+      Return number of grid points.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: integrate(self, arr)
+
+      
+      Compute trapezoidal integration of a function evaluated on the radial grid points.
+
+      In other words, :math:`\int f(r) dr`, where :math:'f(r)' is the integrand.
+
+      :param arr: The integrand evaluated on the :math:`N` radial grid points.
+      :type arr: ndarray(N,)
+
+      :returns: The value of the integral.
+      :rtype: float
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+.. py:class:: ClenshawRadialGrid(atomic_number, num_core_pts, num_diffuse_pts, extra_pts=None, dtype=np.longdouble)
 
    Bases: :py:obj:`_BaseRadialGrid`
 
-   
    Clenshaw-Curtis Radial Grid Class.
 
-   The Clenshaw-Curtis grid places more points closer to the origin of the interval :math:`[0, \inf).`
-   It is defined as follows. Let :math:`Z, m, n` be the atomic number, number of points near origin,
-   and the number of points far from the origin, respectively.
+   The Clenshaw-Curtis grid places more points closer to the origin of the interval
+   :math:`[0, \inf).`
+   It is defined as follows. Let :math:`Z, m, n` be the atomic number, number of points near
+   the origin, and the number of points far from the origin, respectively.
 
-   Then each point :math:`r_p` of the Clenshaw radial grid is defined as:
+   Then each point :math:`r_p` of the Clenshaw radial grid is either
 
    .. math::
        \begin{eqnarray}
-           r_p = \frac{1}{2Z} \bigg(1 - \cos\bigg(\frac{\pi p}{400} \bigg)\bigg)  & p = 0, 1, \cdots, m - 1 \\
-           r_p = 25 \bigg(1 - \cos\bigg(\frac{\pi p}{600} \bigg)\bigg) & p = 0, 1, \cdocts, n - 1\\
+           r_p = \frac{1}{2Z} \bigg(1 - \cos\bigg(\frac{\pi p}{400} \bigg)\bigg)  &
+           p = 0, 1, \cdots, m - 1 \\
+           r_p = 25 \bigg(1 - \cos\bigg(\frac{\pi p}{600} \bigg)\bigg) & p = 1, \cdots, n - 1\\
        \end{eqnarray}
 
-   .. attribute:: points
 
-      The radial grid points of a one-dimensional grid with N points.
+   Construct ClenshawRadialGrid grid object.
 
-      :type: ndarray, (N,)
-
-   .. attribute:: atomic_number
-
-      Return the atomic number.
-
-   .. attribute:: spherical
-
-      If true, then trapezoidal integration is done spherically (ie with a factor of :math:`4 \pi r^2`).
-
-      :type: bool
-
-   .. method:: integrate(arr)
-
-      Integrate array `arr` defined over "point" array using trapezoidal integration.
+   :param atomic_number: The atomic number of the atom for which the grid is generated.
+   :type atomic_number: int
+   :param num_core_pts: The number of points near the origin/core region.
+   :type num_core_pts: int
+   :param num_diffuse_pts: The number of points far from the origin/core region.
+   :type num_diffuse_pts: int
+   :param extra_pts: Additional points to be added to the grid, commonly points far away from origin.
+   :type extra_pts: list
+   :param dtype: The desired NumPy data-type.
+   :type dtype: data-type, optional
 
 
 
@@ -142,6 +192,7 @@ Classes
 
    ..
        !! processed by numpydoc !!
+
    .. py:method:: atomic_number(self)
       :property:
 
@@ -166,29 +217,65 @@ Classes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: _get_points(self, num_pts, mode='core')
+   .. py:method:: points(self)
+      :property:
 
       
-      Generate radial points on [0, inf) based on Clenshaw-Curtis grid.
+      Radial grid points.
 
-      The "core" points are concentrated near the origin based on:
 
-      .. math:: r_p = 25 (1 - cos(\frac{\pi p}{2N})) for p =0,1..N-1
 
-      The "diffuse" points are concentrated away from the origin based on:
 
-      .. math:: r_p = \frac{1}[2Z} (1 - cos(\frac{\pi p}{2N})) for p=0,1...N-1,
 
-      where :math:`Z` is the atomic number and :math:`N` is the number of points.
 
-      :param num_pts: The number of points.
-      :type num_pts: int
-      :param mode: If "core", the points are placed closer to the origin. If "diffuse", the points are
-                   placed far away from origin.
-      :type mode: str, optional
 
-      :returns: **points** -- The 1D array of grid points.
-      :rtype: ndarray, (N,)
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: __len__(self)
+
+      
+      Return number of grid points.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: integrate(self, arr)
+
+      
+      Compute trapezoidal integration of a function evaluated on the radial grid points.
+
+      In other words, :math:`\int f(r) dr`, where :math:'f(r)' is the integrand.
+
+      :param arr: The integrand evaluated on the :math:`N` radial grid points.
+      :type arr: ndarray(N,)
+
+      :returns: The value of the integral.
+      :rtype: float
 
 
 
@@ -210,24 +297,17 @@ Classes
 
 .. py:class:: CubicGrid(origin, axes, shape)
 
-   
    Equally-Spaced 3D Cubic Grid Class.
 
-   .. attribute:: points
 
-      The three-dimensional array containing the `N` grid points that are uniform.
+   Construct the CubicGrid object.
 
-      :type: ndarray, (N, 3)
-
-   .. attribute:: step
-
-      The positive number representing the step-size of any two consequent grid points.
-
-      :type: float
-
-   .. method:: integrate(arr) :
-
-      Integrate an array `arr` defined over the `points` using Riemannian sum.
+   :param origin: The origin (left-most, down-most) of the 3D cubic grid.
+   :type origin: float
+   :param axes: The axes that point to the direction of the grid.
+   :type axes: ndarray(3, 3)
+   :param shape: The number of points in each axes.
+   :type shape: (int, int, int)
 
 
 
@@ -245,10 +325,12 @@ Classes
 
    ..
        !! processed by numpydoc !!
+
    .. py:method:: axes(self)
       :property:
 
       
+      Return the axes/three-directions of the cubic grid.
 
 
 
@@ -273,6 +355,7 @@ Classes
 
       
       Construct a uniform grid given the molecular pseudo-numbers and coordinates.
+
       :param atcorenums: Pseudo-number of :math:`M` atoms in the molecule.
       :type atcorenums: np.ndarray, shape (M,)
       :param atcoords: Cartesian coordinates of :math:`M` atoms in the molecule.
@@ -286,52 +369,6 @@ Classes
                      If False, generates axes based on the x,y,z-axis and the spacing parameter, and
                      the origin is defined by the maximum/minimum of the atomic coordinates.
       :type rotate: bool, optional
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: _calculate_volume(self, shape)
-
-      
-      Return the volume of the Uniform Grid.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: _choose_weight_scheme(self, shape)
-
-      
-
 
 
 
@@ -402,14 +439,16 @@ Classes
       
       Compute the integral of a function evaluated on the grid points based on Riemann sums.
 
-      .. math:: \int\int\int f(x, y, z) dx dy dz
+      .. math::
+          \int\int\int f(x, y, z) dx dy dz \approx \sum_i \sum_j \sum_k f(x_i, y_j, z_k) w_{ijk}
 
-      where :math:'f(r)' is the integrand.
+      where :math:'f(r)' is the integrand, and :math:`w_{ijk}` is the weight associated with
+      the (i, j, k)th point.
 
       :param arr: The integrand evaluated on the grid points.
       :type arr: ndarray
 
-      :returns: **value** -- The value of integral.
+      :returns: **value** -- The value of the integral.
       :rtype: float
 
 
