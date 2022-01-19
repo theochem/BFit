@@ -439,10 +439,12 @@ class MolecularGaussianDensity:
         ----------
         coeffs : ndarray, (`nbasis`,)
             The coefficients of `num_s` s-type Gaussian basis functions followed by the
-            coefficients of `num_p` p-type Gaussian basis functions.
+            coefficients of `num_p` p-type Gaussian basis functions for an atom, then repeat
+            for the next atom.
         expons : ndarray, (`nbasis`,)
             The exponents of `num_s` s-type Gaussian basis functions followed by the
-            exponents of `num_p` p-type Gaussian basis functions.
+            exponents of `num_p` p-type Gaussian basis functions for an atom, then repeat
+            for the next atom.
         deriv : bool, optional
             Whether to compute derivative of Gaussian basis functions w.r.t. coefficients &
             exponents.
