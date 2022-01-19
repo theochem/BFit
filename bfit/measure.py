@@ -199,7 +199,10 @@ class KLDivergence(Measure):
         if not isinstance(deriv, bool):
             raise TypeError(f"Deriv {type(deriv)} should be Boolean type.")
         if np.any(model < 0.):
-            return np.array([np.inf] * model.shape[0])
+            inf = 100000.0
+            if deriv:
+                return np.array([inf] * model.shape[0]), np.array([inf] * model.shape[0])
+            return np.array([inf] * model.shape[0])
 
         # compute ratio & replace masked values by 1.0
         ratio = density / np.ma.masked_less_equal(model, self.mask_value)
@@ -209,6 +212,7 @@ class KLDivergence(Measure):
         # Add ignoring division by zero and multiplying by np.nan
         with np.errstate(divide='ignore', invalid="ignore"):
             value = density * np.log(ratio)
+
         # compute derivative
         if deriv:
             return value, -ratio
