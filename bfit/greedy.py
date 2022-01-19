@@ -273,13 +273,13 @@ class GreedyStrategy(metaclass=ABCMeta):
         choice_function : str
             Determines how the next set of basis-functions are chosen.
             Can be either:
-                "pick-one" : Add a new basis-function by taking the average between every two
-                             s-type or p-type exponents.
-                "pick-two" : Add two new basis-functions by recursion of "pick-one" over each
-                             guess from "pick-one".
-                "pick-two-lose-one" : Add new basis-function by iterating though each guess
-                                      in "pick-two" and removing one basis-function, generating
-                                      a new guess each time.
+
+            * `pick-one` : add a new basis-function by taking the average between every two
+              s-type or p-type exponents.
+            * `pick-two` : add two new basis-functions by recursion of "pick-one" over each
+              guess from `pick-one`.
+            * `pick-two-lose-one` : add new basis-function by iterating though each guess
+              in `pick-two` and removing one basis-function, generating a new guess each time.
         fitting_obj : _BaseFit
             The fitting class that is a child of _BaseFit class.  This is used to
             optimize the objective function.
@@ -468,6 +468,7 @@ class GreedyStrategy(metaclass=ABCMeta):
         -------
         result : dict
             The optimization results presented as a dictionary containing:
+
             "coeffs" : ndarray
                 The optimized coefficients of Gaussian model.
             "exps" : ndarray
@@ -661,13 +662,13 @@ class GreedyLeastSquares(GreedyStrategy):
         choice : str, optional
             Determines how the next set of basis-functions are chosen.
             Can be either:
-                "pick-one" : Add a new basis-function by taking the average between every two
-                             s-type or p-type exponents.
-                "pick-two" : Add two new basis-functions by recursion of "pick-one" over each
-                             guess from "pick-one".
-                "pick-two-lose-one" : Add new basis-function by iterating though each guess
-                                      in "pick-two" and removing one basis-function, generating
-                                      a new guess each time.
+
+            * `pick-one` : add a new basis-function by taking the average between every two
+              s-type or p-type exponents.
+            * `pick-two` : add two new basis-functions by recursion of "pick-one" over each
+              guess from `pick-one`.
+            * `pick-two-lose-one` : add new basis-function by iterating though each guess
+              in `pick-two` and removing one basis-function, generating a new guess each time.
         local_tol : float, optional
             The tolerance for convergence of scipy.optimize method for optimizing each local guess.
             Should be larger than `global_tol`.
@@ -821,13 +822,13 @@ class GreedyKLSCF(GreedyStrategy):
         choice : str, optional
             Determines how the next set of basis-functions are chosen.
             Can be either:
-                "pick-one" : Add a new basis-function by taking the average between every two
-                             s-type or p-type exponents.
-                "pick-two" : Add two new basis-functions by recursion of "pick-one" over each
-                             guess from "pick-one".
-                "pick-two-lose-one" : Add new basis-function by iterating though each guess
-                                      in "pick-two" and removing one basis-function, generating
-                                      a new guess each time.
+
+            * `pick-one` : add a new basis-function by taking the average between every two
+              s-type or p-type exponents.
+            * `pick-two` : add two new basis-functions by recursion of "pick-one" over each
+              guess from `pick-one`.
+            * `pick-two-lose-one` : add new basis-function by iterating though each guess
+              in `pick-two` and removing one basis-function, generating a new guess each time.
         g_eps_coeff : float, optional
             The tolerance for convergence of coefficients in KL-SCF method for further
             refining and optimizing the best found local guess.
