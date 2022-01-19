@@ -1,0 +1,68 @@
+.. BFit documentation master file, created by
+   sphinx-quickstart on Mon Nov 22 16:46:26 2021.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Welcome to BFit's documentation!
+================================
+
+`BFit <https://github.com/theochem/bfit>`_ is a free, open-source, and cross-platform
+Python library for fitting a convex sum of Gaussian functions of s-type and p-type to any
+probability distribution.
+
+BFIt is released under the
+`GNU General Public License v3.0 <https://github.com/theochem/procrustes/blob/master/LICENSE>`_.
+Please report any issues you encounter while using BFit library on
+`GitHub Issues <https://github.com/theochem/bfit/issues>`_.
+For further information and inquiries please contact us at `qcdevs@gmail.com <qcdevs@gmail.com>`_.
+
+
+Please use the following citation in any publication using BFit library:
+
+    **"BFit: Information-Theoretic Approach to Basis-Set Fitting of Electron Densities."**,
+    A. Tehrani, F. Heidar-Zadeh, J. S. M. Anderson, T. Verstraelen, R. Cuevas-Saavedra,
+    I. Vinogradov, D. Chakraborty, P. W. Ayers
+
+Models
+------
+BFit supports fitting any probability distribution to a linear combination of Gaussian functions of the form:
+
+.. math::
+   \sum_i c_i e^{-\alpha_i ||\vec{r} - \vec{v}||^2} + \sum_j d_j ||\vec{r} - \vec{c}||^2 e^{-\beta_j ||\vec{r} - \vec{c}||^2}
+
+where :math:`\vec{c}` is the center of the Gaussian.
+
+The first type of Gaussian function :math:`e^{-\alpha_i ||\vec{r} - \vec{v}||^2}` are referred to as s-type Gaussians
+and the second type of Gaussian function :math:`||\vec{r} - \vec{c}||^2 e^{-\beta_j ||\vec{r} - \vec{c}||^2}` are referred to
+as p-type Gaussian functions.
+
+In addition, it supports mixture of Gaussians placed on different centers.
+
+Objective Functions
+-------------------
+BFit supports the minimization of least-squares formula for fitting a model :math:`g(x)`
+to a probability density :math:`f(x)`,
+
+.. math::
+   \int (f(x) - g(x))^2 dx,
+
+and minimization of the Kullback-Leibler divergence formula,
+
+.. math::
+   \int f(x) \log \bigg( \frac{f(x)}{g(x)} \bigg) dx,
+
+with the necessary constraint that :math:`\int f(x) dx = \int g(x) dx`.
+
+
+
+.. toctree::
+   :maxdepth: 4
+   :caption: API Documentation
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
