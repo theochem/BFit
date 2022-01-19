@@ -256,7 +256,7 @@ class TsallisDivergence(Measure):
 
     def evaluate(self, density, model, deriv=False):
         r"""
-        Evaluate the integrand of Tsallis divergence on grid points.
+        Evaluate the integrand of Tsallis divergence ([1]_, [2]_) on grid points.
 
         Defined as follows:
 
@@ -298,10 +298,10 @@ class TsallisDivergence(Measure):
 
         References
         ----------
-        [1] Ayers, Paul W. "Information theory, the shape function, and the Hirshfeld atom."
-            Theoretical Chemistry Accounts 115.5 (2006): 370-378.
-        [2] Heidar-Zadeh, Farnaz, Ivan Vinogradov, and Paul W. Ayers. "Hirshfeld partitioning
-            from non-extensive entropies." Theoretical Chemistry Accounts 136.4 (2017): 54.
+        .. [1] Ayers, Paul W. "Information theory, the shape function, and the Hirshfeld atom."
+               Theoretical Chemistry Accounts 115.5 (2006): 370-378.
+        .. [2] Heidar-Zadeh, Farnaz, Ivan Vinogradov, and Paul W. Ayers. "Hirshfeld partitioning
+               from non-extensive entropies." Theoretical Chemistry Accounts 136.4 (2017): 54.
 
         """
         # check model density
