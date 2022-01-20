@@ -23,6 +23,13 @@ Please use the following citation in any publication using BFit library:
     A. Tehrani, F. Heidar-Zadeh, J. S. M. Anderson, T. Verstraelen, R. Cuevas-Saavedra,
     I. Vinogradov, D. Chakraborty, P. W. Ayers
 
+
+For particular examples of using BFit, see the interactive
+`Jupyter binder <https://mybinder.org/v2/gh/theochem/bfit/master?labpath=%2Fexamples%2>`_ or
+Jupyter files in the `example folder <https://github.com/theochem/BFit/tree/master/examples>`_.
+Specification of the API is listed below.
+
+
 Models
 ------
 BFit supports fitting any probability distribution to a linear combination of Gaussian functions of the form:
