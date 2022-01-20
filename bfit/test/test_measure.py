@@ -43,7 +43,10 @@ def test_raises_kl():
         ValueError, measure.evaluate, np.array([1., 2., 3.]), np.array([[1.], [2.], [3.]])
     )
     # Assert that measure evaluate returns infinity when value is negative
-    assert np.all(measure.evaluate(np.array([1., 2., 3.]), np.array([-0.5, -1.3, -2.8])) == np.inf)
+    assert np.all(
+        measure.evaluate(np.array([1., 2., 3.]), np.array([-0.5, -1.3, -2.8]))
+        == measure.negative_val
+    )
 
 
 def test_evaluate_kl_equal():

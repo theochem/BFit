@@ -121,7 +121,7 @@ class SquaredDifference(Measure):
 class KLDivergence(Measure):
     r"""Kullback-Leibler Divergence Class."""
 
-    def __init__(self, mask_value=1.e-12):
+    def __init__(self, mask_value=1.e-12, negative_val=100000.0):
         r"""
         Construct the Kullback-Leibler class.
 
@@ -130,15 +130,25 @@ class KLDivergence(Measure):
         mask_value : float, optional
             The elements less than or equal to this number are masked in a division,
             and then replaced with the value of one so that logarithm of one is zero.
+        negative_val : (float, np.inf), optional
+            Constant value that gets returned if the model density is negative
+            (i.e. not a true probability distribution). Useful for optimization algorithms
+            with weak constraints.
 
         """
         super().__init__()
         self._mask_value = mask_value
+        self._negative_val = negative_val
 
     @property
     def mask_value(self):
         r"""Masking value used when evaluating the measure."""
         return self._mask_value
+
+    @property
+    def negative_val(self):
+        r"""Value that gets returned if the model density is negative"""
+        return self._negative_val
 
     def evaluate(self, density, model, deriv=False):
         r"""
@@ -199,10 +209,11 @@ class KLDivergence(Measure):
         if not isinstance(deriv, bool):
             raise TypeError(f"Deriv {type(deriv)} should be Boolean type.")
         if np.any(model < 0.):
-            inf = 100000.0
             if deriv:
-                return np.array([inf] * model.shape[0]), np.array([inf] * model.shape[0])
-            return np.array([inf] * model.shape[0])
+                # Add an incredibly large derivative
+                return np.array([self.negative_val] * model.shape[0]), \
+                       np.array([self.negative_val] * model.shape[0])
+            return np.array([self.negative_val] * model.shape[0])
 
         # compute ratio & replace masked values by 1.0
         ratio = density / np.ma.masked_less_equal(model, self.mask_value)
