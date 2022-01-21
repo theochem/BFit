@@ -147,7 +147,7 @@ class KLDivergence(Measure):
 
     @property
     def negative_val(self):
-        r"""Value that gets returned if the model density is negative"""
+        r"""Value that gets returned if the model density is negative."""
         return self._negative_val
 
     def evaluate(self, density, model, deriv=False):
