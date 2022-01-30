@@ -223,7 +223,6 @@ class KLDivergence(Measure):
         # Add ignoring division by zero and multiplying by np.nan
         with np.errstate(divide='ignore', invalid="ignore"):
             value = density * np.log(ratio)
-
         # compute derivative
         if deriv:
             return value, -ratio
@@ -241,10 +240,18 @@ class TsallisDivergence(Measure):
         ----------
         alpha : float
             The alpha parameter of the Tsallis divergence. If it tends towards
-            one, then Tsallis divergence approaches Kullback-Leibler.
+            one, then Tsallis divergence approaches Kullback-Leibler. See Notes
+            for more information.
         mask_value : float, optional
             The elements less than or equal to this number are masked in a division,
             and then replaced with the value of one so that logarithm of one is zero.
+
+        Notes
+        -----
+        - Care should be taken on :math:`\alpha`. If :math:`\alpha > 1` and it isn't too
+          close to 1, then Tsallis divergence upper bounds the Kullback-Leibler and can be useful
+          for optimization purposes.
+
         """
         self._alpha = alpha
         self._mask_value = mask_value
@@ -307,12 +314,17 @@ class TsallisDivergence(Measure):
           Kullback-Leibler. This is particularly useful for trust-region methods that don't
           impose strict constraints during the optimization procedure.
 
+        - Care should be taken on :math:`\alpha`. If :math:`\alpha > 1` and it isn't too
+          close to 1, then Tsallis divergence upper bounds the Kullback-Leibler and can be useful
+          for optimization purposes.
+
         References
         ----------
         .. [1] Ayers, Paul W. "Information theory, the shape function, and the Hirshfeld atom."
-               Theoretical Chemistry Accounts 115.5 (2006): 370-378.
+           Theoretical Chemistry Accounts 115.5 (2006): 370-378.
+
         .. [2] Heidar-Zadeh, Farnaz, Ivan Vinogradov, and Paul W. Ayers. "Hirshfeld partitioning
-               from non-extensive entropies." Theoretical Chemistry Accounts 136.4 (2017): 54.
+           from non-extensive entropies." Theoretical Chemistry Accounts 136.4 (2017): 54.
 
         """
         # check model density
