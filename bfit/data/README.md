@@ -10,4 +10,6 @@ doi:10.1002/(SICI)1097-461X(1999)71:6<491::AID-QUA6>3.0.CO;2-T](https://onlineli
 
 The neutral heavy elements were obtained from the paper,
 
-[Koga, T., Kanayama, K., Watanabe, T. et al. Analytical Hartree–Fock wave functions for the atoms Cs to Lr. Theor Chem Acc 104, 411–413 (2000). https://doi.org/10.1007/s002140000150](https://link.springer.com/article/10.1007/s002140000150)
+[Koga, T., Kanayama, K., Watanabe, T. et al. Analytical Hartree–Fock wave functions 
+for the atoms Cs to Lr. Theor Chem Acc 104, 411–413 (2000). 
+https://doi.org/10.1007/s002140000150](https://link.springer.com/article/10.1007/s002140000150)
