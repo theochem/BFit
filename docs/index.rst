@@ -29,39 +29,6 @@ For particular examples of using BFit, see the interactive
 Jupyter files in the `example folder <https://github.com/theochem/BFit/tree/master/examples>`_.
 Specification of the API is listed below.
 
-
-Models
-------
-BFit supports fitting any probability distribution to a linear combination of Gaussian functions of the form:
-
-.. math::
-   \sum_i c_i e^{-\alpha_i ||\vec{r} - \vec{v}||^2} + \sum_j d_j ||\vec{r} - \vec{c}||^2 e^{-\beta_j ||\vec{r} - \vec{c}||^2}
-
-where :math:`\vec{c}` is the center of the Gaussian.
-
-The first type of Gaussian function :math:`e^{-\alpha_i ||\vec{r} - \vec{v}||^2}` are referred to as s-type Gaussians
-and the second type of Gaussian function :math:`||\vec{r} - \vec{c}||^2 e^{-\beta_j ||\vec{r} - \vec{c}||^2}` are referred to
-as p-type Gaussian functions.
-
-In addition, it supports mixture of Gaussians placed on different centers.
-
-Objective Functions
--------------------
-BFit supports the minimization of least-squares formula for fitting a model :math:`g(x)`
-to a probability density :math:`f(x)`,
-
-.. math::
-   \int (f(x) - g(x))^2 dx,
-
-and minimization of the Kullback-Leibler divergence formula,
-
-.. math::
-   \int f(x) \log \bigg( \frac{f(x)}{g(x)} \bigg) dx,
-
-with the necessary constraint that :math:`\int f(x) dx = \int g(x) dx`.
-
-
-
 .. toctree::
    :maxdepth: 4
    :caption: API Documentation
