@@ -407,7 +407,7 @@ class SlaterAtoms:
         deriv = deriv_pref * slater
         return deriv
 
-    def lagrangian_kinetic_energy(self, points):
+    def positive_definite_kinetic_energy(self, points):
         r"""
         Positive definite or Lagrangian kinetic energy density.
 
@@ -423,35 +423,29 @@ class SlaterAtoms:
 
         """
         phi_matrix = np.zeros((len(points), len(self.orbitals)))
+        angular = {
+            "S": 0.0, "P": 2.0, "D": 6.0, "F": 12.0
+        }
         for index, orbital in enumerate(self.orbitals):
-            exps, number = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
-            # Take second derivative of the Slater-Type Orbitals without division by r^2
-            slater = SlaterAtoms.radial_slater_orbital(exps, number, points)
-            # derivative
-            deriv_pref = (number.T - 1.) - exps.T * np.reshape(points, (points.shape[0], 1))
-            deriv = deriv_pref * slater
-            phi_matrix[:, index] = np.dot(deriv, self.orbitals_coeff[orbital]).ravel()
+            exps, numbers = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
+            # Calculate del^2 of radial component
+            # derivative of the radial component
+            deriv_radial = self.derivative_radial_slater_type_orbital(exps, numbers, points)
+            phi_matrix[:, index] = np.ravel(np.dot(deriv_radial, self.orbitals_coeff[orbital])**2.0)
 
-        angular = []  # Angular numbers are l(l + 1)
-        for index, orbital in enumerate(self.orbitals):
-            if "S" in orbital:
-                angular.append(0.)
-            elif "P" in orbital:
-                angular.append(2.)
-            elif "D" in orbital:
-                angular.append(6.)
-            elif "F" in orbital:
-                angular.append(12.)
+            # Calculate del^2 of spherical component
+            slater = SlaterAtoms.radial_slater_orbital(exps, numbers, points)
+            with np.errstate(divide='ignore'):
+                gradient_sph = (
+                    angular[orbital[1]] *
+                    np.ravel(np.dot(slater, self.orbitals_coeff[orbital]))**2.0 /
+                    points**2.0
+                )
+                gradient_sph[np.abs(points) < 1e-10] = 0.0
+            phi_matrix[:, index] += gradient_sph
 
         orb_occs = self.orbitals_occupation
-        energy = np.dot(phi_matrix**2., orb_occs).ravel() / 2.
-        # Add other term
-        molecular = self.phi_matrix(points)**2. * np.array(angular)
-        energy += np.dot(molecular, orb_occs).ravel() / 2.
-        # Divide by r^2 and set division by zero to zero.
-        with np.errstate(divide='ignore'):
-            energy /= (points**2.0)
-            energy[np.abs(points) < 1e-10] = 0.
+        energy = np.dot(phi_matrix, orb_occs).ravel() / 2.
         return energy / (4.0 * np.pi)
 
     def derivative_density(self, points):
