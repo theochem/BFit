@@ -585,7 +585,7 @@ class ScipyFit(_BaseFit):
             if self.method == "slsqp":
                 constraints = [{"fun": self.const_norm, "type": "eq", "args": args}]
             elif self.method == "trust-constr":
-                constraints = [NonlinearConstraint(self.const_norm, 0, 0, keep_feasible=True)]
+                constraints = [NonlinearConstraint(self.const_norm, 0.0, 0.0, jac="3-point")]
         # set optimization options
         if self.method == "slsqp":
             options = {"ftol": tol, "maxiter": maxiter, "disp": disp}
