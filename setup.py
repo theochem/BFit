@@ -67,7 +67,7 @@ setup(
     ],
     package_data={
         # If any package contains *.slater files, include them:
-        'bfit': ['data/*/*.slater', 'data/*/*.cat', 'data/*/*.an', 'data/*/*.nwchem'],
+        'bfit': ['data/*/*.slater', 'data/*/*.cat', 'data/*/*.an', 'data/*/*.nwchem', 'data/ygbs'],
         'bfit.test': ['data/*/*.slater', 'data/*/*.cat', 'data/*/*.an', 'data/*/*.nwchem']
     },
     include_package_data=True,
