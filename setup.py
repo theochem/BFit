@@ -63,7 +63,8 @@ setup(
     package_dir={"bfit": "bfit"},
     packages=["bfit", "bfit.test"],
     install_requires=[
-        "numpy>=1.18.5", "scipy>=1.5.0", "pytest>=5.4.3", "sphinx>=2.3.0", "matplotlib>=3.2.0"
+        "numpy>=1.18.5", "scipy>=1.5.0", "pytest>=5.4.3", "sphinx>=2.3.0", "matplotlib>=3.2.0",
+        "numpydoc", "sphinx_copybutton", "sphinx-autoapi", "nbsphinx", "sphinx_rtd_theme"
     ],
     package_data={
         # If any package contains *.slater files, include them:
