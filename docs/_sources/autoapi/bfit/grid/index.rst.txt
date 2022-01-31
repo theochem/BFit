@@ -88,29 +88,6 @@ Classes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: __len__(self)
-
-      
-      Return number of grid points.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
    .. py:method:: integrate(self, arr)
 
       
@@ -142,7 +119,7 @@ Classes
           !! processed by numpydoc !!
 
 
-.. py:class:: ClenshawRadialGrid(atomic_number, num_core_pts, num_diffuse_pts, extra_pts=None, dtype=np.longdouble)
+.. py:class:: ClenshawRadialGrid(atomic_number, num_core_pts, num_diffuse_pts, extra_pts=None, include_origin=True, dtype=np.longdouble)
 
    Bases: :py:obj:`_BaseRadialGrid`
 
@@ -173,6 +150,8 @@ Classes
    :type num_diffuse_pts: int
    :param extra_pts: Additional points to be added to the grid, commonly points far away from origin.
    :type extra_pts: list
+   :param include_origin: If true, then include the origin :math:`r=0`.
+   :type include_origin: bool
    :param dtype: The desired NumPy data-type.
    :type dtype: data-type, optional
 
@@ -222,29 +201,6 @@ Classes
 
       
       Radial grid points.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: __len__(self)
-
-      
-      Return number of grid points.
 
 
 
@@ -392,29 +348,6 @@ Classes
 
       
       Return cubic grid points.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: __len__(self)
-
-      
-      Return the number of grid points.
 
 
 

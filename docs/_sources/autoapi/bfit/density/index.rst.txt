@@ -605,7 +605,7 @@ Classes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: lagrangian_kinetic_energy(self, points)
+   .. py:method:: positive_definite_kinetic_energy(self, points)
 
       
       Positive definite or Lagrangian kinetic energy density.

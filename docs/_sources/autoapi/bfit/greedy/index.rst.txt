@@ -40,13 +40,13 @@ Classes
    :type density: ndarray
    :param choice: Determines how the next set of basis-functions are chosen.
                   Can be either:
-                      "pick-one" : Add a new basis-function by taking the average between every two
-                                   s-type or p-type exponents.
-                      "pick-two" : Add two new basis-functions by recursion of "pick-one" over each
-                                   guess from "pick-one".
-                      "pick-two-lose-one" : Add new basis-function by iterating though each guess
-                                            in "pick-two" and removing one basis-function, generating
-                                            a new guess each time.
+
+                  * `pick-one` : add a new basis-function by taking the average between every two
+                    s-type or p-type exponents.
+                  * `pick-two` : add two new basis-functions by recursion of "pick-one" over each
+                    guess from `pick-one`.
+                  * `pick-two-lose-one` : add new basis-function by iterating though each guess
+                    in `pick-two` and removing one basis-function, generating a new guess each time.
    :type choice: str, optional
    :param local_tol: The tolerance for convergence of scipy.optimize method for optimizing each local guess.
                      Should be larger than `global_tol`.
@@ -451,6 +451,7 @@ Classes
       :type disp: bool
 
       :returns: **result** -- The optimization results presented as a dictionary containing:
+
                 "coeffs" : ndarray
                     The optimized coefficients of Gaussian model.
                 "exps" : ndarray
@@ -505,13 +506,13 @@ Classes
    :type density: ndarray
    :param choice: Determines how the next set of basis-functions are chosen.
                   Can be either:
-                      "pick-one" : Add a new basis-function by taking the average between every two
-                                   s-type or p-type exponents.
-                      "pick-two" : Add two new basis-functions by recursion of "pick-one" over each
-                                   guess from "pick-one".
-                      "pick-two-lose-one" : Add new basis-function by iterating though each guess
-                                            in "pick-two" and removing one basis-function, generating
-                                            a new guess each time.
+
+                  * `pick-one` : add a new basis-function by taking the average between every two
+                    s-type or p-type exponents.
+                  * `pick-two` : add two new basis-functions by recursion of "pick-one" over each
+                    guess from `pick-one`.
+                  * `pick-two-lose-one` : add new basis-function by iterating though each guess
+                    in `pick-two` and removing one basis-function, generating a new guess each time.
    :type choice: str, optional
    :param g_eps_coeff: The tolerance for convergence of coefficients in KL-SCF method for further
                        refining and optimizing the best found local guess.
@@ -969,6 +970,7 @@ Classes
       :type disp: bool
 
       :returns: **result** -- The optimization results presented as a dictionary containing:
+
                 "coeffs" : ndarray
                     The optimized coefficients of Gaussian model.
                 "exps" : ndarray
