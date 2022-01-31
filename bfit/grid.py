@@ -138,7 +138,7 @@ class ClenshawRadialGrid(_BaseRadialGrid):
     """
 
     def __init__(self, atomic_number, num_core_pts, num_diffuse_pts, extra_pts=None,
-                 dtype=np.longdouble):
+                 include_origin=True, dtype=np.longdouble):
         r"""
         Construct ClenshawRadialGrid grid object.
 
@@ -152,6 +152,8 @@ class ClenshawRadialGrid(_BaseRadialGrid):
             The number of points far from the origin/core region.
         extra_pts : list
             Additional points to be added to the grid, commonly points far away from origin.
+        include_origin : bool
+            If true, then include the origin :math:`r=0`.
         dtype : data-type, optional
             The desired NumPy data-type.
 
@@ -162,11 +164,17 @@ class ClenshawRadialGrid(_BaseRadialGrid):
             raise TypeError("Argument numb_core_pts should be a non-negative integer.")
         if not isinstance(num_diffuse_pts, int) or num_diffuse_pts < 0:
             raise TypeError("Argument num_diffuse_pts should be a non-negative integer.")
+        if not isinstance(include_origin, bool):
+            raise TypeError(
+                f"Argument include_origin {type(include_origin)} should be of type boolean."
+            )
 
         self._atomic_number = atomic_number
 
         # compute core and diffuse points
-        core_points = self._get_points(num_core_pts, mode="core", dtype=dtype)
+        core_points = self._get_points(
+            num_core_pts, mode="core", include_origin=include_origin, dtype=dtype
+        )
         diff_points = self._get_points(num_diffuse_pts, mode="diffuse", dtype=dtype)
 
         # put all points together (0.0 is also contained in diff_points, so it should be removed)
@@ -174,9 +182,9 @@ class ClenshawRadialGrid(_BaseRadialGrid):
             # check extra points
             if not hasattr(extra_pts, '__iter__') or isinstance(extra_pts, str):
                 raise TypeError("Argument extra_pts should be an iterable.")
-            points = np.concatenate((core_points, diff_points[1:], extra_pts))
+            points = np.concatenate((core_points, diff_points, extra_pts))
         else:
-            points = np.concatenate((core_points, diff_points[1:]))
+            points = np.concatenate((core_points, diff_points))
 
         super().__init__(np.sort(points))
 
@@ -185,7 +193,7 @@ class ClenshawRadialGrid(_BaseRadialGrid):
         """Return the atomic number."""
         return self._atomic_number
 
-    def _get_points(self, num_pts, mode="core", dtype=np.longdouble):
+    def _get_points(self, num_pts, mode="core", include_origin=True, dtype=np.longdouble):
         r"""Generate radial points on :math:`[0, \inf)` based on Clenshaw-Curtis grid.
 
         The "core" points are concentrated near the origin based on:
@@ -209,6 +217,8 @@ class ClenshawRadialGrid(_BaseRadialGrid):
         mode : str, optional
             If "core", the points are placed closer to the origin. If "diffuse", the points are
             placed far away from origin.
+        include_origin : bool
+            If true, then include the origin when `mode`="core".
         dtype : data-type, optional
             The desired NumPy data-type.
 
@@ -219,11 +229,15 @@ class ClenshawRadialGrid(_BaseRadialGrid):
 
         """
         if mode.lower() == "core":
-            points = 1. - np.cos(0.5 * np.pi * np.arange(0., num_pts, dtype=dtype) / num_pts)
+            points = 1. - np.cos(
+                0.5 * np.pi * np.arange(
+                    (1.0 - float(include_origin)), num_pts + int(not include_origin), dtype=dtype
+                ) / num_pts
+            )
             points /= 2 * self._atomic_number
         elif mode.lower() == "diffuse":
             points = 25. * (
-                    1. - np.cos(0.5 * np.pi * np.arange(0., num_pts, dtype=dtype) / num_pts)
+                    1. - np.cos(0.5 * np.pi * np.arange(1.0, num_pts + 1, dtype=dtype) / num_pts)
             )
         else:
             raise ValueError(
