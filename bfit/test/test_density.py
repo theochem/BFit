@@ -420,8 +420,9 @@ def test_raises():
     r"""Test raises error of SlaterAtoms."""
     assert_raises(TypeError, SlaterAtoms, 25)
     assert_raises(TypeError, SlaterAtoms, "be2")
-    assert_raises(ValueError, SlaterAtoms.radial_slater_orbital,
-                  np.array([[1]]), np.array([[2]]), np.array([[1.]])
+    assert_raises(
+        ValueError, SlaterAtoms.radial_slater_orbital,
+        np.array([[1]]), np.array([[2]]), np.array([[1.]])
     )
     c = SlaterAtoms("c")
     assert_raises(ValueError, c.atomic_density, np.array([[1.]]), "not total")
