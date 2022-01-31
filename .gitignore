@@ -1,6 +1,0 @@
-
-# Ignore (in-place) build results
-*.pyc
-
-# Ignore PyCharm
-.idea
