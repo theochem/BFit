@@ -133,7 +133,8 @@ def test_greedy_kl_two_function():
                          g_eps_coeff=1e-10, g_eps_exp=1e-10,
                          l_eps_exp=1e-5, g_eps_obj=1e-15,
                          l_eps_obj=1e-10, l_eps_coeff=1e-8, mask_value=0.0,
-                         maxiter=15000, integral_dens=1.0, spherical=True)
+                         l_maxiter=15000, g_maxiter=15000, integral_dens=1.0,
+                         spherical=True)
     result = greedy.run(2.5, max_numb_funcs=2, disp=True)
 
     npt.assert_almost_equal(result["fun"], 0.0, decimal=6)

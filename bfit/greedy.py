@@ -648,7 +648,7 @@ class GreedyLeastSquares(GreedyStrategy):
     def __init__(
         self, grid, density, choice="pick-one", local_tol=1e-5, global_tol=1e-8,
         method="SLSQP", normalize=False, integral_dens=None, with_constraint=False,
-        maxiter=1000, spherical=False,
+        l_maxiter=1000, g_maxiter=2500, spherical=False,
     ):
         r"""
         Construct the GreedyLestSquares object.
@@ -688,9 +688,12 @@ class GreedyLeastSquares(GreedyStrategy):
         with_constraint : bool
             If true, then adds the constraint that the integration of the model density must
             be equal to the constraint of true density. The default is True.
-        maxiter : int, optional
+        l_maxiter : int, optional
             Maximum number of iterations when optimizing an initial guess in the `scipy.optimize`
-            method.
+            method for optimizing through all initial guesses (local choices).
+        g_maxiter : int, optional
+            Maximum number of iterations when optimizing an initial guess in the `scipy.optimize`
+            method for further optimizing the best local choice (global choice).
         spherical : bool
             Whether to perform spherical integration by adding :math:`4 \pi r^2` term
             to the integrand when calculating the objective function.
@@ -699,7 +702,8 @@ class GreedyLeastSquares(GreedyStrategy):
         """
         self._local_tol = local_tol
         self._global_tol = global_tol
-        self._maxiter = maxiter
+        self._l_maxiter = l_maxiter
+        self._g_maxiter = g_maxiter
         self._with_constraint = with_constraint
         model = AtomicGaussianDensity(grid.points, num_s=1, num_p=0, normalize=normalize)
         gaussian_obj = ScipyFit(grid, density, model, measure=SquaredDifference(), method=method,
@@ -717,9 +721,14 @@ class GreedyLeastSquares(GreedyStrategy):
         return self._global_tol
 
     @property
-    def maxiter(self):
-        r"""Return maximum number of iterations in optimization routine."""
-        return self._maxiter
+    def l_maxiter(self):
+        r"""Return maximum number of iterations in optimization routine for all local choices."""
+        return self._l_maxiter
+
+    @property
+    def g_maxiter(self):
+        r"""Return maximum number of iterations in optimization routine for global choice."""
+        return self._g_maxiter
 
     @property
     def with_constraint(self):
@@ -791,12 +800,12 @@ class GreedyLeastSquares(GreedyStrategy):
         coeffs = self.optimize_using_nnls(self.density, cofac_matrix)
         if local:
             results = self.fitting_obj.run(
-                coeffs, exps, tol=self.local_tol, maxiter=self.maxiter,
+                coeffs, exps, tol=self.local_tol, maxiter=self.l_maxiter,
                 with_constraint=self.with_constraint
             )
         else:
             results = self.fitting_obj.run(
-                coeffs, exps, tol=self.global_tol, maxiter=self.maxiter,
+                coeffs, exps, tol=self.global_tol, maxiter=self.g_maxiter,
                 with_constraint=self.with_constraint
             )
         return np.hstack((results["coeffs"], results["exps"]))
@@ -808,7 +817,8 @@ class GreedyKLSCF(GreedyStrategy):
     def __init__(
         self, grid, density, choice="pick-one", g_eps_coeff=1e-4, g_eps_exp=1e-5,
             g_eps_obj=1e-10, l_eps_coeff=1e-2, l_eps_exp=1e-3, l_eps_obj=1e-8,
-            mask_value=1e-12, integral_dens=None, maxiter=1000, spherical=False,
+            l_maxiter=1000, g_maxiter=2500, mask_value=1e-12, integral_dens=None,
+            spherical=False,
     ):
         r"""
         Construct the GreedyKLSCF object.
@@ -847,6 +857,12 @@ class GreedyKLSCF(GreedyStrategy):
         l_eps_obj : float, optional
             The tolerance for convergence of objective function in KL-SCF method for optimizing
             each local initial guess. Should be larger than `g_eps_obj`.
+        l_maxiter : int, optional
+            Maximum number of iterations when optimizing an initial guess in the KL-FPI method.
+            for optimizing through all initial guesses (local choices).
+        g_maxiter : int, optional
+            Maximum number of iterations when optimizing an initial guess in the KL-SCF method
+            for further optimizing the best local choice (global choice).
         mask_value : str, optional
             The method used for optimizing parameters. Default is "slsqp".
             See "scipy.optimize.minimize" for options.
@@ -854,8 +870,6 @@ class GreedyKLSCF(GreedyStrategy):
             If this is provided, then the model is constrained to integrate to this value.
             If not, then the model is constrained to the numerical integration of the
             density. Useful when one knows the actual integration value of the density.
-        maxiter : int, optional
-            Maximum number of iterations when optimizing an initial guess in the KL-SCF method.
         spherical : bool
             Whether to perform spherical integration by adding :math:`4 \pi r^2` term
             to the integrand when calculating objective function.
@@ -869,7 +883,8 @@ class GreedyKLSCF(GreedyStrategy):
         self._g_threshold_coeff = g_eps_coeff
         self._g_threshold_exp = g_eps_exp
         self._g_threshold_obj = g_eps_obj
-        self._maxiter = maxiter
+        self._l_maxiter = l_maxiter
+        self._g_maxiter = g_maxiter
         # Model that is fitted to.
         model = AtomicGaussianDensity(grid.points, num_s=1, num_p=0, normalize=True)
         scf_obj = KLDivergenceSCF(grid, density, model, mask_value, integral_dens, spherical)
@@ -906,9 +921,14 @@ class GreedyKLSCF(GreedyStrategy):
         return self._g_threshold_obj
 
     @property
-    def maxiter(self):
-        r"""Return maximum iteration for KL-SCF method."""
-        return self._maxiter
+    def l_maxiter(self):
+        r"""Return maximum number of iterations in optimization routine for all local choices."""
+        return self._l_maxiter
+
+    @property
+    def g_maxiter(self):
+        r"""Return maximum number of iterations in optimization routine for global choice."""
+        return self._g_maxiter
 
     def get_best_one_function_solution(self):
         r"""Obtain the best one s-type function to Kullback-Leibler."""
@@ -922,13 +942,13 @@ class GreedyKLSCF(GreedyStrategy):
         if local:
             result = self.fitting_obj.run(
                 coeffs, exps, opt_coeffs=True, opt_expons=True,
-                maxiter=self.maxiter, c_threshold=self.l_threshold_coeff,
+                maxiter=self.l_maxiter, c_threshold=self.l_threshold_coeff,
                 e_threshold=self.l_threshold_exp, d_threshold=self.l_threshold_obj,
                 disp=False
             )
             return np.hstack((result["coeffs"], result["exps"]))
         result = self.fitting_obj.run(
-            coeffs, exps, opt_coeffs=True, opt_expons=True, maxiter=self.maxiter,
+            coeffs, exps, opt_coeffs=True, opt_expons=True, maxiter=self.g_maxiter,
             c_threshold=self.g_threshold_coeff, e_threshold=self.g_threshold_exp,
             d_threshold=self.g_threshold_obj, disp=False
         )
