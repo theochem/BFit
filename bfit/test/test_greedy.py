@@ -22,7 +22,7 @@
 r"""Test file for 'bfit.greedy'."""
 
 from bfit.greedy import (
-    get_next_choices, get_two_next_choices, GreedyKLSCF,
+    get_next_choices, get_two_next_choices, GreedyKLFPI,
     GreedyLeastSquares, pick_two_lose_one, remove_redundancies
 )
 from bfit.grid import UniformRadialGrid
@@ -129,7 +129,7 @@ def test_greedy_kl_two_function():
 
     grid = UniformRadialGrid(1000, 0.0, 10.)
     density = eval_density(grid.points)
-    greedy = GreedyKLSCF(grid, density, "pick-one",
+    greedy = GreedyKLFPI(grid, density, "pick-one",
                          g_eps_coeff=1e-10, g_eps_exp=1e-10,
                          l_eps_exp=1e-5, g_eps_obj=1e-15,
                          l_eps_obj=1e-10, l_eps_coeff=1e-8, mask_value=0.0,

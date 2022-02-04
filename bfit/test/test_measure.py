@@ -195,7 +195,7 @@ def test_evaluating_tsallis_derivative_against_finite_difference():
     measure_pt_plus_2 = measure.evaluate(dens, model + 2.0 * eps, deriv=False)
     desired = (measure_pt_minus_2 / 12.0 - (2.0 / 3.0) * measure_pt_minus_1)
     desired += ((2.0 / 3.0) * measure_pt_plus_1 - measure_pt_plus_2 / 12.0)
-    assert_almost_equal(actual_deriv, desired / eps, decimal=2)
+    assert_almost_equal(actual_deriv, desired / eps, decimal=1)
 
 
 def test_evaluating_tsallis_derivative_against_kullback_leibler():

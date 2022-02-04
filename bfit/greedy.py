@@ -24,13 +24,13 @@ r"""Greedy Fitting Module."""
 
 from abc import ABCMeta, abstractmethod
 
-from bfit.fit import _BaseFit, KLDivergenceSCF, ScipyFit
+from bfit.fit import _BaseFit, KLDivergenceFPI, ScipyFit
 from bfit.measure import SquaredDifference
 from bfit.model import AtomicGaussianDensity
 import numpy as np
 from scipy.optimize import nnls
 
-__all__ = ["GreedyLeastSquares", "GreedyKLSCF"]
+__all__ = ["GreedyLeastSquares", "GreedyKLFPI"]
 
 
 def remove_redundancies(coeffs, fparams, eps=1e-3):
@@ -325,6 +325,11 @@ class GreedyStrategy(metaclass=ABCMeta):
         return self.fitting_obj.model
 
     @property
+    def measure(self):
+        r"""Return measure class."""
+        return self.fitting_obj.measure
+
+    @property
     def integral_dens(self):
         r"""Return the integral of the density."""
         return self.fitting_obj.integral_dens
@@ -343,7 +348,8 @@ class GreedyStrategy(metaclass=ABCMeta):
     def eval_obj_function(self, params):
         r"""Return evaluation the objective function."""
         model = self.model.evaluate(params[:len(params)//2], params[len(params)//2:])
-        return self.grid.integrate(self.fitting_obj.measure.evaluate(self.density, model))
+        integrand = self.measure.evaluate(self.density, model)
+        return self.fitting_obj.integrate(integrand)
 
     def store_errors(self, params):
         r"""Store errors inside the attribute `err_arr`."""
@@ -523,8 +529,12 @@ class GreedyStrategy(metaclass=ABCMeta):
                 for x in choices_parameters_s
             ]
             if self.num_p == 0:
-                # Random choices from 0 to 100 for the first P-type guess.
-                choices_parameters_p = [np.random.random((2 * self.numb_func_increase,)) * factor]
+                # Get Three Guesses one from 0 to 1, 1 to 10 and 10 to 100.
+                choices_parameters_p = [
+                    np.random.random((2 * self.numb_func_increase,)),
+                    np.random.random((2 * self.numb_func_increase,)) * 9 + 1,
+                    np.random.random((2 * self.numb_func_increase,)) * 90 + 10,
+                ]
             else:
                 choices_parameters_p = self.next_param_func(factor, p_coeffs, p_exps)
             choices_parameters_p = [
@@ -811,8 +821,8 @@ class GreedyLeastSquares(GreedyStrategy):
         return np.hstack((results["coeffs"], results["exps"]))
 
 
-class GreedyKLSCF(GreedyStrategy):
-    r"""Optimize Kullback-Leibler using the Greedy method and self-consistent method."""
+class GreedyKLFPI(GreedyStrategy):
+    r"""Optimize Kullback-Leibler using the Greedy method and fixed point iteration method."""
 
     def __init__(
         self, grid, density, choice="pick-one", g_eps_coeff=1e-4, g_eps_exp=1e-5,
@@ -821,7 +831,7 @@ class GreedyKLSCF(GreedyStrategy):
             spherical=False,
     ):
         r"""
-        Construct the GreedyKLSCF object.
+        Construct the GreedyKLFPI object.
 
         Parameters
         ----------
@@ -840,28 +850,28 @@ class GreedyKLSCF(GreedyStrategy):
             * `pick-two-lose-one` : add new basis-function by iterating though each guess
               in `pick-two` and removing one basis-function, generating a new guess each time.
         g_eps_coeff : float, optional
-            The tolerance for convergence of coefficients in KL-SCF method for further
+            The tolerance for convergence of coefficients in KL-FPI method for further
             refining and optimizing the best found local guess.
         g_eps_exp : float, optional
-            The tolerance for convergence of exponents in KL-SCF method for further
+            The tolerance for convergence of exponents in KL-FPI method for further
             refining/optimizing the best local guess found out of all choices.
         g_eps_obj : float, optional
-            The tolerance for convergence of objective function in KL-SCF method for
+            The tolerance for convergence of objective function in KL-FPI method for
             further refining/optimizing the best local guess found out of all choices.
         l_eps_coeff : float, optional
-            The tolerance for convergence of coefficients in KL-SCF method for optimizing
+            The tolerance for convergence of coefficients in KL-FPI method for optimizing
             each local initial guess. Should be larger than `g_eps_coeff`.
         l_eps_exp : float, optional
-            The tolerance for convergence of exponents in KL-SCF method for optimizing
+            The tolerance for convergence of exponents in KL-FPI method for optimizing
             each local initial guess. Should be larger than `g_eps_exp`.
         l_eps_obj : float, optional
-            The tolerance for convergence of objective function in KL-SCF method for optimizing
+            The tolerance for convergence of objective function in KL-FPI method for optimizing
             each local initial guess. Should be larger than `g_eps_obj`.
         l_maxiter : int, optional
             Maximum number of iterations when optimizing an initial guess in the KL-FPI method.
             for optimizing through all initial guesses (local choices).
         g_maxiter : int, optional
-            Maximum number of iterations when optimizing an initial guess in the KL-SCF method
+            Maximum number of iterations when optimizing an initial guess in the KL-FPI method
             for further optimizing the best local choice (global choice).
         mask_value : str, optional
             The method used for optimizing parameters. Default is "slsqp".
@@ -876,7 +886,7 @@ class GreedyKLSCF(GreedyStrategy):
             Only used when grid is one-dimensional and positive (radial grid).
 
         """
-        # Algorithm parameters for KL-SCF (KLDivergenceSCF) method.
+        # Algorithm parameters for KL-FPI (KLDivergenceFPI) method.
         self._l_threshold_coeff = l_eps_coeff
         self._l_threshold_exp = l_eps_exp
         self._l_threshold_obj = l_eps_obj
@@ -887,37 +897,37 @@ class GreedyKLSCF(GreedyStrategy):
         self._g_maxiter = g_maxiter
         # Model that is fitted to.
         model = AtomicGaussianDensity(grid.points, num_s=1, num_p=0, normalize=True)
-        scf_obj = KLDivergenceSCF(grid, density, model, mask_value, integral_dens, spherical)
-        super().__init__(scf_obj, choice)
+        FPI_obj = KLDivergenceFPI(grid, density, model, mask_value, integral_dens, spherical)
+        super().__init__(FPI_obj, choice)
 
     @property
     def l_threshold_coeff(self):
-        r"""Return local threshold for KL-SCF method for convergence of coefficients."""
+        r"""Return local threshold for KL-FPI method for convergence of coefficients."""
         return self._l_threshold_coeff
 
     @property
     def l_threshold_exp(self):
-        r"""Return local threshold for KL-SCF method for convergence of exponents."""
+        r"""Return local threshold for KL-FPI method for convergence of exponents."""
         return self._l_threshold_exp
 
     @property
     def l_threshold_obj(self):
-        r"""Return local threshold for KL-SCF method for convergence of objective function."""
+        r"""Return local threshold for KL-FPI method for convergence of objective function."""
         return self._l_threshold_obj
 
     @property
     def g_threshold_coeff(self):
-        r"""Return global threshold for KL-SCF method for convergence of coefficients."""
+        r"""Return global threshold for KL-FPI method for convergence of coefficients."""
         return self._g_threshold_coeff
 
     @property
     def g_threshold_exp(self):
-        r"""Return global threshold for KL-SCF method for convergence of exponents."""
+        r"""Return global threshold for KL-FPI method for convergence of exponents."""
         return self._g_threshold_exp
 
     @property
     def g_threshold_obj(self):
-        r"""Return global threshold for KL-SCF method for convergence of objective function."""
+        r"""Return global threshold for KL-FPI method for convergence of objective function."""
         return self._g_threshold_obj
 
     @property
@@ -937,7 +947,7 @@ class GreedyKLSCF(GreedyStrategy):
         return np.array([self.integral_dens, exps])
 
     def get_optimization_routine(self, params, local=False):
-        r"""Optimize KL using KL-SCF method."""
+        r"""Optimize KL using KL-FPI method."""
         coeffs, exps = params[:len(params)//2], params[len(params)//2:]
         if local:
             result = self.fitting_obj.run(
