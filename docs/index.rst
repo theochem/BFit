@@ -10,12 +10,15 @@ Welcome to BFit's documentation!
 Python library for fitting a convex sum of Gaussian functions of s-type and p-type to any
 probability distribution.
 
-BFIt is released under the
-`GNU General Public License v3.0 <https://github.com/theochem/procrustes/blob/master/LICENSE>`_.
-Please report any issues you encounter while using BFit library on
-`GitHub Issues <https://github.com/theochem/bfit/issues>`_.
-For further information and inquiries please contact us at `qcdevs@gmail.com <qcdevs@gmail.com>`_.
+To get started, look through the `example <https://github.com/theochem/BFit/tree/master/examples>`_
+folder
 
+For particular examples of using BFit, see the interactive
+`Jupyter binder <https://mybinder.org/v2/gh/theochem/bfit/master?labpath=%2Fexamples%2>`_
+or files in the `example folder <https://github.com/theochem/BFit/tree/master/examples>`_
+to see specific examples on how to fit using the different algorithms and objective
+functions.  The table below gives a brief description of each module for which you can look
+through the API and the paper provides specific details.
 
 Please use the following citation in any publication using BFit library:
 
@@ -24,10 +27,39 @@ Please use the following citation in any publication using BFit library:
     I. Vinogradov, D. Chakraborty, P. W. Ayers
 
 
-For particular examples of using BFit, see the interactive
-`Jupyter binder <https://mybinder.org/v2/gh/theochem/bfit/master?labpath=%2Fexamples%2>`_ or
-Jupyter files in the `example folder <https://github.com/theochem/BFit/tree/master/examples>`_.
-Specification of the API is listed below.
+BFIt is released under the
+`GNU General Public License v3.0 <https://github.com/theochem/bfit/blob/master/LICENSE>`_.
+Please report any issues you encounter while using BFit library on
+`GitHub Issues <https://github.com/theochem/bfit/issues>`_.
+For further information and inquiries please contact us at `qcdevs@gmail.com <qcdevs@gmail.com>`_.
+
+
+
+
+.. list-table:: **Module Description**
+   :widths: 25 75
+   :header-rows: 1
+
+   * - Module
+     - Description
+   * - *measure.py*
+     - Specifies the objective functions: Kullback-Leibler Divergence, Squared Difference, Tsallis-Divergence.
+   * - *model.py*
+     - Specifies the model for fitting: Univariate Gaussian distribution composed of s-type and p-type Gaussians and
+       three-dimensional Gaussian distribution centered at different locations.
+   * - *grid.py*
+     - Contains the grid for integration and defining the points.
+   * - *fit.py*
+     - Contains the fitting algorithms: Kullback-Leibler fixed point method and ScipyFit that
+       uses SLSQP and trust-constraint method found in `scipy.optimize`.
+   * - *greedy.py*
+     - Contains the greedy algorithm of iteratively selectiveling the next set of basis-functions
+       from the previous set.
+   * - *density.py*
+     - Provides atomic, and kinetic densities of atoms from Hatree-Fock wavefunctions composed of
+       Slater-type orbitals. See the data folder for more details on the wavefunctions.
+   * - *parse_ugbs.py*
+     - Obtain the universal Gaussian basis-set exponents for each atom.
 
 .. toctree::
    :maxdepth: 4
