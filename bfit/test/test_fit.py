@@ -22,7 +22,7 @@
 # ---
 r"""Test bfit.fit module."""
 
-from bfit.fit import KLDivergenceSCF, ScipyFit
+from bfit.fit import KLDivergenceFPI, ScipyFit
 from bfit.grid import CubicGrid, UniformRadialGrid
 from bfit.measure import KLDivergence, SquaredDifference
 from bfit.model import AtomicGaussianDensity, MolecularGaussianDensity
@@ -34,7 +34,7 @@ def test_lagrange_multiplier():
     r"""Test lagrange multiplier of KL-SCF."""
     g = UniformRadialGrid(150, 1e-4, 15.0)
     e = np.exp(-g.points)
-    kl = KLDivergenceSCF(g, e, None, spherical=False)
+    kl = KLDivergenceFPI(g, e, None, spherical=False)
     assert_almost_equal(kl.lagrange_multiplier, 1., decimal=8)
 
 
@@ -43,7 +43,7 @@ def test_goodness_of_fit():
     g = UniformRadialGrid(1000, 0.0, 10.0)
     e = np.exp(-g.points)
     m = AtomicGaussianDensity(g.points, num_s=1, num_p=0, normalize=False)
-    kl = KLDivergenceSCF(g, e, m, mask_value=0., spherical=True)
+    kl = KLDivergenceFPI(g, e, m, mask_value=0., spherical=True)
     gf = kl.goodness_of_fit(np.array([1.]), np.array([1.]))
     expected = [
         5.56833, 4 * np.pi * 1.60909, 0.128, 4.0 * np.pi * 0.0882922, 4. * np.pi * 17.360
@@ -56,7 +56,7 @@ def test_assertion_raises():
     g = UniformRadialGrid(1000, 0.0, 10.0)
     e = np.exp(-g.points)
     m = AtomicGaussianDensity(g.points, num_s=1, num_p=0, normalize=False)
-    kl = KLDivergenceSCF(g, e, m, mask_value=0., spherical=True)
+    kl = KLDivergenceFPI(g, e, m, mask_value=0., spherical=True)
     assert_raises(ValueError, kl._update_params, None, None, False, False)
     assert_raises(ValueError, kl.run, np.array([1., 2.]), np.array([1.]))
     assert_raises(ValueError, kl.run, np.array([1.]), np.array([1., 2.]))
@@ -92,7 +92,7 @@ def test_run_normalized_s_gaussian():
     g = UniformRadialGrid(150, 0.0, 15.0)
     e = (1. / np.pi)**1.5 * np.exp(-g.points**2.)
     model = AtomicGaussianDensity(g.points, num_s=1, num_p=0, normalize=True)
-    kl = KLDivergenceSCF(g, e, model, spherical=True)
+    kl = KLDivergenceFPI(g, e, model, spherical=True)
 
     # fit density with initial coeff=1. & expon=1.
     res = kl.run(np.array([1.]), np.array([1.]), True, True, 500, 1.e-4, 1.e-4, 1.e-4)
@@ -140,7 +140,7 @@ def test_kl_scf_update_coeffs_2s_gaussian():
     # model density is a normalized 2s Gaussian basis
     model = AtomicGaussianDensity(grid.points, num_s=2, num_p=0, normalize=True)
     # test updating coeffs
-    kl = KLDivergenceSCF(grid, dens, model, spherical=False)
+    kl = KLDivergenceFPI(grid, dens, model, spherical=False)
     new_coeffs, new_expons = kl._update_params(c, e, True, False)
     # compute model density
     approx = c[0] * (e[0] / np.pi)**1.5 * np.exp(-e[0] * grid.points**2)
@@ -166,7 +166,7 @@ def test_kl_scf_update_params_2s_gaussian():
     # model density is a normalized 2s Gaussian basis
     model = AtomicGaussianDensity(points, num_s=2, num_p=0, normalize=True)
     # test updating coeffs
-    kl = KLDivergenceSCF(grid, dens, model, spherical=True)
+    kl = KLDivergenceFPI(grid, dens, model, spherical=True)
     new_coeffs, new_expons = kl._update_params(c, e, False, True)
     # compute model density
     approx = c[0] * (e[0] / np.pi)**1.5 * np.exp(-e[0] * points**2)
@@ -198,7 +198,7 @@ def test_kl_scf_update_params_1s1p_gaussian():
     # check model.evaluate
     assert_almost_equal(approx, model.evaluate(c, e), decimal=6)
     # test updating coeffs
-    kl = KLDivergenceSCF(grid, dens, model, mask_value=0., spherical=True)
+    kl = KLDivergenceFPI(grid, dens, model, mask_value=0., spherical=True)
     new_coeffs, new_expons = kl._update_params(c, e, update_coeffs=True, update_expons=False)
     coeffs = c * np.array([(e[0] / np.pi)**1.5, 2 * e[1]**2.5 / (3 * np.pi**1.5)])
     coeffs[0] *= grid.integrate(dens * np.exp(-e[0] * points**2) / approx * spherical)
@@ -230,7 +230,7 @@ def test_kl_scf_update_params_3d_molecular_dens_1s_1s_gaussian():
     coord = np.array([[0., 0., 0.], [0., 0., 1.]])
     c, e = np.array([1., 2.]), np.array([3., 4.])
     model = MolecularGaussianDensity(grid.points, coord, np.array([[1, 0], [1, 0]]), True)
-    kl = KLDivergenceSCF(grid, dens, model)
+    kl = KLDivergenceFPI(grid, dens, model)
     # compute expected updated coeffs
     dist1 = np.sum((grid.points - coord[0])**2, axis=1)
     dist2 = np.sum((grid.points - coord[1])**2, axis=1)
@@ -276,7 +276,7 @@ def test_kl_scf_run_3d_molecular_dens_1s_1p_gaussian():
     # initial coeffs & expons for optimization
     cs0, es0 = np.array([0.25, 0.01]), np.array([0.5, 2.2])
     # optimize coeffs
-    kl = KLDivergenceSCF(grid, dens1 + dens2, model, mask_value=0.)
+    kl = KLDivergenceFPI(grid, dens1 + dens2, model, mask_value=0.)
     result = kl.run(cs0, e, True, False, 100, 1.e-8, 1.e-8, 1e-15)
     assert_equal(result["success"], True)
     assert_almost_equal(result["coeffs"], c, decimal=6)

@@ -30,7 +30,7 @@ import numpy as np
 from scipy.optimize import minimize, NonlinearConstraint
 
 
-__all__ = ["KLDivergenceSCF", "ScipyFit"]
+__all__ = ["KLDivergenceFPI", "ScipyFit"]
 
 
 class _BaseFit:
@@ -188,11 +188,11 @@ class _BaseFit:
         ]
 
 
-class KLDivergenceSCF(_BaseFit):
+class KLDivergenceFPI(_BaseFit):
     r"""
-    Kullback-Leibler Divergence Self-Consistent Fitting.
+    Kullback-Leibler Divergence FPI method for fitting to a density.
 
-    This class optimizes the following objective function using self-consistent fitting method
+    This class optimizes the following objective function using a fixed point iteration method,
 
     .. math::
         \min_{\{c_i\}, \{\alpha\}} \int f(x) \log \bigg(\frac{f(x)}{\sum c_i b_i(x, \alpha_i)}
@@ -208,7 +208,7 @@ class KLDivergenceSCF(_BaseFit):
 
     def __init__(self, grid, density, model, mask_value=0., integral_dens=None, spherical=False):
         r"""
-        Construct the KLDivergenceSCF class.
+        Construct the KLDivergenceFPI class.
 
         Parameters
         ----------
@@ -300,7 +300,7 @@ class KLDivergenceSCF(_BaseFit):
     def run(self, c0, e0, opt_coeffs=True, opt_expons=True, maxiter=500, c_threshold=1.e-6,
             e_threshold=1.e-6, d_threshold=1.e-6, disp=False):
         r"""
-        Optimize the coefficients & exponents of Gaussian basis functions self-consistently.
+        Optimize the coefficients & exponents of Gaussian basis functions via fixed-point.
 
         Parameters
         ----------

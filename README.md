@@ -106,12 +106,13 @@ See [model.py](bfit/model.py) for more options of Gaussian models.
 
 ### 3. Specify error measure.
 The algorithm is fitted based on the [paper](#citing).
+
 ```python
-from bfit.fit import KLDivergenceSCF
+from bfit.fit import KLDivergenceFPI
 
 # What you want fitted to should also be defined on `grid.points`.
-density = np.array([...]) 
-fit = KLDivergenceSCF(grid, density, model)
+density = np.array([...])
+fit = KLDivergenceFPI(grid, density, model)
 ```
 See [fit.py](bfit/fit.py) for options of fitting algorithms.
 
