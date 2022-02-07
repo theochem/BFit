@@ -897,8 +897,8 @@ class GreedyKLFPI(GreedyStrategy):
         self._g_maxiter = g_maxiter
         # Model that is fitted to.
         model = AtomicGaussianDensity(grid.points, num_s=1, num_p=0, normalize=True)
-        FPI_obj = KLDivergenceFPI(grid, density, model, mask_value, integral_dens, spherical)
-        super().__init__(FPI_obj, choice)
+        fpi_obj = KLDivergenceFPI(grid, density, model, mask_value, integral_dens, spherical)
+        super().__init__(fpi_obj, choice)
 
     @property
     def l_threshold_coeff(self):
