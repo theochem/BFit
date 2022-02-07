@@ -44,9 +44,9 @@ class SlaterAtoms:
         \phi_i(r, \theta, \phi) = \bigg[\sum_{j=1}^{M_i} c^i_j R_{n^i_j}(r, \alpha^i_j) \bigg]
         Y_{l_i}^{m_i}(\theta, \phi) \sigma(m_i),
 
-    where :math:`R_{n^i_j}(r)` is a Slater-type function with quantum number :math:`n^i_j`,
-    :math:`c^i_j` is the coefficient of the jth Slater-type function,
-    :math:`\alpha_j^i` is the exponent of the jth Slater-type function,
+    where :math:`R_{n^i_j}(r)` is a Slater-type orbital with quantum number :math:`n^i_j`,
+    :math:`c^i_j` is the coefficient of the jth Slater-type orbital,
+    :math:`\alpha_j^i` is the exponent of the jth Slater-type orbital,
     :math:`Y_{l_i}^{m_i}` is the spherical harmonic with complex form, angular momentum :math:`l_i`
     determined by the electron in the electron configuration and :math:`m_i` is the spin determined
     by applying Hund's rule to the electron configuration, and
@@ -147,13 +147,13 @@ class SlaterAtoms:
     @property
     def orbitals_basis(self):
         r"""
-        Return grouping of Slater-type functions to the azimuthal quantum number ("S", "P", ...).
+        Return grouping of Slater-type orbital to the azimuthal quantum number ("S", "P", ...).
 
         Dictionary mapping type of orbital (e.g. "S", "P") to the number
-        and type of the :math:`N` Slater-type functions. For example, Helium would
+        and type of the :math:`N` Slater-type orbital. For example, Helium would
         map "S" to ['2S', '1S', '1S', '1S', '2S']. This implies that all
         molecular orbitals corresponding to s-orbital will have it's radial component
-        expanded in that Slater-type functions according to the label.
+        expanded in that Slater-type orbitals according to the label.
         """
         return self._orbitals_basis
 
@@ -163,8 +163,8 @@ class SlaterAtoms:
         Return type of Slater-type orbital to the type, e.g. "S".
 
         Dictionary mapping type of orbital (e.g. "S", "P") to array
-        containing :math:`n` of the :math:`N` Slater-type functions. These play the
-        role of the principal quantum number to each Slater-type function.
+        containing :math:`n` of the :math:`N` Slater-type orbitals. These play the
+        role of the principal quantum number to each Slater-type orbitals.
         With the Helium example, "S" will map to [[2], [1], [1], [1], [2]].
         """
         return self._basis_numbers
@@ -175,7 +175,7 @@ class SlaterAtoms:
         Exponent of each Slater-type orbital grouped by type of orbital.
 
         Dictionary mapping type of orbitals (e.g. "S", "P") to the
-        exponent :math:`\alpha_j^i` of each of the :math:`M_i` Slater-type function.
+        exponent :math:`\alpha_j^i` of each of the :math:`M_i` Slater-type orbitals.
         """
         return self._orbitals_exp
 
@@ -185,7 +185,7 @@ class SlaterAtoms:
         Coefficients of each Slater-type orbital grouped by type of orbital.
 
         Dictionary mapping the molecular orbital (e.g. "1S", "2S", ..) to
-        the coefficients :math:`c^i_j` of expansion w.r.t. the :math:`M_i` Slater-type function.
+        the coefficients :math:`c^i_j` of expansion w.r.t. the :math:`M_i` Slater-type orbital.
         """
         return self._orbitals_coeff
 
@@ -245,13 +245,13 @@ class SlaterAtoms:
         # compute norm & pre-factor
         norm = np.power(2. * exponent, number) * np.sqrt((2. * exponent) / factorial(2. * number))
         pref = np.power(points, number - 1).T
-        # compute slater function
+        # compute slater orbitals
         slater = norm.T * pref * np.exp(-exponent * points).T
         return slater
 
     def phi_matrix(self, points, deriv=False):
         r"""
-        Compute the linear combination of Slater-type functions on the given points.
+        Compute the linear combination of Slater-type orbitals on the given points.
 
         Each row corresponds to a point on the grid, represented as :math:`r` and
         each column is represented as a linear combination of Slater-type atomic orbitals
@@ -264,7 +264,7 @@ class SlaterAtoms:
         :math:`c_i` is the coefficient of the Slater-type orbital,
         :math:`\alpha_i` is the zeta exponent attached to the Slater-type orbital,
         :math:`n_i` is the principal quantum number attached to the Slater-type orbital,
-        :math:`R(r, n_i, C_i)` is the radial component of the Slater-type function,
+        :math:`R(r, n_i, C_i)` is the radial component of the Slater-type orbital,
         :math:`M` is the number of orbitals.
 
         Parameters
@@ -311,7 +311,7 @@ class SlaterAtoms:
         where,
         :math:`n_i` is the number of electrons in the ith molecular orbital,
         :math:`\phi_i(r)` is the ith molecular orbital, whose radial component is
-        a linear combination of Slater-type functions evaluated on the point :math:`r` and
+        a linear combination of Slater-type orbitals evaluated on the point :math:`r` and
         whose angles within the spherical coordinates are integrated.
 
         For core and valence density, please see more Info below.
@@ -361,9 +361,9 @@ class SlaterAtoms:
     @staticmethod
     def derivative_radial_slater_type_orbital(exponent, number, points):
         r"""
-        Compute the derivative of the radial component of Slater-type function on the given points.
+        Compute the derivative of the radial component of Slater-type orbital on the given points.
 
-        The derivative of the Slater-type function is defined as:
+        The derivative of the Slater-type orbital is defined as:
 
         .. math::
             \frac{d R(r)}{dr} = \bigg(\frac{n-1}{r} - \alpha \bigg) N r^{n-1} e^{- \alpha r},
