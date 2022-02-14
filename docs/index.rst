@@ -10,10 +10,10 @@ Welcome to BFit's documentation!
 Python library for fitting a convex sum of Gaussian functions of s-type and p-type to any
 probability distribution.
 
-To get started, look through the `example <https://github.com/theochem/BFit/tree/master/examples>`_
-folder
+Installation can be found in the `github/README <https://github.com/theochem/bfit>`_ and
+contains a example of using the Kullback-Leibler fixed point iteration method.
 
-For particular examples of using BFit, see the interactive
+For more examples of using BFit, see the interactive
 `Jupyter binder <https://mybinder.org/v2/gh/theochem/bfit/master?labpath=%2Fexamples%2>`_
 or files in the `example folder <https://github.com/theochem/BFit/tree/master/examples>`_
 to see specific examples on how to fit using the different algorithms and objective
