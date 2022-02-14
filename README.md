@@ -13,7 +13,16 @@ probability distribution. It is primarily intended for quantum chemistry applica
 basis functions are Gaussians and the fitted probability distribution is a scalar function like
 the electron density.
 
-For further information, please visit [**BFit Documentation**](https://bfit.qcdevs.org/). 
+For more examples of using BFit, see the example section down below or the interactive
+[Jupyter binder](https://mybinder.org/v2/gh/theochem/bfit/master?labpath=%2Fexamples%2)
+or files in the [example folder](https://github.com/theochem/BFit/tree/master/examples)
+to see specific examples on how to fit using the different algorithms and objective
+functions.  
+For further information about the api, please visit
+[**BFit Documentation**](https://bfit.qcdevs.org/). 
+
+The instructions to access the results of the fitted atomic densities using KL-FI method is
+shown in the section below.
 
 To report any issues or ask questions, either [open an issue](
 https://github.com/theochem/bfit/issues/new) or email [qcdevs@gmail.com]().
@@ -36,6 +45,7 @@ Dependencies
 * SciPy >= 1.5.0: http://www.scipy.org/
 * Matplotlib >=3.2.0: https://matplotlib.org/
 * Sphinx >= 2.3.0: https://www.sphinx-doc.org/
+
 
 
 Installation
@@ -82,6 +92,34 @@ The features of this software are:
   * Compute:
     * Atomic density,
     * Kinetic density.
+
+
+KL-FPI Models of Atomic Densities 
+------------------------------------------
+The final model of fitting the atomic densities using the Kullback-Leibler divergence fixed point iteration method 
+can be access by opening the file `./bfit/data/mbis_ugbs_results.npz` with numpy.
+```python
+import numpy as np
+element = "be"
+results = np.load("./bfit/data/mbis_ugbs_results.npz")
+num_s = results["num_s"]  # Number of s-type Gaussian function
+num_p = results["num_p"]  # Number of p-type Gaussian functions
+coeffcients = results["be_coeffs"]
+exponents = results["be_exps"]
+
+print("s-type exponents")
+print(exponents[:num_s])
+print("p-type exponents")
+print(exponents[num_s:])
+```
+Evaluation of the model at a given set of points can also be computed
+```python
+from bfit.grid import ClenshawRadialGrid
+from bfit.model import AtomicGaussianDensity
+
+grid = ClenshawRadialGrid(4, num_core_pts=10000, num_diffuse_pts=900, extra_pts=[50, 75, 100])
+model = AtomicGaussianDensity(grid.points, num_s=num_s, num_p=num_p, normalize=True)
+```
 
 
 ## Example
