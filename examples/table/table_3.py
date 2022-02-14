@@ -46,7 +46,6 @@ for atomic_numb, element in [
     model = AtomicGaussianDensity(grid.points, num_s=num_s, num_p=num_p, normalize=True)
     atomic_dens = SlaterAtoms(element=element)
     density = atomic_dens.atomic_density(grid.points)
-    fit = KLDivergenceFPI(grid, density, model)
 
     # Construct Fitting Object using SLSQP and optimizing KL
     measure = KLDivergence(mask_value=1e-18)
