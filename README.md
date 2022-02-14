@@ -102,8 +102,8 @@ can be access by opening the file `./bfit/data/mbis_ugbs_results.npz` with numpy
 import numpy as np
 element = "be"
 results = np.load("./bfit/data/mbis_ugbs_results.npz")
-num_s = results["num_s"]  # Number of s-type Gaussian function
-num_p = results["num_p"]  # Number of p-type Gaussian functions
+num_s = results["be_num_s"]  # Number of s-type Gaussian function
+num_p = results["be_num_p"]  # Number of p-type Gaussian functions
 coeffcients = results["be_coeffs"]
 exponents = results["be_exps"]
 
