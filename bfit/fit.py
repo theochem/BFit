@@ -36,7 +36,8 @@ __all__ = ["KLDivergenceFPI", "ScipyFit"]
 class _BaseFit:
     r"""Base Fitting Class."""
 
-    def __init__(self, grid, density, model, measure, integral_dens=None, spherical=False):
+    def __init__(self, grid, density, model, measure, integral_dens=None, spherical=False,
+                 mask_value=1e-18):
         r"""
         Construct the base fitting class.
 
@@ -55,9 +56,12 @@ class _BaseFit:
             If this is provided, then the model is constrained to integrate to this value.
             If not, then the model is constrained to the numerical integration of the
             density. Useful when one knows the actual integration value of the density.
-        spherical : bool
+        spherical : bool, optional
             Whether to perform spherical integration by adding :math:`4 \pi r^2` term
             to the integrand. Only used when grid is one-dimensional and positive (radial grid).
+        mask_value : float, optional
+            Mask value used for calculating the Kullback-Leibler divergence. This value sets
+            :math:`\log(f(x) / g(x)) = 0` when `g(x)` is less than the mask value.
 
         """
         if np.any(density < 0.):
@@ -87,7 +91,7 @@ class _BaseFit:
             self._integral_dens = integral_dens
 
         # Used to calculate the error measures in model only.
-        self.kl_error = KLDivergence(mask_value=0.0)
+        self.kl_error = KLDivergence(mask_value=mask_value)
         self.ls_error = SquaredDifference()
 
     @property
@@ -231,7 +235,7 @@ class KLDivergenceFPI(_BaseFit):
         """
         # initialize KL deviation measure
         measure = KLDivergence(mask_value=mask_value)
-        super().__init__(grid, density, model, measure, integral_dens, spherical)
+        super().__init__(grid, density, model, measure, integral_dens, spherical, mask_value)
         # compute lagrange multiplier
         self._lm = self.integrate(self.density) / self.integral_dens
         if self._lm == 0. or np.isnan(self._lm):
@@ -464,7 +468,7 @@ class ScipyFit(_BaseFit):
     """
 
     def __init__(self, grid, density, model, measure=KLDivergence, method="SLSQP", weights=None,
-                 integral_dens=None, spherical=False):
+                 integral_dens=None, spherical=False, mask_value=1e-18):
         r"""
         Construct the ScipyFit object.
 
@@ -488,9 +492,12 @@ class ScipyFit(_BaseFit):
             If this is provided, then the model is constrained to integrate to this value.
             If not, then the model is constrained to the numerical integration of the
             density. Useful when one knows the actual integration value of the density.
-        spherical : bool
+        spherical : bool, optional
             Whether to perform spherical integration by adding :math:`4 \pi r^2` term
             to the integrand. Only used when grid is one-dimensional and positive (radial grid).
+        mask_value : float, optional
+            Mask value used for calculating the Kullback-Leibler divergence. This value sets
+            :math:`\log(f(x) / g(x)) = 0` when `g(x)` is less than the mask value.
 
         """
         if np.any(abs(grid.points - model.points) > 1.e-12):
@@ -507,7 +514,7 @@ class ScipyFit(_BaseFit):
         if weights is None:
             weights = np.ones(len(density))
         self.weights = weights
-        super().__init__(grid, density, model, measure, integral_dens, spherical)
+        super().__init__(grid, density, model, measure, integral_dens, spherical, mask_value)
 
     def run(self, c0, e0, opt_coeffs=True, opt_expons=True, maxiter=1000, tol=1.e-14, disp=False,
             with_constraint=True):
