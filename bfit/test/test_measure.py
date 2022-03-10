@@ -31,13 +31,13 @@ def test_raises_kl():
     r"""Test raise error when using Kullback-Leibler."""
     measure = KLDivergence()
     # check density argument
-    assert_raises(ValueError, measure.evaluate, 3.5, np.ones((10,)))
+    assert_raises(AttributeError, measure.evaluate, 3.5, np.ones((10,)))
     assert_raises(ValueError, measure.evaluate, np.array([[1., 2., 3.]]), np.ones((10,)))
     assert_raises(ValueError, measure.evaluate, np.array([[1.], [2.], [3.]]), np.ones((10,)))
     assert_raises(ValueError, measure.evaluate, np.array([-1., 2., 3.]), np.ones((10,)))
     assert_raises(ValueError, measure.evaluate, np.array([1., -2., -3.]), np.ones((10,)))
     # check model argument
-    assert_raises(ValueError, measure.evaluate, np.array([1., 2., 3.]), 1.75)
+    assert_raises(AttributeError, measure.evaluate, np.array([1., 2., 3.]), 1.75)
     assert_raises(ValueError, measure.evaluate, np.array([1., 2., 3.]), np.array([1., 2., 3., 4.]))
     assert_raises(
         ValueError, measure.evaluate, np.array([1., 2., 3.]), np.array([[1.], [2.], [3.]])
@@ -95,11 +95,11 @@ def test_raises_squared_difference():
     r"""Test raises error in squared difference class."""
     ls = SquaredDifference()
     # check density argument
-    assert_raises(ValueError, ls.evaluate, 3.5, np.ones((10,)))
+    assert_raises(AttributeError, ls.evaluate, 3.5, np.ones((10,)))
     assert_raises(ValueError, ls.evaluate, np.array([[1., 2., 3.]]), np.ones((10,)))
     assert_raises(ValueError, ls.evaluate, np.array([[1.], [2.], [3.]]), np.ones((10,)))
     # check model argument
-    assert_raises(ValueError, ls.evaluate, np.array([1., 2., 3.]), 1.75)
+    assert_raises(AttributeError, ls.evaluate, np.array([1., 2., 3.]), 1.75)
     assert_raises(ValueError, ls.evaluate, np.array([1., 2., 3.]), np.array([1., 2., 3., 4.]))
     assert_raises(ValueError, ls.evaluate, np.array([1., 2., 3.]), np.array([[1.], [2.], [3.]]))
 
@@ -113,8 +113,8 @@ def test_evaluate_squared_difference_equal():
     assert_almost_equal(np.zeros(3), measure.evaluate(dens, dens, deriv=False), decimal=8)
     assert_almost_equal(np.zeros(3), measure.evaluate(dens, dens, deriv=True)[0], decimal=8)
     assert_almost_equal(np.zeros(3), measure.evaluate(dens, dens, deriv=True)[1], decimal=8)
-    assert_almost_equal(dens**2, measure.evaluate(dens, model, deriv=False), decimal=8)
-    assert_almost_equal(dens**2, measure.evaluate(dens, model, deriv=True)[0], decimal=8)
+    assert_almost_equal(dens ** 2, measure.evaluate(dens, model, deriv=False), decimal=8)
+    assert_almost_equal(dens ** 2, measure.evaluate(dens, model, deriv=True)[0], decimal=8)
     assert_almost_equal(-2 * dens, measure.evaluate(dens, model, deriv=True)[1], decimal=8)
 
 
@@ -145,11 +145,11 @@ def test_raises_error_tsallis():
     r"""Test raises error when using Tsallis measure."""
     measure = TsallisDivergence()
     # check density argument
-    assert_raises(ValueError, measure.evaluate, 3.5, np.ones((10,)))
+    assert_raises(AttributeError, measure.evaluate, 3.5, np.ones((10,)))
     assert_raises(ValueError, measure.evaluate, np.array([[1., 2., 3.]]), np.ones((10,)))
     assert_raises(ValueError, measure.evaluate, np.array([[1.], [2.], [3.]]), np.ones((10,)))
     # check model argument
-    assert_raises(ValueError, measure.evaluate, np.ones((10,)), 1.75)
+    assert_raises(AttributeError, measure.evaluate, np.ones((10,)), 1.75)
     assert_raises(ValueError, measure.evaluate, np.ones((10,)), np.array([[1.], [2.], [3.]]))
     # check alpha parameter
     assert_raises(ValueError, TsallisDivergence, -10.)
