@@ -96,8 +96,10 @@ The features of this software are:
 
 KL-FPI Models of Atomic Densities 
 ------------------------------------------
-The final model of fitting the atomic densities using the Kullback-Leibler divergence fixed point iteration method 
-can be access by opening the file `./bfit/data/mbis_ugbs_results.npz` with numpy.
+The final model of fitting the atomic densities using the Kullback-Leibler (KL) divergence fixed point iteration method 
+can be accessed by opening the file `./bfit/data/mbis_ugbs_results.npz` with numpy.
+Similarly, the results from optimizing KL with SLSQP method using `mbis_ugbs_results.npz`
+as initial guesses can be accessed by opening the file `./bfit/data/slsqp_kl_results.npz` with numpy.
 ```python
 import numpy as np
 
@@ -113,7 +115,7 @@ print(exponents[:num_s])
 print("p-type exponents")
 print(exponents[num_s:])
 ```
-Alternatively, one can load these results using JSON file format.
+Alternatively, one can load these results using JSON file.
 ```python
 import json
 import numpy as np
