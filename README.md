@@ -97,14 +97,15 @@ The features of this software are:
 KL-FPI Models of Atomic Densities 
 ------------------------------------------
 The final model of fitting the atomic densities using the Kullback-Leibler (KL) divergence fixed point iteration method 
-can be accessed by opening the file `./bfit/data/mbis_ugbs_results.npz` with numpy.
-Similarly, the results from optimizing KL with SLSQP method using `mbis_ugbs_results.npz`
-as initial guesses can be accessed by opening the file `./bfit/data/slsqp_kl_results.npz` with numpy.
+can be accessed by opening the file `./bfit/data/kl_fpi_results.npz` with numpy.
+Similarly, the results from optimizing KL with SLSQP method using `kl_fpi_results.npz`
+as initial guesses can be accessed by opening the file `./bfit/data/kl_slsqp_results.npz` with numpy.
+In general, we recommend KL-SLSQP results over the KL-FPI results.
 ```python
 import numpy as np
 
 element = "be"
-results = np.load("./bfit/data/mbis_ugbs_results.npz")
+results = np.load("./bfit/data/kl_fpi_results.npz")
 num_s = results["be_num_s"]  # Number of s-type Gaussian function
 num_p = results["be_num_p"]  # Number of p-type Gaussian functions
 coeffcients = results["be_coeffs"]
@@ -121,7 +122,7 @@ import json
 import numpy as np
 
 element = "be"
-with open("./bfit/data/mbis_ugbs_results.json") as file:
+with open("./bfit/data/kl_fpi_results.json") as file:
     data = json.load(file)
     data_element = data[element]
 
