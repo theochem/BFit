@@ -13,9 +13,9 @@ probability distribution. It is primarily intended for quantum chemistry applica
 basis functions are Gaussians and the fitted probability distribution is a scalar function like
 the electron density.
 
-For more examples of using BFit, see the example section down below or the interactive
+See the example [section](#kl-fpi-models-of-atomic-densities) down below or the interactive
 [Jupyter binder](https://mybinder.org/v2/gh/theochem/bfit/master?labpath=%2Fexamples%2)
-or files in the [example folder](https://github.com/theochem/BFit/tree/master/examples)
+or various files in the example [folder](https://github.com/theochem/BFit/tree/master/examples)
 to see specific examples on how to fit using the different algorithms and objective
 functions.  
 For further information about the api, please visit
@@ -90,8 +90,8 @@ The features of this software are:
 * Read/Parse Hatree-Fock wavefunctions for atomic systems:
   * Includes: anions, cations and heavy elements, see [data](data/README.md) page.
   * Compute:
-    * Atomic density,
-    * Kinetic density.
+    * Atomic density, including core, and valence densities,
+    * Positive definite kinetic energy density.
 
 
 KL-FPI Models of Atomic Densities 
@@ -100,6 +100,7 @@ The final model of fitting the atomic densities using the Kullback-Leibler diver
 can be access by opening the file `./bfit/data/mbis_ugbs_results.npz` with numpy.
 ```python
 import numpy as np
+
 element = "be"
 results = np.load("./bfit/data/mbis_ugbs_results.npz")
 num_s = results["be_num_s"]  # Number of s-type Gaussian function
@@ -112,13 +113,34 @@ print(exponents[:num_s])
 print("p-type exponents")
 print(exponents[num_s:])
 ```
-Evaluation of the model at a given set of points can also be computed
+Alternatively, one can load these results using JSON file format.
+```python
+import json
+import numpy as np
+
+element = "be"
+with open("./bfit/data/mbis_ugbs_results.json") as file:
+    data = json.load(file)
+    data_element = data[element]
+
+    num_s = data_element["num_s"]
+    num_p = data_element["num_p"]
+    coeffcients = np.array(data_element["coeffs"])
+    exponents = np.array(data_element["exps"])
+```
+
+Evaluation of the normalized Gaussian model at a given set of points can also be computed
 ```python
 from bfit.grid import ClenshawRadialGrid
 from bfit.model import AtomicGaussianDensity
 
-grid = ClenshawRadialGrid(4, num_core_pts=10000, num_diffuse_pts=900, extra_pts=[50, 75, 100])
+grid = ClenshawRadialGrid(4, num_core_pts=10000, num_diffuse_pts=899, extra_pts=[50, 75, 100])
 model = AtomicGaussianDensity(grid.points, num_s=num_s, num_p=num_p, normalize=True)
+model_pts = model.evaluate(coefficients, exponents)
+
+print("Numerical integral (spherically) of the model %f." % 
+      grid.integrate(model_pts * 4.0 * np.pi * grid.points**2.0)
+)
 ```
 
 
