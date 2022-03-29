@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# BFit - python program that fits a convex sum of
-# positive basis functions to any probability distribution. .
+# BFit is a Python library for fitting a convex sum of Gaussian
+# functions to any probability distribution
 #
-# Copyright (C) 2020 The BFit Development Team.
+# Copyright (C) 2020- The QC-Devs Community
 #
 # This file is part of BFit.
 #
