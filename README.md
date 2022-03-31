@@ -94,7 +94,7 @@ The features of this software are:
     * Positive definite kinetic energy density.
 
 
-KL-FPI Models of Atomic Densities 
+Final Models of Fitting Atomic Densities 
 ------------------------------------------
 The final model of fitting the atomic densities using the Kullback-Leibler (KL) divergence fixed point iteration method 
 can be accessed by opening the file `./bfit/data/kl_fpi_results.npz` with numpy.
