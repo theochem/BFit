@@ -249,7 +249,7 @@ class SlaterAtoms:
         slater = norm.T * pref * np.exp(-exponent * points).T
         return slater
 
-    def phi_matrix(self, points, deriv=False):
+    def phi_matrix(self, points, deriv=None):
         r"""
         Compute the linear combination of Slater-type orbitals on the given points.
 
@@ -271,8 +271,9 @@ class SlaterAtoms:
         ----------
         points : ndarray, (N,)
             The radial grid points.
-        deriv : bool
-            If true, use the derivative of the slater-orbitals.
+        deriv : int, optional
+            If it is one, return the derivative of the slater-orbitals.
+            If it is two, return the second derivative of the slater-orbitals.
 
         Returns
         -------
@@ -287,12 +288,21 @@ class SlaterAtoms:
           zero instead. See "derivative_radial_slater_type_orbital".
 
         """
+        if deriv is not None:
+            if deriv not in [1, 2]:
+                raise ValueError(
+                    f"The deriv parameter {deriv} should be either one or two. Higher-order"
+                    f"is not supported."
+                )
+
         # compute orbital composed of a linear combination of Slater
         phi_matrix = np.zeros((len(points), len(self.orbitals)))
         for index, orbital in enumerate(self.orbitals):
             exps, number = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
-            if deriv:
+            if deriv == 1:
                 slater = self.derivative_radial_slater_type_orbital(exps, number, points)
+            elif deriv == 2:
+                slater = self.second_derivative_radial_slater_type_orbital(exps, number, points)
             else:
                 slater = self.radial_slater_orbital(exps, number, points)
             phi_matrix[:, index] = np.dot(slater, self.orbitals_coeff[orbital]).ravel()
@@ -387,7 +397,7 @@ class SlaterAtoms:
         Returns
         -------
         slater : ndarray, (N, M)
-            The Slater-type orbitals evaluated on the :math:`N` grid points.
+            First derivative of Slater-type orbitals evaluated on the :math:`N` grid points.
 
         Notes
         -----
@@ -405,6 +415,63 @@ class SlaterAtoms:
             deriv_pref = (number.T - 1.) / np.reshape(points, (points.shape[0], 1)) - exponent.T
             deriv_pref[np.abs(points) < 1e-10, :] = 0.0
         deriv = deriv_pref * slater
+        return deriv
+
+    @staticmethod
+    def second_derivative_radial_slater_type_orbital(exponent, number, points):
+        r"""
+        Compute the derivative of the radial component of Slater-type orbital on the given points.
+
+        The derivative of the Slater-type orbital is defined as:
+
+        .. math::
+            \frac{d^2 R(r)}{dr^2} = \bigg[
+                \bigg(\frac{n-1}{r} - \alpha \bigg)^2 - \frac{n-1}{r^2} \bigg]
+                 N r^{n-1} e^{- \alpha r},
+
+        where
+        :math:`n` is the principal quantum number of that orbital,
+        :math:`N` is the normalizing constant,
+        :math:`r` is the radial point, distance to the origin, and
+        :math:`\alpha` is the zeta exponent of that orbital.
+
+        Parameters
+        ----------
+        exponent : ndarray, (M, 1)
+            The zeta exponents of Slater orbitals.
+        number : ndarray, (M, 1)
+            The principle quantum numbers of Slater orbitals.
+        points : ndarray, (N,)
+            The radial grid points. If points contain zero, then it is undefined at those
+            points and set to zero.
+
+        Returns
+        -------
+        slater : ndarray, (N, M)
+            Second derivative of Slater-type orbitals evaluated on the :math:`N` grid points.
+
+        Notes
+        -----
+        - At r = 0, the derivative is undefined and this function returns zero instead.
+
+        References
+        ----------
+        See wikipedia page on "Slater-Type orbitals".
+
+        """
+        slater = SlaterAtoms.radial_slater_orbital(exponent, number, points)
+        # Consider the case when dividing by zero.
+        with np.errstate(divide='ignore'):
+            # derivative
+            # [n - 1] / r - alpha
+            deriv_pref = (number.T - 1.) / np.reshape(points, (points.shape[0], 1)) - exponent.T
+            deriv_pref[np.abs(points) < 1e-10, :] = 0.0
+
+            # [n - 1] / r^2
+            deriv_pref2 = (number.T - 1.) / np.reshape(points**2.0, (points.shape[0], 1))
+            deriv_pref2[np.abs(points) < 1e-10, :] = 0.0
+
+        deriv = (deriv_pref**2.0 - deriv_pref2) * slater
         return deriv
 
     def positive_definite_kinetic_energy(self, points):
@@ -463,6 +530,37 @@ class SlaterAtoms:
             The derivative of atomic density on the grid points.
 
         """
-        factor = self.phi_matrix(points) * self.phi_matrix(points, deriv=True)
+        factor = self.phi_matrix(points) * self.phi_matrix(points, deriv=1)
         derivative = np.dot(2. * factor, self.orbitals_occupation).ravel() / (4 * np.pi)
         return derivative
+
+    def laplacian_of_atomic_density(self, points):
+        r"""
+        Return the Laplacian of the atomic density on a set of points.
+
+        Parameters
+        ----------
+        points : ndarray(N,)
+            The :math:`N` radial grid points.
+
+        Returns
+        -------
+        laplacian : ndarray(N,)
+            The Laplacian of the atomic density on the grid points.
+
+        """
+        molecular_orb = self.phi_matrix(points)
+        molecular_orb_deriv = self.phi_matrix(points, deriv=1)
+        molecular_orb_sec_deriv = self.phi_matrix(points, deriv=2)
+
+        # phi_i * phi_i^\prime / r
+        with np.errstate(divide='ignore'):
+            factor = 2.0 * molecular_orb * molecular_orb_deriv / \
+                     np.reshape(points, (points.shape[0], 1))
+            factor[np.abs(points) < 1e-10] = 0.0
+
+        factor = (
+            molecular_orb_deriv**2.0 + factor + molecular_orb * molecular_orb_sec_deriv
+        )
+        laplacian = np.dot(2. * factor, self.orbitals_occupation).ravel() / (4 * np.pi)
+        return laplacian
