@@ -83,6 +83,21 @@ def test_derivative_slater_type_orbital_be():
     assert_almost_equal(orbitals, expected, decimal=6)
 
 
+def test_second_derivative_of_slater_type_orbital_against_finite_difference():
+    r"""Test second derivative of radial Slater-type orbital against finite-difference."""
+    # load Be atomic wave function
+    be = SlaterAtoms("Be")
+
+    # check values of a single orbital at various points
+    for r in np.arange(0.1, 10., 0.1):
+        exponent, number, pt = np.array([[12.683501]]), np.array([[1]]), np.array([r])
+        actual = be.second_derivative_radial_slater_type_orbital(exponent, number, pt)
+
+        first_deriv = lambda x: slater(exponent[0, 0], number[0, 0], x, derivative=True)
+        desired = (first_deriv(r + 1e-8) - first_deriv(r)) / 1e-8
+        assert_almost_equal(actual, desired, decimal=3)
+
+
 def test_positive_definite_kinetic_energy_he():
     r"""Test integral of kinetic energy density of helium against actual value."""
     # load he atomic wave function
@@ -143,7 +158,7 @@ def test_phi_derivative_lcao_b():
     # load Be atomic wave function
     b = SlaterAtoms("b")
     # check the values of the phi_matrix at point 1.0
-    phi_matrix = b.phi_matrix(np.array([1]), deriv=True)
+    phi_matrix = b.phi_matrix(np.array([1]), deriv=1)
 
     def _slater_deriv(r):
         # compute expected value of 1S
@@ -172,6 +187,17 @@ def test_phi_derivative_lcao_b():
     assert_almost_equal(phi_matrix[0, :], _slater_deriv(1), decimal=4)
     assert_almost_equal(phi_matrix[1, :], _slater_deriv(2.), decimal=4)
     assert_almost_equal(phi_matrix[2, :], _slater_deriv(3.), decimal=4)
+
+    # Test second derivative of phi at point 1.0, 2.0, 3.0
+    pts = np.arange(0.5, 5., 0.1)
+    actual = b.phi_matrix(pts, deriv=2)
+    for i, r in enumerate(pts):
+        desired = (np.array(_slater_deriv(r + 1e-8)) - np.array(_slater_deriv(r))) / 1e-8
+        assert_almost_equal(actual[i], desired, decimal=3)
+
+    # Test raises error if value is not correct.
+    assert_raises(ValueError, b.phi_matrix, points=pts, deriv=3)
+    assert_raises(ValueError, b.phi_matrix, points=pts, deriv=b)
 
 
 def test_coeff_matrix_be():
