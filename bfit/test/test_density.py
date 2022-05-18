@@ -442,6 +442,20 @@ def test_kinetic_energy_heavy_element_ce():
     assert_almost_equal(integral, c.kinetic_energy, decimal=2)
 
 
+def test_laplacian_of_hydrogen_slater():
+    r"""Test laplacian of hydrogen Slater."""
+    # Slater is N e^(-r)
+    h = SlaterAtoms("h")
+
+    pts = np.arange(0.01, 10., 0.1)
+    lap = h.laplacian_of_atomic_density(pts)
+
+    # Analytic derive it
+    solution = np.exp(-2.0 * pts) * (pts - 1) * 16.0 / pts
+    solution /= (4.0 * np.pi)
+    assert_almost_equal(lap, solution, decimal=4)
+
+
 def test_raises():
     r"""Test raises error of SlaterAtoms."""
     assert_raises(TypeError, SlaterAtoms, 25)
