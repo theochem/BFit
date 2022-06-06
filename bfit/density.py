@@ -228,7 +228,7 @@ class SlaterAtoms:
         points : ndarray, (N,)
             The radial :math:`r` grid points.
         normalized : bool
-            If true, returns the normalization constant :math:`N`.
+            If true, adds the normalization constant :math:`N`.
 
         Returns
         -------
@@ -463,8 +463,7 @@ class SlaterAtoms:
 
         Notes
         -----
-        - When :math:`n=1,2` and :math:`r=0`, then the derivative is un-defined and this
-          function returns 0 instead.
+        - When :math:`n=1,2` and :math:`r=0`, then the derivative is infinity.
 
         References
         ----------
@@ -521,7 +520,7 @@ class SlaterAtoms:
 
         Notes
         -----
-        - When :math:`n=1` and :math:`r=0`, then kinetic energy is undefined and nan is returned.
+        - When :math:`n=1` and :math:`r=0`, then kinetic energy is either nan or infinity.
 
         """
         phi_matrix = np.zeros((len(points), len(self.orbitals)))
@@ -542,7 +541,7 @@ class SlaterAtoms:
                 exps, numbers - 1, points, normalized=False
             )
             deriv_pref = norm.T * slater_minus_one
-            # When r=0 and n = 1, then the derivative is undefined and this returns infinity.
+            # When r=0 and n = 1, then the derivative is undefined and this returns infinity or nan
             i_r_zero = np.where(np.abs(points) == 0.0)[0]
             i_numb_one = np.where(numbers[0] == 1)[0]
             indices = np.array([[x, y] for x in i_r_zero for y in i_numb_one])
