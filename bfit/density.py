@@ -437,7 +437,7 @@ class SlaterAtoms:
 
         .. math::
             \frac{d^2 R(r)}{dr^2} = \bigg[
-                \bigg(\frac{n-1}{r} - \alpha \bigg)^2 - \frac{n-1}{r^2} \bigg]
+                \frac{(n-1)(n-2)}{r^2} - \frac{2\alpha (n-1)}{r} + \alpha^2 \bigg]
                  N r^{n-1} e^{- \alpha r},
 
         where
@@ -463,26 +463,37 @@ class SlaterAtoms:
 
         Notes
         -----
-        - At r = 0, the derivative is undefined and this function returns zero instead.
+        - When :math:`n=1,2` and :math:`r=0`, then the derivative is un-defined and this
+          function returns 0 instead.
 
         References
         ----------
         See wikipedia page on "Slater-Type orbitals".
 
         """
-        slater = SlaterAtoms.radial_slater_orbital(exponent, number, points)
-        # Consider the case when dividing by zero.
+        norm = np.power(2. * exponent, number) * np.sqrt((2. * exponent) / factorial(2. * number))
+        slater = SlaterAtoms.radial_slater_orbital(exponent, number, points, normalized=True)
+        # Calculate the un-normalized Slater with number less than one
         with np.errstate(divide='ignore'):
-            # derivative
-            # [n - 1] / r - alpha
-            deriv_pref = (number.T - 1.) / np.reshape(points, (points.shape[0], 1)) - exponent.T
-            deriv_pref[np.abs(points) < 1e-10, :] = 0.0
-
-            # [n - 1] / r^2
-            deriv_pref2 = (number.T - 1.) / np.reshape(points**2.0, (points.shape[0], 1))
-            deriv_pref2[np.abs(points) < 1e-10, :] = 0.0
-
-        deriv = (deriv_pref**2.0 - deriv_pref2) * slater
+            slater_minus = SlaterAtoms.radial_slater_orbital(
+                exponent, number - 1, points, normalized=False
+            )
+            slater_minus_two = SlaterAtoms.radial_slater_orbital(
+                exponent, number - 2, points, normalized=False
+            )
+        # Compute \alpha^2 * slater
+        deriv = exponent.T**2.0 * slater
+        # Compute 2 \alpha (n-1) * slater / r, note doesn't occur when n=1
+        deriv_pref = 2.0 * exponent.T * norm.T * slater_minus * (number.T - 1.0)
+        i_numb_one = np.where(number == 1)[0]
+        deriv_pref[:, i_numb_one] = 0.0
+        deriv -= deriv_pref
+        # Compute (n-1)(n-2) * slater / r^2, note doesn't occur when n=1,2
+        deriv_pref = norm.T * slater_minus_two * (number.T - 1.0) * (number.T - 2.0)
+        i_numb_one = np.where(number == 1)[0]
+        deriv_pref[:, i_numb_one] = 0.0
+        deriv_pref[:, np.where(number == 2)[0]] = 0.0
+        deriv += deriv_pref
         return deriv
 
     def positive_definite_kinetic_energy(self, points):

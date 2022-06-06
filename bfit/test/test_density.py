@@ -98,7 +98,7 @@ def test_second_derivative_of_slater_type_orbital_against_finite_difference():
     be = SlaterAtoms("Be")
 
     # check values of a single orbital at various points
-    for r in np.arange(0.1, 10., 0.1):
+    for r in np.arange(0.0, 10., 0.1):
         exponent, number, pt = np.array([[12.683501]]), np.array([[1]]), np.array([r])
         actual = be.second_derivative_radial_slater_type_orbital(exponent, number, pt)
 
