@@ -582,6 +582,22 @@ class SlaterAtoms:
         r"""
         Return the Laplacian of the atomic density on a set of points.
 
+        The Laplacian in radial coordinates only is:
+
+        .. math::
+            \Delta f = \frac{1}{r^2}\frac{\partial }{\partial r}\bigg(r^2 \frac{df}{dr} \bigg).
+
+        Letting f be the atomic density we have the following equation:
+
+        .. math::
+            \Delta f = 2 \bigg[\sum n_i \big( \frac{d \phi_i}{dr}^2 +
+                    \frac{2 \phi \frac{d\phi_i}{dr}}{r} +
+                    \phi_i \frac{d^2 \phi_i}{dr^2} \big)
+            \bigg],
+
+        where
+        :math:`\phi_i` is the ith molecular orbital with occupation number :math:`n_i`.
+
         Parameters
         ----------
         points : ndarray(N,)
@@ -599,12 +615,29 @@ class SlaterAtoms:
 
         # phi_i * phi_i^\prime / r
         with np.errstate(divide='ignore'):
-            factor = 2.0 * molecular_orb * molecular_orb_deriv / \
-                     np.reshape(points, (points.shape[0], 1))
-            factor[np.abs(points) < 1e-10] = 0.0
+            # Absorb phi_i / r together
+            phi_i_r = np.zeros((len(points), len(self.orbitals)))
+            for index, orbital in enumerate(self.orbitals):
+                exps, numbers = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
+                # Calculate slater divided by r
+                #    Unnormalized slater with number n-1, this is needed to remove divide by r
+                norm = np.power(2. * exps, numbers) * np.sqrt((2. * exps) / factorial(2. * numbers))
+                slater_minus_one = SlaterAtoms.radial_slater_orbital(
+                    exps, numbers - 1, points, normalized=False
+                )
+                slater_r = norm.T * slater_minus_one
+                # When r=0 and n = 1, then slater/r is infinity.
+                i_r_zero = np.where(np.abs(points) == 0.0)[0]
+                i_numb_one = np.where(numbers[0] == 1)[0]
+                indices = np.array([[x, y] for x in i_r_zero for y in i_numb_one])
+                if len(indices) != 0:  # if-statement needed to remove numpy warning using list
+                    slater_r[indices] = np.inf
+                phi_i_r[:, index] += np.ravel(np.dot(slater_r, self.orbitals_coeff[orbital]))
 
+            factor = 2.0 * phi_i_r * molecular_orb_deriv
         factor = (
             molecular_orb_deriv**2.0 + factor + molecular_orb * molecular_orb_sec_deriv
         )
-        laplacian = np.dot(2. * factor, self.orbitals_occupation).ravel() / (4 * np.pi)
+        # Multiply by occupation number to get molecular orbitals.
+        laplacian = np.dot(2.0 * factor, self.orbitals_occupation).ravel() / (4 * np.pi)
         return laplacian

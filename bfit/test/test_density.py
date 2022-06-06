@@ -424,28 +424,31 @@ def test_kinetic_energy_cation_anion_c():
     assert_almost_equal(integral, c.kinetic_energy, decimal=5)
 
 
+def test_derivative_electron_density_h():
+    r"""Test derivative of atomic density of hydrogen."""
+    h = SlaterAtoms("h")
+    pts = np.random.uniform(0, 1, size=(100,))
+    actual = h.derivative_density(pts)
+    finite_diff = (h.atomic_density(pts + 1e-8) - h.atomic_density(pts)) / 1e-8
+    assert_allclose(actual, finite_diff)
+
+
 def test_derivative_electron_density_c():
     r"""Test derivative of atomic density of cation of carbon."""
     c = SlaterAtoms("c", cation=True)
-    eps = 1e-10
-    grid = np.array([0.1, 0.1 + eps, 0.5, 0.5 + eps])
-    dens = c.atomic_density(grid)
-    actual = c.derivative_density(np.array([0.1, 0.5]))
-    desired_0 = (dens[1] - dens[0]) / eps
-    desired_1 = (dens[3] - dens[2]) / eps
-    assert_almost_equal(actual, np.array([desired_0, desired_1]), decimal=4)
+    pts = np.random.uniform(0, 2, size=(100,))
+    actual = c.derivative_density(pts)
+    finite_diff = (c.atomic_density(pts + 1e-8) - c.atomic_density(pts)) / 1e-8
+    assert_allclose(actual, finite_diff, atol=1e-4)
 
 
 def test_derivative_electron_density_cr():
     r"""Test derivative of atomic density of chromium."""
     cr = SlaterAtoms("cr")
-    eps = 2.0e-8
-    grid = np.array([0.1 - eps, 0.1, 0.1 + eps, 1. - eps, 1., 1. + eps])
-    dens = cr.atomic_density(grid)
-    actual = cr.derivative_density(np.array([0.1, 1.]))
-    desired_0 = (dens[2] - dens[0]) / (2. * eps)
-    desired_1 = (dens[5] - dens[3]) / (2. * eps)
-    assert_almost_equal(actual, np.array([desired_0, desired_1]), decimal=4)
+    pts = np.random.uniform(0, 5, size=(100,))
+    actual = cr.derivative_density(pts)
+    finite_diff = (cr.atomic_density(pts + 1e-8) - cr.atomic_density(pts)) / 1e-8
+    assert_allclose(actual, finite_diff, rtol=1e-6, atol=1e-4)
 
 
 def test_kinetic_energy_heavy_element_ce():
@@ -462,13 +465,13 @@ def test_laplacian_of_hydrogen_slater():
     # Slater is N e^(-r)
     h = SlaterAtoms("h")
 
-    pts = np.arange(0.01, 10., 0.1)
+    pts = np.arange(0.0, 10., 0.1)
     lap = h.laplacian_of_atomic_density(pts)
 
     # Analytic derive it
     solution = np.exp(-2.0 * pts) * (pts - 1) * 16.0 / pts
     solution /= (4.0 * np.pi)
-    assert_almost_equal(lap, solution, decimal=4)
+    assert_almost_equal(lap, solution, decimal=7)
 
 
 def test_raises():
