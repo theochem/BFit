@@ -500,6 +500,15 @@ class SlaterAtoms:
         r"""
         Positive definite or Lagrangian kinetic energy density.
 
+        .. math::
+            K(r) = \sum_i n_i \bigg[ \bigg(\frac{d \sum_j N_j c^i_j R_{n_j}}{dr} \bigg)^2
+             + \frac{l_i (l_i + 1}{r^2} \bigg(\sum_j N_j c^i_j R_{n_j} \bigg)^2 \bigg],
+
+        where
+        :math:`n` is the principal quantum number of that orbital,
+        :math:`N` is the normalizing constant, andx
+        :math:`r` is the radial point, distance to the origin
+
         Parameters
         ----------
         points : ndarray,(N,)
@@ -509,6 +518,10 @@ class SlaterAtoms:
         -------
         energy : ndarray, (N,)
             The kinetic energy on the grid points.
+
+        Notes
+        -----
+        - When :math:`n=1` and :math:`r=0`, then kinetic energy is undefined and nan is returned.
 
         """
         phi_matrix = np.zeros((len(points), len(self.orbitals)))
@@ -523,14 +536,23 @@ class SlaterAtoms:
             phi_matrix[:, index] = np.ravel(np.dot(deriv_radial, self.orbitals_coeff[orbital])**2.0)
 
             # Calculate del^2 of spherical component
-            slater = SlaterAtoms.radial_slater_orbital(exps, numbers, points)
-            with np.errstate(divide='ignore'):
-                gradient_sph = (
-                    angular[orbital[1]] *
-                    np.ravel(np.dot(slater, self.orbitals_coeff[orbital]))**2.0 /
-                    points**2.0
-                )
-                gradient_sph[np.abs(points) < 1e-10] = 0.0
+            norm = np.power(2. * exps, numbers) * np.sqrt((2. * exps) / factorial(2. * numbers))
+            # Take unnormalized slater with number n-1, this is needed to remove divide by r^2
+            slater_minus_one = SlaterAtoms.radial_slater_orbital(
+                exps, numbers - 1, points, normalized=False
+            )
+            deriv_pref = norm.T * slater_minus_one
+            # When r=0 and n = 1, then the derivative is undefined and this returns infinity.
+            i_r_zero = np.where(np.abs(points) == 0.0)[0]
+            i_numb_one = np.where(numbers[0] == 1)[0]
+            indices = np.array([[x, y] for x in i_r_zero for y in i_numb_one])
+            if len(indices) != 0:  # if-statement needed to remove numpy warning using list
+                deriv_pref[indices] = np.inf
+            # Sum the slater orbital multipled with their coefficients
+            gradient_sph = (
+                angular[orbital[1]] *
+                np.ravel(np.dot(deriv_pref, self.orbitals_coeff[orbital]))**2.0
+            )
             phi_matrix[:, index] += gradient_sph
 
         orb_occs = self.orbitals_occupation
