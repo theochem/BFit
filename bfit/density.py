@@ -204,7 +204,7 @@ class SlaterAtoms:
         return self._orbitals_cusp
 
     @staticmethod
-    def radial_slater_orbital(exponent, number, points):
+    def radial_slater_orbital(exponent, number, points, normalized=True):
         r"""
         Compute the radial component of Slater-type orbitals on the given points.
 
@@ -227,6 +227,8 @@ class SlaterAtoms:
             The principal quantum numbers :math:`n` of :math:`M` Slater orbitals.
         points : ndarray, (N,)
             The radial :math:`r` grid points.
+        normalized : bool
+            If true, returns the normalization constant :math:`N`.
 
         Returns
         -------
@@ -242,11 +244,16 @@ class SlaterAtoms:
         """
         if points.ndim != 1:
             raise ValueError("The argument point should be a 1D array.")
-        # compute norm & pre-factor
-        norm = np.power(2. * exponent, number) * np.sqrt((2. * exponent) / factorial(2. * number))
-        pref = np.power(points, number - 1).T
+        # compute pre-factor
+        with np.errstate(divide='ignore'):
+            pref = np.power(points, number - 1, dtype=np.float64).T
         # compute slater orbitals
-        slater = norm.T * pref * np.exp(-exponent * points).T
+        slater = pref * np.exp(-exponent * points).T
+        # compute normalization
+        if normalized:
+            norm = np.power(2. * exponent, number) * \
+                   np.sqrt((2. * exponent) / factorial(2. * number))
+            slater *= norm.T
         return slater
 
     def phi_matrix(self, points, deriv=None):
