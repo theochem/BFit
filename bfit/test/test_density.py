@@ -25,7 +25,7 @@ r"""Test bfit.density module."""
 from bfit.density import SlaterAtoms
 from bfit.grid import ClenshawRadialGrid
 import numpy as np
-from numpy.testing import assert_almost_equal, assert_equal, assert_raises
+from numpy.testing import assert_allclose, assert_almost_equal, assert_equal, assert_raises
 import scipy
 
 
@@ -35,6 +35,8 @@ def slater(e, n, r, derivative=False):
     slater = norm * np.power(r, n - 1) * np.exp(-e * r)
 
     if derivative:
+        if n == 1:
+            return - e * slater
         return (((n - 1) / r) - e) * slater
     return slater
 
@@ -49,6 +51,12 @@ def test_slater_type_orbital_be():
     # check values of a single orbital at r=2.0
     orbital = be.radial_slater_orbital(np.array([[0.821620]]), np.array([[2]]), np.array([2]))
     assert_almost_equal(orbital, slater(0.821620, 2, 2.0), decimal=6)
+    # check values of a single orbital at r=0.0 and n=2
+    orbital = be.radial_slater_orbital(np.array([[0.821620]]), np.array([[2]]), np.array([0.0]))
+    assert_almost_equal(orbital, slater(0.821620, 2, 0.0), decimal=6)
+    # check values of a single orbital at r=0.0 and n=1
+    orbital = be.radial_slater_orbital(np.array([[0.821620]]), np.array([[1]]), np.array([0.0]))
+    assert_almost_equal(orbital, slater(0.821620, 1, 0.0), decimal=6)
     # check value of tow orbitals at r=1.0 & r=2.0
     exps, nums = np.array([[12.683501], [0.821620]]), np.array([[1], [2]])
     orbitals = be.radial_slater_orbital(exps, nums, np.array([1., 2.]))
@@ -72,7 +80,8 @@ def test_derivative_slater_type_orbital_be():
     # check value of single orbital at r = 0.0
     orbital = be.derivative_radial_slater_type_orbital(np.array([[0.821620]]), np.array([[2]]),
                                                        np.array([0.]))
-    assert_almost_equal(orbital, 0.0, decimal=6)
+    actual = np.power(2. * 0.821620, 2) * np.sqrt((2. * 0.821620) / (4 * 3 * 2))
+    assert_almost_equal(orbital, actual, decimal=6)
     # check value of tow orbitals at r=1.0 & r=2.0
     exps, nums = np.array([[12.683501], [0.821620]]), np.array([[1], [2]])
     orbitals = be.derivative_radial_slater_type_orbital(exps, nums, np.array([1., 2.]))

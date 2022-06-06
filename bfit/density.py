@@ -406,22 +406,26 @@ class SlaterAtoms:
         slater : ndarray, (N, M)
             First derivative of Slater-type orbitals evaluated on the :math:`N` grid points.
 
-        Notes
-        -----
-        - At r = 0, the derivative is undefined and this function returns zero instead.
-
         References
         ----------
         See wikipedia page on "Slater-Type orbitals".
 
         """
-        slater = SlaterAtoms.radial_slater_orbital(exponent, number, points)
+        norm = np.power(2. * exponent, number) * np.sqrt((2. * exponent) / factorial(2. * number))
+        slater = SlaterAtoms.radial_slater_orbital(exponent, number, points, normalized=True)
+        # Calculate the un-normalized Slater with number less than one
+        slater_minus = SlaterAtoms.radial_slater_orbital(
+            exponent, number - 1, points, normalized=False
+        )
         # Consider the case when dividing by zero.
-        with np.errstate(divide='ignore'):
-            # derivative
-            deriv_pref = (number.T - 1.) / np.reshape(points, (points.shape[0], 1)) - exponent.T
-            deriv_pref[np.abs(points) < 1e-10, :] = 0.0
-        deriv = deriv_pref * slater
+        deriv = np.zeros((len(points), number.shape[0]))
+        # Compute -\alpha * slater
+        deriv -= exponent.T * slater
+        # Compute (n-1)*slater/r, note that this only occurs when n!=1.
+        deriv_pref = norm.T * slater_minus * (number.T - 1.0)
+        i_numb_one = np.where(number == 1)[0]
+        deriv_pref[:, i_numb_one] = 0.0
+        deriv += deriv_pref
         return deriv
 
     @staticmethod
