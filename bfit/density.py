@@ -204,7 +204,7 @@ class SlaterAtoms:
         return self._orbitals_cusp
 
     @staticmethod
-    def radial_slater_orbital(exponent, number, points):
+    def radial_slater_orbital(exponent, number, points, normalized=True):
         r"""
         Compute the radial component of Slater-type orbitals on the given points.
 
@@ -227,6 +227,8 @@ class SlaterAtoms:
             The principal quantum numbers :math:`n` of :math:`M` Slater orbitals.
         points : ndarray, (N,)
             The radial :math:`r` grid points.
+        normalized : bool
+            If true, adds the normalization constant :math:`N`.
 
         Returns
         -------
@@ -242,14 +244,19 @@ class SlaterAtoms:
         """
         if points.ndim != 1:
             raise ValueError("The argument point should be a 1D array.")
-        # compute norm & pre-factor
-        norm = np.power(2. * exponent, number) * np.sqrt((2. * exponent) / factorial(2. * number))
-        pref = np.power(points, number - 1).T
+        # compute pre-factor
+        with np.errstate(divide='ignore'):
+            pref = np.power(points, number - 1, dtype=np.float64).T
         # compute slater orbitals
-        slater = norm.T * pref * np.exp(-exponent * points).T
+        slater = pref * np.exp(-exponent * points).T
+        # compute normalization
+        if normalized:
+            norm = np.power(2. * exponent, number) * \
+                   np.sqrt((2. * exponent) / factorial(2. * number))
+            slater *= norm.T
         return slater
 
-    def phi_matrix(self, points, deriv=False):
+    def phi_matrix(self, points, deriv=None):
         r"""
         Compute the linear combination of Slater-type orbitals on the given points.
 
@@ -271,8 +278,9 @@ class SlaterAtoms:
         ----------
         points : ndarray, (N,)
             The radial grid points.
-        deriv : bool
-            If true, use the derivative of the slater-orbitals.
+        deriv : int, optional
+            If it is one, return the derivative of the slater-orbitals.
+            If it is two, return the second derivative of the slater-orbitals.
 
         Returns
         -------
@@ -287,12 +295,21 @@ class SlaterAtoms:
           zero instead. See "derivative_radial_slater_type_orbital".
 
         """
+        if deriv is not None:
+            if deriv not in [1, 2]:
+                raise ValueError(
+                    f"The deriv parameter {deriv} should be either one or two. Higher-order"
+                    f"is not supported."
+                )
+
         # compute orbital composed of a linear combination of Slater
         phi_matrix = np.zeros((len(points), len(self.orbitals)))
         for index, orbital in enumerate(self.orbitals):
             exps, number = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
-            if deriv:
-                slater = self.derivative_radial_slater_type_orbital(exps, number, points)
+            if deriv == 1:
+                slater = self.first_derivative_radial_slater_type_orbital(exps, number, points)
+            elif deriv == 2:
+                slater = self.second_derivative_radial_slater_type_orbital(exps, number, points)
             else:
                 slater = self.radial_slater_orbital(exps, number, points)
             phi_matrix[:, index] = np.dot(slater, self.orbitals_coeff[orbital]).ravel()
@@ -359,9 +376,9 @@ class SlaterAtoms:
         return dens
 
     @staticmethod
-    def derivative_radial_slater_type_orbital(exponent, number, points):
+    def first_derivative_radial_slater_type_orbital(exponent, number, points):
         r"""
-        Compute the derivative of the radial component of Slater-type orbital on the given points.
+        Compute the first derivative of the radial component of Slater-type orbital.
 
         The derivative of the Slater-type orbital is defined as:
 
@@ -387,29 +404,119 @@ class SlaterAtoms:
         Returns
         -------
         slater : ndarray, (N, M)
-            The Slater-type orbitals evaluated on the :math:`N` grid points.
-
-        Notes
-        -----
-        - At r = 0, the derivative is undefined and this function returns zero instead.
-
-        References
-        ----------
-        See wikipedia page on "Slater-Type orbitals".
+            First derivative of Slater-type orbitals evaluated on the :math:`N` grid points.
 
         """
-        slater = SlaterAtoms.radial_slater_orbital(exponent, number, points)
-        # Consider the case when dividing by zero.
+        norm = np.power(2. * exponent, number) * np.sqrt((2. * exponent) / factorial(2. * number))
+        # compute R(r) = N r^{n - 1} e^{-\alpha r}
+        slater = SlaterAtoms.radial_slater_orbital(exponent, number, points, normalized=True)
+
+        # Derivative of R(r) w.r.t. r:
+        # n=1: R(r) = N e^{-\alpha r}, so dR(r)/dr = N (-\alpha) e^{-\alpha r} = -\alpha R(r)
+        # n!=1: dR(r)/dr = N (-\alpha) r^{n - 1} e^{-\alpha r} + N (n - 1) r^{n - 2} e^{-\alpha r}
+
+        # compute N (-\alpha) e^{-\alpha r} part of derivative which exists for for all n
+        # -------------------------------------------------------------------------------
+        deriv = np.zeros((len(points), number.shape[0]))
+        deriv -= exponent.T * slater
+
+        # compute part of the derivative which only exists for n != 1
+        # -----------------------------------------------------------
+        # calculate the un-normalized Slater with n - 1; i.e., r^{n - 2} e^{-\alpha r}
+        slater_minus_one = SlaterAtoms.radial_slater_orbital(
+            exponent, number - 1, points, normalized=False
+        )
+        # compute N (n - 1) r^{n - 2} e^{-\alpha r} for n != 1
+        deriv_pref = norm.T * slater_minus_one * (number.T - 1.0)
+        i_numb_one = np.where(number == 1)[0]
+        deriv_pref[:, i_numb_one] = 0.0
+        deriv += deriv_pref
+        return deriv
+
+    @staticmethod
+    def second_derivative_radial_slater_type_orbital(exponent, number, points):
+        r"""
+        Compute the second derivative of the radial component of Slater-type orbital.
+
+        The derivative of the Slater-type orbital is defined as:
+
+        .. math::
+            \frac{d^2 R(r)}{dr^2} = \bigg[
+                \frac{(n-1)(n-2)}{r^2} - \frac{2\alpha (n-1)}{r} + \alpha^2 \bigg]
+                 N r^{n-1} e^{- \alpha r},
+
+        where
+        :math:`n` is the principal quantum number of that orbital,
+        :math:`N` is the normalizing constant,
+        :math:`r` is the radial point, distance to the origin, and
+        :math:`\alpha` is the zeta exponent of that orbital.
+
+        Parameters
+        ----------
+        exponent : ndarray, (M, 1)
+            The zeta exponents of Slater orbitals.
+        number : ndarray, (M, 1)
+            The principle quantum numbers of Slater orbitals.
+        points : ndarray, (N,)
+            The radial grid points. If points contain zero, then it is undefined at those
+            points and set to zero.
+
+        Returns
+        -------
+        slater : ndarray, (N, M)
+            Second derivative of Slater-type orbitals evaluated on the :math:`N` grid points.
+
+        """
+        norm = np.power(2. * exponent, number) * np.sqrt((2. * exponent) / factorial(2. * number))
+        # compute R(r) = N r^{n - 1} e^{-\alpha r}
+        slater = SlaterAtoms.radial_slater_orbital(exponent, number, points, normalized=True)
+        # calculate the un-normalized Slater with n - 1 and n - 2
         with np.errstate(divide='ignore'):
-            # derivative
-            deriv_pref = (number.T - 1.) / np.reshape(points, (points.shape[0], 1)) - exponent.T
-            deriv_pref[np.abs(points) < 1e-10, :] = 0.0
-        deriv = deriv_pref * slater
+            slater_minus_one = SlaterAtoms.radial_slater_orbital(
+                exponent, number - 1, points, normalized=False
+            )
+            slater_minus_two = SlaterAtoms.radial_slater_orbital(
+                exponent, number - 2, points, normalized=False
+            )
+
+        # General formula for the first derivative:
+        # dR(r)/dr = N (-\alpha) r^{n - 1} e^{-\alpha r} + N (n - 1) r^{n - 2} e^{-\alpha r}
+
+        # compute N \alpha^2 e^{-\alpha r} part of derivative which exists for for all n
+        # ------------------------------------------------------------------------------
+        # when n=1, R(r) = N e^{-\alpha r}, so d^2R(r)/dr^2 = N \alpha^2 e^{-\alpha r}
+        deriv = exponent.T**2.0 * slater
+
+        # compute part of the derivative which only exists for n != 1
+        # -----------------------------------------------------------
+        # calculate 2 * N (n - 1) (-\alpha) r^{n - 2} e^{-\alpha r}
+        deriv_pref = 2.0 * exponent.T * norm.T * slater_minus_one * (number.T - 1.0)
+        i_numb_one = np.where(number == 1)[0]
+        deriv_pref[:, i_numb_one] = 0.0
+        deriv -= deriv_pref
+
+        # compute part of the derivative which only exists for n != 1 & n != 2
+        # --------------------------------------------------------------------
+        # calculate N (n - 1) (n - 2) r^{n - 3} e^{-\alpha r}
+        deriv_pref = norm.T * slater_minus_two * (number.T - 1.0) * (number.T - 2.0)
+        i_numb_one = np.where(number == 1)[0]
+        deriv_pref[:, i_numb_one] = 0.0
+        deriv_pref[:, np.where(number == 2)[0]] = 0.0
+        deriv += deriv_pref
         return deriv
 
     def positive_definite_kinetic_energy(self, points):
         r"""
         Positive definite or Lagrangian kinetic energy density.
+
+        .. math::
+            K(r) = \sum_i n_i \bigg[ \bigg(\frac{d \sum_j N_j c^i_j R_{n_j}}{dr} \bigg)^2
+             + \frac{l_i (l_i + 1}{r^2} \bigg(\sum_j N_j c^i_j R_{n_j} \bigg)^2 \bigg],
+
+        where
+        :math:`n` is the principal quantum number of that orbital,
+        :math:`N` is the normalizing constant, andx
+        :math:`r` is the radial point, distance to the origin
 
         Parameters
         ----------
@@ -421,6 +528,10 @@ class SlaterAtoms:
         energy : ndarray, (N,)
             The kinetic energy on the grid points.
 
+        Notes
+        -----
+        - When :math:`n=1` and :math:`r=0`, then kinetic energy is either nan or infinity.
+
         """
         phi_matrix = np.zeros((len(points), len(self.orbitals)))
         angular = {
@@ -430,18 +541,27 @@ class SlaterAtoms:
             exps, numbers = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
             # Calculate del^2 of radial component
             # derivative of the radial component
-            deriv_radial = self.derivative_radial_slater_type_orbital(exps, numbers, points)
+            deriv_radial = self.first_derivative_radial_slater_type_orbital(exps, numbers, points)
             phi_matrix[:, index] = np.ravel(np.dot(deriv_radial, self.orbitals_coeff[orbital])**2.0)
 
             # Calculate del^2 of spherical component
-            slater = SlaterAtoms.radial_slater_orbital(exps, numbers, points)
-            with np.errstate(divide='ignore'):
-                gradient_sph = (
-                    angular[orbital[1]] *
-                    np.ravel(np.dot(slater, self.orbitals_coeff[orbital]))**2.0 /
-                    points**2.0
-                )
-                gradient_sph[np.abs(points) < 1e-10] = 0.0
+            norm = np.power(2. * exps, numbers) * np.sqrt((2. * exps) / factorial(2. * numbers))
+            # Take unnormalized slater with number n-1, this is needed to remove divide by r^2
+            slater_minus_one = SlaterAtoms.radial_slater_orbital(
+                exps, numbers - 1, points, normalized=False
+            )
+            deriv_pref = norm.T * slater_minus_one
+            # When r=0 and n = 1, then the derivative is undefined and this returns infinity or nan
+            i_r_zero = np.where(np.abs(points) == 0.0)[0]
+            i_numb_one = np.where(numbers[0] == 1)[0]
+            indices = np.array([[x, y] for x in i_r_zero for y in i_numb_one])
+            if len(indices) != 0:  # if-statement needed to remove numpy warning using list
+                deriv_pref[indices] = np.inf
+            # Sum the slater orbital multipled with their coefficients
+            gradient_sph = (
+                angular[orbital[1]] *
+                np.ravel(np.dot(deriv_pref, self.orbitals_coeff[orbital]))**2.0
+            )
             phi_matrix[:, index] += gradient_sph
 
         orb_occs = self.orbitals_occupation
@@ -463,6 +583,70 @@ class SlaterAtoms:
             The derivative of atomic density on the grid points.
 
         """
-        factor = self.phi_matrix(points) * self.phi_matrix(points, deriv=True)
+        factor = self.phi_matrix(points) * self.phi_matrix(points, deriv=1)
         derivative = np.dot(2. * factor, self.orbitals_occupation).ravel() / (4 * np.pi)
         return derivative
+
+    def laplacian_of_atomic_density(self, points):
+        r"""
+        Return the Laplacian of the atomic density on a set of points.
+
+        The Laplacian in radial coordinates only is:
+
+        .. math::
+            \Delta f = \frac{1}{r^2}\frac{\partial }{\partial r}\bigg(r^2 \frac{df}{dr} \bigg).
+
+        Letting f be the atomic density we have the following equation:
+
+        .. math::
+            \Delta f = 2 \bigg[\sum n_i \big( \frac{d \phi_i}{dr}^2 +
+                    \frac{2 \phi \frac{d\phi_i}{dr}}{r} +
+                    \phi_i \frac{d^2 \phi_i}{dr^2} \big)
+            \bigg],
+
+        where
+        :math:`\phi_i` is the ith molecular orbital with occupation number :math:`n_i`.
+
+        Parameters
+        ----------
+        points : ndarray(N,)
+            The :math:`N` radial grid points.
+
+        Returns
+        -------
+        laplacian : ndarray(N,)
+            The Laplacian of the atomic density on the grid points.
+
+        """
+        molecular_orb = self.phi_matrix(points)
+        molecular_orb_deriv = self.phi_matrix(points, deriv=1)
+        molecular_orb_sec_deriv = self.phi_matrix(points, deriv=2)
+
+        # phi_i * phi_i^\prime / r
+        with np.errstate(divide='ignore'):
+            # Absorb phi_i / r together
+            phi_i_r = np.zeros((len(points), len(self.orbitals)))
+            for index, orbital in enumerate(self.orbitals):
+                exps, numbers = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
+                # Calculate slater divided by r
+                #    Unnormalized slater with number n-1, this is needed to remove divide by r
+                norm = np.power(2. * exps, numbers) * np.sqrt((2. * exps) / factorial(2. * numbers))
+                slater_minus_one = SlaterAtoms.radial_slater_orbital(
+                    exps, numbers - 1, points, normalized=False
+                )
+                slater_r = norm.T * slater_minus_one
+                # When r=0 and n = 1, then slater/r is infinity.
+                i_r_zero = np.where(np.abs(points) == 0.0)[0]
+                i_numb_one = np.where(numbers[0] == 1)[0]
+                indices = np.array([[x, y] for x in i_r_zero for y in i_numb_one])
+                if len(indices) != 0:  # if-statement needed to remove numpy warning using list
+                    slater_r[indices] = np.inf
+                phi_i_r[:, index] += np.ravel(np.dot(slater_r, self.orbitals_coeff[orbital]))
+
+            factor = 2.0 * phi_i_r * molecular_orb_deriv
+        factor = (
+            molecular_orb_deriv**2.0 + factor + molecular_orb * molecular_orb_sec_deriv
+        )
+        # Multiply by occupation number to get molecular orbitals.
+        laplacian = np.dot(2.0 * factor, self.orbitals_occupation).ravel() / (4 * np.pi)
+        return laplacian
