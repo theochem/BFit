@@ -378,7 +378,7 @@ class SlaterAtoms:
     @staticmethod
     def derivative_radial_slater_type_orbital(exponent, number, points):
         r"""
-        Compute the derivative of the radial component of Slater-type orbital on the given points.
+        Compute the first derivative of the radial component of Slater-type orbital.
 
         The derivative of the Slater-type orbital is defined as:
 
@@ -406,23 +406,26 @@ class SlaterAtoms:
         slater : ndarray, (N, M)
             First derivative of Slater-type orbitals evaluated on the :math:`N` grid points.
 
-        References
-        ----------
-        See wikipedia page on "Slater-Type orbitals".
-
         """
         norm = np.power(2. * exponent, number) * np.sqrt((2. * exponent) / factorial(2. * number))
+        # compute R(r) = N r^{n - 1} e^{-\alpha r}
         slater = SlaterAtoms.radial_slater_orbital(exponent, number, points, normalized=True)
-        # Calculate the un-normalized Slater with number less than one
-        slater_minus = SlaterAtoms.radial_slater_orbital(
+
+        # compute N (-\alpha) e^{-\alpha r} part of derivative which exists for for all n
+        # -------------------------------------------------------------------------------
+        # n=1: R(r) = N e^{-\alpha r}, so dR(r)/dr = N (-\alpha) e^{-\alpha r}
+        deriv = np.zeros((len(points), number.shape[0]))
+        deriv -= exponent.T * slater
+
+        # compute part of the derivative which only exists for n != 1
+        # -----------------------------------------------------------
+        # n!=1: dR(r)/dr = N (-\alpha) r^{n - 1} e^{-\alpha r} + N (n - 1) r^{n - 2} e^{-\alpha r}
+        # calculate the un-normalized Slater with n - 1; i.e., r^{n - 2} e^{-\alpha r}
+        slater_minus_one = SlaterAtoms.radial_slater_orbital(
             exponent, number - 1, points, normalized=False
         )
-        # Consider the case when dividing by zero.
-        deriv = np.zeros((len(points), number.shape[0]))
-        # Compute -\alpha * slater
-        deriv -= exponent.T * slater
-        # Compute (n-1)*slater/r, note that this only occurs when n!=1.
-        deriv_pref = norm.T * slater_minus * (number.T - 1.0)
+        # compute N (n - 1) r^{n - 2} e^{-\alpha r} for n != 1
+        deriv_pref = norm.T * slater_minus_one * (number.T - 1.0)
         i_numb_one = np.where(number == 1)[0]
         deriv_pref[:, i_numb_one] = 0.0
         deriv += deriv_pref
@@ -431,7 +434,7 @@ class SlaterAtoms:
     @staticmethod
     def second_derivative_radial_slater_type_orbital(exponent, number, points):
         r"""
-        Compute the derivative of the radial component of Slater-type orbital on the given points.
+        Compute the second derivative of the radial component of Slater-type orbital.
 
         The derivative of the Slater-type orbital is defined as:
 
@@ -461,33 +464,38 @@ class SlaterAtoms:
         slater : ndarray, (N, M)
             Second derivative of Slater-type orbitals evaluated on the :math:`N` grid points.
 
-        Notes
-        -----
-        - When :math:`n=1,2` and :math:`r=0`, then the derivative is infinity.
-
-        References
-        ----------
-        See wikipedia page on "Slater-Type orbitals".
-
         """
         norm = np.power(2. * exponent, number) * np.sqrt((2. * exponent) / factorial(2. * number))
+        # compute R(r) = N r^{n - 1} e^{-\alpha r}
         slater = SlaterAtoms.radial_slater_orbital(exponent, number, points, normalized=True)
-        # Calculate the un-normalized Slater with number less than one
+        # calculate the un-normalized Slater with n - 1 and n - 2
         with np.errstate(divide='ignore'):
-            slater_minus = SlaterAtoms.radial_slater_orbital(
+            slater_minus_one = SlaterAtoms.radial_slater_orbital(
                 exponent, number - 1, points, normalized=False
             )
             slater_minus_two = SlaterAtoms.radial_slater_orbital(
                 exponent, number - 2, points, normalized=False
             )
-        # Compute \alpha^2 * slater
+
+        # General formula for the first derivative:
+        # dR(r)/dr = N (-\alpha) r^{n - 1} e^{-\alpha r} + N (n - 1) r^{n - 2} e^{-\alpha r}
+
+        # compute N \alpha^2 e^{-\alpha r} part of derivative which exists for for all n
+        # ------------------------------------------------------------------------------
+        # when n=1, R(r) = N e^{-\alpha r}, so d^2R(r)/dr^2 = N \alpha^2 e^{-\alpha r}
         deriv = exponent.T**2.0 * slater
-        # Compute 2 \alpha (n-1) * slater / r, note doesn't occur when n=1
-        deriv_pref = 2.0 * exponent.T * norm.T * slater_minus * (number.T - 1.0)
+
+        # compute part of the derivative which only exists for n != 1
+        # -----------------------------------------------------------
+        # calculate 2 * N (n - 1) (-\alpha) r^{n - 2} e^{-\alpha r}
+        deriv_pref = 2.0 * exponent.T * norm.T * slater_minus_one * (number.T - 1.0)
         i_numb_one = np.where(number == 1)[0]
         deriv_pref[:, i_numb_one] = 0.0
         deriv -= deriv_pref
-        # Compute (n-1)(n-2) * slater / r^2, note doesn't occur when n=1,2
+
+        # compute part of the derivative which only exists for n != 1 & n != 2
+        # --------------------------------------------------------------------
+        # calculate N (n - 1) (n - 2) r^{n - 3} e^{-\alpha r}
         deriv_pref = norm.T * slater_minus_two * (number.T - 1.0) * (number.T - 2.0)
         i_numb_one = np.where(number == 1)[0]
         deriv_pref[:, i_numb_one] = 0.0
