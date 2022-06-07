@@ -307,7 +307,7 @@ class SlaterAtoms:
         for index, orbital in enumerate(self.orbitals):
             exps, number = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
             if deriv == 1:
-                slater = self.derivative_radial_slater_type_orbital(exps, number, points)
+                slater = self.first_derivative_radial_slater_type_orbital(exps, number, points)
             elif deriv == 2:
                 slater = self.second_derivative_radial_slater_type_orbital(exps, number, points)
             else:
@@ -376,7 +376,7 @@ class SlaterAtoms:
         return dens
 
     @staticmethod
-    def derivative_radial_slater_type_orbital(exponent, number, points):
+    def first_derivative_radial_slater_type_orbital(exponent, number, points):
         r"""
         Compute the first derivative of the radial component of Slater-type orbital.
 
@@ -411,15 +411,17 @@ class SlaterAtoms:
         # compute R(r) = N r^{n - 1} e^{-\alpha r}
         slater = SlaterAtoms.radial_slater_orbital(exponent, number, points, normalized=True)
 
+        # Derivative of R(r) w.r.t. r:
+        # n=1: R(r) = N e^{-\alpha r}, so dR(r)/dr = N (-\alpha) e^{-\alpha r} = -\alpha R(r)
+        # n!=1: dR(r)/dr = N (-\alpha) r^{n - 1} e^{-\alpha r} + N (n - 1) r^{n - 2} e^{-\alpha r}
+
         # compute N (-\alpha) e^{-\alpha r} part of derivative which exists for for all n
         # -------------------------------------------------------------------------------
-        # n=1: R(r) = N e^{-\alpha r}, so dR(r)/dr = N (-\alpha) e^{-\alpha r}
         deriv = np.zeros((len(points), number.shape[0]))
         deriv -= exponent.T * slater
 
         # compute part of the derivative which only exists for n != 1
         # -----------------------------------------------------------
-        # n!=1: dR(r)/dr = N (-\alpha) r^{n - 1} e^{-\alpha r} + N (n - 1) r^{n - 2} e^{-\alpha r}
         # calculate the un-normalized Slater with n - 1; i.e., r^{n - 2} e^{-\alpha r}
         slater_minus_one = SlaterAtoms.radial_slater_orbital(
             exponent, number - 1, points, normalized=False
@@ -539,7 +541,7 @@ class SlaterAtoms:
             exps, numbers = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
             # Calculate del^2 of radial component
             # derivative of the radial component
-            deriv_radial = self.derivative_radial_slater_type_orbital(exps, numbers, points)
+            deriv_radial = self.first_derivative_radial_slater_type_orbital(exps, numbers, points)
             phi_matrix[:, index] = np.ravel(np.dot(deriv_radial, self.orbitals_coeff[orbital])**2.0)
 
             # Calculate del^2 of spherical component
