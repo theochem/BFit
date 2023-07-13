@@ -32,10 +32,9 @@ Citation
 --------
 Please use the following citation in any publication using BFit library:
 
-> **"BFit: Information-Theoretic Approach to Basis-Set Fitting of Electron Densities."**,
-> A. Tehrani, F. Heidar-Zadeh, J. S. M. Anderson, T. Verstraelen, R. Cuevas-Saavedra,
-> I. Vinogradov, D. Chakraborty, P. W. Ayers
-> `REFERENCE <https://doi.org/TODO>`__.
+> Tehrani, A., M. Anderson, J. S., Chakraborty, D., Rodriguez-Hernandez, J. I., Thompson, D. C., Verstraelen, T., Ayers, P. W., & Heidar-Zadeh, F.
+> An information-theoretic approach to basis-set fitting of electron densities and other non-negative functions.
+> Journal of Computational Chemistry. https://doi.org/10.1002/jcc.27170
 
 
 Dependencies
