@@ -34,104 +34,93 @@ class Measure(ABC):
     r"""Abstract base class for the measures."""
 
     @abstractmethod
-    def evaluate(self, density, model, deriv=False):
-        r"""
-        Abstract method for evaluating the measure.
+    def evaluate(self, true, approx, deriv=False):
+        r"""Abstract method for evaluating the measure between true and approximate functions.
 
         Parameters
         ----------
-        density : ndarray(N,)
-            The exact density evaluated on the grid points.
-        model : ndarray(N,)
-            The model evaluated on the same :math:`N` points that `density` is
-            evaluated on.
+        true : ndarray(N,)
+            The true function :math:`f(x)` evaluated on the grid points.
+        approx : ndarray(N,)
+            The approximate function :math:`g(x)` evaluated on the grid points.
         deriv : bool, optional
             Whether it should return the derivatives of the measure w.r.t. to the
-            model parameters.
+            .
 
         Returns
         -------
         m : ndarray(N,)
-            The measure between density & model on the grid points.
+            The measure between true and approximate function on the grid points.
         dm : ndarray(N,)
-            The derivative of measure w.r.t. model evaluated on the
-            grid points. Only returned if `deriv=True`.
+            The derivative of measure w.r.t. approximate function evaluated on the grid
+            points, if `deriv=True`.
 
         """
         raise NotImplementedError("Evaluate function should be implemented.")
 
 
 class SquaredDifference(Measure):
-    r"""Squared Difference Class for performing the Least-Squared method."""
+    r"""Squared Difference Class."""
 
-    def evaluate(self, density, model, deriv=False):
-        r"""
-        Evaluate squared difference b/w density & model on the grid points.
+    def evaluate(self, true, approx, deriv=False):
+        r"""Evaluate squared difference between true and approximate functions.
 
-        This is defined to be :math:`(f(x) - g(x))^2`,
-        where,
-        :math:`f` is the true function, and
-        :math:`g` is the model function,
+        .. math ::
+           (f(x) - g(x))^2
 
         Parameters
         ----------
-        density : ndarray(N,)
-            The exact density evaluated on the grid points.
-        model : ndarray(N,)
-            The model density evaluated on the grid points.
+        true : ndarray(N,)
+            The true function :math:`f(x)` evaluated on the grid points.
+        approx : ndarray(N,)
+            The approximate function :math:`g(x)` evaluated on the grid points.
         deriv : bool, optional
-            Whether to compute the derivative of squared difference w.r.t. model density.
-            Default is false.
+            Whether to compute the derivative of squared difference w.r.t. :math:`g(x)`.
 
         Returns
         -------
         m : ndarray(N,)
-            The squared difference between density & model on the grid points.
+            The squared difference between true and approximate functions on the grid points.
         dm : ndarray(N,)
-            The derivative of squared difference w.r.t. model density evaluated on the
-            grid points, only returned if `deriv=True`.
-
-        Notes
-        -----
-        - This class returns the squared difference at each point in the domain.
-          One would need to integrate this to get the desired least-squares.
+            The derivative of squared difference w.r.t. approximate function on the grid points,
+            if `deriv=True`.
 
         """
-        if not isinstance(model, np.ndarray):
+        if not isinstance(approx, np.ndarray) or approx.ndim != 1:
             raise ValueError(
-                f"Argument model should be {density.shape} array."
+                f"Argument approx should be an 1D numpy array, got {type(approx)} {approx.ndim}."
             )
-        if not isinstance(density, np.ndarray) or density.ndim != 1:
-            raise ValueError("Arguments density should be a 1D numpy array.")
-        if model.shape != density.shape:
-            raise ValueError(f"Model shape {model.shape} should be the same as density"
-                             f" {density.shape}.")
+        if not isinstance(true, np.ndarray) or true.ndim != 1:
+            raise ValueError(
+                f"Argument true should be a 1D numpy array, got {type(true)} {true.ndim}."
+            )
+        if approx.shape != true.shape:
+            raise ValueError(
+                f"The shape of true and approx arguments do not match, got {true.shape} != "
+                f"{approx.shape}"
+            )
         if not isinstance(deriv, bool):
-            raise TypeError(f"Deriv {type(deriv)} should be Boolean type.")
-        # compute residual
-        residual = density - model
-        # compute squared residual
+            raise TypeError(f"Argument deriv should be a boolean, got {type(deriv)}")
+        # compute squared residual & its derivative w.r.t. approx function
+        residual = true - approx
         value = np.power(residual, 2)
-        # compute derivative of squared residual w.r.t. model
         if deriv:
             return value, -2 * residual
         return value
 
 
 class KLDivergence(Measure):
-    r"""Kullback-Leibler Divergence Class."""
+    r"""Kullback-Leibler (KL) Divergence Class."""
 
-    def __init__(self, mask_value=1.e-12, negative_val=100000.0):
+    def __init__(self, mask_value=1.0e-12, negative_val=100000.0):
         r"""
-        Construct the Kullback-Leibler class.
-
         Parameters
         ----------
         mask_value : float, optional
             The elements less than or equal to this number are masked in a division,
             and then replaced with the value of one so that logarithm of one is zero.
         negative_val : (float, np.inf), optional
-            Constant value that gets returned if the model density is negative
+            Constant value that gets returned if the approximate function is negative
             (i.e. not a true probability distribution). Useful for optimization algorithms
             with weak constraints.
 
@@ -147,83 +136,81 @@ class KLDivergence(Measure):
 
     @property
     def negative_val(self):
-        r"""Value that gets returned if the model density is negative."""
+        r"""Value that gets returned if the approximate function is negative."""
         return self._negative_val
 
-    def evaluate(self, density, model, deriv=False):
-        r"""
-        Evaluate the integrand of Kullback-Leibler divergence b/w true & model.
+    def evaluate(self, true, approx, deriv=False):
+        r"""Evaluate the integrand of KL divergence between true and approximate functions.
 
         .. math ::
-            D(f, g) := \int_G f(x) \ln \bigg( \frac{f(x)}{g(x)} \bigg) dx
+            f(x) \ln \bigg( \frac{f(x)}{g(x)} \bigg)
 
-        where,
-        :math:`f` is the true probability distribution,
-        :math:`g` is the model probability distribution,
-        :math:`G` is the grid being integrated on.
-
-        If the model density is negative, then this function will return infinity.
-        If :math:`g(x) < \text{mask value}` then :math:`\frac{f(x)}{g(x)} = 1`.
+        If the approximate function is negative, then this function will return infinity.
+        If :math:`g(x) < \text{mask_value}` then :math:`\frac{f(x)}{g(x)} = 1`.
 
         Parameters
         ----------
-        density : ndarray(N,)
-            The exact density evaluated on the grid points.
-        model : ndarray(N,)
-            The model density evaluated on the grid points.
+        true : ndarray(N,)
+            The true function :math:`f(x)` evaluated on the grid points.
+        approx : ndarray(N,)
+            The approximate function :math:`g(x)` evaluated on the grid points.
         deriv : bool, optional
-            Whether to return the derivative of divergence w.r.t. model density, as well.
-            Default is false.
+            Whether to compute the derivative of KL divergence w.r.t. :math:`g(x)`.
 
         Returns
         -------
         m : ndarray(N,)
-            The Kullback-Leibler divergence between density & model on the grid points.
+            The KL divergence between true and approximate functions on the grid points.
         dm : ndarray(N,)
-            The derivative of divergence w.r.t. model density evaluated on the grid points.
-            Only returned if `deriv=True`.
+            The derivative of KL divergence w.r.t. approximate function evaluated on the grid
+            points, if `deriv=True`.
 
         Raises
         ------
         ValueError :
-            If the model density is negative, then the integrand is un-defined.
+            If the approximate function is negative, then the integrand is un-defined.
 
         Notes
         -----
-        - Values of nodel density that are less than `mask_value` are masked when used in
-          division and then replaced with the value of 1 so that logarithm of one is zero.
-        - This class does not return the Kullback-Leibler divergence.
-          One would need to integrate this to get the KL value.
+        - Values of approximate function that are less than `mask_value` are masked when used in
+          division and then replaced with the value of 1 so that :math:`\ln(1) = 0`.
 
         """
-        # check model density
-        if not isinstance(model, np.ndarray):
+        if not isinstance(approx, np.ndarray) or approx.ndim != 1:
             raise ValueError(
-                f"Argument model should be {density.shape} array."
+                f"Argument approx should be an 1D numpy array, got {type(approx)} {approx.ndim}."
             )
-        if not isinstance(density, np.ndarray) or density.ndim != 1:
-            raise ValueError("Arguments density should be a 1D numpy array.")
-        if model.shape != density.shape:
-            raise ValueError(f"Model shape {model.shape} should be the same as density"
-                             f" {density.shape}.")
+        if not isinstance(true, np.ndarray) or true.ndim != 1:
+            raise ValueError(
+                f"Argument true should be a 1D numpy array, got {type(true)} {true.ndim}."
+            )
+        if approx.shape != true.shape:
+            raise ValueError(
+                f"The shape of true and approx arguments do not match, got {true.shape} != "
+                f"{approx.shape}"
+            )
         if not isinstance(deriv, bool):
-            raise TypeError(f"Deriv {type(deriv)} should be Boolean type.")
-        if np.any(model < 0.):
+            raise TypeError(f"Argument deriv should be a boolean, got {type(deriv)}")
+
+        # TODO: Add comments to better explain what is happening
+        if np.any(approx < 0.0):
             if deriv:
                 # Add an incredibly large derivative
-                return np.array([self.negative_val] * model.shape[0]), \
-                       np.array([self.negative_val] * model.shape[0])
-            return np.array([self.negative_val] * model.shape[0])
+                return (
+                    np.array([self.negative_val] * approx.shape[0]),
+                    np.array([self.negative_val] * approx.shape[0]),
+                )
+            return np.array([self.negative_val] * approx.shape[0])
 
         # compute ratio & replace masked values by 1.0
-        ratio = density / np.ma.masked_less_equal(model, self.mask_value)
+        ratio = true / np.ma.masked_less_equal(approx, self.mask_value)
         ratio = np.ma.filled(ratio, fill_value=1.0)
 
-        # compute KL divergence
+        # compute KL divergence and its derivative
         # Add ignoring division by zero and multiplying by np.nan
-        with np.errstate(divide='ignore', invalid="ignore"):
-            value = density * np.log(ratio)
-        # compute derivative
+        # TODO: With masking, why do we need these ignores?
+        with np.errstate(divide="ignore", invalid="ignore"):
+            value = true * np.log(ratio)
         if deriv:
             return value, -ratio
         return value
@@ -232,23 +219,20 @@ class KLDivergence(Measure):
 class TsallisDivergence(Measure):
     r"""Tsallis Divergence Class."""
 
-    def __init__(self, alpha=1.001, mask_value=1.e-12):
+    def __init__(self, alpha=1.001, mask_value=1.0e-12):
         r"""
-        Construct the Kullback-Leibler class.
-
         Parameters
         ----------
         alpha : float
-            The alpha parameter of the Tsallis divergence. If it tends towards
-            one, then Tsallis divergence approaches Kullback-Leibler. See Notes
-            for more information.
+            The alpha parameter of the Tsallis divergence. When :math:`\alpha \to 1`, the Tsallis
+            divergence approaches Kullback-Leibler, so `KLDivergence` measure should be used.
         mask_value : float, optional
-            The elements less than or equal to this number are masked in a division,
-            and then replaced with the value of one so that logarithm of one is zero.
+            The elements (in the denominator) less than or equal to this value are masked in a
+            division, and then replaced with the value of one so that :math:`\ln(1)=0`.
 
         Notes
         -----
-        - Care should be taken on :math:`\alpha`. If :math:`\alpha > 1` and it isn't too
+        - Choose :math:`\alpha` carefully. If :math:`\alpha > 1` and it isn't too
           close to 1, then Tsallis divergence upper bounds the Kullback-Leibler and can be useful
           for optimization purposes.
 
@@ -256,10 +240,11 @@ class TsallisDivergence(Measure):
         self._alpha = alpha
         self._mask_value = mask_value
         if self._alpha < 0:
-            raise ValueError(f"Alpha parameter {alpha} should be positive.")
+            raise ValueError(f"Alpha parameter should be positive, got {alpha}.")
         if np.abs(self._alpha - 1.0) < 1e-10:
-            raise ValueError(f"Alpha parameter {alpha} shouldn't be equal to one."
-                             f"Use Kullback-Leibler divergence instead.")
+            raise ValueError(
+                f"For the case of alpha=1.0, use KLDivergence measure instead, got {alpha}"
+            )
         super().__init__()
 
     @property
@@ -272,42 +257,34 @@ class TsallisDivergence(Measure):
         r"""Return masking value used when evaluating the measure."""
         return self._mask_value
 
-    def evaluate(self, density, model, deriv=False):
-        r"""
-        Evaluate the integrand of Tsallis divergence ([1]_, [2]_) on grid points.
-
-        Defined as follows:
+    def evaluate(self, true, approx, deriv=False):
+        r"""Evaluate the integrand of Tsallis divergence ([1]_, [2]_).
 
         .. math::
-            \int_G \frac{1}{\alpha - 1} f(x) \bigg(\frac{f(x)}{g(x)}^{q- 1} - 1\bigg) dx,
-
-        where
-        :math:`f` is the true probability distribution,
-        :math:`g` is the model probability distribution.
-        :math:`G` is the grid being integrated on.
+            \frac{1}{\alpha - 1} f(x) \bigg(\frac{f(x)}{g(x)}^{\alpha- 1} - 1\bigg)
 
         Parameters
         ----------
-        density : ndarray(N,)
-            The exact density evaluated on the grid points.
-        model : ndarray(N,)
-            The model density evaluated on the grid points.
+        true : ndarray(N,)
+            The true function :math:`f(x)` evaluated on the grid points.
+        approx : ndarray(N,)
+            The approximate function :math:`g(x)` evaluated on the grid points.
         deriv : bool, optional
-            Whether to compute the derivative of squared difference w.r.t. model density.
+            Whether to compute the derivative of Tsallis divergence w.r.t. :math:`g(x)`.
 
         Returns
         -------
         m : ndarray(N,)
-            The Tsallis divergence between density & model on the grid points.
+            The Tsallis divergence between true and approximate functions on the grid points.
         dm : ndarray(N,)
-            The derivative of divergence w.r.t. model density evaluated on the grid points.
-            Only returned if `deriv=True`.
+            The derivative of divergence w.r.t. approximate function evaluated on the grid points,
+            if `deriv=True`.
 
         Notes
         -----
-        - This does not impose non-negativity of the model density, unlike the Kullback-Leibler.
+        - This does not impose non-negativity of the approximate function, unlike `KLDivergence`.
 
-        - Values of Model density that are less than `mask_value` are masked when used in
+        - Values of approximate function that are less than `mask_value` are masked when used in
           division and then replaced with the value of 0.
 
         - As :math:`\alpha` parameter tends towards one, then this converges to the
@@ -327,23 +304,26 @@ class TsallisDivergence(Measure):
            from non-extensive entropies." Theoretical Chemistry Accounts 136.4 (2017): 54.
 
         """
-        # check model density
-        if not isinstance(model, np.ndarray):
+        if not isinstance(approx, np.ndarray) or approx.ndim != 1:
             raise ValueError(
-                f"Argument model should be {density.shape} array."
+                f"Argument approx should be an 1D numpy array, got {type(approx)} {approx.ndim}."
             )
-        if not isinstance(density, np.ndarray) or density.ndim != 1:
-            raise ValueError("Arguments density should be a 1D numpy array.")
-        if model.shape != density.shape:
-            raise ValueError(f"Model shape {model.shape} should be the same as density"
-                             f" {density.shape}.")
+        if not isinstance(true, np.ndarray) or true.ndim != 1:
+            raise ValueError(
+                f"Argument true should be a 1D numpy array, got {type(true)} {true.ndim}."
+            )
+        if approx.shape != true.shape:
+            raise ValueError(
+                f"The shape of true and approx arguments do not match, got {true.shape} != "
+                f"{approx.shape}"
+            )
         if not isinstance(deriv, bool):
-            raise TypeError(f"Deriv {type(deriv)} should be Boolean type.")
+            raise TypeError(f"Argument deriv should be a boolean, got {type(deriv)}")
 
         # compute ratio & replace masked values by 1.0
-        ratio = density / np.ma.masked_less_equal(model, self.mask_value)
+        ratio = true / np.ma.masked_less_equal(approx, self.mask_value)
         ratio = np.ma.filled(ratio, fill_value=0.0)
-        value = density * (np.power(ratio, self.alpha - 1.0) - 1.0)
+        value = true * (np.power(ratio, self.alpha - 1.0) - 1.0)
         integrand = value / (self.alpha - 1.0)
         if deriv:
             return integrand, -np.power(ratio, self.alpha)
