@@ -25,7 +25,7 @@ r"""Test bfit.density module."""
 from bfit.density import SlaterAtoms
 from bfit.grid import ClenshawRadialGrid
 import numpy as np
-from numpy.testing import assert_almost_equal, assert_equal, assert_raises
+from numpy.testing import assert_allclose, assert_almost_equal, assert_equal, assert_raises
 import scipy
 
 
@@ -35,6 +35,8 @@ def slater(e, n, r, derivative=False):
     slater = norm * np.power(r, n - 1) * np.exp(-e * r)
 
     if derivative:
+        if n == 1:
+            return - e * slater
         return (((n - 1) / r) - e) * slater
     return slater
 
@@ -49,6 +51,12 @@ def test_slater_type_orbital_be():
     # check values of a single orbital at r=2.0
     orbital = be.radial_slater_orbital(np.array([[0.821620]]), np.array([[2]]), np.array([2]))
     assert_almost_equal(orbital, slater(0.821620, 2, 2.0), decimal=6)
+    # check values of a single orbital at r=0.0 and n=2
+    orbital = be.radial_slater_orbital(np.array([[0.821620]]), np.array([[2]]), np.array([0.0]))
+    assert_almost_equal(orbital, slater(0.821620, 2, 0.0), decimal=6)
+    # check values of a single orbital at r=0.0 and n=1
+    orbital = be.radial_slater_orbital(np.array([[0.821620]]), np.array([[1]]), np.array([0.0]))
+    assert_almost_equal(orbital, slater(0.821620, 1, 0.0), decimal=6)
     # check value of tow orbitals at r=1.0 & r=2.0
     exps, nums = np.array([[12.683501], [0.821620]]), np.array([[1], [2]])
     orbitals = be.radial_slater_orbital(exps, nums, np.array([1., 2.]))
@@ -62,20 +70,21 @@ def test_derivative_slater_type_orbital_be():
     # load Be atomic wave function
     be = SlaterAtoms("Be")
     # check values of a single orbital at r=1.0
-    orbital = be.derivative_radial_slater_type_orbital(np.array([[12.683501]]),
-                                                       np.array([[1]]), np.array([1]))
+    orbital = be.first_derivative_radial_slater_type_orbital(np.array([[12.683501]]),
+                                                             np.array([[1]]), np.array([1]))
     assert_almost_equal(orbital, slater(12.683501, 1, 1.0, derivative=True), decimal=6)
     # check values of a single orbital at r=2.0
-    orbital = be.derivative_radial_slater_type_orbital(np.array([[0.821620]]), np.array([[2]]),
-                                                       np.array([2]))
+    orbital = be.first_derivative_radial_slater_type_orbital(np.array([[0.821620]]), np.array([[2]]),
+                                                             np.array([2]))
     assert_almost_equal(orbital, slater(0.821620, 2, 2.0, derivative=True), decimal=6)
     # check value of single orbital at r = 0.0
-    orbital = be.derivative_radial_slater_type_orbital(np.array([[0.821620]]), np.array([[2]]),
-                                                       np.array([0.]))
-    assert_almost_equal(orbital, 0.0, decimal=6)
+    orbital = be.first_derivative_radial_slater_type_orbital(np.array([[0.821620]]), np.array([[2]]),
+                                                             np.array([0.]))
+    actual = np.power(2. * 0.821620, 2) * np.sqrt((2. * 0.821620) / (4 * 3 * 2))
+    assert_almost_equal(orbital, actual, decimal=6)
     # check value of tow orbitals at r=1.0 & r=2.0
     exps, nums = np.array([[12.683501], [0.821620]]), np.array([[1], [2]])
-    orbitals = be.derivative_radial_slater_type_orbital(exps, nums, np.array([1., 2.]))
+    orbitals = be.first_derivative_radial_slater_type_orbital(exps, nums, np.array([1., 2.]))
     expected = np.array([[slater(exps[0, 0], nums[0, 0], 1., True),
                           slater(exps[1, 0], nums[1, 0], 1., True)],
                          [slater(exps[0, 0], nums[0, 0], 2., True),
@@ -83,26 +92,47 @@ def test_derivative_slater_type_orbital_be():
     assert_almost_equal(orbitals, expected, decimal=6)
 
 
+def test_second_derivative_of_slater_type_orbital_against_finite_difference():
+    r"""Test second derivative of radial Slater-type orbital against finite-difference."""
+    # load Be atomic wave function
+    be = SlaterAtoms("Be")
+
+    # check values of a single orbital at various points
+    for r in np.arange(0.0, 10., 0.1):
+        exponent, number, pt = np.array([[12.683501]]), np.array([[1]]), np.array([r])
+        actual = be.second_derivative_radial_slater_type_orbital(exponent, number, pt)
+
+        first_deriv = lambda x: slater(exponent[0, 0], number[0, 0], x, derivative=True)
+        desired = (first_deriv(r + 1e-8) - first_deriv(r)) / 1e-8
+        assert_almost_equal(actual, desired, decimal=3)
+
+
 def test_positive_definite_kinetic_energy_he():
     r"""Test integral of kinetic energy density of helium against actual value."""
     # load he atomic wave function
     he = SlaterAtoms("he")
     # compute density on an equally distant grid
-    grid = ClenshawRadialGrid(4, 30000, 35000)
+    grid = ClenshawRadialGrid(4, 30000, 35000, include_origin=False)
     energ = he.positive_definite_kinetic_energy(grid.points)
     integral = 4.0 * np.pi * grid.integrate(energ * grid.points**2.0)
     assert np.all(np.abs(integral - he.kinetic_energy) < 1e-5)
+    # Test at r=0, that it returns nan
+    energ = he.positive_definite_kinetic_energy(np.array([0.]))
+    assert np.all(np.isnan(energ[0]))
 
 
 def test_positive_definite_kinetic_energy_li():
     r"""Test integral of kinetic energy density of lithium against actual value."""
     # load be atomic wave function
-    be = SlaterAtoms("li")
+    li = SlaterAtoms("li")
     # compute density on an equally distant grid
-    grid = ClenshawRadialGrid(3, 20000, 35000)
-    energ = be.positive_definite_kinetic_energy(grid.points)
+    grid = ClenshawRadialGrid(3, 20000, 35000, include_origin=False)
+    energ = li.positive_definite_kinetic_energy(grid.points)
     integral = 4.0 * np.pi * grid.integrate(energ * grid.points**2.0)
-    assert np.all(np.abs(integral - be.kinetic_energy) < 1e-5)
+    assert np.all(np.abs(integral - li.kinetic_energy) < 1e-5)
+    # Test at r=0, that it returns nan
+    energ = li.positive_definite_kinetic_energy(np.array([0.]))
+    assert np.all(np.isnan(energ[0]))
 
 
 def test_positive_definite_kinetic_energy_c():
@@ -110,7 +140,7 @@ def test_positive_definite_kinetic_energy_c():
     # load be atomic wave function
     be = SlaterAtoms("c")
     # compute density on an equally distant grid
-    grid = ClenshawRadialGrid(6, 20000, 35000)
+    grid = ClenshawRadialGrid(6, 20000, 35000, include_origin=False, dtype=np.float64)
     energ = be.positive_definite_kinetic_energy(grid.points)
     integral = 4.0 * np.pi * grid.integrate(energ * grid.points**2.0)
     assert np.all(np.abs(integral - be.kinetic_energy) < 1e-5)
@@ -121,7 +151,7 @@ def test_positive_definite_kinetic_energy_p():
     # load be atomic wave function
     be = SlaterAtoms("p")
     # compute density on ClenshawCurtis Grid
-    grid = ClenshawRadialGrid(15, 20000, 35000)
+    grid = ClenshawRadialGrid(15, 20000, 35000, include_origin=False, dtype=np.longlong)
     energ = be.positive_definite_kinetic_energy(grid.points)
     integral = 4.0 * np.pi * grid.integrate(energ * grid.points**2.0)
     assert np.all(np.abs(integral - be.kinetic_energy) < 1e-3)
@@ -132,7 +162,7 @@ def test_positive_definite_kinetic_energy_ag():
     # load c atomic wave function
     adens = SlaterAtoms("ag")
     # compute density on ClenshawCurtis Grid
-    grid = ClenshawRadialGrid(47, 20000, 35000)
+    grid = ClenshawRadialGrid(47, 20000, 35000, include_origin=False, dtype=np.longlong)
     energ = adens.positive_definite_kinetic_energy(grid.points)
     integral = 4.0 * np.pi * grid.integrate(energ * grid.points**2.0)
     assert np.all(np.abs(integral - adens.kinetic_energy) < 1e-3)
@@ -143,7 +173,7 @@ def test_phi_derivative_lcao_b():
     # load Be atomic wave function
     b = SlaterAtoms("b")
     # check the values of the phi_matrix at point 1.0
-    phi_matrix = b.phi_matrix(np.array([1]), deriv=True)
+    phi_matrix = b.phi_matrix(np.array([1]), deriv=1)
 
     def _slater_deriv(r):
         # compute expected value of 1S
@@ -172,6 +202,17 @@ def test_phi_derivative_lcao_b():
     assert_almost_equal(phi_matrix[0, :], _slater_deriv(1), decimal=4)
     assert_almost_equal(phi_matrix[1, :], _slater_deriv(2.), decimal=4)
     assert_almost_equal(phi_matrix[2, :], _slater_deriv(3.), decimal=4)
+
+    # Test second derivative of phi at point 1.0, 2.0, 3.0
+    pts = np.arange(0.5, 5., 0.1)
+    actual = b.phi_matrix(pts, deriv=2)
+    for i, r in enumerate(pts):
+        desired = (np.array(_slater_deriv(r + 1e-8)) - np.array(_slater_deriv(r))) / 1e-8
+        assert_almost_equal(actual[i], desired, decimal=3)
+
+    # Test raises error if value is not correct.
+    assert_raises(ValueError, b.phi_matrix, points=pts, deriv=3)
+    assert_raises(ValueError, b.phi_matrix, points=pts, deriv=b)
 
 
 def test_coeff_matrix_be():
@@ -371,49 +412,66 @@ def test_atomic_density_heavy_rn():
 def test_kinetic_energy_cation_anion_c():
     r"""Test integral of kinetic energy density of cation/anion of carbon."""
     c = SlaterAtoms("c", cation=True)
-    grid = ClenshawRadialGrid(6, 20000, 35000)
+    grid = ClenshawRadialGrid(6, 20000, 35000, include_origin=False)
     energ = c.positive_definite_kinetic_energy(grid.points)
     integral = 4.0 * np.pi * grid.integrate(energ * grid.points**2.0)
     assert_almost_equal(integral, c.kinetic_energy, decimal=6)
 
     c = SlaterAtoms("c", anion=True)
-    grid = ClenshawRadialGrid(7, 20000, 35000)
+    grid = ClenshawRadialGrid(7, 20000, 35000, include_origin=False)
     energ = c.positive_definite_kinetic_energy(grid.points)
     integral = 4.0 * np.pi * grid.integrate(energ * grid.points**2.0)
     assert_almost_equal(integral, c.kinetic_energy, decimal=5)
 
 
+def test_derivative_electron_density_h():
+    r"""Test derivative of atomic density of hydrogen."""
+    h = SlaterAtoms("h")
+    pts = np.random.uniform(0, 1, size=(100,))
+    actual = h.derivative_density(pts)
+    finite_diff = (h.atomic_density(pts + 1e-8) - h.atomic_density(pts)) / 1e-8
+    assert_allclose(actual, finite_diff)
+
+
 def test_derivative_electron_density_c():
     r"""Test derivative of atomic density of cation of carbon."""
     c = SlaterAtoms("c", cation=True)
-    eps = 1e-10
-    grid = np.array([0.1, 0.1 + eps, 0.5, 0.5 + eps])
-    dens = c.atomic_density(grid)
-    actual = c.derivative_density(np.array([0.1, 0.5]))
-    desired_0 = (dens[1] - dens[0]) / eps
-    desired_1 = (dens[3] - dens[2]) / eps
-    assert_almost_equal(actual, np.array([desired_0, desired_1]), decimal=4)
+    pts = np.random.uniform(0, 2, size=(100,))
+    actual = c.derivative_density(pts)
+    finite_diff = (c.atomic_density(pts + 1e-8) - c.atomic_density(pts)) / 1e-8
+    assert_allclose(actual, finite_diff, atol=1e-4)
 
 
 def test_derivative_electron_density_cr():
     r"""Test derivative of atomic density of chromium."""
     cr = SlaterAtoms("cr")
-    eps = 2.0e-8
-    grid = np.array([0.1 - eps, 0.1, 0.1 + eps, 1. - eps, 1., 1. + eps])
-    dens = cr.atomic_density(grid)
-    actual = cr.derivative_density(np.array([0.1, 1.]))
-    desired_0 = (dens[2] - dens[0]) / (2. * eps)
-    desired_1 = (dens[5] - dens[3]) / (2. * eps)
-    assert_almost_equal(actual, np.array([desired_0, desired_1]), decimal=4)
+    pts = np.random.uniform(0, 5, size=(100,))
+    actual = cr.derivative_density(pts)
+    finite_diff = (cr.atomic_density(pts + 1e-8) - cr.atomic_density(pts)) / 1e-8
+    assert_allclose(actual, finite_diff, rtol=1e-6, atol=1e-4)
 
 
 def test_kinetic_energy_heavy_element_ce():
     r"""Test integral of kinetic energy of cesium."""
     c = SlaterAtoms("ce")
-    grid = ClenshawRadialGrid(55, 10000, 30000)
+    grid = ClenshawRadialGrid(55, 10000, 30000, include_origin=False)
     energ = c.positive_definite_kinetic_energy(grid.points)
     integral = 4.0 * np.pi * grid.integrate(energ * grid.points**2.0)
     assert_almost_equal(integral, c.kinetic_energy, decimal=2)
+
+
+def test_laplacian_of_hydrogen_slater():
+    r"""Test laplacian of hydrogen Slater."""
+    # Slater is N e^(-r)
+    h = SlaterAtoms("h")
+
+    pts = np.arange(0.0, 10., 0.1)
+    lap = h.laplacian_of_atomic_density(pts)
+
+    # Analytic derive it
+    solution = np.exp(-2.0 * pts) * (pts - 1) * 16.0 / pts
+    solution /= (4.0 * np.pi)
+    assert_almost_equal(lap, solution, decimal=7)
 
 
 def test_raises():
