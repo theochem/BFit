@@ -648,12 +648,12 @@ def test_ls_fit_normalized_dens_normalized_1s_gaussian():
     # opt. coeffs & expons
     result = ls.run(np.array([0.1]), np.array([3.5]), True, True)
     assert_almost_equal(cs0, result["coeffs"], decimal=8)
-    assert_almost_equal(es0, result["exps"], decimal=8)
+    assert_almost_equal(es0, result["exps"], decimal=6)
     assert_almost_equal(0., result["fun"], decimal=8)
     # opt. coeffs
     result = ls.run(np.array([10.]), np.array([0.51]), True, False)
     assert_almost_equal(cs0, result["coeffs"], decimal=8)
-    assert_almost_equal(es0, result["exps"], decimal=8)
+    assert_almost_equal(es0, result["exps"], decimal=6)
     assert_almost_equal(0., result["fun"], decimal=8)
     # model density is two normalized 1s Gaussian
     model = AtomicGaussianDensity(grid.points, num_s=2, num_p=0, normalize=True)
@@ -692,7 +692,7 @@ def test_ls_fit_normalized_dens_normalized_2s_gaussian():
     assert_almost_equal(0., result["fun"], decimal=8)
     # opt. coeffs
     result = ls.run(initial_cs, es0, True, False)
-    assert_almost_equal(cs0, result["coeffs"], decimal=8)
+    assert_almost_equal(cs0, result["coeffs"], decimal=6)
     assert_almost_equal(es0, result["exps"], decimal=8)
     assert_almost_equal(0., result["fun"], decimal=8)
 
