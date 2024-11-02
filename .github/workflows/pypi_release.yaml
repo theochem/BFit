@@ -60,7 +60,7 @@ jobs:
           name: python-package-distributions
           path: dist/
           # Optional parameters for better artifact management
-          overwrite: false
+          overwrite: true
           include-hidden-files: false
 
   publish-to-pypi:
