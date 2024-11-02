@@ -21,6 +21,8 @@ license = {file = "LICENSE"}
 authors = [
     {name = "QC-Devs Community", email = "qcdevs@gmail.com"},
 ]
+# Version managed by setuptools_scm
+dynamic = ["version"]
 
 # https://pypi.org/classifiers/
 # Add PyPI classifiers here
