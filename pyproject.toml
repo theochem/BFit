@@ -12,7 +12,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 # https://packaging.python.org/en/latest/specifications/declaring-project-metadata/
-name = "qc-bfit"
+name = "qc-BFit"
 description = "Subset selection with maximum diversity."
 readme = {file = 'README.md', content-type='text/markdown'}
 requires-python = ">=3.9"
@@ -43,12 +43,6 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering",
-]
-
-dependencies = [
-    "numpy>=1.18.5",
-    "scipy>=1.5.0",
-    "matplotlib>=3.2.0"
 ]
 
 
@@ -94,8 +88,11 @@ zip-safe = true
 # Python modules and packages that are included in the
 # distribution package (and therefore become importable)
 [tool.setuptools.packages.find]
-exclude = ["*/*/tests", "tests_*", "examples", "notebooks"]
-where = ["bfit", "bfit.test"]
+exclude = ["*/*/test", "test_*", "examples", "notebooks", "docs"]
+# list of folders that contain the packages (["."] by default)
+where = ["."]
+# package names should match these glob patterns (["*"] by default)
+include = ["bfit"]
 
 # PDM example
 #[tool.pdm.scripts]
