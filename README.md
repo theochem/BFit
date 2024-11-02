@@ -1,9 +1,6 @@
 BFit
 ====
-<a href='https://docs.python.org/3.6/'><img src='https://img.shields.io/badge/python-3.6-blue.svg'></a>
-<a href='https://docs.python.org/3.7/'><img src='https://img.shields.io/badge/python-3.7-blue.svg'></a>
-<a href='https://docs.python.org/3.8/'><img src='https://img.shields.io/badge/python-3.8-blue.svg'></a>
-<a href='https://docs.python.org/3.9/'><img src='https://img.shields.io/badge/python-3.9-blue.svg'></a>
+[![This project supports Python 3.9+](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://python.org/downloads)
 [![GitHub Actions CI Tox Status](https://github.com/theochem/bfit/actions/workflows/ci_tox.yml/badge.svg?branch=master)](https://github.com/theochem/bfit/actions/workflows/ci_tox.yml)
 [![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/theochem/bfit/master?labpath=%2Fexamples%2F)
@@ -17,9 +14,9 @@ See the example [section](#kl-fpi-models-of-atomic-densities) down below or the 
 [Jupyter binder](https://mybinder.org/v2/gh/theochem/bfit/master?labpath=%2Fexamples%2)
 or various files in the example [folder](https://github.com/theochem/BFit/tree/master/examples)
 to see specific examples on how to fit using the different algorithms and objective
-functions.  
+functions.
 For further information about the api, please visit
-[**BFit Documentation**](https://bfit.qcdevs.org/). 
+[**BFit Documentation**](https://bfit.qcdevs.org/).
 
 The instructions to access the results of the fitted atomic densities using KL-FI method is
 shown in the section below.
@@ -63,7 +60,7 @@ conda install -c theochem qc-bfit
 pip install qc-bfit
 
 # run tests to make sure BFit was installed properly
-pytest -v . 
+pytest -v .
 ```
 
 
@@ -74,7 +71,7 @@ The features of this software are:
 
 * Gaussian Basis set model:
     * Construct s-type and p-type Gaussian functions,
-    * Compute Atomic Densities or Molecular Densities. 
+    * Compute Atomic Densities or Molecular Densities.
 
 * Fitting measures:
     * Least-squares,
@@ -93,9 +90,9 @@ The features of this software are:
     * Positive definite kinetic energy density.
 
 
-Final Models of Fitting Atomic Densities 
+Final Models of Fitting Atomic Densities
 ------------------------------------------
-The final model of fitting the atomic densities using the Kullback-Leibler (KL) divergence fixed point iteration method 
+The final model of fitting the atomic densities using the Kullback-Leibler (KL) divergence fixed point iteration method
 can be accessed by opening the file `./bfit/data/kl_fpi_results.npz` with numpy.
 Similarly, the results from optimizing KL with SLSQP method using `kl_fpi_results.npz`
 as initial guesses can be accessed by opening the file `./bfit/data/kl_slsqp_results.npz` with numpy.
@@ -140,7 +137,7 @@ grid = ClenshawRadialGrid(4, num_core_pts=10000, num_diffuse_pts=899, extra_pts=
 model = AtomicGaussianDensity(grid.points, num_s=num_s, num_p=num_p, normalize=True)
 model_pts = model.evaluate(coefficients, exponents)
 
-print("Numerical integral (spherically) of the model %f." % 
+print("Numerical integral (spherically) of the model %f." %
       grid.integrate(model_pts * 4.0 * np.pi * grid.points**2.0)
 )
 ```
@@ -193,5 +190,5 @@ print("Optimized coefficients are: ", result["coeffs"])
 print("Optimized exponents are: ", result["exps"])
 print("Final performance measures are: ", result["fun"][-1])
 ```
-See the [example directory](examples/) for more examples or launch the interactive binder 
+See the [example directory](examples/) for more examples or launch the interactive binder
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/theochem/bfit/master?labpath=%2Fexamples%2F)
