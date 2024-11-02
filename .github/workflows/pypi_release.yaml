@@ -47,7 +47,7 @@ jobs:
         #   python -m pip install -r requirements_dev.txt
       - name: Test package
         run: |
-          python -m pytest -c pyproject.toml --cov-config=.coveragerc --cov-report=xml --color=yes selector
+          python -m pytest -c pyproject.toml --cov-config=.coveragerc --cov-report=xml --color=yes --cov=bfit bfit/test
       - name: Build package
         run: python -m build --sdist --wheel
       - name: Store the distribution packages
