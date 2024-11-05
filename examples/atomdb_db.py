@@ -11,16 +11,17 @@ Specifically, it optimizes the Kullback-Leibler Divergence using the fixed
 import numpy as np
 from atomdb import load
 
-from bfit.density import SlaterAtoms
-from bfit.fit import KLDivergenceFPI, ScipyFit
+from bfit.fit import KLDivergenceFPI
 from bfit.grid import ClenshawRadialGrid
-from bfit.measure import KLDivergence
 from bfit.model import AtomicGaussianDensity
 from bfit.parse_ugbs import get_ugbs_exponents
 
+
+DATAPATH = ("/home/ali-tehrani/SoftwareProjects/AtomDBdata",)
+
 results_final = {}
 atoms = ["H",  "C", "N", "O", "F", "P", "S", "Cl"]
-atomic_numbs = [1, 6, 7, 8, 9, 15, 16, 17] #[1 + i for i in range(0, len(atoms))]
+atomic_numbs = [1, 6, 7, 8, 9, 15, 16, 17]  # [1 + i for i in range(0, len(atoms))]
 mult = [2, 3, 4, 3, 2, 4, 3, 2]
 for k, element in enumerate(atoms):
     print("Start Atom %s" % element)
@@ -28,7 +29,11 @@ for k, element in enumerate(atoms):
     # Construct a integration grid
     atomic_numb = atomic_numbs[k]
     grid = ClenshawRadialGrid(
-        atomic_numb, num_core_pts=10000, num_diffuse_pts=899, include_origin=True#, extra_pts=[50,75,100],
+        atomic_numb,
+        num_core_pts=10000,
+        num_diffuse_pts=899,
+        include_origin=True,
+        # extra_pts=[50,75,100],
     )
 
     # Initial Guess constructed from UGBS
@@ -41,14 +46,18 @@ for k, element in enumerate(atoms):
     e_0 = np.array(exps_s + exps_p) * 2.0
 
     # Construct Atomic Density and Fitting Object
-    #density = SlaterAtoms(element=element).atomic_density(grid.points)
+    # density = SlaterAtoms(element=element).atomic_density(grid.points)
     # Use AtomDB to calculate the density
-    atom = load(elem=element, charge=0, mult=mult[k], dataset="hci", datapath="/home/ali-tehrani/SoftwareProjects/AtomDBdata")
+    atom = load(
+        elem=element,
+        charge=0,
+        mult=mult[k],
+        dataset="hci",
+        datapath="/home/ali-tehrani/SoftwareProjects/AtomDBdata",
+    )
 
     dens = atom.dens_func()
     density = dens(grid.points)
-
-    import matplotlib.pyplot as plt
 
     # plt.plot(grid.points, density, "bo-")
     # plt.show()
@@ -69,7 +78,9 @@ for k, element in enumerate(atoms):
     # measure = KLDivergence(mask_value=1e-18)
     # fit_KL_slsqp = ScipyFit(grid, density, model, measure=measure, method="SLSQP", spherical=True)
     # # Run the SLSQP optimization algorithm
-    # results = fit_KL_slsqp.run(coeffs, e_0, maxiter=10000, disp=True, with_constraint=True, tol=1e-14)
+    # results = fit_KL_slsqp.run(
+    # coeffs, e_0, maxiter=10000, disp=True, with_constraint=True, tol=1e-14
+    # )
 
     print("KL-FPI INFO")
     print("-----------")

@@ -329,4 +329,3 @@ disable=[
     "no-else-return",
     "too-many-statements",
 ]
-
