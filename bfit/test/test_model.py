@@ -22,10 +22,11 @@
 # ---
 r"""Test bfit.model module."""
 
-from bfit.grid import CubicGrid, UniformRadialGrid
-from bfit.model import AtomicGaussianDensity, MolecularGaussianDensity
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_equal, assert_raises
+
+from bfit.grid import CubicGrid, UniformRadialGrid
+from bfit.model import AtomicGaussianDensity, MolecularGaussianDensity
 
 
 def test_raises_gaussian_model():

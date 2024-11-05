@@ -22,10 +22,10 @@
 # ---
 r"""Slater Atomic Density Module."""
 
-from bfit._slater import load_slater_wfn
 import numpy as np
 from scipy.special import factorial
 
+from bfit._slater import load_slater_wfn
 
 __all__ = ["SlaterAtoms"]
 

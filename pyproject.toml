@@ -297,3 +297,36 @@ skips = [
     "B603", # Ignore subprocess call
     "B607", # Ignore subprocess call
 ]
+
+[tool.pylint.MASTER]
+ignore-patterns = [
+    "test_.*\\.py$",
+    ".*_test\\.py$"
+]
+ignore-paths = [
+    "tests/.*",
+    ".*/tests/.*"
+]
+
+[tool.pylint.messages_control]
+# Pylint configuration
+max-line-length = 100
+# ignore
+# List of message identifiers to ignore, separated by a comma.
+disable=[
+    "fixme", # Disable fixme messages
+    "too-many-positional-arguments", # Disable too many positional arguments
+    "too-many-locals", # Disable too many locals
+    "too-many-instance-attributes", # Disable too many instance attributes
+    "too-many-positional-arguments", # Disable too many positional arguments
+    "missing-class-docstring", # Disable missing class docstring
+    "too-few-public-methods", # Disable too few public methods
+    "protected-access", # Disable protected access
+    "too-many-lines", # Disable too many lines
+    "possibly-used-before-assignment",
+    "too-many-branches",
+    "too-many-arguments",
+    "no-else-return",
+    "too-many-statements",
+]
+

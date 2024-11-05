@@ -9,12 +9,11 @@ Specifically, it optimizes the spherically-averaged Kullback-Leibler divergence
 import numpy as np
 
 from bfit.density import SlaterAtoms
-from bfit.fit import ScipyFit, KLDivergenceFPI
+from bfit.fit import KLDivergenceFPI, ScipyFit
 from bfit.grid import ClenshawRadialGrid
 from bfit.measure import KLDivergence
 from bfit.model import AtomicGaussianDensity
 from bfit.parse_ugbs import get_ugbs_exponents
-
 
 for atomic_numb, element in [
     (2, "he"),

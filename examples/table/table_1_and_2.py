@@ -16,7 +16,6 @@ from bfit.grid import ClenshawRadialGrid
 from bfit.model import AtomicGaussianDensity
 from bfit.parse_ugbs import get_ugbs_exponents
 
-
 results_final = {}
 atoms = ["h", "he", "li", "be", "b", "c", "n", "o", "f", "ne",
          "na", "mg", "al", "si", "p", "s", "cl", "ar", "k", "ca",
