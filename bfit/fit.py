@@ -649,6 +649,8 @@ class ScipyFit(_BaseFit):
                     print(template_iters.format(*performance))
                 callback = print_results
         # optimize
+        # scipy.minimize no longer supports extended precision
+        x0 = x0.astype(np.float64)
         start = timer()  # Start timer
         res = minimize(fun=self.func,
                        x0=x0,
