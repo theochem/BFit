@@ -12,10 +12,10 @@ Specifically, it optimizes the least-squares (spherically-averaged) of the
 import numpy as np
 
 from bfit.density import SlaterAtoms
-from bfit.grid import ClenshawRadialGrid
-from bfit.model import AtomicGaussianDensity
-from bfit.measure import SquaredDifference
 from bfit.fit import ScipyFit
+from bfit.grid import ClenshawRadialGrid
+from bfit.measure import SquaredDifference
+from bfit.model import AtomicGaussianDensity
 from bfit.parse_ugbs import get_ugbs_exponents
 
 WITH_CONSTRAINT = False

@@ -22,12 +22,13 @@
 # ---
 r"""Test bfit.fit module."""
 
+import numpy as np
+from numpy.testing import assert_almost_equal, assert_equal, assert_raises
+
 from bfit.fit import KLDivergenceFPI, ScipyFit
 from bfit.grid import CubicGrid, UniformRadialGrid
 from bfit.measure import KLDivergence, SquaredDifference
 from bfit.model import AtomicGaussianDensity, MolecularGaussianDensity
-import numpy as np
-from numpy.testing import assert_almost_equal, assert_equal, assert_raises
 
 
 def test_lagrange_multiplier():

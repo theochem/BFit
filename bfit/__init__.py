@@ -22,9 +22,9 @@
 # ---
 r"""Package for fitting densities to a linear combination of Gaussians."""
 
-from bfit.fit import *
-from bfit.grid import *
-from bfit.model import *
 from bfit.density import *
-from bfit.measure import *
+from bfit.fit import *
 from bfit.greedy import *
+from bfit.grid import *
+from bfit.measure import *
+from bfit.model import *

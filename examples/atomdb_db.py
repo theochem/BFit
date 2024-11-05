@@ -9,14 +9,14 @@ Specifically, it optimizes the Kullback-Leibler Divergence using the fixed
  at each iteration.
 """
 import numpy as np
+from atomdb import load
 
 from bfit.density import SlaterAtoms
-from bfit.fit import ScipyFit,KLDivergenceFPI
+from bfit.fit import KLDivergenceFPI, ScipyFit
 from bfit.grid import ClenshawRadialGrid
-from bfit.model import AtomicGaussianDensity
 from bfit.measure import KLDivergence
+from bfit.model import AtomicGaussianDensity
 from bfit.parse_ugbs import get_ugbs_exponents
-from atomdb import load
 
 results_final = {}
 atoms = ["H",  "C", "N", "O", "F", "P", "S", "Cl"]
@@ -49,6 +49,7 @@ for k, element in enumerate(atoms):
     density = dens(grid.points)
 
     import matplotlib.pyplot as plt
+
     # plt.plot(grid.points, density, "bo-")
     # plt.show()
     print(density[-1], grid.points[-1], grid.points[0:3])

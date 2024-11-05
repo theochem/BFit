@@ -26,7 +26,6 @@ import re
 
 import numpy as np
 
-
 __all__ = ["load_slater_wfn"]
 
 
@@ -127,7 +126,7 @@ def load_slater_wfn(element, anion=False, cation=False):
         for x in orbitals:
             if x in electron_config_list:
                 index = electron_config_list.index(x)
-                orbital = (electron_config_list[index: index + 2])
+                orbital = electron_config_list[index : index + 2]
 
                 if orbital[1] == "D" or orbital[1] == "F":
                     num_electrons = re.search(orbital + r"\((.*?)\)", electron_config_list).group(1)

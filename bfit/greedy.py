@@ -24,11 +24,12 @@ r"""Greedy Fitting Module."""
 
 from abc import ABCMeta, abstractmethod
 
-from bfit.fit import _BaseFit, KLDivergenceFPI, ScipyFit
-from bfit.measure import SquaredDifference
-from bfit.model import AtomicGaussianDensity
 import numpy as np
 from scipy.optimize import nnls
+
+from bfit.fit import KLDivergenceFPI, ScipyFit, _BaseFit
+from bfit.measure import SquaredDifference
+from bfit.model import AtomicGaussianDensity
 
 __all__ = ["GreedyLeastSquares", "GreedyKLFPI"]
 
@@ -801,6 +802,7 @@ class GreedyLeastSquares(GreedyStrategy):
         row_nnls_coefficients = nnls(cofactor_matrix, b_vector)
         return row_nnls_coefficients[0]
 
+    # pylint: disable=arguments-differ
     def get_optimization_routine(self, params, local=False):
         r"""Optimize least-squares using nnls and scipy.optimize from ScipyFit."""
         # First solves the optimal coefficients (while exponents are fixed) using NNLS.
@@ -946,6 +948,7 @@ class GreedyKLFPI(GreedyStrategy):
         exps = 3. * self.integral_dens / (2. * 4. * np.pi * denom)
         return np.array([self.integral_dens, exps])
 
+    # pylint: disable=arguments-differ
     def get_optimization_routine(self, params, local=False):
         r"""Optimize KL using KL-FPI method."""
         coeffs, exps = params[:len(params)//2], params[len(params)//2:]

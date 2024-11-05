@@ -22,13 +22,13 @@
 # ---
 r"""Fitting Algorithms."""
 
-from timeit import default_timer as timer
 import warnings
+from timeit import default_timer as timer
+
+import numpy as np
+from scipy.optimize import NonlinearConstraint, minimize
 
 from bfit.measure import KLDivergence, Measure, SquaredDifference
-import numpy as np
-from scipy.optimize import minimize, NonlinearConstraint
-
 
 __all__ = ["KLDivergenceFPI", "ScipyFit"]
 

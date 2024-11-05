@@ -22,13 +22,18 @@
 # ---
 r"""Test file for 'bfit.greedy'."""
 
-from bfit.greedy import (
-    get_next_choices, get_two_next_choices, GreedyKLFPI,
-    GreedyLeastSquares, pick_two_lose_one, remove_redundancies
-)
-from bfit.grid import UniformRadialGrid
 import numpy as np
 import numpy.testing as npt
+
+from bfit.greedy import (
+    GreedyKLFPI,
+    GreedyLeastSquares,
+    get_next_choices,
+    get_two_next_choices,
+    pick_two_lose_one,
+    remove_redundancies,
+)
+from bfit.grid import UniformRadialGrid
 
 
 def test_check_redundancies():

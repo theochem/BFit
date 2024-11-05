@@ -22,9 +22,10 @@
 # ---
 r"""Test bfit.grid module."""
 
-from bfit.grid import _BaseRadialGrid, ClenshawRadialGrid, CubicGrid, UniformRadialGrid
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_raises
+
+from bfit.grid import ClenshawRadialGrid, CubicGrid, UniformRadialGrid, _BaseRadialGrid
 
 
 def test_raises_base():
