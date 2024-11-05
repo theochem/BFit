@@ -16,7 +16,6 @@ from bfit.grid import ClenshawRadialGrid
 from bfit.model import AtomicGaussianDensity
 from bfit.parse_ugbs import get_ugbs_exponents
 
-
 # change the path to the location of the AtomDB data as needed
 DATAPATH = ("/home/ali-tehrani/SoftwareProjects/AtomDBdata",)
 

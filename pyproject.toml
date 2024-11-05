@@ -129,7 +129,7 @@ line-length = 100
 
 [tool.isort]
 profile = "black"
-known_first_party = ["bfit"]
+# known_first_party = ["bfit"]
 # If you need to exclude files from having their imports sorted
 #extend_skip_glob  = [
 #    "bfit/somefile.py",
