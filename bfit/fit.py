@@ -26,7 +26,7 @@ import warnings
 from timeit import default_timer as timer
 
 import numpy as np
-from scipy.optimize import NonlinearConstraint, minimize
+from scipy.optimize import minimize, NonlinearConstraint
 
 from bfit.measure import KLDivergence, Measure, SquaredDifference
 

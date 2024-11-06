@@ -26,10 +26,10 @@ import numpy as np
 import numpy.testing as npt
 
 from bfit.greedy import (
-    GreedyKLFPI,
-    GreedyLeastSquares,
     get_next_choices,
     get_two_next_choices,
+    GreedyKLFPI,
+    GreedyLeastSquares,
     pick_two_lose_one,
     remove_redundancies,
 )
