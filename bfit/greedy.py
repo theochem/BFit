@@ -27,7 +27,7 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 from scipy.optimize import nnls
 
-from bfit.fit import KLDivergenceFPI, ScipyFit, _BaseFit
+from bfit.fit import _BaseFit, KLDivergenceFPI, ScipyFit
 from bfit.measure import SquaredDifference
 from bfit.model import AtomicGaussianDensity
 
