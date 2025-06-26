@@ -12,6 +12,7 @@
 #
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath('../'))
 
 
@@ -28,20 +29,20 @@ author = 'The QC-Devs Community'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.napoleon',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.todo',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.githubpages',
-    'numpydoc',
+    "sphinx.ext.napoleon",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.todo",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.githubpages",
+    "numpydoc",
     # 'sphinx.ext.autosummary',
-    'sphinx.ext.doctest',
+    "sphinx.ext.doctest",
     # for adding “copy to clipboard” buttons to all text/code boxes
-    'sphinx_copybutton',
-    'autoapi.extension',
-    'nbsphinx',
-    #'sphinxcontrib.bibtex'
+    "sphinx_copybutton",
+    "autoapi.extension",
+    "nbsphinx",
+    # 'sphinxcontrib.bibtex',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

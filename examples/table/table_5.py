@@ -15,7 +15,6 @@ from bfit.grid import ClenshawRadialGrid
 from bfit.model import AtomicGaussianDensity
 from bfit.parse_ugbs import get_ugbs_exponents
 
-
 for atomic_numb, element in [
     (2, "he"),
     (4, "be"),

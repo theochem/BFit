@@ -22,9 +22,10 @@
 # ---
 r"""Test bfit.measure module."""
 
-from bfit.measure import KLDivergence, SquaredDifference, TsallisDivergence
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_raises
+
+from bfit.measure import KLDivergence, SquaredDifference, TsallisDivergence
 
 
 def test_raises_kl():
@@ -193,8 +194,8 @@ def test_evaluating_tsallis_derivative_against_finite_difference():
     _, actual_deriv = measure.evaluate(dens, model, deriv=True)
     measure_pt_plus_1 = measure.evaluate(dens, model + eps, deriv=False)
     measure_pt_plus_2 = measure.evaluate(dens, model + 2.0 * eps, deriv=False)
-    desired = (measure_pt_minus_2 / 12.0 - (2.0 / 3.0) * measure_pt_minus_1)
-    desired += ((2.0 / 3.0) * measure_pt_plus_1 - measure_pt_plus_2 / 12.0)
+    desired = measure_pt_minus_2 / 12.0 - (2.0 / 3.0) * measure_pt_minus_1
+    desired += (2.0 / 3.0) * measure_pt_plus_1 - measure_pt_plus_2 / 12.0
     assert_almost_equal(actual_deriv, desired / eps, decimal=1)
 
 

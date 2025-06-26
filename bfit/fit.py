@@ -22,13 +22,13 @@
 # ---
 r"""Fitting Algorithms."""
 
-from timeit import default_timer as timer
 import warnings
+from timeit import default_timer as timer
 
-from bfit.measure import KLDivergence, Measure, SquaredDifference
 import numpy as np
 from scipy.optimize import minimize, NonlinearConstraint
 
+from bfit.measure import KLDivergence, Measure, SquaredDifference
 
 __all__ = ["KLDivergenceFPI", "ScipyFit"]
 
@@ -649,6 +649,8 @@ class ScipyFit(_BaseFit):
                     print(template_iters.format(*performance))
                 callback = print_results
         # optimize
+        # scipy.minimize no longer supports extended precision
+        x0 = x0.astype(np.float64)
         start = timer()  # Start timer
         res = minimize(fun=self.func,
                        x0=x0,

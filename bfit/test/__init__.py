@@ -20,11 +20,5 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # ---
-r"""Package for fitting densities to a linear combination of Gaussians."""
 
-from bfit.density import *
-from bfit.fit import *
-from bfit.greedy import *
-from bfit.grid import *
-from bfit.measure import *
-from bfit.model import *
+r"""Test module for bfit."""

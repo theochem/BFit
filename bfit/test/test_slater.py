@@ -22,8 +22,9 @@
 # ---
 r"""Test bfit._slater module."""
 
-from bfit._slater import load_slater_wfn
 import numpy as np
+
+from bfit._slater import load_slater_wfn
 
 
 def test_parsing_slater_density_be():
