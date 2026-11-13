@@ -29,6 +29,10 @@ from numpy.testing import assert_almost_equal, assert_equal, assert_raises
 from bfit.density import SlaterAtoms
 from bfit.grid import ClenshawRadialGrid
 
+# NumPy 2.0 renamed trapz to trapezoid and trapz was removed in a later version,
+# while older versions of NumPy only have trapz.
+trapezoid = getattr(np, "trapezoid", None) or np.trapz
+
 
 def slater(e, n, r, derivative=False):
     """Calculate single normalized slater function at a given point."""
@@ -224,8 +228,8 @@ def test_orbitals_norm_be():
     # check shape
     assert_equal(dens.shape, (grid.size, 2))
     # check orbital normalization
-    assert_almost_equal(np.trapz(grid**2 * dens[:, 0], grid), 1.0, decimal=6)
-    assert_almost_equal(np.trapz(grid**2 * dens[:, 1], grid), 1.0, decimal=6)
+    assert_almost_equal(trapezoid(grid**2 * dens[:, 0], grid), 1.0, decimal=6)
+    assert_almost_equal(trapezoid(grid**2 * dens[:, 1], grid), 1.0, decimal=6)
 
 
 def test_orbitals_norm_ne():
@@ -238,9 +242,9 @@ def test_orbitals_norm_ne():
     # check shape
     assert_equal(dens.shape, (grid.size, 3))
     # check orbital normalization
-    assert_almost_equal(np.trapz(grid**2 * dens[:, 0], grid), 1.0, decimal=6)
-    assert_almost_equal(np.trapz(grid**2 * dens[:, 1], grid), 1.0, decimal=6)
-    assert_almost_equal(np.trapz(grid**2 * dens[:, 2], grid), 1.0, decimal=6)
+    assert_almost_equal(trapezoid(grid**2 * dens[:, 0], grid), 1.0, decimal=6)
+    assert_almost_equal(trapezoid(grid**2 * dens[:, 1], grid), 1.0, decimal=6)
+    assert_almost_equal(trapezoid(grid**2 * dens[:, 2], grid), 1.0, decimal=6)
 
 
 def test_orbitals_norm_c():
@@ -253,9 +257,9 @@ def test_orbitals_norm_c():
     # check shape
     assert_equal(dens.shape, (grid.size, 3))
     # check orbital normalization
-    assert_almost_equal(np.trapz(grid**2 * dens[:, 0], grid), 1.0, decimal=6)
-    assert_almost_equal(np.trapz(grid**2 * dens[:, 1], grid), 1.0, decimal=6)
-    assert_almost_equal(np.trapz(grid**2 * dens[:, 2], grid), 1.0, decimal=6)
+    assert_almost_equal(trapezoid(grid**2 * dens[:, 0], grid), 1.0, decimal=6)
+    assert_almost_equal(trapezoid(grid**2 * dens[:, 1], grid), 1.0, decimal=6)
+    assert_almost_equal(trapezoid(grid**2 * dens[:, 2], grid), 1.0, decimal=6)
 
 
 def test_atomic_density_be():
@@ -274,7 +278,7 @@ def test_atomic_density_be():
     # check dens = core + valence
     assert_almost_equal(dens, core + valn, decimal=6)
     # check number of electrons
-    assert_almost_equal(4 * np.pi * np.trapz(grid**2 * dens, grid), 4.0, decimal=6)
+    assert_almost_equal(4 * np.pi * trapezoid(grid**2 * dens, grid), 4.0, decimal=6)
 
 
 def test_atomic_density_ne():
@@ -293,7 +297,7 @@ def test_atomic_density_ne():
     # check dens = core + valence
     assert_almost_equal(dens, core + valn, decimal=6)
     # check number of electrons
-    assert_almost_equal(4 * np.pi * np.trapz(grid**2 * dens, grid), 10.0, decimal=6)
+    assert_almost_equal(4 * np.pi * trapezoid(grid**2 * dens, grid), 10.0, decimal=6)
 
 
 def test_atomic_density_c():
@@ -312,7 +316,7 @@ def test_atomic_density_c():
     # check dens = core + valence
     assert_almost_equal(dens, core + valn, decimal=6)
     # check number of electrons
-    assert_almost_equal(4 * np.pi * np.trapz(grid**2 * dens, grid), 6.0, decimal=6)
+    assert_almost_equal(4 * np.pi * trapezoid(grid**2 * dens, grid), 6.0, decimal=6)
 
 
 def test_atomic_density_h():
@@ -320,7 +324,7 @@ def test_atomic_density_h():
     h = SlaterAtoms("h")
     grid = np.arange(0.0, 15.0, 0.0001)
     dens = h.atomic_density(grid, mode="total")
-    assert_almost_equal((4 * np.pi) * np.trapz(dens * grid**2., grid), 1.0, decimal=6)
+    assert_almost_equal((4 * np.pi) * trapezoid(dens * grid**2., grid), 1.0, decimal=6)
 
 
 def test_atomic_density_h_anion():
@@ -329,7 +333,7 @@ def test_atomic_density_h_anion():
     h = SlaterAtoms("h", anion=True)
     grid = np.arange(0.0, 25.0, 0.00001)
     dens = h.atomic_density(grid, mode="total")
-    assert_almost_equal((4 * np.pi) * np.trapz(dens * grid ** 2., grid), 2.0, decimal=6)
+    assert_almost_equal((4 * np.pi) * trapezoid(dens * grid ** 2., grid), 2.0, decimal=6)
 
 
 def test_atomic_density_c_anion_cation():
@@ -337,12 +341,12 @@ def test_atomic_density_c_anion_cation():
     c = SlaterAtoms("c", anion=True)
     grid = np.arange(0.0, 25.0, 0.00001)
     dens = c.atomic_density(grid, mode="total")
-    assert_almost_equal((4 * np.pi) * np.trapz(dens * grid ** 2., grid), 7.0, decimal=6)
+    assert_almost_equal((4 * np.pi) * trapezoid(dens * grid ** 2., grid), 7.0, decimal=6)
 
     c = SlaterAtoms("c", cation=True)
     grid = np.arange(0.0, 25.0, 0.00001)
     dens = c.atomic_density(grid, mode="total")
-    assert_almost_equal((4 * np.pi) * np.trapz(dens * grid ** 2., grid), 5.0, decimal=6)
+    assert_almost_equal((4 * np.pi) * trapezoid(dens * grid ** 2., grid), 5.0, decimal=6)
 
 
 def test_atomic_density_heavy_cs():
@@ -354,7 +358,7 @@ def test_atomic_density_heavy_cs():
     cs = SlaterAtoms("cs")
     grid = np.arange(0.0, 40.0, 0.0001)
     dens = cs.atomic_density(grid, mode="total")
-    assert_almost_equal(4 * np.pi * np.trapz(dens * grid ** 2., grid), 55.0, decimal=5)
+    assert_almost_equal(4 * np.pi * trapezoid(dens * grid ** 2., grid), 55.0, decimal=5)
 
 
 def test_atomic_density_heavy_rn():
@@ -366,7 +370,7 @@ def test_atomic_density_heavy_rn():
     rn = SlaterAtoms("rn")
     grid = np.arange(0.0, 40.0, 0.0001)
     dens = rn.atomic_density(grid, mode="total")
-    assert_almost_equal(4 * np.pi * np.trapz(dens * grid ** 2., grid), 86, decimal=5)
+    assert_almost_equal(4 * np.pi * trapezoid(dens * grid ** 2., grid), 86, decimal=5)
 
 
 def test_kinetic_energy_cation_anion_c():
