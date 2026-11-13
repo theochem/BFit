@@ -26,6 +26,10 @@ import numpy as np
 
 __all__ = ["ClenshawRadialGrid", "UniformRadialGrid", "CubicGrid"]
 
+# NumPy 2.0 renamed trapz to trapezoid and trapz was removed in a later version,
+# while older versions of NumPy only have trapz.
+_trapezoid = getattr(np, "trapezoid", None) or np.trapz
+
 
 class _BaseRadialGrid:
     r"""Radial Grid Base Class."""
@@ -74,7 +78,7 @@ class _BaseRadialGrid:
             raise ValueError(
                 f"The argument arr should have {self.points.shape} shape!"
             )
-        return np.trapz(y=arr, x=self.points)
+        return _trapezoid(y=arr, x=self.points)
 
 
 class UniformRadialGrid(_BaseRadialGrid):

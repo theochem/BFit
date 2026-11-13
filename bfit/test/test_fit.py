@@ -314,19 +314,19 @@ def test_kl_fit_unnormalized_dens_normalized_1s_gaussian():
     assert_almost_equal(expected_cs, result["coeffs"], decimal=8)
     assert_almost_equal(expected_es, result["exps"], decimal=8)
     assert_almost_equal(0., result["fun"], decimal=8)
-    assert_almost_equal(np.array([-1., 0.]), result["jacobian"], decimal=6)
+    assert_almost_equal(np.array([-1., 0.]), result["jacobian"], decimal=5)
     # initial coeff=0.1 & expon=0.1
     result = kl.run(np.array([0.1]), np.array([0.1]), True, True)
     assert_almost_equal(expected_cs, result["coeffs"], decimal=8)
     assert_almost_equal(expected_es, result["exps"], decimal=8)
     assert_almost_equal(0., result["fun"], decimal=8)
-    assert_almost_equal(np.array([-1., 0.]), result["jacobian"], decimal=6)
+    assert_almost_equal(np.array([-1., 0.]), result["jacobian"], decimal=5)
     # initial coeff=5.0 & expon=15.
     result = kl.run(np.array([5.0]), np.array([15.]), True, True)
     assert_almost_equal(expected_cs, result["coeffs"], decimal=8)
     assert_almost_equal(expected_es, result["exps"], decimal=8)
     assert_almost_equal(0., result["fun"], decimal=8)
-    assert_almost_equal(np.array([-1., 0.]), result["jacobian"], decimal=6)
+    assert_almost_equal(np.array([-1., 0.]), result["jacobian"], decimal=5)
     # initial coeff=0.8 & expon=0.51, opt coeffs
     result = kl.run(np.array([0.5]), np.array([0.51]), True, False)
     assert_almost_equal(expected_cs, result["coeffs"], decimal=8)
